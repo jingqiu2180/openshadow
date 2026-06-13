@@ -8,15 +8,17 @@
     "build": "tsc",
     "start": "node dist/server/index.js",
     "test": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "electron": "electron desktop/main.ts",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\""
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
     "@larksuiteoapi/node-sdk": "^1.5.3",
-    "openai": "^4.87.3",
     "better-sqlite3": "^11.9.1",
     "hono": "^4.7.11",
     "node-cron": "^3.0.3",
+    "openai": "^4.87.3",
     "ws": "^8.18.0",
     "zod": "^3.24.1"
   },
@@ -27,6 +29,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.6",
     "@types/ws": "^8.5.14",
+    "electron": "^42.4.0",
     "tsx": "^4.19.2",
     "typescript": "^5.8.2",
     "vitest": "^3.0.8"
