@@ -1,7 +1,6 @@
 import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { cors } from 'hono/cors'
-import { wsHandler } from './ws.js'
 
 const app = new Hono()
 
@@ -17,8 +16,8 @@ app.get('/', (c) => c.json({
 
 app.get('/health', (c) => c.json({ ok: true }))
 
-// WebSocket upgrade endpoint
-app.get('/ws', wsHandler)
+// WebSocket endpoint - redirect to ws server
+app.get('/ws', (c) => c.text('Use WebSocket server on port 8080'))
 
 // API routes placeholder
 app.get('/api/agent/status', (c) => c.json({ connected: false }))
