@@ -22,12 +22,9 @@ const DEFAULT_BLOCKED = [
 
 export class NetworkFilter {
   private readonly config: Required<NetworkFilterConfig>
-  private readonly workspacePath: string
   private hostsBackup: string | null = null
-  private iptablesBackup: string | null = null
 
-  constructor(workspacePath: string, config: NetworkFilterConfig = {}) {
-    this.workspacePath = workspacePath
+  constructor(_workspacePath: string, config: NetworkFilterConfig = {}) {
     this.config = {
       allowedHosts: config.allowedHosts ?? [],
       blockPrivate: config.blockPrivate ?? true,

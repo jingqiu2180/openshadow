@@ -5,12 +5,38 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch server/index.ts",
-    "build": "tsc",
+    "build": "tsc && node scripts/copy-desktop-assets.js",
     "start": "node dist/server/index.js",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "electron": "electron desktop/main.ts",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\""
+    "electron": "tsc -p desktop/tsconfig.json && electron dist/desktop/main.js",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && npm run electron\"",
+    "electron:build": "npm run build && tsc -p desktop/tsconfig.json && electron-builder --dir",
+    "electron:dist": "npm run build && tsc -p desktop/tsconfig.json && electron-builder"
+  },
+  "build": {
+    "appId": "com.openhanako.inspired",
+    "productName": "小Hanako",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "desktop/**/*",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "dist/desktop/main.js"
+    },
+    "mac": {
+      "target": ["dmg"]
+    },
+    "linux": {
+      "target": ["AppImage"]
+    },
+    "win": {
+      "target": ["nsis"]
+    }
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
@@ -30,8 +56,10 @@
     "@types/react-dom": "^19.0.6",
     "@types/ws": "^8.5.14",
     "electron": "^42.4.0",
+    "electron-builder": "^26.15.3",
     "tsx": "^4.19.2",
     "typescript": "^5.8.2",
-    "vitest": "^3.0.8"
+    "vitest": "^3.0.8",
+    "wait-on": "^9.0.10"
   }
 }
