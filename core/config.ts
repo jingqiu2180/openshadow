@@ -38,7 +38,7 @@ const DEFAULT_CONFIG: Config = {
   version: '0.1.0',
   agent: {
     id: 'default',
-    name: '小Hanako',
+    name: 'Rem',
     model: 'gpt-4',
     apiKey: '',
     baseUrl: 'https://api.openai.com/v1',

@@ -4,19 +4,19 @@
   "description": "一个有个性和记忆的 AI 助手 - 从零开始异世界生活·雷姆",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch server/index.ts",
+    "dev": "set \"PATH=%USERPROFILE%\\.workbuddy\\binaries\\node\\versions\\22.22.2;%PATH%\" && tsx watch start.ts",
     "build": "tsc && node scripts/copy-desktop-assets.js",
     "start": "node dist/server/index.js",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "electron": "tsc -p desktop/tsconfig.json && electron dist/desktop/main.js",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && npm run electron\"",
+    "electron": "tsc -p desktop/tsconfig.json && node -e \"require('fs').renameSync('dist/desktop/main.js','dist/desktop/main.cjs')\" && electron dist/desktop/main.cjs",
+    "electron:dev": "set \"PATH=%USERPROFILE%\\.workbuddy\\binaries\\node\\versions\\22.22.2;%PATH%\" && concurrently \"npm run dev\" \"wait-on tcp:3000 && npm run electron\"",
     "electron:build": "npm run build && tsc -p desktop/tsconfig.json && electron-builder --dir",
     "electron:dist": "npm run build && tsc -p desktop/tsconfig.json && electron-builder"
   },
   "build": {
-    "appId": "com.openhanako.inspired",
-    "productName": "小Hanako",
+    "appId": "com.remu.agent",
+    "productName": "Rem Agent",
     "directories": {
       "output": "release"
     },
@@ -29,13 +29,19 @@
       "main": "dist/desktop/main.js"
     },
     "mac": {
-      "target": ["dmg"]
+      "target": [
+        "dmg"
+      ]
     },
     "linux": {
-      "target": ["AppImage"]
+      "target": [
+        "AppImage"
+      ]
     },
     "win": {
-      "target": ["nsis"]
+      "target": [
+        "nsis"
+      ]
     }
   },
   "dependencies": {
@@ -55,6 +61,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.6",
     "@types/ws": "^8.5.14",
+    "concurrently": "^10.0.3",
     "electron": "^42.4.0",
     "electron-builder": "^26.15.3",
     "tsx": "^4.19.2",

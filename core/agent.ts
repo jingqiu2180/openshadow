@@ -32,12 +32,15 @@ export class Agent {
   private readonly tools: any[]
   private readonly toolMap: Record<string, any>
   private readonly guard: PathGuard
+  private readonly model: string
 
   constructor(options: AgentOptions) {
     const config = getAgentConfig(options.agentId)
     if (!config) {
       throw new Error(`Agent config not found: ${options.agentId}`)
     }
+
+    this.model = config.model
 
     this.client = new OpenAI({
       apiKey: config.apiKey,
@@ -116,7 +119,7 @@ export class Agent {
 
     // Call model
     const response = await this.client.chat.completions.create({
-      model: 'gpt-4',
+      model: this.model,
       messages: [systemMsg, ...messages],
       tools: this.tools as any,
       tool_choice: 'auto',
@@ -150,15 +153,20 @@ export class Agent {
 
       // Second call to get final response
       const final = await this.client.chat.completions.create({
-        model: 'gpt-4',
+        model: this.model,
         messages: [systemMsg, ...messages, ...toolMessages],
       })
 
       const finalContent = final.choices[0]?.message.content ?? 'No response'
+      // Auto-remember the conversation exchange
+      this.remember(`User: ${messages[messages.length - 1]?.content} | Rem: ${finalContent}`)
       return { content: finalContent }
     }
 
-    return { content: choice.message.content ?? 'No response' }
+    const content = choice.message.content ?? 'No response'
+    // Auto-remember the conversation exchange
+    this.remember(`User: ${messages[messages.length - 1]?.content} | Rem: ${content}`)
+    return { content }
   }
 
   /**

@@ -1,6 +1,5 @@
 import { app, BrowserWindow } from 'electron'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { join } from 'path'
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
 
@@ -8,10 +7,11 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 900,
     height: 680,
-    title: '小Hanako',
+    title: 'Rem Agent',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      webSecurity: false,
     },
     frame: true,
     backgroundColor: '#667eea',
@@ -24,8 +24,9 @@ function createWindow() {
   })
 
   if (isDev) {
-    // Direct run: load the Vite dev server
-    win.loadURL('http://localhost:3000')
+    // Dev mode: load desktop/index.html directly
+    // __dirname is dist/desktop/, go up to project root then into desktop/
+    win.loadFile(join(__dirname, '..', '..', 'desktop', 'index.html'))
     win.webContents.openDevTools()
   } else {
     // Packaged: load from dist/desktop/index.html

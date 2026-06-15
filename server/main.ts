@@ -21,7 +21,7 @@ export async function startServer(options: MainOptions) {
   // Save agent config (for demo, use env vars)
   saveAgentConfig({
     id: agentId,
-    name: '小Hanako',
+    name: 'Rem Agent',
     personality: 'default',
     model: process.env.AGENT_MODEL ?? 'gpt-4',
     apiKey: process.env.AGENT_API_KEY ?? '',
@@ -63,7 +63,7 @@ export async function startServer(options: MainOptions) {
 
   console.log(`
 ╔══════════════════════════════════════════╗
-║  🚀 OpenHanako-Inspired Agent v0.1.0   ║
+║  🚀 Rem Agent v0.1.0              ║
 ╠══════════════════════════════════════════╣
 ║  HTTP:  http://localhost:${port}            ║
 ║  WS:    ws://localhost:${wsPort}           ║

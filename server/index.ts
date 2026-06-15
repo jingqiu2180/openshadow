@@ -9,7 +9,7 @@ app.use('*', cors())
 
 // Health check
 app.get('/', (c) => c.json({
-  name: 'OpenHanako-Inspired Agent',
+  name: 'Rem Agent',
   version: '0.1.0',
   status: 'running'
 }))

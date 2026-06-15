@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>小Hanako - AI 助手</title>
+  <title>Rem Agent - AI 助手</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -98,10 +98,10 @@
 <body>
   <div class="header">
     <div class="avatar">🥕</div>
-    <h1>小Hanako</h1>
+    <h1>Rem Agent</h1>
   </div>
   <div class="chat" id="chat">
-    <div class="message assistant">你好！我是小Hanako～ 有什么我可以帮你的吗？ 🌸</div>
+    <div class="message assistant">你好！我是 Rem～ 有什么我可以帮你的吗？ 🌸</div>
   </div>
   <div class="input-area">
     <input type="text" id="input" placeholder="输入消息..." />
@@ -140,10 +140,12 @@
           const data = JSON.parse(e.data)
           if (data.type === 'response') {
             addMessage(data.content || '（无响应）', 'assistant')
+            ws.close()
           } else if (data.type === 'error') {
             addMessage('错误: ' + data.content, 'assistant')
+            ws.close()
           }
-          ws.close()
+          // typing message: don't close, wait for response
         }
         ws.onerror = () => {
           addMessage('连接失败，请确保服务已启动', 'assistant')
