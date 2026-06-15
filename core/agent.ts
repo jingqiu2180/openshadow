@@ -12,6 +12,8 @@ import { createPlanner } from './planner.js'
 import { createCoderAgent } from './coder.js'
 import { speechToText, recordAudio } from './stt.js'
 import { textToSpeech, listVoices } from './tts.js'
+import { createSkillStore, SkillStore } from './skills.js'
+import { createTeam, TeamLeader } from './team.js'
 
 export interface AgentOptions {
   agentId: string
@@ -49,6 +51,8 @@ export class Agent {
   private pendingImages: string[] = []
   /** Cached planner instance */
   private _planner?: ReturnType<typeof createPlanner>
+  private _skillStore?: SkillStore
+  private _team?: TeamLeader
 
   constructor(options: AgentOptions) {
     const config = getAgentConfig(options.agentId)
@@ -239,6 +243,23 @@ export class Agent {
       params: {},
     })
 
+    const skillListSpec = this.createSpec('skill_list', {
+      description: 'List all available skills in the skill store',
+      params: { tag: { type: 'string', description: 'Filter by tag (optional)', optional: true }, search: { type: 'string', description: 'Search keyword (optional)', optional: true } },
+    })
+    const skillExecuteSpec = this.createSpec('skill_execute', {
+      description: 'Execute a skill tool',
+      params: { skill: { type: 'string', description: 'Skill name' }, tool: { type: 'string', description: 'Tool name within the skill' }, args: { type: 'object', description: 'Tool arguments', optional: true } },
+    })
+    const teamDispatchSpec = this.createSpec('team_dispatch', {
+      description: 'Dispatch a complex task to the multi-agent team. Use when a task can benefit from parallel execution by specialized agents.',
+      params: { goal: { type: 'string', description: 'High-level goal for the team to accomplish' } },
+    })
+    const teamStatusSpec = this.createSpec('team_status', {
+      description: 'Get current team status: active workers, pending tasks, shared memory',
+      params: {},
+    })
+
     this.tools = [
       captureSpec, analyzeSpec,
       fileReadSpec, fileWriteSpec, fileListSpec,
@@ -254,6 +275,8 @@ export class Agent {
       browserGetTextSpec, browserCloseSpec,
       sttRecordSpec, sttRecognizeSpec,
       ttsSpeakSpec, ttsVoicesSpec,
+      skillListSpec, skillExecuteSpec,
+      teamDispatchSpec, teamStatusSpec,
     ]
 
     this.toolMap = {
@@ -294,6 +317,31 @@ export class Agent {
       stt_recognize: speechToText,
       tts_speak: textToSpeech,
       tts_list_voices: listVoices,
+      skill_list: (args: { tag?: string; search?: string }) => {
+        const store = this._getSkillStore()
+        if (args.tag) return { skills: store.findByTag(args.tag) }
+        if (args.search) return { skills: store.search(args.search) }
+        return { skills: store.list() }
+      },
+      skill_execute: async (args: { skill: string; tool: string; args?: Record<string, unknown> }) => {
+        return this._getSkillStore().execute(args.skill, args.tool, args.args ?? {})
+      },
+      team_dispatch: async (args: { goal: string }) => {
+        const team = this._getTeam()
+        const tasks = await team.planTasks(args.goal)
+        if (tasks.length === 0) return { error: 'Could not plan tasks' }
+        // Execute all tasks in parallel
+        const results = await team.executeTasks(tasks.map(t => t.id))
+        return { tasks: results }
+      },
+      team_status: () => {
+        const team = this._getTeam()
+        return {
+          workers: team.getWorkerStates(),
+          pending: team.getPendingTasks(),
+          sharedMemory: team.getSharedMemory().snapshot(),
+        }
+      },
     }
   }
 
@@ -402,6 +450,16 @@ export class Agent {
     const finalContent = final.choices[0]?.message.content ?? 'No response'
     this.remember(`User: ${messages[messages.length - 1]?.content} | Rem: ${finalContent}`)
     return { content: finalContent }
+  }
+
+  private _getSkillStore(): SkillStore {
+    if (!this._skillStore) this._skillStore = createSkillStore()
+    return this._skillStore
+  }
+
+  private _getTeam(): TeamLeader {
+    if (!this._team) this._team = createTeam(this)
+    return this._team
   }
 
   remember(content: string, importance: number = 1): void {

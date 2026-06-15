@@ -1,119 +1,359 @@
-import { readdir, readFile, stat } from 'fs/promises'
+/**
+ * Skills ecosystem - dynamic capability loading and execution.
+ *
+ * Concepts:
+ * - Skill: a self-contained capability with manifest (SKILL.md)
+ * - SkillStore: registry of loaded skills
+ * - SkillInstaller: installs skills from local dirs or remote URLs
+ * - Built-in skills: core capabilities bundled with remu
+ */
+
+import { readdir, readFile, stat, writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { PathGuard } from './tools/path-guard.js'
+import { existsSync } from 'fs'
 
-export interface Skill {
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+export interface SkillTool {
   name: string
   description: string
-  handler: (args: Record<string, unknown>) => Promise<any>
+  params: Record<string, {
+    type: string
+    description: string
+    optional?: boolean
+    default?: unknown
+  }>
 }
 
 export interface SkillManifest {
   name: string
   description: string
   version: string
-  tools?: string[]
+  author?: string
+  tags?: string[]
+  tools: SkillTool[]
+  dependencies?: string[]
+  readme?: string
 }
 
-export class Skills {
-  private _skills: Map<string, Skill> = new Map()
-  private guard: PathGuard
+export interface Skill {
+  manifest: SkillManifest
+  rootDir: string
+  handler: (toolName: string, args: Record<string, unknown>) => Promise<unknown>
+}
 
-  constructor(rootPath: string, allowedPaths?: string[]) {
-    this.guard = new PathGuard(allowedPaths ?? [rootPath])
+export interface SkillResult {
+  success: boolean
+  result?: unknown
+  error?: string
+}
+
+// ─── Manifest parser ─────────────────────────────────────────────────────────
+
+function parseManifest(content: string, name: string): SkillManifest {
+  const lines = content.split('\n')
+  const manifest: SkillManifest = {
+    name,
+    description: '',
+    version: '1.0.0',
+    tools: [],
   }
 
-  async loadFrom(dir: string): Promise<void> {
-    this.guard.assertAllowed(dir)
+  let currentTool: SkillTool | null = null
 
-    const entries = await readdir(dir)
+  for (const line of lines) {
+    // Match **key: value** patterns
+    const metaMatch = line.match(/^\*\*([a-zA-Z]+):\*\*\s*(.+)$/)
+    if (metaMatch) {
+      const [, key, value] = metaMatch
+      if (key === 'name') manifest.name = value
+      else if (key === 'description') manifest.description = value
+      else if (key === 'version') manifest.version = value
+      else if (key === 'author') manifest.author = value
+      else if (key === 'tags') manifest.tags = value.split(',').map(t => t.trim())
+    }
+
+    // Skill section
+    const skillMatch = line.match(/^## Skill:\s*(.+)$/)
+    if (skillMatch) {
+      if (currentTool) manifest.tools.push(currentTool)
+      currentTool = { name: skillMatch[1].trim(), description: '', params: {} }
+    }
+
+    // Tool description
+    if (currentTool && line.startsWith('### Description')) {
+      // Next non-empty line is the description
+    }
+
+    // Parameters
+    const paramMatch = line.match(/^- \*\*(\w+)\*\* \(([^)]+)\)(?:\s*-\s*(.+))?$/)
+    if (paramMatch && currentTool) {
+      const [, pname, ptype, pdesc] = paramMatch
+      currentTool.params[pname] = {
+        type: ptype.trim(),
+        description: (pdesc ?? '').trim(),
+      }
+    }
+  }
+
+  if (currentTool) manifest.tools.push(currentTool)
+  return manifest
+}
+
+// ─── SkillStore ─────────────────────────────────────────────────────────────
+
+export class SkillStore {
+  private _skills = new Map<string, Skill>()
+  private readonly guard: PathGuard
+
+  constructor(allowedDirs: string[]) {
+    this.guard = new PathGuard(allowedDirs)
+  }
+
+  async loadFrom(dir: string): Promise<{ loaded: string[]; failed: string[] }> {
+    this.guard.assertAllowed(dir)
+    const loaded: string[] = []
+    const failed: string[] = []
+
+    if (!existsSync(dir)) {
+      await mkdir(dir, { recursive: true })
+      return { loaded, failed }
+    }
+
+    let entries: string[] = []
+    try {
+      entries = await readdir(dir)
+    } catch {
+      return { loaded, failed }
+    }
+
     for (const entry of entries) {
       const skillDir = join(dir, entry)
-      const info = await stat(skillDir)
-      if (!info.isDirectory()) continue
-
-      const manifestPath = join(skillDir, 'SKILL.md')
       try {
+        const info = await stat(skillDir)
+        if (!info.isDirectory()) continue
+
+        const manifestPath = join(skillDir, 'SKILL.md')
         const content = await readFile(manifestPath, 'utf-8')
-        const manifest = this.parseManifest(content, entry)
+        const manifest = parseManifest(content, entry)
+
         this._skills.set(manifest.name, {
-          name: manifest.name,
-          description: manifest.description,
-          handler: async () => ({ result: `Skill ${manifest.name} executed` }),
+          manifest,
+          rootDir: skillDir,
+          handler: async () => ({ result: `Skill "${manifest.name}" executed` }),
         })
-        console.log(`[skills] Loaded: ${manifest.name}`)
-      } catch {
-        // Skip if no SKILL.md
+
+        loaded.push(manifest.name)
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        failed.push(entry + ': ' + msg)
       }
     }
+
+    return { loaded, failed }
   }
 
-  private parseManifest(content: string, name: string): SkillManifest {
-    const lines = content.split('\n')
-    let description = name
-
-    for (const line of lines) {
-      if (line.startsWith('description:')) {
-        description = line.replace('description:', '').trim()
-      }
-    }
-
-    return { name, description, version: '1.0.0' }
+  register(skill: Skill): void {
+    this._skills.set(skill.manifest.name, skill)
   }
 
   get(name: string): Skill | undefined {
     return this._skills.get(name)
   }
 
-  list(): Skill[] {
-    return [...this._skills.values()]
+  list(): SkillManifest[] {
+    return [...this._skills.values()].map(s => s.manifest)
   }
 
-  async execute(name: string, args: Record<string, unknown> = {}): Promise<any> {
-    const skill = this._skills.get(name)
-    if (!skill) {
-      throw new Error(`Skill not found: ${name}`)
+  findByTag(tag: string): SkillManifest[] {
+    return this.list().filter(s => s.tags?.includes(tag))
+  }
+
+  search(query: string): SkillManifest[] {
+    const q = query.toLowerCase()
+    return this.list().filter(s =>
+      s.name.toLowerCase().includes(q) ||
+      s.description.toLowerCase().includes(q) ||
+      s.tags?.some(t => t.toLowerCase().includes(q))
+    )
+  }
+
+  async execute(skillName: string, toolName: string, args: Record<string, unknown> = {}): Promise<SkillResult> {
+    const skill = this._skills.get(skillName)
+    if (!skill) return { success: false, error: `Skill not found: ${skillName}` }
+
+    try {
+      const result = await skill.handler(toolName, args)
+      return { success: true, result }
+    } catch (e: unknown) {
+      return { success: false, error: e instanceof Error ? e.message : String(e) }
     }
-    return skill.handler(args)
   }
 
-  register(skill: Skill): void {
-    this._skills.set(skill.name, skill)
+  async createSkill(name: string, manifest: SkillManifest, files: Record<string, string>): Promise<SkillResult> {
+    try {
+      const skillRoot = join('/root/.openclaw/workspace/remu-skills', name)
+      await mkdir(skillRoot, { recursive: true })
+
+      const toolDocs = manifest.tools.map(t => `## Skill: ${t.name}
+
+### Description
+${t.description}
+
+### Parameters
+${Object.entries(t.params).map(([k, v]) => `- **${k}** (${v.type}) - ${v.description}`).join('\n')}`).join('\n\n')
+
+      const skillMd = `# ${manifest.name}
+
+## Metadata
+- **name**: ${manifest.name}
+- **description**: ${manifest.description}
+- **version**: ${manifest.version}
+${manifest.author ? `- **author**: ${manifest.author}` : ''}
+${manifest.tags ? `- **tags**: ${manifest.tags.join(', ')}` : ''}
+
+${toolDocs}
+`
+      await writeFile(join(skillRoot, 'SKILL.md'), skillMd, 'utf-8')
+
+      for (const [filename, content] of Object.entries(files)) {
+        if (filename !== 'SKILL.md') {
+          await writeFile(join(skillRoot, filename), content, 'utf-8')
+        }
+      }
+
+      await this.loadFrom(skillRoot)
+      return { success: true }
+    } catch (e: unknown) {
+      return { success: false, error: e instanceof Error ? e.message : String(e) }
+    }
   }
 }
 
+// ─── Built-in skills ────────────────────────────────────────────────────────
+
 export const BUILTIN_SKILLS: Skill[] = [
   {
-    name: 'memory-management',
-    description: 'Read/write memories and summarize',
-    handler: async ({ action }: any) => {
-      if (action === 'read') return { memories: [] }
-      if (action === 'write') return { success: true }
-      return { error: 'Unknown action' }
+    manifest: {
+      name: 'memory-management',
+      description: '记忆管理：读取、写入、搜索长期记忆',
+      version: '1.0.0',
+      tags: ['memory', 'core'],
+      tools: [
+        {
+          name: 'read_memories',
+          description: '读取最近的记忆',
+          params: { limit: { type: 'number', description: '最大条数', optional: true, default: 10 } },
+        },
+        {
+          name: 'write_memory',
+          description: '写入新记忆',
+          params: { content: { type: 'string', description: '记忆内容' }, importance: { type: 'number', description: '重要性 1-5', optional: true } },
+        },
+        {
+          name: 'search_memory',
+          description: '搜索记忆',
+          params: { query: { type: 'string', description: '搜索关键词' } },
+        },
+      ],
+    },
+    rootDir: '',
+    handler: async (_tool: string, _args: Record<string, unknown>) => ({ result: 'memory-management skill' }),
+  },
+  {
+    manifest: {
+      name: 'web-search',
+      description: '网络搜索：查找信息、新闻、文档',
+      version: '1.0.0',
+      tags: ['web', 'search'],
+      tools: [
+        { name: 'search', description: '搜索网络', params: { query: { type: 'string', description: '搜索词' }, count: { type: 'number', description: '结果数量', optional: true } } },
+        { name: 'fetch_page', description: '获取网页内容', params: { url: { type: 'string', description: '网页URL' } } },
+      ],
+    },
+    rootDir: '',
+    handler: async (_tool: string, _args: Record<string, unknown>) => ({ result: 'web-search skill placeholder' }),
+  },
+  {
+    manifest: {
+      name: 'file-manager',
+      description: '文件管理：浏览、复制、移动、压缩文件',
+      version: '1.0.0',
+      tags: ['file', 'tools'],
+      tools: [
+        { name: 'list_files', description: '列出目录文件', params: { path: { type: 'string', description: '目录路径' } } },
+        { name: 'copy_file', description: '复制文件', params: { src: { type: 'string', description: '源路径' }, dest: { type: 'string', description: '目标路径' } } },
+        { name: 'delete_file', description: '删除文件', params: { path: { type: 'string', description: '文件路径' } } },
+      ],
+    },
+    rootDir: '',
+    handler: async (_tool: string, _args: Record<string, unknown>) => ({ result: 'file-manager skill placeholder' }),
+  },
+  {
+    manifest: {
+      name: 'code-helper',
+      description: '代码助手：生成、检查、重构代码',
+      version: '1.0.0',
+      tags: ['code', 'development'],
+      tools: [
+        { name: 'generate', description: '生成代码', params: { spec: { type: 'string', description: '需求描述' }, language: { type: 'string', description: '编程语言', optional: true } } },
+        { name: 'review', description: '代码审查', params: { code: { type: 'string', description: '代码内容' } } },
+        { name: 'refactor', description: '代码重构', params: { code: { type: 'string', description: '待重构代码' }, goal: { type: 'string', description: '重构目标' } } },
+      ],
+    },
+    rootDir: '',
+    handler: async (_tool: string, _args: Record<string, unknown>) => ({ result: 'code-helper skill placeholder' }),
+  },
+  {
+    manifest: {
+      name: 'calculator',
+      description: '计算器：数学运算、汇率换算、单位转换',
+      version: '1.0.0',
+      tags: ['utility'],
+      tools: [
+        { name: 'calc', description: '计算数学表达式', params: { expression: { type: 'string', description: '表达式如 2+3*4' } } },
+        { name: 'convert', description: '单位换算', params: { value: { type: 'number', description: '数值' }, from: { type: 'string', description: '源单位' }, to: { type: 'string', description: '目标单位' } } },
+      ],
+    },
+    rootDir: '',
+    handler: async (tool: string, args: Record<string, unknown>) => {
+      if (tool === 'calc') {
+        try {
+          // eslint-disable-next-line no-eval
+          const result = Function('"use strict"; return (' + String(args.expression) + ')')()
+          return { expression: args.expression, result }
+        } catch {
+          return { error: 'Invalid expression' }
+        }
+      }
+      return { result: 'calculator skill' }
     },
   },
   {
-    name: 'personality-editor',
-    description: 'Edit personality template',
-    handler: async ({ key, value }: any) => {
-      return { success: true, key, value }
+    manifest: {
+      name: 'scheduler',
+      description: '任务调度：创建定时任务、查看计划、管理 Cron',
+      version: '1.0.0',
+      tags: ['scheduler', 'tasks'],
+      tools: [
+        { name: 'schedule', description: '创建定时任务', params: { cron: { type: 'string', description: 'Cron 表达式' }, task: { type: 'string', description: '任务内容' } } },
+        { name: 'list_scheduled', description: '列出所有定时任务', params: {} },
+        { name: 'cancel', description: '取消定时任务', params: { jobId: { type: 'string', description: '任务ID' } } },
+      ],
     },
-  },
-  {
-    name: 'schedule-manager',
-    description: 'Manage scheduled tasks',
-    handler: async ({ action }: any) => {
-      return { success: true, action }
-    },
+    rootDir: '',
+    handler: async (_tool: string, _args: Record<string, unknown>) => ({ result: 'scheduler skill placeholder' }),
   },
 ]
 
-export function createSkills(rootPath: string, allowedPaths?: string[]): Skills {
-  const skills = new Skills(rootPath, allowedPaths)
-
+export function createSkillStore(skillsDir?: string): SkillStore {
+  const store = new SkillStore(['/root/.openclaw/workspace', '/tmp', process.cwd()])
   for (const skill of BUILTIN_SKILLS) {
-    skills.register(skill)
+    store.register(skill)
   }
-
-  return skills
+  if (skillsDir) {
+    store.loadFrom(skillsDir).catch(() => {})
+  }
+  return store
 }
