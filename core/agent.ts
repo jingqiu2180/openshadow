@@ -7,7 +7,7 @@ import OpenAI from 'openai'
 import { loadPersonality } from './personality/loader.js'
 import { buildSystemPrompt } from './personality/template.js'
 import { getContextMemories, addMemory, getAgentConfig } from './memory/store.js'
-import { PathGuard, createFileTools, createBashTools, analyzeScreenshot, captureScreenshot } from './tools/index.js'
+import { PathGuard, createFileTools, createBashTools, analyzeScreenshot, captureScreenshot, mouseMove, mouseClick, mouseDrag, keyboardType, keyboardHotkey, windowActivate, getScreenSize } from './tools/index.js'
 
 export interface AgentOptions {
   agentId: string
@@ -105,7 +105,59 @@ export class Agent {
       },
     })
 
-    this.tools = [captureSpec, analyzeSpec, fileReadSpec, fileWriteSpec, fileListSpec, bashSpec]
+    const mouseMoveSpec = this.createSpec('mouse_move', {
+      description: 'Move mouse cursor to absolute screen coordinates',
+      params: {
+        x: { type: 'number', description: 'Target X coordinate (pixels from top-left)' },
+        y: { type: 'number', description: 'Target Y coordinate (pixels from top-left)' },
+      },
+    })
+
+    const mouseClickSpec = this.createSpec('mouse_click', {
+      description: 'Click mouse button',
+      params: {
+        button: { type: 'string', description: 'Button to click: left, right, or double', optional: true },
+      },
+    })
+
+
+    const mouseDragSpec = this.createSpec('mouse_drag', {
+      description: 'Drag mouse from (x1,y1) to (x2,y2)',
+      params: {
+        x1: { type: 'number', description: 'Start X' }, y1: { type: 'number', description: 'Start Y' },
+        x2: { type: 'number', description: 'End X' }, y2: { type: 'number', description: 'End Y' },
+      },
+    })
+
+    const keyboardTypeSpec = this.createSpec('keyboard_type', {
+      description: 'Type text using keyboard',
+      params: { text: { type: 'string', description: 'Text to type' } },
+    })
+
+    const keyboardHotkeySpec = this.createSpec('keyboard_hotkey', {
+      description: 'Press a hotkey combination',
+      params: { keys: { type: 'array', items: { type: 'string' }, description: 'Key names e.g. ctrl+c, alt+tab, enter' } },
+    })
+
+
+    const windowActivateSpec = this.createSpec('window_activate', {
+      description: 'Activate/focus a window by title pattern',
+      params: { titlePattern: { type: 'string', description: 'Window title or app name to activate' } },
+    })
+
+    const screenSizeSpec = this.createSpec('get_screen_size', {
+      description: 'Get the screen resolution (width x height)',
+      params: {},
+    })
+
+    this.tools = [
+      captureSpec, analyzeSpec,
+      fileReadSpec, fileWriteSpec, fileListSpec,
+      bashSpec,
+      mouseMoveSpec, mouseClickSpec, mouseDragSpec,
+      keyboardTypeSpec, keyboardHotkeySpec,
+      windowActivateSpec, screenSizeSpec,
+    ]
 
     this.toolMap = {
       capture_screenshot: captureScreenshot,
@@ -114,6 +166,13 @@ export class Agent {
       file_write: fileTools.file_write,
       file_list: fileTools.file_list,
       bash: bashTools.bash,
+      mouse_move: mouseMove,
+      mouse_click: mouseClick,
+      mouse_drag: mouseDrag,
+      keyboard_type: keyboardType,
+      keyboard_hotkey: keyboardHotkey,
+      window_activate: windowActivate,
+      get_screen_size: getScreenSize,
     }
   }
 
