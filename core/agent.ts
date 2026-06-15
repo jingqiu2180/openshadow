@@ -8,6 +8,7 @@ import { loadPersonality } from './personality/loader.js'
 import { buildSystemPrompt } from './personality/template.js'
 import { getContextMemories, addMemory, getAgentConfig } from './memory/store.js'
 import { PathGuard, createFileTools, createBashTools, analyzeScreenshot, captureScreenshot, mouseMove, mouseClick, mouseDrag, keyboardType, keyboardHotkey, windowActivate, getScreenSize } from './tools/index.js'
+import { createPlanner } from './planner.js'
 
 export interface AgentOptions {
   agentId: string
@@ -43,6 +44,8 @@ export class Agent {
   private readonly model: string
   /** Pending screenshots to inject as image parts in the next API call */
   private pendingImages: string[] = []
+  /** Cached planner instance */
+  private _planner?: ReturnType<typeof createPlanner>
 
   constructor(options: AgentOptions) {
     const config = getAgentConfig(options.agentId)
@@ -150,6 +153,13 @@ export class Agent {
       params: {},
     })
 
+    const planExecuteSpec = this.createSpec('plan_execute', {
+      description: 'Plan and execute a complex multi-step task. Use this when a goal requires multiple steps or when unsure how to proceed. Breaks down the goal into steps, executes them one by one, and verifies results.',
+      params: {
+        goal: { type: 'string', description: 'The goal or task to accomplish, in natural language. Be specific about what you want to achieve.' },
+      },
+    })
+
     this.tools = [
       captureSpec, analyzeSpec,
       fileReadSpec, fileWriteSpec, fileListSpec,
@@ -157,6 +167,7 @@ export class Agent {
       mouseMoveSpec, mouseClickSpec, mouseDragSpec,
       keyboardTypeSpec, keyboardHotkeySpec,
       windowActivateSpec, screenSizeSpec,
+      planExecuteSpec,
     ]
 
     this.toolMap = {
@@ -173,6 +184,10 @@ export class Agent {
       keyboard_hotkey: keyboardHotkey,
       window_activate: windowActivate,
       get_screen_size: getScreenSize,
+      plan_execute: async (args: { goal: string }) => {
+        if (!this._planner) this._planner = createPlanner(this)
+        return this._planner.execute(args.goal)
+      },
     }
   }
 
