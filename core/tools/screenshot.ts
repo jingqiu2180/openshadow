@@ -1,5 +1,6 @@
 /**
  * Screenshot tool - cross-platform screen capture with base64 output.
+ * Works on macOS (screencapture), Windows (PowerShell), Linux (gnome-screenshot/scrot/grim).
  */
 
 import { execFile } from 'child_process'
@@ -43,18 +44,26 @@ export async function captureScreenshot(options: {
     } else if (platform === 'linux') {
       try {
         await execAsync('gnome-screenshot', ['-f', filepath])
-      } catch {
+      } catch (e1: any) {
         try {
           await execAsync('scrot', [filepath])
-        } catch {
-          await execAsync('grim', [filepath])
+        } catch (e2: any) {
+          try {
+            await execAsync('grim', [filepath])
+          } catch (e3: any) {
+            return {
+              success: false,
+              error: `No screenshot tool found on Linux. Install one of: gnome-screenshot, scrot (sudo apt install scrot), or grim (sudo apt install grim). Error: ${e3.message}`,
+            }
+          }
         }
       }
     } else if (platform === 'win32') {
+      const safePath = filepath.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
       const ps = `
 Add-Type -AssemblyName System.Drawing
 $bitmap = [System.Drawing.Bitmap]::new([System.Drawing.Screen]::PrimaryScreen)
-$bitmap.Save("${filepath.replace(/\\/g, '\\\\')}", [System.Drawing.Imaging.ImageFormat]::Png)
+$bitmap.Save("${safePath}", [System.Drawing.Imaging.ImageFormat]::Png)
 $bitmap.Dispose()
 Write-Output "ok"
 `
@@ -66,11 +75,14 @@ Write-Output "ok"
         try { unlinkSync(psPath) } catch {}
       }
     } else {
-      return { success: false, error: `Unsupported platform: ${platform}` }
+      return {
+        success: false,
+        error: `Screenshot not supported on ${platform}. On Windows use browser_screenshot, on macOS use screencapture, on Linux install gnome-screenshot or scrot.`,
+      }
     }
 
     if (!existsSync(filepath)) {
-      return { success: false, error: 'Screenshot file not created' }
+      return { success: false, error: 'Screenshot file was not created. Check if screenshot tool is installed.' }
     }
 
     const base64 = readFileSync(filepath).toString('base64')
