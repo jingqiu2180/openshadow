@@ -5,11 +5,14 @@ export interface WsMessage {
   type: 'chat' | 'typing'
   content?: string
   messageId?: string
+  /** When true, server will stream deltas; when false/undefined, legacy single response. */
+  stream?: boolean
 }
 
 export interface WsResponse {
-  type: 'response' | 'error' | 'typing'
+  type: 'response' | 'error' | 'typing' | 'delta' | 'done'
   content?: string
+  delta?: string
   messageId?: string
 }
 
@@ -24,17 +27,29 @@ export function createWsServer(agent: Agent, port: number = 8080) {
         const msg = JSON.parse(data.toString()) as WsMessage
 
         if (msg.type === 'chat' && msg.content) {
-          ws.send(JSON.stringify({ type: 'typing' } as WsResponse))
+          // Notify client that processing has started
+          ws.send(JSON.stringify({ type: 'typing', messageId: msg.messageId } as WsResponse))
 
-          const result = await agent.chat([
-            { role: 'user', content: msg.content },
-          ])
-
-          ws.send(JSON.stringify({
-            type: 'response',
-            content: result.content,
-            messageId: msg.messageId,
-          } as WsResponse))
+          // Always stream now — better UX, server-side LLM streams tokens as they arrive
+          try {
+            await agent.chatStream(
+              [{ role: 'user', content: msg.content }],
+              (chunk) => {
+                ws.send(JSON.stringify({
+                  type: 'delta',
+                  delta: chunk,
+                  messageId: msg.messageId,
+                } as WsResponse))
+              },
+            )
+            ws.send(JSON.stringify({ type: 'done', messageId: msg.messageId } as WsResponse))
+          } catch (e: any) {
+            ws.send(JSON.stringify({
+              type: 'error',
+              content: e.message,
+              messageId: msg.messageId,
+            } as WsResponse))
+          }
         }
       } catch (e: any) {
         ws.send(JSON.stringify({
@@ -82,7 +97,7 @@ export function createWsClient(url: string = 'ws://localhost:8080') {
 
     sendChat(content: string, messageId?: string) {
       if (!ws) throw new Error('Not connected')
-      ws.send(JSON.stringify({ type: 'chat', content, messageId }))
+      ws.send(JSON.stringify({ type: 'chat', content, messageId, stream: true }))
     },
 
     onMessage(handler: (msg: WsResponse) => void) {

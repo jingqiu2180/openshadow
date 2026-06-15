@@ -112,7 +112,7 @@ export class SkillStore {
   }
 
   async loadFrom(dir: string): Promise<{ loaded: string[]; failed: string[] }> {
-    this.guard.assertAllowed(dir)
+    this.guard.assertAllowed(dir, 'read')
     const loaded: string[] = []
     const failed: string[] = []
 

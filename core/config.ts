@@ -1,5 +1,6 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync, accessSync } from 'fs'
 import { join, dirname } from 'path'
+import { homedir } from 'os'
 
 export interface Config {
   version: string
@@ -19,14 +20,22 @@ export interface Config {
     path: string
     allowedPaths: string[]
   }
+  security: {
+    /** Enable OS-level sandbox (when available) */
+    sandbox: boolean
+    /** Workspace roots — FULL access (read/write/delete) */
+    workspaceRoots: string[]
+    /** Allow reading files outside workspace (read-only) */
+    allowExternalReads: boolean
+    /** Explicitly allowed writable paths (READ_WRITE access) */
+    writablePaths: string[]
+    allowedCommands: string[]
+    blockedCommands: string[]
+  }
   scheduler: {
     heartbeatInterval: number
     cleanupInterval: number
     summarizationInterval: number
-  }
-  security: {
-    allowedCommands: string[]
-    blockedCommands: string[]
   }
   logging: {
     level: 'debug' | 'info' | 'warn' | 'error'
@@ -34,28 +43,61 @@ export interface Config {
   }
 }
 
+const _home = homedir()
+const _platform = process.platform
+const _cwd = process.cwd()
+
+function defaultWorkspaceRoots(): string[] {
+  const roots: string[] = []
+  // Always add CWD
+  roots.push(_cwd)
+  // Add common work directories if they exist
+  const candidates = [
+    _cwd,
+    join(_home, 'Documents'),
+    join(_home, 'Desktop'),
+  ]
+  for (const p of candidates) {
+    try { accessSync(p); roots.push(p) } catch {}
+  }
+  // Windows: add D:\src if exists
+  if (_platform === 'win32') {
+    try { accessSync('D:\\src'); roots.push('D:\\src') } catch {}
+  }
+  return [...new Set(roots)] // deduplicate
+}
+
 const DEFAULT_CONFIG: Config = {
   version: '0.1.0',
   agent: {
     id: 'default',
     name: 'Rem',
-    model: 'gpt-4',
+    model: process.env.AGENT_MODEL ?? 'abab6.5s-chat',
     apiKey: '',
     baseUrl: 'https://api.openai.com/v1',
   },
   channels: {},
   storage: {
     path: './data',
-    allowedPaths: ['/tmp', process.cwd()],
+    allowedPaths: [
+      _cwd,
+      _home,
+      _platform === 'win32' ? undefined : '/tmp',
+      ...(process.env.ALLOWED_PATHS?.split(',').map(p => p.trim()).filter(Boolean) ?? []),
+    ].filter(Boolean) as string[],
+  },
+  security: {
+    sandbox: true,
+    workspaceRoots: defaultWorkspaceRoots(),
+    allowExternalReads: true,
+    writablePaths: [],
+    allowedCommands: ['ls', 'cat', 'echo', 'mkdir', 'cd', 'node', 'npm', 'git', 'python', 'npx'],
+    blockedCommands: ['rm -rf /', 'mkfs', 'dd if=/dev/zero'],
   },
   scheduler: {
     heartbeatInterval: 5 * 60 * 1000,
     cleanupInterval: 24 * 60 * 60 * 1000,
     summarizationInterval: 24 * 60 * 60 * 1000,
-  },
-  security: {
-    allowedCommands: ['ls', 'cat', 'echo', 'mkdir', 'cd'],
-    blockedCommands: ['rm -rf /', 'mkfs', 'dd if=/dev/zero'],
   },
   logging: {
     level: 'info',
@@ -63,35 +105,64 @@ const DEFAULT_CONFIG: Config = {
 }
 
 /**
- * Config manager - load/save config from JSON file.
+ * Config manager — loads config.json with defaults merge.
+ *
+ * To add workspace roots: edit config.json → security.workspaceRoots
+ * First run: if config.json missing, a default with auto-detected paths is created.
  */
 export class ConfigManager {
   private config: Config
   private configPath: string
+  private isFirstRun: boolean = false
 
   constructor(configPath?: string) {
     this.configPath = configPath ?? join(process.cwd(), 'config.json')
+    this.isFirstRun = !existsSync(this.configPath)
     this.config = this.load()
+  }
+
+  isFirstRunDetected(): boolean {
+    return this.isFirstRun
   }
 
   private load(): Config {
     if (existsSync(this.configPath)) {
       try {
         const content = readFileSync(this.configPath, 'utf-8')
-        return { ...DEFAULT_CONFIG, ...JSON.parse(content) }
+        const parsed = JSON.parse(content)
+        // Merge deeply: defaults < saved config
+        return this.mergeConfig(DEFAULT_CONFIG, parsed)
       } catch {
         return { ...DEFAULT_CONFIG }
       }
     }
-    return { ...DEFAULT_CONFIG }
+    // First run: create default config with auto-detected paths
+    const cfg = { ...DEFAULT_CONFIG }
+    this.save(cfg)
+    return cfg
   }
 
-  save(): void {
+  private mergeConfig(base: Config, override: any): Config {
+    return {
+      ...base,
+      ...override,
+      agent: { ...base.agent, ...override.agent },
+      channels: { ...base.channels, ...override.channels },
+      storage: { ...base.storage, ...override.storage },
+      security: { ...base.security, ...override.security },
+      scheduler: { ...base.scheduler, ...override.scheduler },
+      logging: { ...base.logging, ...override.logging },
+    }
+  }
+
+  save(cfg?: Config): void {
     const dir = dirname(this.configPath)
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true })
     }
-    writeFileSync(this.configPath, JSON.stringify(this.config, null, 2), 'utf-8')
+    const toSave = cfg ?? this.config
+    writeFileSync(this.configPath, JSON.stringify(toSave, null, 2), 'utf-8')
+    if (cfg) this.config = cfg
   }
 
   get<K extends keyof Config>(key: K): Config[K] {
@@ -120,8 +191,25 @@ export class ConfigManager {
     return this.config.storage
   }
 
+  getSecurity() {
+    return this.config.security
+  }
+
   getLogging() {
     return this.config.logging
+  }
+
+  /** Get PathGuard policy from current config */
+  getPathGuardPolicy(remuHome: string, agentDir: string) {
+    const sec = this.config.security
+    return {
+      mode: sec.sandbox ? 'restricted' as const : 'full-access' as const,
+      remuHome,
+      agentDir,
+      workspaceRoots: sec.workspaceRoots,
+      writablePaths: sec.writablePaths,
+      allowExternalReads: sec.allowExternalReads,
+    }
   }
 
   reset(): void {

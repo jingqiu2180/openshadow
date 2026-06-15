@@ -3,3 +3,6 @@ dist/
 .env
 *.log
 .DS_Store
+
+# User-specific config (workspace paths, etc.)
+config.json

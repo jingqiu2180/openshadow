@@ -9,10 +9,12 @@
     "start": "node dist/server/index.js",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "electron": "tsc -p desktop/tsconfig.json && node -e \"require('fs').renameSync('dist/desktop/main.js','dist/desktop/main.cjs')\" && electron dist/desktop/main.cjs",
-    "electron:dev": "set \"PATH=%USERPROFILE%\\.workbuddy\\binaries\\node\\versions\\22.22.2;%PATH%\" && concurrently \"npm run dev\" \"wait-on tcp:3000 && npm run electron\"",
-    "electron:build": "npm run build && tsc -p desktop/tsconfig.json && electron-builder --dir",
-    "electron:dist": "npm run build && tsc -p desktop/tsconfig.json && electron-builder"
+    "electron": "tsc -p desktop/tsconfig.json && node -e \"require('fs').renameSync('dist/desktop/main.js','dist/desktop/main.cjs')\" && set \"ELECTRON_RUN_AS_NODE=\" && electron dist/desktop/main.cjs",
+    "desktop:vite": "vite --config desktop/vite.config.ts",
+    "desktop:build": "vite build --config desktop/vite.config.ts",
+    "electron:dev": "set \"PATH=%USERPROFILE%\\.workbuddy\\binaries\\node\\versions\\22.22.2;%PATH%\" && set \"ELECTRON_RUN_AS_NODE=\" && concurrently -k -n server,vite,electron -c blue,magenta,green \"npm run dev\" \"npm run desktop:vite\" \"wait-on tcp:3000 tcp:5173 && npm run electron\"",
+    "electron:build": "npm run build && npm run desktop:build && tsc -p desktop/tsconfig.json && node -e \"require('fs').renameSync('dist/desktop/main.js','dist/desktop/main.cjs')\" && electron-builder --dir",
+    "electron:dist": "npm run build && npm run desktop:build && tsc -p desktop/tsconfig.json && node -e \"require('fs').renameSync('dist/desktop/main.js','dist/desktop/main.cjs')\" && electron-builder"
   },
   "build": {
     "appId": "com.remu.agent",
@@ -51,17 +53,23 @@
     "hono": "^4.7.11",
     "node-cron": "^3.0.3",
     "openai": "^4.87.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.1.0",
+    "remark-gfm": "^4.0.1",
     "ws": "^8.18.0",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "zustand": "^4.5.7"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.13.9",
     "@types/node-cron": "^3.0.11",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.6",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "@types/ws": "^8.5.14",
+    "@vitejs/plugin-react": "^4.7.0",
     "concurrently": "^10.0.3",
     "electron": "^42.4.0",
     "electron-builder": "^26.15.3",

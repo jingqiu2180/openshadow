@@ -21,84 +21,50 @@
       gap: 12px;
       -webkit-app-region: drag;
     }
-    .header h1 {
-      color: white;
-      font-size: 18px;
-      font-weight: 600;
-    }
+    .header h1 { color: white; font-size: 18px; font-weight: 600; flex: 1; }
+    .header .btn { -webkit-app-region: no-drag; cursor: pointer; background: none; border: none; color: white; font-size: 20px; padding: 4px 8px; border-radius: 8px; }
+    .header .btn:hover { background: rgba(255,255,255,0.15); }
     .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 18px;
     }
-    .chat {
-      flex: 1;
-      overflow-y: auto;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .message {
-      max-width: 70%;
-      padding: 12px 16px;
-      border-radius: 16px;
-      line-height: 1.5;
-    }
-    .message.user {
-      align-self: flex-end;
-      background: white;
-      color: #333;
-    }
-    .message.assistant {
-      align-self: flex-start;
-      background: rgba(255,255,255,0.2);
-      color: white;
-    }
-    .input-area {
-      background: rgba(255,255,255,0.1);
-      padding: 16px 24px;
-      display: flex;
-      gap: 12px;
-    }
-    .input-area input {
-      flex: 1;
-      padding: 12px 16px;
-      border: none;
-      border-radius: 24px;
-      font-size: 14px;
-      outline: none;
-    }
-    .input-area button {
-      padding: 12px 24px;
-      background: white;
-      border: none;
-      border-radius: 24px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #667eea;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .input-area button:hover {
-      transform: scale(1.05);
-    }
-    .input-area button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .chat { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+    .message { max-width: 70%; padding: 12px 16px; border-radius: 16px; line-height: 1.5; white-space: pre-wrap; }
+    .message.user { align-self: flex-end; background: white; color: #333; }
+    .message.assistant { align-self: flex-start; background: rgba(255,255,255,0.2); color: white; }
+    .input-area { background: rgba(255,255,255,0.1); padding: 16px 24px; display: flex; gap: 12px; }
+    .input-area input { flex: 1; padding: 12px 16px; border: none; border-radius: 24px; font-size: 14px; outline: none; }
+    .input-area button { padding: 12px 24px; background: white; border: none; border-radius: 24px; font-size: 14px; font-weight: 600; color: #667eea; cursor: pointer; transition: transform 0.2s; }
+    .input-area button:hover { transform: scale(1.05); }
+    .input-area button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Settings modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #1a1a2e; border-radius: 16px; width: 520px; max-height: 80vh; overflow-y: auto; padding: 24px; color: white; }
+    .modal h2 { font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+    .modal h2 .close { cursor: pointer; font-size: 24px; background: none; border: none; color: white; }
+    .section { margin-bottom: 20px; }
+    .section h3 { font-size: 14px; color: #a0a0c0; margin-bottom: 8px; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .tag { background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+    .tag .remove { cursor: pointer; color: #f5576c; font-weight: bold; }
+    .add-btn { background: rgba(255,255,255,0.1); border: 1px dashed rgba(255,255,255,0.3); color: #a0a0c0; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+    .add-btn:hover { background: rgba(255,255,255,0.2); }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
+    .toggle { position: relative; width: 44px; height: 24px; background: rgba(255,255,255,0.2); border-radius: 12px; cursor: pointer; border: none; }
+    .toggle.on { background: #667eea; }
+    .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: left 0.2s; }
+    .toggle.on::after { left: 22px; }
   </style>
 </head>
 <body>
   <div class="header">
-    <div class="avatar">🥕</div>
+    <div class="avatar">🤖</div>
     <h1>Rem Agent</h1>
+    <button class="btn" id="settingsBtn" title="安全设置">⚙️</button>
   </div>
   <div class="chat" id="chat">
     <div class="message assistant">你好！我是 Rem～ 有什么我可以帮你的吗？ 🌸</div>
@@ -108,12 +74,52 @@
     <button id="send">发送</button>
   </div>
 
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <h2>安全设置 <button class="close" id="closeSettings">×</button></h2>
+
+      <div class="section">
+        <h3>工作区目录（FULL 权限：读/写/删）</h3>
+        <div class="tag-list" id="workspaceList"></div>
+        <button class="add-btn" id="addWorkspace">+ 添加目录</button>
+      </div>
+
+      <div class="section">
+        <h3>权限选项</h3>
+        <div class="toggle-row">
+          <span>允许读取工作区外文件（只读）</span>
+          <button class="toggle" id="toggleExternal"></button>
+        </div>
+        <div class="toggle-row">
+          <span>启用沙箱隔离</span>
+          <button class="toggle" id="toggleSandbox"></button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>保存</h3>
+        <button class="add-btn" id="saveSettings" style="color:white;background:#667eea;">保存设置</button>
+        <span id="saveStatus" style="margin-left:12px;font-size:13px;color:#a0a0c0;"></span>
+      </div>
+    </div>
+  </div>
+
   <script>
     const chat = document.getElementById('chat')
     const input = document.getElementById('input')
     const sendBtn = document.getElementById('send')
+    const settingsBtn = document.getElementById('settingsBtn')
+    const settingsModal = document.getElementById('settingsModal')
+    const closeSettings = document.getElementById('closeSettings')
+    const workspaceList = document.getElementById('workspaceList')
+    const addWorkspace = document.getElementById('addWorkspace')
+    const toggleExternal = document.getElementById('toggleExternal')
+    const toggleSandbox = document.getElementById('toggleSandbox')
+    const saveSettings = document.getElementById('saveSettings')
+    const saveStatus = document.getElementById('saveStatus')
 
-    const API_URL = 'http://localhost:8080' // WebSocket
+    let currentSettings = null
 
     function addMessage(content, role) {
       const div = document.createElement('div')
@@ -123,29 +129,36 @@
       chat.scrollTop = chat.scrollHeight
     }
 
+    // Chat
     async function send() {
       const text = input.value.trim()
       if (!text) return
-
       addMessage(text, 'user')
       input.value = ''
       sendBtn.disabled = true
-
       try {
         const ws = new WebSocket('ws://localhost:8080')
         ws.onopen = () => {
           ws.send(JSON.stringify({ type: 'chat', content: text }))
         }
         ws.onmessage = (e) => {
-          const data = JSON.parse(e.data)
-          if (data.type === 'response') {
-            addMessage(data.content || '（无响应）', 'assistant')
+          try {
+            const data = JSON.parse(e.data)
+            if (data.type === 'response') {
+              addMessage(data.content || '（无响应）', 'assistant')
+              ws.close()
+              sendBtn.disabled = false
+            } else if (data.type === 'error') {
+              addMessage('错误: ' + data.content, 'assistant')
+              ws.close()
+              sendBtn.disabled = false
+            }
+          } catch (ex) {
+            console.error('JSON parse error:', ex.message)
+            addMessage('消息解析错误', 'assistant')
             ws.close()
-          } else if (data.type === 'error') {
-            addMessage('错误: ' + data.content, 'assistant')
-            ws.close()
+            sendBtn.disabled = false
           }
-          // typing message: don't close, wait for response
         }
         ws.onerror = () => {
           addMessage('连接失败，请确保服务已启动', 'assistant')
@@ -156,10 +169,79 @@
         sendBtn.disabled = false
       }
     }
-
     sendBtn.onclick = send
-    input.onkeypress = (e) => {
-      if (e.key === 'Enter') send()
+    input.onkeypress = (e) => { if (e.key === 'Enter') send() }
+
+    // Settings
+    settingsBtn.onclick = async () => {
+      settingsModal.classList.add('open')
+      await loadSettings()
+    }
+    closeSettings.onclick = () => settingsModal.classList.remove('open')
+    settingsModal.onclick = (e) => { if (e.target === settingsModal) settingsModal.classList.remove('open') }
+
+    async function loadSettings() {
+      try {
+        const res = await fetch('http://localhost:3000/api/config/security')
+        currentSettings = await res.json()
+        renderSettings()
+      } catch (e) {
+        console.error('Failed to load settings:', e)
+      }
+    }
+
+    function renderSettings() {
+      if (!currentSettings) return
+      workspaceList.innerHTML = ''
+      for (const p of currentSettings.workspaceRoots || []) {
+        const tag = document.createElement('div')
+        tag.className = 'tag'
+        tag.innerHTML = `${p} <span class="remove" data-path="${p}">×</span>`
+        workspaceList.appendChild(tag)
+      }
+      document.querySelectorAll('.tag .remove').forEach(el => {
+        el.onclick = () => {
+          const p = el.dataset.path
+          currentSettings.workspaceRoots = currentSettings.workspaceRoots.filter(r => r !== p)
+          renderSettings()
+        }
+      })
+      toggleExternal.className = 'toggle' + (currentSettings.allowExternalReads ? ' on' : '')
+      toggleSandbox.className = 'toggle' + (currentSettings.sandbox ? ' on' : '')
+    }
+
+    toggleExternal.onclick = () => {
+      currentSettings.allowExternalReads = !currentSettings.allowExternalReads
+      toggleExternal.className = 'toggle' + (currentSettings.allowExternalReads ? ' on' : '')
+    }
+    toggleSandbox.onclick = () => {
+      currentSettings.sandbox = !currentSettings.sandbox
+      toggleSandbox.className = 'toggle' + (currentSettings.sandbox ? ' on' : '')
+    }
+
+    addWorkspace.onclick = async () => {
+      const path = prompt('输入要添加的目录路径（如 D:\\src）:')
+      if (!path) return
+      if (!currentSettings.workspaceRoots.includes(path)) {
+        currentSettings.workspaceRoots.push(path)
+        renderSettings()
+      }
+    }
+
+    saveSettings.onclick = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/config/security', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentSettings)
+        })
+        if (res.ok) {
+          saveStatus.textContent = '已保存'
+          setTimeout(() => { saveStatus.textContent = '' }, 2000)
+        }
+      } catch (e) {
+        saveStatus.textContent = '保存失败'
+      }
     }
   </script>
 </body>

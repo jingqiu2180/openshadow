@@ -26,7 +26,7 @@ export class Desk {
 
   async list(path: string = ''): Promise<FileEntry[]> {
     const fullPath = join(this.rootPath, path)
-    this.guard.assertAllowed(fullPath)
+    this.guard.assertAllowed(fullPath, 'read')
 
     const entries = await readdir(fullPath)
     const files: FileEntry[] = []
@@ -55,25 +55,25 @@ export class Desk {
 
   async read(path: string): Promise<string> {
     const fullPath = join(this.rootPath, path)
-    this.guard.assertAllowed(fullPath)
+    this.guard.assertAllowed(fullPath, 'read')
     return readFile(fullPath, 'utf-8')
   }
 
   async write(path: string, content: string): Promise<void> {
     const fullPath = join(this.rootPath, path)
-    this.guard.assertAllowed(fullPath)
+    this.guard.assertAllowed(fullPath, 'write')
     await writeFile(fullPath, content, 'utf-8')
   }
 
   async mkdir(path: string): Promise<void> {
     const fullPath = join(this.rootPath, path)
-    this.guard.assertAllowed(fullPath)
+    this.guard.assertAllowed(fullPath, 'write')
     await mkdir(fullPath, { recursive: true })
   }
 
   async delete(path: string): Promise<void> {
     const fullPath = join(this.rootPath, path)
-    this.guard.assertAllowed(fullPath)
+    this.guard.assertAllowed(fullPath, 'delete')
     await rm(fullPath, { recursive: true })
   }
 
