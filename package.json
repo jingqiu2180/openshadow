@@ -55,6 +55,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.13.9",
     "@types/node-cron": "^3.0.11",

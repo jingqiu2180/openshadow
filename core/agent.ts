@@ -7,9 +7,11 @@ import OpenAI from 'openai'
 import { loadPersonality } from './personality/loader.js'
 import { buildSystemPrompt } from './personality/template.js'
 import { getContextMemories, addMemory, getAgentConfig } from './memory/store.js'
-import { PathGuard, createFileTools, createBashTools, analyzeScreenshot, captureScreenshot, mouseMove, mouseClick, mouseDrag, keyboardType, keyboardHotkey, windowActivate, getScreenSize } from './tools/index.js'
+import { PathGuard, createFileTools, createBashTools, analyzeScreenshot, captureScreenshot, mouseMove, mouseClick, mouseDrag, keyboardType, keyboardHotkey, windowActivate, getScreenSize, browserNew, browserClose, browserNavigate, browserScreenshot, browserClick, browserType, browserPressKey, browserGetText } from './tools/index.js'
 import { createPlanner } from './planner.js'
 import { createCoderAgent } from './coder.js'
+import { speechToText, recordAudio } from './stt.js'
+import { textToSpeech, listVoices } from './tts.js'
 
 export interface AgentOptions {
   agentId: string
@@ -176,6 +178,67 @@ export class Agent {
       },
     })
 
+    const browserNewSpec = this.createSpec('browser_new', {
+      description: 'Launch a new browser (Chromium) and optionally navigate to URL',
+      params: {
+        url: { type: 'string', description: 'URL to navigate to' },
+        headless: { type: 'boolean', description: 'Run headless (default true)', optional: true },
+        viewport: { type: 'object', description: '{ width, height }', optional: true },
+      },
+    })
+    const browserNavigateSpec = this.createSpec('browser_navigate', {
+      description: 'Navigate browser to a URL',
+      params: { url: { type: 'string', description: 'URL to navigate to' } },
+    })
+    const browserScreenshotSpec = this.createSpec('browser_screenshot', {
+      description: 'Take a screenshot of the current browser page',
+      params: { fullPage: { type: 'boolean', description: 'Full page scroll capture', optional: true } },
+    })
+    const browserClickSpec = this.createSpec('browser_click', {
+      description: 'Click an element by CSS selector',
+      params: { selector: { type: 'string', description: 'CSS selector of element to click' } },
+    })
+    const browserTypeSpec = this.createSpec('browser_type', {
+      description: 'Type text into an input field',
+      params: { selector: { type: 'string', description: 'CSS selector of input field' }, text: { type: 'string', description: 'Text to type' }, pressEnter: { type: 'boolean', optional: true } },
+    })
+    const browserPressKeySpec = this.createSpec('browser_press_key', {
+      description: 'Press a keyboard key',
+      params: { key: { type: 'string', description: 'Key name e.g. Enter, Escape, Control+C' } },
+    })
+    const browserGetTextSpec = this.createSpec('browser_get_text', {
+      description: 'Get text content of an element',
+      params: { selector: { type: 'string', description: 'CSS selector' } },
+    })
+    const browserCloseSpec = this.createSpec('browser_close', {
+      description: 'Close the browser instance',
+      params: {},
+    })
+
+    const sttRecordSpec = this.createSpec('stt_record', {
+      description: 'Record audio from microphone for speech recognition',
+      params: {
+        duration: { type: 'number', description: 'Recording duration in seconds', optional: true },
+        outputPath: { type: 'string', description: 'Output file path', optional: true },
+      },
+    })
+    const sttRecognizeSpec = this.createSpec('stt_recognize', {
+      description: 'Convert speech audio to text',
+      params: { audioPath: { type: 'string', description: 'Path to audio file to transcribe' } },
+    })
+    const ttsSpeakSpec = this.createSpec('tts_speak', {
+      description: 'Convert text to speech and save as audio file',
+      params: {
+        text: { type: 'string', description: 'Text to convert to speech' },
+        output: { type: 'string', description: 'Output audio file path', optional: true },
+        voice: { type: 'string', description: 'Voice name (platform dependent)', optional: true },
+      },
+    })
+    const ttsVoicesSpec = this.createSpec('tts_list_voices', {
+      description: 'List available TTS voices on this platform',
+      params: {},
+    })
+
     this.tools = [
       captureSpec, analyzeSpec,
       fileReadSpec, fileWriteSpec, fileListSpec,
@@ -186,6 +249,11 @@ export class Agent {
       planExecuteSpec,
       runTestsSpec,
       autoWorkflowSpec,
+      browserNewSpec, browserNavigateSpec, browserScreenshotSpec,
+      browserClickSpec, browserTypeSpec, browserPressKeySpec,
+      browserGetTextSpec, browserCloseSpec,
+      sttRecordSpec, sttRecognizeSpec,
+      ttsSpeakSpec, ttsVoicesSpec,
     ]
 
     this.toolMap = {
@@ -214,6 +282,18 @@ export class Agent {
         const coder = createCoderAgent({ workspaceRoot: process.cwd(), agent: this })
         return coder.fullWorkflow(args.spec, args.commitMessage ?? 'feat: implementation')
       },
+      browser_new: browserNew,
+      browser_navigate: browserNavigate,
+      browser_screenshot: browserScreenshot,
+      browser_click: browserClick,
+      browser_type: browserType,
+      browser_press_key: browserPressKey,
+      browser_get_text: browserGetText,
+      browser_close: browserClose,
+      stt_record: recordAudio,
+      stt_recognize: speechToText,
+      tts_speak: textToSpeech,
+      tts_list_voices: listVoices,
     }
   }
 
