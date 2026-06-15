@@ -9,6 +9,7 @@ import { buildSystemPrompt } from './personality/template.js'
 import { getContextMemories, addMemory, getAgentConfig } from './memory/store.js'
 import { PathGuard, createFileTools, createBashTools, analyzeScreenshot, captureScreenshot, mouseMove, mouseClick, mouseDrag, keyboardType, keyboardHotkey, windowActivate, getScreenSize } from './tools/index.js'
 import { createPlanner } from './planner.js'
+import { createCoderAgent } from './coder.js'
 
 export interface AgentOptions {
   agentId: string
@@ -160,6 +161,21 @@ export class Agent {
       },
     })
 
+    const runTestsSpec = this.createSpec('run_tests', {
+      description: 'Run the project test suite. Returns test results (passed/failed).',
+      params: {
+        pattern: { type: 'string', description: 'Test pattern to filter which tests to run (optional)', optional: true },
+      },
+    })
+
+    const autoWorkflowSpec = this.createSpec('autonomous_workflow', {
+      description: 'Full end-to-end coding workflow: read requirement spec → write code → run tests → fix bugs → commit. Use when user asks to implement a feature, build something, or create a project.',
+      params: {
+        spec: { type: 'string', description: 'Natural language description of what to build' },
+        commitMessage: { type: 'string', description: 'Git commit message for the changes', optional: true },
+      },
+    })
+
     this.tools = [
       captureSpec, analyzeSpec,
       fileReadSpec, fileWriteSpec, fileListSpec,
@@ -168,6 +184,8 @@ export class Agent {
       keyboardTypeSpec, keyboardHotkeySpec,
       windowActivateSpec, screenSizeSpec,
       planExecuteSpec,
+      runTestsSpec,
+      autoWorkflowSpec,
     ]
 
     this.toolMap = {
@@ -187,6 +205,14 @@ export class Agent {
       plan_execute: async (args: { goal: string }) => {
         if (!this._planner) this._planner = createPlanner(this)
         return this._planner.execute(args.goal)
+      },
+      run_tests: async (args: { pattern?: string }) => {
+        const coder = createCoderAgent({ workspaceRoot: process.cwd(), agent: this })
+        return coder.runTests(args.pattern)
+      },
+      autonomous_workflow: async (args: { spec: string; commitMessage?: string }) => {
+        const coder = createCoderAgent({ workspaceRoot: process.cwd(), agent: this })
+        return coder.fullWorkflow(args.spec, args.commitMessage ?? 'feat: implementation')
       },
     }
   }
