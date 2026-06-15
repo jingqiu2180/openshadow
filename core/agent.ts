@@ -1,8 +1,13 @@
+/**
+ * Agent: core class with memory, personality, tools, and screen vision.
+ * Supports multi-modal vision models for screenshot analysis.
+ */
+
 import OpenAI from 'openai'
 import { loadPersonality } from './personality/loader.js'
 import { buildSystemPrompt } from './personality/template.js'
 import { getContextMemories, addMemory, getAgentConfig } from './memory/store.js'
-import { PathGuard, createFileTools, createBashTools } from './tools/index.js'
+import { PathGuard, createFileTools, createBashTools, analyzeScreenshot, captureScreenshot } from './tools/index.js'
 
 export interface AgentOptions {
   agentId: string
@@ -16,16 +21,19 @@ export interface ChatMessage {
 
 export interface ChatResult {
   content: string
-  toolCalls?: Array<{
-    name: string
-    args: Record<string, unknown>
-  }>
+  toolCalls?: Array<{ name: string; args: Record<string, unknown> }>
 }
 
 /**
- * Agent: core class that ties together memory, personality, and tools.
- * Uses OpenAI's function calling for tool execution.
+ * Build an OpenAI-style image message part from a base64 PNG.
  */
+function imageMessagePart(base64: string): any {
+  return {
+    type: 'image_url',
+    image_url: { url: `data:image/png;base64,${base64}`, detail: 'high' },
+  }
+}
+
 export class Agent {
   private readonly client: OpenAI
   private readonly systemPrompt: string
@@ -33,12 +41,12 @@ export class Agent {
   private readonly toolMap: Record<string, any>
   private readonly guard: PathGuard
   private readonly model: string
+  /** Pending screenshots to inject as image parts in the next API call */
+  private pendingImages: string[] = []
 
   constructor(options: AgentOptions) {
     const config = getAgentConfig(options.agentId)
-    if (!config) {
-      throw new Error(`Agent config not found: ${options.agentId}`)
-    }
+    if (!config) throw new Error(`Agent config not found: ${options.agentId}`)
 
     this.model = config.model
 
@@ -54,25 +62,54 @@ export class Agent {
     const fileTools = createFileTools(this.guard)
     const bashTools = createBashTools(this.guard)
 
-    // Convert tools to OpenAI function format
-    this.tools = [
-      this.createFunctionSpec('file_read', fileTools.file_read, {
-        path: { type: 'string', description: 'Full path to the file' },
-      }),
-      this.createFunctionSpec('file_write', fileTools.file_write, {
+    // ─── Tool definitions ────────────────────────────────────────────────
+    const captureSpec = this.createSpec('capture_screenshot', {
+      description: 'Capture a screenshot of the current screen. Returns base64 PNG image.',
+      params: {
+        filename: { type: 'string', description: 'Output filename', optional: true },
+        directory: { type: 'string', description: 'Output directory', optional: true },
+      },
+    })
+
+    const analyzeSpec = this.createSpec('analyze_screenshot', {
+      description: 'Capture and analyze a screenshot using vision model. Returns detailed description of what is on screen.',
+      params: {
+        question: { type: 'string', description: 'Question about the screenshot', optional: true },
+        detail: { type: 'string', description: 'Specific element to look for', optional: true },
+      },
+    })
+
+    const fileReadSpec = this.createSpec('file_read', {
+      description: 'Read contents of a file',
+      params: { path: { type: 'string', description: 'Full path to the file' } },
+    })
+
+    const fileWriteSpec = this.createSpec('file_write', {
+      description: 'Write content to a file',
+      params: {
         path: { type: 'string', description: 'Full path to the file' },
         content: { type: 'string', description: 'Content to write' },
-      }),
-      this.createFunctionSpec('file_list', fileTools.file_list, {
-        path: { type: 'string', description: 'Directory path' },
-      }),
-      this.createFunctionSpec('bash', bashTools.bash, {
+      },
+    })
+
+    const fileListSpec = this.createSpec('file_list', {
+      description: 'List files in a directory',
+      params: { path: { type: 'string', description: 'Directory path' } },
+    })
+
+    const bashSpec = this.createSpec('bash', {
+      description: 'Execute a bash command',
+      params: {
         command: { type: 'string', description: 'Bash command to execute' },
-        cwd: { type: 'string', description: 'Working directory (optional)', optional: true },
-      }),
-    ]
+        cwd: { type: 'string', description: 'Working directory', optional: true },
+      },
+    })
+
+    this.tools = [captureSpec, analyzeSpec, fileReadSpec, fileWriteSpec, fileListSpec, bashSpec]
 
     this.toolMap = {
+      capture_screenshot: captureScreenshot,
+      analyze_screenshot: analyzeScreenshot,
       file_read: fileTools.file_read,
       file_write: fileTools.file_write,
       file_list: fileTools.file_list,
@@ -80,98 +117,113 @@ export class Agent {
     }
   }
 
-  private createFunctionSpec(name: string, handler: any, params: any) {
+  private createSpec(name: string, def: { description: string; params: Record<string, any> }) {
     return {
       type: 'function' as const,
       function: {
         name,
-        description: `Execute ${name} tool`,
+        description: def.description,
         parameters: {
           type: 'object',
-          properties: params,
-          required: Object.keys(params).filter(k => !params[k]?.optional),
+          properties: def.params,
+          required: Object.keys(def.params).filter(k => !def.params[k]?.optional),
         },
       },
-      handler,
     }
   }
 
   /**
-   * Chat with the agent.
-   * 1. Load context memories
-   * 2. Build messages with system prompt
-   * 3. Call OpenAI with tools
-   * 4. Execute tools if needed
-   * 5. Return final response
+   * Chat with the agent. Supports:
+   * - Text messages
+   * - Tool execution (file/bash/screenshot/vision)
+   * - Multi-modal image injection (screenshots injected as image_url parts)
    */
   async chat(messages: ChatMessage[]): Promise<ChatResult> {
-    // Load relevant memories
     const memories = getContextMemories(20)
-    const memoryContent = memories
-      .map(m => `[${m.memory_type}] ${m.content}`)
-      .join('\n')
+    const memoryContent = memories.map(m => `[${m.memory_type}] ${m.content}`).join('\n')
 
-    // Build messages
-    const systemMsg: ChatMessage = {
-      role: 'system',
-      content: this.systemPrompt + '\n\n## 记忆\n' + memoryContent,
+    const systemContent = this.systemPrompt + '\n\n## 记忆\n' + memoryContent
+
+    // Build base messages
+    const baseMessages: any[] = [
+      { role: 'system', content: systemContent },
+      ...messages.map(m => ({ role: m.role, content: m.content })),
+    ]
+
+    // Inject pending screenshots as image parts into the last user message
+    if (this.pendingImages.length > 0) {
+      const lastMsg = baseMessages[baseMessages.length - 1]
+      if (lastMsg && lastMsg.role === 'user') {
+        lastMsg.content = [
+          { type: 'text', text: lastMsg.content },
+          ...this.pendingImages.map(b64 => imageMessagePart(b64)),
+        ]
+      }
+      this.pendingImages = []
     }
 
-    // Call model
+    // ─── First call ────────────────────────────────────────────────────────
     const response = await this.client.chat.completions.create({
       model: this.model,
-      messages: [systemMsg, ...messages],
+      messages: baseMessages,
       tools: this.tools as any,
       tool_choice: 'auto',
     })
 
     const choice = response.choices[0]
-    if (!choice) {
-      return { content: 'No response from model' }
+    if (!choice) return { content: 'No response from model' }
+
+    if (!choice.message.tool_calls || choice.message.tool_calls.length === 0) {
+      const content = choice.message.content ?? 'No response'
+      this.remember(`User: ${messages[messages.length - 1]?.content} | Rem: ${content}`)
+      return { content }
     }
 
-    // Handle tool calls
-    if (choice.message.tool_calls && choice.message.tool_calls.length > 0) {
-      const toolResults = await Promise.all(
-        choice.message.tool_calls.map(async (tc: any) => {
-          const handler = this.toolMap[tc.function.name]
-          const args = JSON.parse(tc.function.arguments)
-          const result = await handler(args)
-          return { toolCallId: tc.id, name: tc.function.name, result }
-        })
-      )
+    // ─── Tool execution ────────────────────────────────────────────────────
+    const toolResults = await Promise.all(
+      choice.message.tool_calls.map(async (tc: any) => {
+        const name = tc.function.name as keyof typeof this.toolMap
+        const args = JSON.parse(tc.function.arguments)
+        const handler = this.toolMap[name]
 
-      // Add tool results to messages and continue
-      const toolMessages: ChatMessage[] = [
-        choice.message as any,
-        ...toolResults.map(tr => ({
-          role: 'tool' as const,
-          content: JSON.stringify(tr.result),
-          tool_call_id: tr.toolCallId,
-        })),
-      ]
+        let result: any = { error: `No handler for ${name}` }
+        if (handler) {
+          try { result = await handler(args) } catch (e: any) { result = { error: e.message } }
+        }
 
-      // Second call to get final response
-      const final = await this.client.chat.completions.create({
-        model: this.model,
-        messages: [systemMsg, ...messages, ...toolMessages],
+        // If screenshot was captured, remember it for next call
+        if ((name === 'capture_screenshot' || name === 'analyze_screenshot') && result.success && result.base64) {
+          this.pendingImages.push(result.base64)
+        }
+
+        return {
+          toolCallId: tc.id,
+          name,
+          result,
+        }
       })
+    )
 
-      const finalContent = final.choices[0]?.message.content ?? 'No response'
-      // Auto-remember the conversation exchange
-      this.remember(`User: ${messages[messages.length - 1]?.content} | Rem: ${finalContent}`)
-      return { content: finalContent }
-    }
+    // ─── Continue with tool results ────────────────────────────────────────
+    const toolMessages: any[] = [
+      choice.message,
+      ...toolResults.map(tr => ({
+        role: 'tool' as const,
+        content: JSON.stringify(tr.result, null, 2),
+        tool_call_id: tr.toolCallId,
+      })),
+    ]
 
-    const content = choice.message.content ?? 'No response'
-    // Auto-remember the conversation exchange
-    this.remember(`User: ${messages[messages.length - 1]?.content} | Rem: ${content}`)
-    return { content }
+    const final = await this.client.chat.completions.create({
+      model: this.model,
+      messages: [baseMessages[0], ...baseMessages.slice(1), ...toolMessages],
+    })
+
+    const finalContent = final.choices[0]?.message.content ?? 'No response'
+    this.remember(`User: ${messages[messages.length - 1]?.content} | Rem: ${finalContent}`)
+    return { content: finalContent }
   }
 
-  /**
-   * Remember something from this conversation.
-   */
   remember(content: string, importance: number = 1): void {
     addMemory(content, importance, 'conversation')
   }

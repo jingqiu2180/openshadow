@@ -1,3 +1,5 @@
 export { PathGuard } from './path-guard.js'
 export { createFileTools } from './file.js'
 export { createBashTools } from './bash.js'
+export { captureScreenshot } from './screenshot.js'
+export { analyzeScreenshot } from './vision.js'
