@@ -1,7 +1,7 @@
 {
-  "name": "openhanako-inspired",
+  "name": "remu",
   "version": "0.1.0",
-  "description": "A personal AI agent with memory and soul - inspired by OpenHanako",
+  "description": "一个有个性和记忆的 AI 助手 - 从零开始异世界生活·雷姆",
   "type": "module",
   "scripts": {
     "dev": "tsx watch server/index.ts",
