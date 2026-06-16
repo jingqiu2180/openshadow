@@ -2,10 +2,15 @@ import { serve } from '@hono/node-server'
 import { Agent } from '../core/agent.js'
 import { createScheduler } from '../core/scheduler.js'
 import { createSummarizer } from '../core/memory/summarizer.js'
-import { addCronJob, saveAgentConfig } from '../core/memory/store.js'
+import { addCronJob, saveAgentConfig, cleanupOldMemories } from '../core/memory/store.js'
 import { createFeishuChannel } from '../channels/feishu.js'
 import { createWsServer } from '../server/ws.js'
 import { config as configManager } from '../core/config.js'
+import { SessionManager } from '../core/session-manager.js'
+import { eventBus } from '../core/event-bus.js'
+import { usageTracker } from '../core/providers/usage-tracker.js'
+import { createDeepMemoryProcessor } from '../core/memory/deep-memory.js'
+import { createSkillStore } from '../core/skills.js'
 
 export interface MainOptions {
   port?: number
@@ -19,7 +24,6 @@ export async function startServer(options: MainOptions) {
   const wsPort = options.wsPort ?? 8080
   const agentId = options.agentId
 
-  // Save agent config (for demo, use env vars)
   saveAgentConfig({
     id: agentId,
     name: 'Rem Agent',
@@ -30,13 +34,14 @@ export async function startServer(options: MainOptions) {
     allowedPaths: options.allowedPaths ?? ['/tmp', process.cwd()],
   })
 
-  // Create agent
   const agent = new Agent({ agentId })
+  const sessionManager = new SessionManager(agent.engine)
+  const skillStore = createSkillStore()
 
-  // Create HTTP server (Hono)
+  skillStore.contributeToRegistry(agent.engine.getToolRegistry())
+
   const httpApp = createFeishuChannel(agent)
 
-  // ─── Config API (security settings) ───────────────────────────
   httpApp.get('/api/config/security', async (c) => {
     const sec = configManager.getSecurity()
     return c.json({
@@ -62,7 +67,6 @@ export async function startServer(options: MainOptions) {
     }
   })
 
-  // ─── Config API: theme (Stage 1d) ─────────────────────────────
   httpApp.get('/api/config/theme', (c) => {
     return c.json({ theme: configManager.getTheme() })
   })
@@ -81,35 +85,98 @@ export async function startServer(options: MainOptions) {
     }
   })
 
-  // ─── Health ─────────────────────────────────────────────
+  httpApp.get('/api/sessions', (c) => {
+    return c.json(sessionManager.listSessions())
+  })
+
+  httpApp.post('/api/sessions', async (c) => {
+    try {
+      const body = await c.req.json()
+      const session = sessionManager.createSession(body.title)
+      return c.json({ ok: true, session })
+    } catch (e: any) {
+      return c.json({ ok: false, error: e.message }, 400)
+    }
+  })
+
+  httpApp.get('/api/sessions/:id', (c) => {
+    const session = sessionManager.getSessionStore().load(c.req.param('id'))
+    return session ? c.json(session) : c.json({ error: 'Not found' }, 404)
+  })
+
+  httpApp.delete('/api/sessions/:id', (c) => {
+    const ok = sessionManager.deleteSession(c.req.param('id'))
+    return c.json({ ok })
+  })
+
+  httpApp.get('/api/usage', (c) => {
+    const period = c.req.query('period') as 'hour' | 'day' | 'week' | 'month' ?? 'day'
+    return c.json(usageTracker.getSummary(period))
+  })
+
+  httpApp.get('/api/skills', (c) => {
+    return c.json(skillStore.list())
+  })
+
+  httpApp.get('/api/plugins', (c) => {
+    return c.json(skillStore.listPlugins())
+  })
+
   httpApp.get('/health', (c) => c.json({ ok: true }))
   httpApp.get('/', (c) => c.json({
     name: 'Rem Agent',
-    version: '0.1.0',
+    version: '0.2.0',
     status: 'running',
   }))
 
-  // Create WebSocket server
-  const wsServer = createWsServer(agent, wsPort)
+  const wsServer = createWsServer(agent, sessionManager, wsPort)
 
-  // Create scheduler
   const scheduler = createScheduler()
 
-  // Add a daily summarization job
   addCronJob(agentId, '0 2 * * *', 'memory_summarization')
+  addCronJob(agentId, '0 3 * * *', 'deep_memory_extraction')
+  addCronJob(agentId, '0 4 * * *', 'usage_cleanup')
 
-  // Start cron jobs
   scheduler.startCronJobs(agentId, async () => {
     const summarizer = createSummarizer({ agentId })
     await summarizer.runCompaction()
   })
 
-  // Start heartbeat (every 5 min)
   scheduler.startHeartbeat(5 * 60 * 1000, async () => {
     console.log('[heartbeat] Agent is alive')
   })
 
-  // Start HTTP server
+  eventBus.on('chat:error', ({ sessionId, error }) => {
+    console.error(`[event] Chat error in session ${sessionId}:`, error.message)
+  })
+
+  eventBus.on('sandbox:violation', ({ path, operation, agentId: aid }) => {
+    console.warn(`[event] Sandbox violation by ${aid}: ${operation} on ${path}`)
+  })
+
+  const deepMemory = createDeepMemoryProcessor()
+  const dayMs = 24 * 60 * 60 * 1000
+  setInterval(async () => {
+    try {
+      const result = await deepMemory.runDaily()
+      if (result.factsAdded > 0) {
+        console.log(`[deep-memory] Added ${result.factsAdded} facts from ${result.processed} memories`)
+      }
+    } catch (e: any) {
+      console.warn('[deep-memory] Daily run failed:', e.message)
+    }
+  }, dayMs)
+
+  setInterval(() => {
+    const removed = cleanupOldMemories()
+    if (removed > 0) console.log(`[memory-cleanup] Removed ${removed} old memories`)
+  }, 7 * dayMs)
+
+  setInterval(() => {
+    const removed = usageTracker.cleanupOldLogs()
+    if (removed > 0) console.log(`[usage-cleanup] Removed ${removed} old usage logs`)
+  }, 90 * dayMs)
+
   serve({
     fetch: httpApp.fetch,
     port,
@@ -117,7 +184,7 @@ export async function startServer(options: MainOptions) {
 
   console.log(`
 ╔══════════════════════════════════════╗
-║  🚀 Rem Agent v0.1.0              ║
+║  🚀 Rem Agent v0.2.0              ║
 ╠══════════════════════════════════════╣
 ║  HTTP:  http://localhost:${port}            ║
 ║  WS:    ws://localhost:${wsPort}           ║
@@ -127,6 +194,8 @@ export async function startServer(options: MainOptions) {
 
   return {
     agent,
+    sessionManager,
+    skillStore,
     scheduler,
     wsServer,
     port,
@@ -134,7 +203,6 @@ export async function startServer(options: MainOptions) {
   }
 }
 
-// CLI entry point
 if (import.meta.url === `file://${process.argv[1]}`) {
   const agentId = process.env.AGENT_ID ?? 'default'
   startServer({ agentId }).catch(console.error)

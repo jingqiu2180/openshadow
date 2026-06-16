@@ -1,54 +1,104 @@
 import * as WS from 'ws'
 import type { Agent } from '../core/agent.js'
+import type { SessionManager } from '../core/session-manager.js'
+import { eventBus } from '../core/event-bus.js'
 
 export interface WsMessage {
-  type: 'chat' | 'typing'
+  type: 'chat' | 'typing' | 'session:create' | 'session:switch' | 'session:list'
   content?: string
   messageId?: string
-  /** When true, server will stream deltas; when false/undefined, legacy single response. */
   stream?: boolean
+  sessionId?: string
+  title?: string
 }
 
 export interface WsResponse {
-  type: 'response' | 'error' | 'typing' | 'delta' | 'done'
+  type: 'response' | 'error' | 'typing' | 'delta' | 'done' | 'session' | 'sessions'
   content?: string
   delta?: string
   messageId?: string
+  sessionId?: string
+  sessions?: any[]
 }
 
-export function createWsServer(agent: Agent, port: number = 8080) {
+export function createWsServer(agent: Agent, sessionManager: SessionManager, port: number = 8080) {
   const wss = new WS.WebSocketServer({ port })
 
   wss.on('connection', async (ws: WS.WebSocket, _req: any) => {
     console.log('[ws] Client connected')
 
+    const activeSession = sessionManager.getActiveSession() ?? sessionManager.createSession()
+
     ws.on('message', async (data: WS.RawData) => {
       try {
         const msg = JSON.parse(data.toString()) as WsMessage
 
-        if (msg.type === 'chat' && msg.content) {
-          // Notify client that processing has started
-          ws.send(JSON.stringify({ type: 'typing', messageId: msg.messageId } as WsResponse))
+        switch (msg.type) {
+          case 'session:create': {
+            const session = sessionManager.createSession(msg.title)
+            ws.send(JSON.stringify({
+              type: 'session',
+              sessionId: session.id,
+              content: JSON.stringify(session),
+            } as WsResponse))
+            break
+          }
 
-          // Always stream now — better UX, server-side LLM streams tokens as they arrive
-          try {
-            await agent.chatStream(
-              [{ role: 'user', content: msg.content }],
-              (chunk) => {
+          case 'session:switch': {
+            if (msg.sessionId) {
+              const session = sessionManager.setActiveSession(msg.sessionId)
+              ws.send(JSON.stringify({
+                type: 'session',
+                sessionId: session?.id,
+                content: session ? JSON.stringify(session) : undefined,
+              } as WsResponse))
+            }
+            break
+          }
+
+          case 'session:list': {
+            const sessions = sessionManager.listSessions()
+            ws.send(JSON.stringify({
+              type: 'sessions',
+              sessions,
+            } as WsResponse))
+            break
+          }
+
+          case 'chat': {
+            if (!msg.content) break
+
+            ws.send(JSON.stringify({ type: 'typing', messageId: msg.messageId } as WsResponse))
+
+            try {
+              await sessionManager.chat(msg.content, (chunk) => {
                 ws.send(JSON.stringify({
                   type: 'delta',
                   delta: chunk,
                   messageId: msg.messageId,
                 } as WsResponse))
-              },
-            )
-            ws.send(JSON.stringify({ type: 'done', messageId: msg.messageId } as WsResponse))
-          } catch (e: any) {
-            ws.send(JSON.stringify({
-              type: 'error',
-              content: e.message,
-              messageId: msg.messageId,
-            } as WsResponse))
+              })
+
+              ws.send(JSON.stringify({ type: 'done', messageId: msg.messageId } as WsResponse))
+
+              eventBus.emit('chat:complete', {
+                sessionId: sessionManager.getActiveSession()?.id ?? '',
+                content: msg.content,
+                latencyMs: 0,
+              })
+            } catch (e: any) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                content: e.message,
+                messageId: msg.messageId,
+              } as WsResponse))
+
+              eventBus.emit('chat:error', {
+                sessionId: sessionManager.getActiveSession()?.id ?? '',
+                error: e,
+              })
+            }
+            break
           }
         }
       } catch (e: any) {
@@ -98,6 +148,21 @@ export function createWsClient(url: string = 'ws://localhost:8080') {
     sendChat(content: string, messageId?: string) {
       if (!ws) throw new Error('Not connected')
       ws.send(JSON.stringify({ type: 'chat', content, messageId, stream: true }))
+    },
+
+    createSession(title?: string) {
+      if (!ws) throw new Error('Not connected')
+      ws.send(JSON.stringify({ type: 'session:create', title }))
+    },
+
+    switchSession(sessionId: string) {
+      if (!ws) throw new Error('Not connected')
+      ws.send(JSON.stringify({ type: 'session:switch', sessionId }))
+    },
+
+    listSessions() {
+      if (!ws) throw new Error('Not connected')
+      ws.send(JSON.stringify({ type: 'session:list' }))
     },
 
     onMessage(handler: (msg: WsResponse) => void) {

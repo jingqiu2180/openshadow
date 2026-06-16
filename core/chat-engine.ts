@@ -340,6 +340,14 @@ export class ChatEngine {
     this.pendingImages.push(base64)
   }
 
+  getModel(): string {
+    return this.model
+  }
+
+  getToolRegistry(): ToolRegistry {
+    return this.toolRegistry
+  }
+
   async chat(messages: ChatMessage[]): Promise<ChatResult> {
     const memories = getContextMemories(5)
     const memoryContent = memories.map(m => `[历史对话片段 - 仅供背景参考] [${m.memory_type}] ${m.content}`).join('\n')
