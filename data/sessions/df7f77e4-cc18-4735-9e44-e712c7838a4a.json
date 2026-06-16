@@ -1,0 +1,19 @@
+{
+  "id": "df7f77e4-cc18-4735-9e44-e712c7838a4a",
+  "title": "Test",
+  "model": "test-model",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello",
+      "timestamp": 1781603382728
+    },
+    {
+      "role": "assistant",
+      "content": "hi",
+      "timestamp": 1781603382739
+    }
+  ],
+  "createdAt": 1781603382662,
+  "updatedAt": 1781603382739
+}

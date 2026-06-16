@@ -1,0 +1,19 @@
+{
+  "id": "910b25bb-3490-406b-9fcc-13ba4b0ce248",
+  "title": "Test",
+  "model": "test-model",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello",
+      "timestamp": 1781603382461
+    },
+    {
+      "role": "assistant",
+      "content": "hi there",
+      "timestamp": 1781603382466
+    }
+  ],
+  "createdAt": 1781603382451,
+  "updatedAt": 1781603382466
+}

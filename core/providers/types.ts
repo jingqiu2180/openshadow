@@ -11,7 +11,7 @@
  */
 export { Provider } from '../config.js'
 
-export type ProviderType = 'openai' | 'gemini' | 'ollama' | 'custom'
+export type ProviderType = 'openai' | 'gemini' | 'ollama' | 'custom' | 'anthropic'
 
 /**
  * A test-probe request — minimal token usage to verify the connection works.

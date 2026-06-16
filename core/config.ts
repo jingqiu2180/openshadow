@@ -77,7 +77,7 @@ export interface Config {
  */
 export interface Provider {
   id: string
-  type: 'openai' | 'gemini' | 'ollama' | 'custom'
+  type: 'openai' | 'gemini' | 'ollama' | 'custom' | 'anthropic'
   apiKey: string
   baseUrl: string
   models: string[]

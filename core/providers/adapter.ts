@@ -35,6 +35,8 @@ export function createProviderAdapter(provider: Provider, modelName?: string): P
       return new OpenAIAdapter(provider, modelName)
     case 'gemini':
       return new GeminiAdapter(provider, modelName)
+    case 'anthropic':
+      return new AnthropicAdapter(provider, modelName)
     default:
       throw new Error(`Unsupported provider type: ${provider.type}`)
   }
@@ -296,6 +298,217 @@ class GeminiAdapter implements ProviderAdapter {
         promptTokens: usage?.promptTokenCount ?? 0,
         completionTokens: usage?.candidatesTokenCount ?? 0,
         totalTokens: usage?.totalTokenCount ?? 0,
+        latencyMs,
+        sessionId: sessionId ?? '',
+      })
+    } catch {
+      // usage tracking should never break the main flow
+    }
+  }
+}
+
+class AnthropicAdapter implements ProviderAdapter {
+  private readonly provider: Provider
+  private readonly model: string
+
+  constructor(provider: Provider, modelName?: string) {
+    this.provider = provider
+    this.model = modelName ?? provider.models[0] ?? 'claude-sonnet-4-20250514'
+  }
+
+  getModel(): string { return this.model }
+  getProviderId(): string { return this.provider.id }
+
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<ProviderChatResponse> {
+    const start = Date.now()
+    const { systemMessages, conversationMessages } = this.toAnthropicFormat(messages)
+
+    const body: Record<string, unknown> = {
+      model: options?.model ?? this.model,
+      max_tokens: options?.maxTokens ?? 4096,
+      messages: conversationMessages,
+    }
+
+    if (systemMessages.length > 0) {
+      body.system = systemMessages
+    }
+
+    if (options?.temperature !== undefined) {
+      body.temperature = options.temperature
+    }
+
+    if (options?.tools && options.tools.length > 0) {
+      body.tools = this.convertTools(options.tools)
+    }
+
+    const response = await fetch(`${this.provider.baseUrl}/v1/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': this.provider.apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const err = await response.text()
+      throw new Error(`Anthropic API error: ${response.status} ${err}`)
+    }
+
+    const data = await response.json() as any
+    const latencyMs = Date.now() - start
+
+    const content = data.content
+      ?.filter((c: any) => c.type === 'text')
+      .map((c: any) => c.text)
+      .join('') ?? ''
+
+    const toolCalls = data.content
+      ?.filter((c: any) => c.type === 'tool_use')
+      .map((c: any) => ({
+        name: c.name,
+        args: c.input ?? {},
+      }))
+
+    const usage = data.usage
+    this.trackUsage(usage, latencyMs, options?.sessionId)
+
+    return {
+      content,
+      toolCalls: toolCalls?.length > 0 ? toolCalls : undefined,
+      usage: usage ? {
+        promptTokens: usage.input_tokens ?? 0,
+        completionTokens: usage.output_tokens ?? 0,
+        totalTokens: (usage.input_tokens ?? 0) + (usage.output_tokens ?? 0),
+      } : undefined,
+      latencyMs,
+    }
+  }
+
+  async chatStream(messages: ChatMessage[], onDelta: (chunk: string) => void, options?: ChatOptions): Promise<ProviderChatResponse> {
+    const start = Date.now()
+    const { systemMessages, conversationMessages } = this.toAnthropicFormat(messages)
+
+    const body: Record<string, unknown> = {
+      model: options?.model ?? this.model,
+      max_tokens: options?.maxTokens ?? 4096,
+      messages: conversationMessages,
+      stream: true,
+    }
+
+    if (systemMessages.length > 0) {
+      body.system = systemMessages
+    }
+
+    if (options?.temperature !== undefined) {
+      body.temperature = options.temperature
+    }
+
+    if (options?.tools && options.tools.length > 0) {
+      body.tools = this.convertTools(options.tools)
+    }
+
+    const response = await fetch(`${this.provider.baseUrl}/v1/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': this.provider.apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const err = await response.text()
+      throw new Error(`Anthropic API error: ${response.status} ${err}`)
+    }
+
+    let content = ''
+    const reader = response.body?.getReader()
+    if (!reader) throw new Error('No response body')
+
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() ?? ''
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue
+        const dataStr = line.slice(6)
+        if (dataStr === '[DONE]') continue
+
+        try {
+          const event = JSON.parse(dataStr)
+          if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+            content += event.delta.text
+            onDelta(event.delta.text)
+          }
+        } catch {
+          // skip malformed SSE lines
+        }
+      }
+    }
+
+    const latencyMs = Date.now() - start
+    this.trackUsage(undefined, latencyMs, options?.sessionId)
+
+    return { content, latencyMs }
+  }
+
+  private toAnthropicFormat(messages: ChatMessage[]): {
+    systemMessages: string
+    conversationMessages: Array<{ role: string; content: string | Array<Record<string, unknown>> }>
+  } {
+    const systemParts: string[] = []
+    const conversation: Array<{ role: string; content: string | Array<Record<string, unknown>> }> = []
+
+    for (const msg of messages) {
+      if (msg.role === 'system') {
+        systemParts.push(msg.content)
+        continue
+      }
+
+      const role = msg.role === 'assistant' ? 'assistant' : 'user'
+      conversation.push({
+        role,
+        content: msg.content,
+      })
+    }
+
+    return {
+      systemMessages: systemParts.join('\n\n'),
+      conversationMessages: conversation,
+    }
+  }
+
+  private convertTools(tools: any[]): any[] {
+    return tools.map(tool => {
+      if (tool.type === 'function' && tool.function) {
+        return {
+          name: tool.function.name,
+          description: tool.function.description ?? '',
+          input_schema: tool.function.parameters ?? { type: 'object', properties: {} },
+        }
+      }
+      return tool
+    })
+  }
+
+  private trackUsage(usage: any, latencyMs: number, sessionId?: string): void {
+    try {
+      usageTracker.record({
+        providerId: this.provider.id,
+        model: this.model,
+        promptTokens: usage?.input_tokens ?? 0,
+        completionTokens: usage?.output_tokens ?? 0,
+        totalTokens: (usage?.input_tokens ?? 0) + (usage?.output_tokens ?? 0),
         latencyMs,
         sessionId: sessionId ?? '',
       })
