@@ -1,4 +1,34 @@
-/* Rem Agent — 全局样式 */
+/* Rem Agent — 全局样式 (Stage 1c: 主题化) */
+
+/* ── Theme variables are set by [data-theme="..."] blocks in themes/*.css ── */
+/* This file just consumes them via var(--token). Default falls back to warm-paper tokens defined in :root. */
+
+:root,
+[data-theme="warm-paper"] {
+  --bg: #faf8f5;
+  --bg-elevated: #ffffff;
+  --bg-subtle: #f3efe8;
+  --bg-hover: #ece6db;
+  --text: #2c2c2c;
+  --text-muted: #888;
+  --text-faint: #b8b3ac;
+  --border: #e0dbd3;
+  --border-strong: #c4beb5;
+  --primary: #e8a0b8;
+  --primary-hover: #d68ba6;
+  --primary-text: #ffffff;
+  --accent: #667eea;
+  --danger: #f5576c;
+  --success: #6ba368;
+  --code-bg: #1e1e1e;
+  --code-text: #d4d4d4;
+  --inline-code-bg: #f4f1ec;
+  --inline-code-text: #d6336c;
+  --link: #667eea;
+  --scrollbar-thumb: #d8d3cc;
+  --scrollbar-thumb-hover: #b8b3ac;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -16,8 +46,9 @@ body {
     'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #faf8f5;
-  color: #2c2c2c;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 button {
@@ -41,11 +72,11 @@ input, textarea {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d8d3cc;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b8b3ac;
+  background: var(--scrollbar-thumb-hover);
 }
 
 @keyframes blink {
@@ -64,6 +95,7 @@ input, textarea {
   margin: 8px 0 4px 0;
   font-weight: 600;
   line-height: 1.3;
+  color: var(--text);
 }
 .md-bubble h1 { font-size: 18px; }
 .md-bubble h2 { font-size: 16px; }
@@ -77,16 +109,16 @@ input, textarea {
   margin: 2px 0;
 }
 .md-bubble code {
-  background: #f4f1ec;
+  background: var(--inline-code-bg);
   padding: 1px 6px;
   border-radius: 4px;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 13px;
-  color: #d6336c;
+  color: var(--inline-code-text);
 }
 .md-bubble pre {
-  background: #1e1e1e;
-  color: #d4d4d4;
+  background: var(--code-bg);
+  color: var(--code-text);
   padding: 10px 12px;
   border-radius: 8px;
   overflow-x: auto;
@@ -100,13 +132,13 @@ input, textarea {
   font-size: 12.5px;
 }
 .md-bubble blockquote {
-  border-left: 3px solid #d8d3cc;
+  border-left: 3px solid var(--border);
   padding-left: 10px;
   margin: 4px 0;
-  color: #666;
+  color: var(--text-muted);
 }
 .md-bubble a {
-  color: #667eea;
+  color: var(--link);
   text-decoration: none;
 }
 .md-bubble a:hover {
@@ -118,16 +150,16 @@ input, textarea {
   font-size: 13px;
 }
 .md-bubble th, .md-bubble td {
-  border: 1px solid #e0dbd3;
+  border: 1px solid var(--border);
   padding: 4px 8px;
   text-align: left;
 }
 .md-bubble th {
-  background: #f7f4ef;
+  background: var(--bg-subtle);
   font-weight: 600;
 }
 .md-bubble hr {
   border: none;
-  border-top: 1px solid #e0dbd3;
+  border-top: 1px solid var(--border);
   margin: 8px 0;
 }

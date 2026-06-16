@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>Rem 启动向导</title>
+  <link rel="stylesheet" href="wizard.css" />
+</head>
+<body>
+  <main class="wizard">
+    <!-- ── Top bar ────────────────────────────────────────── -->
+    <header class="wizard-header">
+      <div class="brand">
+        <div class="brand-avatar">🌸</div>
+        <div>
+          <h1>欢迎使用 Rem</h1>
+          <p class="brand-sub">从零开始异世界生活 · 雷姆</p>
+        </div>
+      </div>
+      <div class="lang-pill" id="langPill" aria-label="语言">中文</div>
+    </header>
+
+    <!-- ── Progress dots ──────────────────────────────────── -->
+    <nav class="progress" id="progress" aria-label="进度">
+      <!-- 5 dots, populated by wizard.ts -->
+    </nav>
+
+    <!-- ── Step container (5 steps) ───────────────────────── -->
+    <section class="step-container" id="stepContainer">
+      <!-- Step content rendered here by wizard.ts -->
+    </section>
+
+    <!-- ── Navigation ─────────────────────────────────────── -->
+    <footer class="wizard-nav">
+      <button type="button" class="btn btn-ghost" id="backBtn">← 上一步</button>
+      <span class="step-indicator" id="stepIndicator">第 1 步 / 共 5 步</span>
+      <button type="button" class="btn btn-primary" id="nextBtn">下一步 →</button>
+    </footer>
+  </main>
+
+  <script src="wizard.js"></script>
+</body>
+</html>

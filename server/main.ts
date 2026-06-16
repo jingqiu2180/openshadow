@@ -62,6 +62,25 @@ export async function startServer(options: MainOptions) {
     }
   })
 
+  // ─── Config API: theme (Stage 1d) ─────────────────────────────
+  httpApp.get('/api/config/theme', (c) => {
+    return c.json({ theme: configManager.getTheme() })
+  })
+
+  httpApp.post('/api/config/theme', async (c) => {
+    try {
+      const body = await c.req.json()
+      const theme = body.theme
+      if (theme !== 'warm-paper' && theme !== 'cool-night' && theme !== 'auto') {
+        return c.json({ ok: false, error: `Invalid theme: ${theme}` }, 400)
+      }
+      configManager.set('theme', theme)
+      return c.json({ ok: true, theme: configManager.getTheme() })
+    } catch (e: any) {
+      return c.json({ ok: false, error: e.message }, 400)
+    }
+  })
+
   // ─── Health ─────────────────────────────────────────────
   httpApp.get('/health', (c) => c.json({ ok: true }))
   httpApp.get('/', (c) => c.json({

@@ -4,7 +4,7 @@ import { useStore } from '../store'
 interface Props { onClose: () => void }
 
 export default function SettingsModal({ onClose }: Props) {
-  const { settings, loadSettings, saveSettings, setSettings } = useStore()
+  const { settings, loadSettings, saveSettings, setSettings, setTheme } = useStore()
   const [newPath, setNewPath] = useState('')
   const [saveMsg, setSaveMsg] = useState('')
 
@@ -25,6 +25,13 @@ export default function SettingsModal({ onClose }: Props) {
     setSaveMsg('已保存')
     setTimeout(() => setSaveMsg(''), 2000)
   }
+
+  // Stage 1c: theme options
+  const themeOptions: Array<{ id: 'warm-paper' | 'cool-night' | 'auto'; name: string; preview: string }> = [
+    { id: 'warm-paper', name: '暖纸', preview: 'linear-gradient(135deg, #faf8f5 0%, #e8a0b8 100%)' },
+    { id: 'cool-night', name: '青夜', preview: 'linear-gradient(135deg, #1a1d24 0%, #7da3ff 100%)' },
+    { id: 'auto',       name: '自动', preview: 'linear-gradient(135deg, #faf8f5 50%, #1a1d24 50%)' },
+  ]
 
   return (
     <div
@@ -89,6 +96,31 @@ export default function SettingsModal({ onClose }: Props) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
             <span style={{ fontSize: 14, color: '#333' }}>启用沙箱隔离</span>
             <Toggle value={settings.sandbox} onChange={v => setSettings({ sandbox: v })} />
+          </div>
+        </div>
+
+        {/* Stage 1c: Theme selector */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 13, color: '#999', marginBottom: 10 }}>主题 (Stage 1c)</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            {themeOptions.map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setTheme(opt.id)}
+                style={{
+                  padding: 0,
+                  border: settings.theme === opt.id ? '2px solid #667eea' : '2px solid #e0dbd3',
+                  borderRadius: 10,
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  fontFamily: 'inherit',
+                }}
+              >
+                <div style={{ height: 36, background: opt.preview }} />
+                <div style={{ padding: '6px 0', fontSize: 12, color: '#333' }}>{opt.name}</div>
+              </button>
+            ))}
           </div>
         </div>
 

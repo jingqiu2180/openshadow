@@ -1,0 +1,426 @@
+/* ─── Rem Wizard — desktop/wizard/wizard.css ─────────────────────── */
+/* Color tokens: warm paper, follow main Rem theme (#faf8f5 bg) */
+
+:root {
+  --bg: #faf8f5;
+  --bg-elevated: #ffffff;
+  --bg-subtle: #f3efe8;
+  --text: #2a2520;
+  --text-muted: #8a8278;
+  --primary: #e8a0b8;          /* Rem 粉 */
+  --primary-hover: #d68ba6;
+  --primary-text: #ffffff;
+  --border: #e3dcd1;
+  --danger: #d4536a;
+  --success: #6ba368;
+  --shadow: 0 6px 24px rgba(40, 30, 25, 0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: linear-gradient(135deg, #faf8f5 0%, #f3efe8 100%);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wizard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 32px;
+}
+
+/* ─── Header ────────────────────────────────────────────── */
+.wizard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: var(--shadow);
+}
+
+.brand h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.brand-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.lang-pill {
+  padding: 6px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ─── Progress ──────────────────────────────────────────── */
+.progress {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.progress::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+  transform: translateY(-50%);
+}
+
+.progress-dot {
+  position: relative;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.progress-dot.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-text);
+  transform: scale(1.1);
+}
+
+.progress-dot.done {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--primary-text);
+}
+
+/* ─── Step container ────────────────────────────────────── */
+.step-container {
+  flex: 1;
+  background: var(--bg-elevated);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--shadow);
+  overflow-y: auto;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.step h2 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.step-desc {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ─── Buttons ───────────────────────────────────────────── */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.btn-primary:disabled {
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-subtle);
+  color: var(--text);
+}
+
+.btn-ghost:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ─── Nav ───────────────────────────────────────────────── */
+.wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.step-indicator {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ─── Form controls ─────────────────────────────────────── */
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.lang-card {
+  padding: 18px;
+  background: var(--bg-elevated);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lang-card:hover {
+  border-color: var(--primary);
+}
+
+.lang-card.selected {
+  border-color: var(--primary);
+  background: rgba(232, 160, 184, 0.08);
+}
+
+.lang-card .lang-flag {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.lang-card .lang-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.lang-card .lang-local {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.input-group .input-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.input {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  background: var(--bg-elevated);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  border-color: var(--primary);
+}
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--border);
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: left 0.15s;
+}
+
+.toggle.on {
+  background: var(--primary);
+}
+
+.toggle.on::after {
+  left: 22px;
+}
+
+.provider-select {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  background: var(--bg-elevated);
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  width: 100%;
+}
+
+.test-conn-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: var(--bg-subtle);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.test-conn-btn:hover { background: var(--border); }
+
+.test-conn-result {
+  margin-top: 6px;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: none;
+}
+
+.test-conn-result.show { display: block; }
+.test-conn-result.ok { background: rgba(107, 163, 104, 0.12); color: #4a7847; }
+.test-conn-result.err { background: rgba(212, 83, 106, 0.12); color: #a23a4d; }
+
+.model-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.model-row label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.folder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.folder-item .folder-remove {
+  cursor: pointer;
+  color: var(--danger);
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.completion-card {
+  text-align: center;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.completion-emoji { font-size: 64px; }
+
+.completion-card h2 { color: var(--primary); }

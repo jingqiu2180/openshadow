@@ -1,0 +1,27 @@
+/* Rem Agent — cool-night 主题 (Stage 1c) */
+/* 深色调,适合夜间/低光环境使用,蓝灰主调 */
+
+[data-theme="cool-night"] {
+  --bg: #1a1d24;
+  --bg-elevated: #232830;
+  --bg-subtle: #2b313b;
+  --bg-hover: #353c47;
+  --text: #e8eaed;
+  --text-muted: #9aa0a6;
+  --text-faint: #5f6368;
+  --border: #353c47;
+  --border-strong: #4a525e;
+  --primary: #7da3ff;
+  --primary-hover: #6a92f0;
+  --primary-text: #0a0c10;
+  --accent: #7da3ff;
+  --danger: #ff6b85;
+  --success: #84c984;
+  --code-bg: #0d0f13;
+  --code-text: #c9d1d9;
+  --inline-code-bg: #2b313b;
+  --inline-code-text: #ff9bb0;
+  --link: #7da3ff;
+  --scrollbar-thumb: #353c47;
+  --scrollbar-thumb-hover: #4a525e;
+}

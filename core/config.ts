@@ -53,6 +53,9 @@ export interface Config {
   user?: {
     name: string
   }
+  memory?: {
+    enabled: boolean
+  }
   /** Multi-provider registry (replaces single agent.apiKey/baseUrl when present) */
   providers?: Provider[]
   /** Per-role model selection; each is a `${providerId}::${modelName}` ref */
@@ -152,6 +155,9 @@ const DEFAULT_CONFIG: Config = {
   user: {
     name: '王帅',
   },
+  memory: {
+    enabled: true,
+  },
   theme: 'warm-paper' as const,
 }
 
@@ -207,6 +213,7 @@ export class ConfigManager {
       wizard: { ...base.wizard, ...override.wizard },
       ui: { ...base.ui, ...override.ui },
       user: { ...base.user, ...override.user },
+      memory: { ...base.memory, ...override.memory },
       models: { ...base.models, ...override.models },
       // providers is an array — override fully (no merge)
       providers: override.providers ?? base.providers,
@@ -306,6 +313,10 @@ export class ConfigManager {
 
   getUserName(): string {
     return this.config.user?.name ?? '王帅'
+  }
+
+  isMemoryEnabled(): boolean {
+    return this.config.memory?.enabled ?? true
   }
 
   getLanguage(): 'zh-CN' | 'en' | 'ja' | 'ko' {

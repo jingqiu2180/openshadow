@@ -38,6 +38,7 @@ interface AppState {
     workspaceRoots: string[]
     allowExternalReads: boolean
     sandbox: boolean
+    theme: 'warm-paper' | 'cool-night' | 'auto'
     loaded: boolean
   }
 
@@ -59,6 +60,9 @@ interface AppState {
   loadSettings: () => Promise<void>
   saveSettings: () => Promise<void>
   setSettings: (partial: Partial<AppState['settings']>) => void
+
+  // Stage 1c: theme
+  setTheme: (theme: AppState['settings']['theme']) => void
 }
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6) }
@@ -74,6 +78,7 @@ export const useStore = create<AppState>((set, get) => ({
     workspaceRoots: [],
     allowExternalReads: true,
     sandbox: true,
+    theme: (typeof localStorage !== 'undefined' && (localStorage.getItem('rem.theme') as any)) || 'warm-paper',
     loaded: false,
   },
 
@@ -143,5 +148,24 @@ export const useStore = create<AppState>((set, get) => ({
 
   setSettings: (partial) => {
     set(state => ({ settings: { ...state.settings, ...partial } }))
+  },
+
+  setTheme: async (theme) => {
+    set(state => ({ settings: { ...state.settings, theme } }))
+    // Apply immediately (don't wait for server)
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('rem.theme', theme)
+    }
+    document.documentElement.setAttribute('data-theme', theme)
+    // Persist to server (best-effort; ignore failures since localStorage already has it)
+    try {
+      await fetch('http://localhost:3000/api/config/theme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme }),
+      })
+    } catch (e) {
+      console.warn('[theme] save to server failed (localStorage has it):', e)
+    }
   },
 }))
