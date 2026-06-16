@@ -41,6 +41,44 @@ export interface Config {
     level: 'debug' | 'info' | 'warn' | 'error'
     file?: string
   }
+  // ─── 7-step wizard fields (added in Stage 1a) ─────────────────────
+  wizard?: {
+    /** Whether the user has completed the first-launch wizard. */
+    completed: boolean
+    completedAt?: string
+  }
+  ui?: {
+    language: 'zh-CN' | 'en' | 'ja' | 'ko'
+  }
+  user?: {
+    name: string
+  }
+  /** Multi-provider registry (replaces single agent.apiKey/baseUrl when present) */
+  providers?: Provider[]
+  /** Per-role model selection; each is a `${providerId}::${modelName}` ref */
+  models?: {
+    main: string
+    small: string
+    large: string
+  }
+  /** UI theme for the desktop renderer */
+  theme?: 'warm-paper' | 'cool-night' | 'auto'
+}
+
+/**
+ * Provider: a single LLM backend configuration.
+ * - id: user-given alias (e.g. 'openai', 'minimax', 'local-ollama')
+ * - type: protocol variant — 'openai' for OpenAI-compatible, 'gemini' for Google, 'ollama' for local
+ * - apiKey/baseUrl: connection params
+ * - models: curated list of model names available from this provider
+ */
+export interface Provider {
+  id: string
+  type: 'openai' | 'gemini' | 'ollama' | 'custom'
+  apiKey: string
+  baseUrl: string
+  models: string[]
+  isDefault?: boolean
 }
 
 const _home = homedir()
@@ -102,6 +140,19 @@ const DEFAULT_CONFIG: Config = {
   logging: {
     level: 'info',
   },
+  // ─── Wizard defaults (Stage 1a) ─────────────────────────────
+  // Note: providers/models/user/ui/theme are intentionally NOT in defaults.
+  // They're populated by the wizard OR fall back to env vars (see getActiveProvider).
+  wizard: {
+    completed: false,
+  },
+  ui: {
+    language: 'zh-CN' as const,
+  },
+  user: {
+    name: '王帅',
+  },
+  theme: 'warm-paper' as const,
 }
 
 /**
@@ -152,6 +203,15 @@ export class ConfigManager {
       security: { ...base.security, ...override.security },
       scheduler: { ...base.scheduler, ...override.scheduler },
       logging: { ...base.logging, ...override.logging },
+      // New wizard fields (Stage 1a) — deep merge where shape is object
+      wizard: { ...base.wizard, ...override.wizard },
+      ui: { ...base.ui, ...override.ui },
+      user: { ...base.user, ...override.user },
+      models: { ...base.models, ...override.models },
+      // providers is an array — override fully (no merge)
+      providers: override.providers ?? base.providers,
+      // theme is a string — override fully
+      theme: override.theme ?? base.theme,
     }
   }
 
@@ -180,6 +240,90 @@ export class ConfigManager {
 
   setApiKey(key: string): void {
     this.config.agent.apiKey = key
+    this.save()
+  }
+
+  // ─── Wizard / multi-provider helpers (Stage 1a) ────────────
+  getProviders(): Provider[] {
+    return this.config.providers ?? []
+  }
+
+  /**
+   * Resolve the active provider for a given role.
+   *
+   * Selection priority:
+   *   1. If `models[role]` is set (e.g. 'openai::gpt-4o'), split on '::' and find provider by id
+   *   2. If `providers[].isDefault === true`, use that
+   *   3. Fallback: synthesize a provider from `agent.{apiKey,baseUrl,model}` (the legacy single-provider path)
+   *   4. Last resort: env vars AGENT_API_KEY / AGENT_BASE_URL / AGENT_MODEL
+   *
+   * Returns null only if absolutely nothing is configured.
+   */
+  getActiveProvider(role: 'main' | 'small' | 'large' = 'main'): Provider | null {
+    const providers = this.getProviders()
+    const roleRef = this.config.models?.[role]
+
+    // 1. Explicit role reference
+    if (roleRef) {
+      const [pid, mname] = roleRef.split('::')
+      const p = providers.find(x => x.id === pid)
+      if (p) {
+        return mname ? { ...p, models: [mname, ...p.models] } : p
+      }
+    }
+
+    // 2. isDefault flag
+    const def = providers.find(p => p.isDefault)
+    if (def) return def
+
+    // 3. Legacy single-provider (agent.* fields)
+    const a = this.config.agent
+    if (a.apiKey || a.baseUrl) {
+      return {
+        id: 'default',
+        type: 'openai',
+        apiKey: a.apiKey,
+        baseUrl: a.baseUrl,
+        models: [a.model],
+        isDefault: true,
+      }
+    }
+
+    // 4. Env vars
+    if (process.env.AGENT_API_KEY) {
+      return {
+        id: 'env',
+        type: 'openai',
+        apiKey: process.env.AGENT_API_KEY,
+        baseUrl: process.env.AGENT_BASE_URL ?? 'https://api.openai.com/v1',
+        models: [process.env.AGENT_MODEL ?? 'gpt-4'],
+        isDefault: true,
+      }
+    }
+
+    return null
+  }
+
+  getUserName(): string {
+    return this.config.user?.name ?? '王帅'
+  }
+
+  getLanguage(): 'zh-CN' | 'en' | 'ja' | 'ko' {
+    return this.config.ui?.language ?? 'zh-CN'
+  }
+
+  getTheme(): 'warm-paper' | 'cool-night' | 'auto' {
+    return this.config.theme ?? 'warm-paper'
+  }
+
+  isWizardCompleted(): boolean {
+    return this.config.wizard?.completed ?? false
+  }
+
+  markWizardCompleted(): void {
+    if (!this.config.wizard) this.config.wizard = { completed: false }
+    this.config.wizard.completed = true
+    this.config.wizard.completedAt = new Date().toISOString()
     this.save()
   }
 

@@ -11,6 +11,7 @@ import { getContextMemories, addMemory, getAgentConfig } from './memory/store.js
 import { PathGuard } from './tools/path-guard.js'
 
 import { config } from './config.js'
+import { createClient as createProviderClient, pickModel } from './providers/index.js'
 import { createFileTools, createBashTools, analyzeScreenshot, captureScreenshot, mouseMove, mouseClick, mouseDrag, keyboardType, keyboardHotkey, windowActivate, getScreenSize, browserNew, browserClose, browserNavigate, browserScreenshot, browserClick, browserType, browserPressKey, browserGetText } from './tools/index.js'
 import { createPlanner } from './planner.js'
 import { createCoderAgent } from './coder.js'
@@ -22,6 +23,15 @@ import { createTeam, TeamLeader } from './team.js'
 export interface AgentOptions {
   agentId: string
   allowedPaths?: string[]
+  /**
+   * Which role's provider/model to use. Defaults to 'main'.
+   * Only honored when `config.providers[]` is set (multi-provider mode).
+   */
+  providerRole?: 'main' | 'small' | 'large'
+  /**
+   * Explicitly select a provider by id. Overrides `providerRole`'s resolution.
+   */
+  providerId?: string
 }
 
 export interface ChatMessage {
@@ -59,18 +69,44 @@ export class Agent {
   private _team?: TeamLeader
 
   constructor(options: AgentOptions) {
-    const agentConfig = getAgentConfig(options.agentId)
-    if (!agentConfig) throw new Error(`Agent config not found: ${options.agentId}`)
+    // ─── Resolve LLM client (Stage 1a: multi-provider aware) ─────────
+    // Priority:
+    //   1. config.providers[] present → use providers + role selection
+    //   2. Legacy SQLite agents table (getAgentConfig) — for old config.json
+    const role = options.providerRole ?? 'main'
+    let modelName: string
+    let llmClient: OpenAI
 
-    this.model = agentConfig.model
+    if (config.getProviders().length > 0) {
+      // ─── Multi-provider path (Stage 1a) ─────────────────────
+      const provider = options.providerId
+        ? config.getProviders().find(p => p.id === options.providerId) ?? null
+        : config.getActiveProvider(role)
 
-    this.client = new OpenAI({
-      apiKey: agentConfig.apiKey,
-      baseURL: agentConfig.baseUrl,
-    })
+      if (!provider) {
+        throw new Error(
+          `No provider available for role '${role}' (providerId=${options.providerId ?? 'auto'}). ` +
+          `Add a provider via the wizard or set one as default.`,
+        )
+      }
+      modelName = pickModel(provider)
+      llmClient = createProviderClient(provider)
+    } else {
+      // ─── Legacy path: SQLite getAgentConfig ─────────────────
+      const agentConfig = getAgentConfig(options.agentId)
+      if (!agentConfig) throw new Error(`Agent config not found: ${options.agentId}`)
+      modelName = agentConfig.model
+      llmClient = new OpenAI({
+        apiKey: agentConfig.apiKey,
+        baseURL: agentConfig.baseUrl,
+      })
+    }
+
+    this.model = modelName
+    this.client = llmClient
 
     const personality = loadPersonality()
-    this.systemPrompt = buildSystemPrompt(personality)
+    this.systemPrompt = buildSystemPrompt(personality, config.getUserName())
 
     // PathGuard: use policy from config.json (HanaAgent-style)
     const dataDir = join(process.cwd(), 'data')

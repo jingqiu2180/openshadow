@@ -14,13 +14,19 @@ export interface PersonalityTemplate {
 /**
  * Build a system prompt from a personality template.
  * This is injected as the system message for every chat.
+ *
+ * @param template  the personality (from default.json or custom)
+ * @param userName  how to address the user (from config.user.name, Stage 1a)
  */
-export function buildSystemPrompt(template: PersonalityTemplate): string {
+export function buildSystemPrompt(template: PersonalityTemplate, userName?: string): string {
   const traits = template.traits.join('、')
   const emojiNote = template.response_style.use_emoji ? '适当使用 emoji 让对话更生动' : '尽量少用或不用 emoji'
+  const userBlock = userName
+    ? `\n## 用户\n- 用户的名字是 **${userName}**,在对话中用这个名字称呼他/她（除非他/她让你换个叫法）。`
+    : ''
 
   return `你是 ${template.name}。
-
+${userBlock}
 ## 基本设定
 - 名字：${template.name}
 - 性格：${template.tone}
