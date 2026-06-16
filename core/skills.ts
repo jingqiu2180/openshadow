@@ -1,5 +1,5 @@
-import { readdir, readFile, stat, writeFile, mkdir } from 'fs/promises'
-import { join, resolve } from 'path'
+import { readdir, readFile, stat, mkdir } from 'fs/promises'
+import { join } from 'path'
 import { existsSync } from 'fs'
 import { ToolRegistry } from './tool-registry.js'
 import { eventBus } from './event-bus.js'
@@ -209,12 +209,17 @@ export class SkillStore {
       const tools = plugin.contributions.tools ?? []
       for (const tool of tools) {
         registry.register(tool.name, {
-          description: tool.description,
-          parameters: {
-            type: 'object',
-            properties: Object.fromEntries(
-              Object.entries(tool.params).map(([k, v]) => [k, { type: v.type, description: v.description }])
-            ),
+          type: 'function',
+          function: {
+            name: tool.name,
+            description: tool.description,
+            parameters: {
+              type: 'object',
+              properties: Object.fromEntries(
+                Object.entries(tool.params).map(([k, v]) => [k, { type: v.type, description: v.description }])
+              ),
+              required: Object.entries(tool.params).filter(([, v]) => !v.optional).map(([k]) => k),
+            },
           },
         }, tool.handler)
       }
@@ -224,12 +229,17 @@ export class SkillStore {
       for (const tool of skill.manifest.tools) {
         if (!registry.get(tool.name)) {
           registry.register(tool.name, {
-            description: tool.description,
-            parameters: {
-              type: 'object',
-              properties: Object.fromEntries(
-                Object.entries(tool.params).map(([k, v]) => [k, { type: v.type, description: v.description }])
-              ),
+            type: 'function',
+            function: {
+              name: tool.name,
+              description: tool.description,
+              parameters: {
+                type: 'object',
+                properties: Object.fromEntries(
+                  Object.entries(tool.params).map(([k, v]) => [k, { type: v.type, description: v.description }])
+                ),
+                required: Object.entries(tool.params).filter(([, v]) => !v.optional).map(([k]) => k),
+              },
             },
           }, async (args) => skill.handler(tool.name, args))
         }

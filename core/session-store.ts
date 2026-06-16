@@ -177,5 +177,5 @@ export function estimateTokens(messages: SessionMessage[]): number {
 export function sessionToChatMessages(messages: SessionMessage[]): ChatMessage[] {
   return messages
     .filter(m => m.role === 'user' || m.role === 'assistant' || m.role === 'system')
-    .map(m => ({ role: m.role, content: m.content }))
+    .map(m => ({ role: m.role as 'system' | 'user' | 'assistant', content: m.content }))
 }

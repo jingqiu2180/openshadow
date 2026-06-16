@@ -548,19 +548,6 @@ export class ChatEngine {
     }
   }
 
-  getToolRegistry(): ToolRegistry {
-    return this.toolRegistry
-  }
-
-  getModel(): string {
-    return this.model
-  }
-
-  remember(content: string): void {
-    const { addMemory } = require('./memory/store.js')
-    addMemory(content, 2, 'conversation')
-  }
-
   private _getSkillStore(): SkillStore {
     if (!this._skillStore) {
       this._skillStore = createSkillStore()

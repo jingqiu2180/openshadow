@@ -1,5 +1,3 @@
-import type { PathGuard } from './tools/path-guard.js'
-
 export interface ToolSpec {
   type: 'function'
   function: {
@@ -13,7 +11,8 @@ export interface ToolSpec {
   }
 }
 
-export type ToolHandler = (args: Record<string, unknown>) => Promise<unknown> | unknown
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ToolHandler = (args: any) => Promise<any> | any
 
 export interface ToolEntry {
   spec: ToolSpec
@@ -23,11 +22,8 @@ export interface ToolEntry {
 export class ToolRegistry {
   private _tools = new Map<string, ToolEntry>()
 
-  register(name: string, spec: Omit<ToolSpec, 'type'>, handler: ToolHandler): void {
-    this._tools.set(name, {
-      spec: { type: 'function', ...spec } as ToolSpec,
-      handler,
-    })
+  register(name: string, spec: ToolSpec, handler: ToolHandler): void {
+    this._tools.set(name, { spec, handler })
   }
 
   registerEntry(name: string, entry: ToolEntry): void {

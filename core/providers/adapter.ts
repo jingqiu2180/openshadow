@@ -1,5 +1,5 @@
 import type { Provider } from '../config.js'
-import type { ChatMessage, ChatResult } from '../chat-engine.js'
+import type { ChatMessage } from '../chat-engine.js'
 
 export interface ProviderAdapter {
   chat(messages: ChatMessage[], options?: ChatOptions): Promise<ProviderChatResponse>

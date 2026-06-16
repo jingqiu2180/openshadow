@@ -102,7 +102,7 @@ export function addMemory(
   `)
   stmt.run(id, content, importance, now, now, memoryType, JSON.stringify(tags), sessionId)
 
-  return { id, content, importance, created_at: now, last_accessed: now, access_count: 0, memory_type: memoryType, tags, session_id }
+  return { id, content, importance, created_at: now, last_accessed: now, access_count: 0, memory_type: memoryType, tags, session_id: sessionId }
 }
 
 export function getRecentMemories(limit: number = 50): Memory[] {

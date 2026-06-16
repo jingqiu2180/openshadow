@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
 import { config } from './config.js'
 import { createClient as createProviderClient, pickModel } from './providers/index.js'
-import type { Session, SessionMessage } from './session-store.js'
+import type { Session } from './session-store.js'
 
 const COMPACT_PROMPT = `The messages above are a conversation to summarize. Create a structured context checkpoint summary.
 
@@ -67,7 +67,6 @@ export class SessionCompactor {
 
     const halfPoint = Math.floor(messages.length * 0.6)
     const olderMessages = messages.slice(0, halfPoint)
-    const recentMessages = messages.slice(halfPoint)
 
     const olderText = olderMessages
       .map(m => `${m.role}: ${m.content}`)

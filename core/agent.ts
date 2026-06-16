@@ -1,6 +1,8 @@
 import { ChatEngine, type ChatMessage, type ChatResult } from './chat-engine.js'
 import { addMemory } from './memory/store.js'
 
+export type { ChatMessage, ChatResult } from './chat-engine.js'
+
 export interface AgentOptions {
   agentId: string
   allowedPaths?: string[]

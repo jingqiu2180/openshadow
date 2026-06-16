@@ -21,13 +21,13 @@ export interface WsResponse {
   sessions?: any[]
 }
 
-export function createWsServer(agent: Agent, sessionManager: SessionManager, port: number = 8080) {
+export function createWsServer(_agent: Agent, sessionManager: SessionManager, port: number = 8080) {
   const wss = new WS.WebSocketServer({ port })
 
   wss.on('connection', async (ws: WS.WebSocket, _req: any) => {
     console.log('[ws] Client connected')
 
-    const activeSession = sessionManager.getActiveSession() ?? sessionManager.createSession()
+    sessionManager.getActiveSession() ?? sessionManager.createSession()
 
     ws.on('message', async (data: WS.RawData) => {
       try {
