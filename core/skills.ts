@@ -1,19 +1,8 @@
-/**
- * Skills ecosystem - dynamic capability loading and execution.
- *
- * Concepts:
- * - Skill: a self-contained capability with manifest (SKILL.md)
- * - SkillStore: registry of loaded skills
- * - SkillInstaller: installs skills from local dirs or remote URLs
- * - Built-in skills: core capabilities bundled with remu
- */
-
 import { readdir, readFile, stat, writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { PathGuard } from './tools/path-guard.js'
+import { join, resolve } from 'path'
 import { existsSync } from 'fs'
-
-// ─── Types ──────────────────────────────────────────────────────────────────
+import { ToolRegistry } from './tool-registry.js'
+import { eventBus } from './event-bus.js'
 
 export interface SkillTool {
   name: string
@@ -49,10 +38,32 @@ export interface SkillResult {
   error?: string
 }
 
-// ─── Manifest parser ─────────────────────────────────────────────────────────
+export interface PluginContribution {
+  tools?: Array<{
+    name: string
+    description: string
+    params: SkillTool['params']
+    handler: (args: Record<string, unknown>) => Promise<unknown>
+  }>
+  routes?: Array<{
+    path: string
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+    handler: (req: any, res: any) => void | Promise<void>
+  }>
+  skills?: Skill[]
+  hooks?: Record<string, (...args: any[]) => void | Promise<void>>
+}
+
+export interface PluginManifest {
+  id: string
+  name: string
+  version: string
+  description: string
+  author?: string
+  contributions: PluginContribution
+}
 
 function parseManifest(content: string, name: string): SkillManifest {
-  const lines = content.split('\n')
   const manifest: SkillManifest = {
     name,
     description: '',
@@ -62,8 +73,7 @@ function parseManifest(content: string, name: string): SkillManifest {
 
   let currentTool: SkillTool | null = null
 
-  for (const line of lines) {
-    // Match **key: value** patterns
+  for (const line of content.split('\n')) {
     const metaMatch = line.match(/^\*\*([a-zA-Z]+):\*\*\s*(.+)$/)
     if (metaMatch) {
       const [, key, value] = metaMatch
@@ -74,19 +84,12 @@ function parseManifest(content: string, name: string): SkillManifest {
       else if (key === 'tags') manifest.tags = value.split(',').map(t => t.trim())
     }
 
-    // Skill section
     const skillMatch = line.match(/^## Skill:\s*(.+)$/)
     if (skillMatch) {
       if (currentTool) manifest.tools.push(currentTool)
       currentTool = { name: skillMatch[1].trim(), description: '', params: {} }
     }
 
-    // Tool description
-    if (currentTool && line.startsWith('### Description')) {
-      // Next non-empty line is the description
-    }
-
-    // Parameters
     const paramMatch = line.match(/^- \*\*(\w+)\*\* \(([^)]+)\)(?:\s*-\s*(.+))?$/)
     if (paramMatch && currentTool) {
       const [, pname, ptype, pdesc] = paramMatch
@@ -101,18 +104,11 @@ function parseManifest(content: string, name: string): SkillManifest {
   return manifest
 }
 
-// ─── SkillStore ─────────────────────────────────────────────────────────────
-
 export class SkillStore {
   private _skills = new Map<string, Skill>()
-  private readonly guard: PathGuard
-
-  constructor(allowedDirs: string[]) {
-    this.guard = new PathGuard(allowedDirs)
-  }
+  private _plugins = new Map<string, PluginManifest>()
 
   async loadFrom(dir: string): Promise<{ loaded: string[]; failed: string[] }> {
-    this.guard.assertAllowed(dir, 'read')
     const loaded: string[] = []
     const failed: string[] = []
 
@@ -191,47 +187,56 @@ export class SkillStore {
     }
   }
 
-  async createSkill(name: string, manifest: SkillManifest, files: Record<string, string>): Promise<SkillResult> {
-    try {
-      const skillRoot = join('/root/.openclaw/workspace/remu-skills', name)
-      await mkdir(skillRoot, { recursive: true })
+  registerPlugin(plugin: PluginManifest): void {
+    this._plugins.set(plugin.id, plugin)
+    eventBus.emit('plugin:load', { pluginId: plugin.id })
+  }
 
-      const toolDocs = manifest.tools.map(t => `## Skill: ${t.name}
+  getPlugin(id: string): PluginManifest | undefined {
+    return this._plugins.get(id)
+  }
 
-### Description
-${t.description}
+  listPlugins(): PluginManifest[] {
+    return [...this._plugins.values()]
+  }
 
-### Parameters
-${Object.entries(t.params).map(([k, v]) => `- **${k}** (${v.type}) - ${v.description}`).join('\n')}`).join('\n\n')
+  unregisterPlugin(id: string): void {
+    this._plugins.delete(id)
+  }
 
-      const skillMd = `# ${manifest.name}
+  contributeToRegistry(registry: ToolRegistry): void {
+    for (const plugin of this._plugins.values()) {
+      const tools = plugin.contributions.tools ?? []
+      for (const tool of tools) {
+        registry.register(tool.name, {
+          description: tool.description,
+          parameters: {
+            type: 'object',
+            properties: Object.fromEntries(
+              Object.entries(tool.params).map(([k, v]) => [k, { type: v.type, description: v.description }])
+            ),
+          },
+        }, tool.handler)
+      }
+    }
 
-## Metadata
-- **name**: ${manifest.name}
-- **description**: ${manifest.description}
-- **version**: ${manifest.version}
-${manifest.author ? `- **author**: ${manifest.author}` : ''}
-${manifest.tags ? `- **tags**: ${manifest.tags.join(', ')}` : ''}
-
-${toolDocs}
-`
-      await writeFile(join(skillRoot, 'SKILL.md'), skillMd, 'utf-8')
-
-      for (const [filename, content] of Object.entries(files)) {
-        if (filename !== 'SKILL.md') {
-          await writeFile(join(skillRoot, filename), content, 'utf-8')
+    for (const skill of this._skills.values()) {
+      for (const tool of skill.manifest.tools) {
+        if (!registry.get(tool.name)) {
+          registry.register(tool.name, {
+            description: tool.description,
+            parameters: {
+              type: 'object',
+              properties: Object.fromEntries(
+                Object.entries(tool.params).map(([k, v]) => [k, { type: v.type, description: v.description }])
+              ),
+            },
+          }, async (args) => skill.handler(tool.name, args))
         }
       }
-
-      await this.loadFrom(skillRoot)
-      return { success: true }
-    } catch (e: unknown) {
-      return { success: false, error: e instanceof Error ? e.message : String(e) }
     }
   }
 }
-
-// ─── Built-in skills ────────────────────────────────────────────────────────
 
 export const BUILTIN_SKILLS: Skill[] = [
   {
@@ -320,7 +325,6 @@ export const BUILTIN_SKILLS: Skill[] = [
     handler: async (tool: string, args: Record<string, unknown>) => {
       if (tool === 'calc') {
         try {
-          // eslint-disable-next-line no-eval
           const result = Function('"use strict"; return (' + String(args.expression) + ')')()
           return { expression: args.expression, result }
         } catch {
@@ -348,7 +352,7 @@ export const BUILTIN_SKILLS: Skill[] = [
 ]
 
 export function createSkillStore(skillsDir?: string): SkillStore {
-  const store = new SkillStore(['/root/.openclaw/workspace', '/tmp', process.cwd()])
+  const store = new SkillStore()
   for (const skill of BUILTIN_SKILLS) {
     store.register(skill)
   }
