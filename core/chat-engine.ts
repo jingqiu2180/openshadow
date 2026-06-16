@@ -2,7 +2,7 @@ import OpenAI from 'openai'
 import { config } from './config.js'
 import { createClient as createProviderClient, pickModel } from './providers/index.js'
 import { getContextMemories, getAgentConfig } from './memory/store.js'
-import { ToolRegistry, createToolSpec, type ToolSpec, type ToolHandler } from './tool-registry.js'
+import { ToolRegistry, createToolSpec } from './tool-registry.js'
 import { loadPersonality } from './personality/loader.js'
 import { buildSystemPrompt } from './personality/template.js'
 import { PathGuard } from './tools/path-guard.js'
@@ -21,7 +21,6 @@ import { createPlanner } from './planner.js'
 import { createCoderAgent } from './coder.js'
 import { createSkillStore, type SkillStore } from './skills.js'
 import { createTeam, type TeamLeader } from './team.js'
-import { mcpRegistry } from './mcp/index.js'
 import { join } from 'path'
 
 export interface ChatMessage {
@@ -156,7 +155,7 @@ export class ChatEngine {
         x: { type: 'number', description: 'Target X coordinate (pixels from top-left)' },
         y: { type: 'number', description: 'Target Y coordinate (pixels from top-left)' },
       },
-    }), mouseMove)
+    }), (args: { x: number; y: number }) => mouseMove(args.x, args.y))
 
     registry.register('mouse_click', createToolSpec('mouse_click', {
       description: 'Click mouse button',
@@ -171,7 +170,7 @@ export class ChatEngine {
         x1: { type: 'number', description: 'Start X' }, y1: { type: 'number', description: 'Start Y' },
         x2: { type: 'number', description: 'End X' }, y2: { type: 'number', description: 'End Y' },
       },
-    }), mouseDrag)
+    }), (args: { x1: number; y1: number; x2: number; y2: number }) => mouseDrag(args.x1, args.y1, args.x2, args.y2))
 
     registry.register('keyboard_type', createToolSpec('keyboard_type', {
       description: 'Type text using keyboard',
@@ -181,7 +180,7 @@ export class ChatEngine {
     registry.register('keyboard_hotkey', createToolSpec('keyboard_hotkey', {
       description: 'Press a hotkey combination',
       params: { keys: { type: 'array', items: { type: 'string' }, description: 'Key names e.g. ctrl+c, alt+tab, enter' } },
-    }), keyboardHotkey)
+    }), (args: { keys: string[] }) => keyboardHotkey(...args.keys))
 
     registry.register('window_activate', createToolSpec('window_activate', {
       description: 'Activate/focus a window by title pattern',
@@ -205,7 +204,7 @@ export class ChatEngine {
     registry.register('browser_navigate', createToolSpec('browser_navigate', {
       description: 'Navigate browser to a URL',
       params: { url: { type: 'string', description: 'URL to navigate to' } },
-    }), browserNavigate)
+    }), (args: { url: string }) => browserNavigate(args.url))
 
     registry.register('browser_screenshot', createToolSpec('browser_screenshot', {
       description: 'Take a screenshot of the current browser page',
@@ -215,22 +214,22 @@ export class ChatEngine {
     registry.register('browser_click', createToolSpec('browser_click', {
       description: 'Click an element by CSS selector',
       params: { selector: { type: 'string', description: 'CSS selector of element to click' } },
-    }), browserClick)
+    }), (args: { selector: string }) => browserClick(args.selector))
 
     registry.register('browser_type', createToolSpec('browser_type', {
       description: 'Type text into an input field',
       params: { selector: { type: 'string', description: 'CSS selector of input field' }, text: { type: 'string', description: 'Text to type' }, pressEnter: { type: 'boolean', optional: true } },
-    }), browserType)
+    }), (args: { selector: string; text: string }) => browserType(args.text, args.selector))
 
     registry.register('browser_press_key', createToolSpec('browser_press_key', {
       description: 'Press a keyboard key',
       params: { key: { type: 'string', description: 'Key name e.g. Enter, Escape, Control+C' } },
-    }), browserPressKey)
+    }), (args: { key: string }) => browserPressKey(args.key))
 
     registry.register('browser_get_text', createToolSpec('browser_get_text', {
       description: 'Get text content of an element',
       params: { selector: { type: 'string', description: 'CSS selector' } },
-    }), browserGetText)
+    }), (args: { selector: string }) => browserGetText(args.selector))
 
     registry.register('browser_close', createToolSpec('browser_close', {
       description: 'Close the browser instance',
