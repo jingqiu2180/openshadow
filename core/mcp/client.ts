@@ -128,9 +128,8 @@ class SseTransport extends EventEmitter implements Transport {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     let EventSource: any
     try {
-      // @ts-ignore — eventsource is an optional dependency
-      const mod = await import('eventsource')
-      EventSource = mod.EventSource ?? mod.default ?? mod
+      const mod: any = await import('eventsource')
+      EventSource = mod.EventSource ?? mod.default
     } catch {
       // Fallback: try global EventSource (available in browser/modern Node)
       EventSource = (globalThis as any).EventSource

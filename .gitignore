@@ -6,3 +6,6 @@ dist/
 
 # User-specific config (workspace paths, etc.)
 config.json
+
+# Stage 1a transient: .cjs mirror of test-stage1a.ts (kept for diff, not for running)
+test-stage1a.cjs

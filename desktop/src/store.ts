@@ -120,14 +120,15 @@ export const useStore = create<AppState>((set, get) => ({
     try {
       const res = await fetch('http://localhost:3000/api/config/security')
       const data = await res.json()
-      set({
+      set(state => ({
         settings: {
+          ...state.settings,
           workspaceRoots: data.workspaceRoots ?? [],
           allowExternalReads: data.allowExternalReads ?? true,
           sandbox: data.sandbox ?? true,
           loaded: true,
         }
-      })
+      }))
     } catch (e) {
       console.error('loadSettings failed:', e)
     }

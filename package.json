@@ -9,12 +9,12 @@
     "start": "node dist/server/index.js",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "electron": "tsc -p desktop/tsconfig.json && node -e \"require('fs').renameSync('dist/desktop/main.js','dist/desktop/main.cjs')\" && set \"ELECTRON_RUN_AS_NODE=\" && electron dist/desktop/main.cjs",
+    "electron": "tsc -p desktop/tsconfig.json && node scripts/copy-desktop-assets.js && node -e \"const fs=require('fs'); fs.renameSync('dist/desktop/electron-main.js','dist/desktop/electron-main.cjs'); fs.renameSync('dist/desktop/preload.js','dist/desktop/preload.cjs')\" && set \"ELECTRON_RUN_AS_NODE=\" && electron dist/desktop/electron-main.cjs",
     "desktop:vite": "vite --config desktop/vite.config.ts",
     "desktop:build": "vite build --config desktop/vite.config.ts",
     "electron:dev": "set \"PATH=%USERPROFILE%\\.workbuddy\\binaries\\node\\versions\\22.22.2;%PATH%\" && set \"ELECTRON_RUN_AS_NODE=\" && concurrently -k -n server,vite,electron -c blue,magenta,green \"npm run dev\" \"npm run desktop:vite\" \"wait-on tcp:3000 tcp:5173 && npm run electron\"",
-    "electron:build": "npm run build && npm run desktop:build && tsc -p desktop/tsconfig.json && node -e \"require('fs').renameSync('dist/desktop/main.js','dist/desktop/main.cjs')\" && electron-builder --dir",
-    "electron:dist": "npm run build && npm run desktop:build && tsc -p desktop/tsconfig.json && node -e \"require('fs').renameSync('dist/desktop/main.js','dist/desktop/main.cjs')\" && electron-builder"
+    "electron:build": "npm run build && npm run desktop:build && tsc -p desktop/tsconfig.json && electron-builder --dir",
+    "electron:dist": "npm run build && npm run desktop:build && tsc -p desktop/tsconfig.json && electron-builder"
   },
   "build": {
     "appId": "com.remu.agent",
@@ -28,7 +28,7 @@
       "package.json"
     ],
     "extraMetadata": {
-      "main": "dist/desktop/main.js"
+      "main": "dist/desktop/electron-main.cjs"
     },
     "mac": {
       "target": [
@@ -62,6 +62,7 @@
     "zustand": "^4.5.7"
   },
   "devDependencies": {
+    "@modelcontextprotocol/server-filesystem": "^2026.1.14",
     "@playwright/test": "^1.60.0",
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.13.9",

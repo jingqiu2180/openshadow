@@ -93,9 +93,9 @@ const $$ = (sel) => Array.from(document.querySelectorAll(sel))
 function t(key) { return i18n[state.ui.language]?.[key] ?? i18n['zh-CN'][key] }
 
 // ─── IPC bridge (Electron preload exposes window.wizard) ────────────
-// In production, use contextBridge. For now, wiz lives in a BrowserWindow
-// with nodeIntegration:false + contextIsolation:true, so we use ipcRenderer
-// via a preload script. Wizard assumes `window.wizard.*` is bridged.
+// With contextIsolation:true, the preload exposes `window.wizard` via
+// contextBridge.exposeInMainWorld. This file must ONLY use `window.wizard`
+// (not a cached local variable) to avoid stale-reference or dead-zone issues.
 //
 // If `window.wizard` is missing (e.g. running in a plain browser), fall
 // back to a no-op mock so the UI still works for visual testing.
@@ -115,10 +115,13 @@ if (!window.wizard) {
       return { ok: provider.apiKey.length > 0, latencyMs: 800, error: provider.apiKey.length === 0 ? 'No API key' : null }
     },
     pickFolder: async () => ['D:\\src\\aicoding\\remu'],
+    done: () => {},
   }
 }
 
-const ipc = window.wizard
+// Use `window.wizard` directly (no local alias) to avoid any scoping issues.
+// Every call below goes through `window.wizard` (aliased as `wiz` for brevity
+// inside async functions to avoid the `this` pitfall).
 
 // ─── Step renderers ─────────────────────────────────────────────────
 const stepRenderers = {
@@ -236,7 +239,7 @@ function renderStepProvider(container) {
     resultEl.textContent = '测试中…'
     btn.disabled = true
     try {
-      const res = await ipc.testConnection({
+      const res = await window.wizard.testConnection({
         id: state.provider.builtinId,
         type: selectedSpec.type,
         apiKey: state.provider.apiKey,
@@ -322,7 +325,7 @@ function renderStepWorkspace(container) {
     </div>
   `
   $('#addFolderBtn').onclick = async () => {
-    const paths = await ipc.pickFolder()
+    const paths = await window.wizard.pickFolder()
     if (paths && paths.length > 0) {
       for (const p of paths) {
         if (!state.workspace.folders.includes(p)) state.workspace.folders.push(p)
@@ -394,9 +397,9 @@ async function finish() {
       theme: 'warm-paper',
       security: { workspaceRoots: state.workspace.folders },
     }
-    await ipc.saveConfig(cfg)
+    await window.wizard.saveConfig(cfg)
     // Notify main process to proceed (close wizard, open main window)
-    ipc.done()
+    window.wizard.done()
   } catch (e) {
     console.error('[wizard] save failed:', e)
     alert('保存失败: ' + e.message)
@@ -407,33 +410,47 @@ async function finish() {
 
 // ─── Boot ───────────────────────────────────────────────────────────
 async function boot() {
-  // Try to pull existing config (resumable wizard)
   try {
-    const existing = await ipc.getConfig()
-    if (existing) {
-      if (existing.user?.name) state.user.name = existing.user.name
-      if (existing.ui?.language) state.ui.language = existing.ui.language
-      if (existing.providers?.[0]) {
-        state.provider.builtinId = existing.providers[0].id
-        state.provider.apiKey = existing.providers[0].apiKey
+    // Try to pull existing config (resumable wizard)
+    try {
+      const existing = await window.wizard.getConfig()
+      if (existing) {
+        if (existing.user?.name) state.user.name = existing.user.name
+        if (existing.ui?.language) state.ui.language = existing.ui.language
+        if (existing.providers?.[0]) {
+          state.provider.builtinId = existing.providers[0].id
+          state.provider.apiKey = existing.providers[0].apiKey
+        }
+        if (existing.security?.workspaceRoots) {
+          state.workspace.folders = [...existing.security.workspaceRoots]
+        }
       }
-      if (existing.security?.workspaceRoots) {
-        state.workspace.folders = [...existing.security.workspaceRoots]
-      }
+    } catch (e) {
+      console.warn('[wizard] getConfig failed, starting fresh:', e.message)
     }
+
+    $('#backBtn').onclick = () => {
+      if (state.step > 1) { state.step--; render() }
+    }
+    $('#nextBtn').onclick = () => {
+      if (state.step < state.total) { state.step++; render() }
+      else finish()
+    }
+
+    render()
   } catch (e) {
-    console.warn('[wizard] getConfig failed, starting fresh:', e.message)
+    // Show fatal error inline so blank window has a clue
+    console.error('[wizard] boot failed:', e)
+    const root = document.querySelector('main.wizard') || document.body
+    root.innerHTML = `
+      <div style="padding:40px;font-family:monospace;color:#c00;background:#fff5f5;border:2px solid #c00;margin:20px;border-radius:8px;">
+        <h2>⚠ Wizard 启动失败</h2>
+        <p><strong>${e.message}</strong></p>
+        <pre style="background:#fff;padding:10px;overflow:auto;font-size:11px;">${(e.stack || '').slice(0, 800)}</pre>
+        <p style="color:#666;font-size:12px;">检查 DevTools (View → Toggle Developer Tools 或 F12) 获取更多日志</p>
+      </div>
+    `
   }
-
-  $('#backBtn').onclick = () => {
-    if (state.step > 1) { state.step--; render() }
-  }
-  $('#nextBtn').onclick = () => {
-    if (state.step < state.total) { state.step++; render() }
-    else finish()
-  }
-
-  render()
 }
 
 boot()

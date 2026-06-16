@@ -88,18 +88,34 @@ async function captureScreenshotSystem(options: {
         }
       }
     } else if (platform === 'win32') {
+      // Use Windows Forms + System.Drawing with CopyFromScreen.
+      // Note: [System.Drawing.Screen]::PrimaryScreen fails in some environments
+      // (headless / RDP / containers), but VirtualScreen + CopyFromScreen works.
       const safePath = filepath.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
       const ps = `
-Add-Type -AssemblyName System.Drawing
-$bitmap = [System.Drawing.Bitmap]::new([System.Drawing.Screen]::PrimaryScreen)
-$bitmap.Save("${safePath}", [System.Drawing.Imaging.ImageFormat]::Png)
-$bitmap.Dispose()
-Write-Output "ok"
+try {
+  Add-Type -AssemblyName System.Drawing
+  Add-Type -AssemblyName System.Windows.Forms
+  $bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
+  $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
+  $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+  $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+  $bitmap.Save("${safePath}", [System.Drawing.Imaging.ImageFormat]::Png)
+  $graphics.Dispose()
+  $bitmap.Dispose()
+  Write-Output "ok"
+} catch {
+  Write-Output "ERROR: $_"
+  exit 1
+}
 `
       const psPath = join(tmpdir(), `screenshot-${Date.now()}.ps1`)
       writeFileSync(psPath, ps, 'utf-8')
       try {
-        await execAsync('powershell', ['-ExecutionPolicy', 'Bypass', '-File', psPath])
+        const { stdout, stderr } = await execAsync('powershell', ['-ExecutionPolicy', 'Bypass', '-File', psPath], { encoding: 'utf-8' })
+        if (String(stdout).trim() !== 'ok') {
+          return { success: false, error: `PowerShell screenshot failed: ${String(stdout).trim()} / ${String(stderr || '').trim()}` }
+        }
       } finally {
         try { unlinkSync(psPath) } catch {}
       }
@@ -114,8 +130,20 @@ Write-Output "ok"
       return { success: false, error: 'Screenshot file was not created. Check if screenshot tool is installed.' }
     }
 
-    const base64 = readFileSync(filepath).toString('base64')
-    return { success: true, base64, path: filepath, width: 0, height: 0, platform }
+    const buffer = readFileSync(filepath)
+    const base64 = buffer.toString('base64')
+
+    // Parse PNG IHDR for real width/height (works in CLI mode where Electron's
+    // desktopCapturer is not available). PNG header: 8-byte signature + 4-byte
+    // length + 4-byte "IHDR" + 4-byte width + 4-byte height.
+    let width = 0
+    let height = 0
+    if (buffer.length >= 24 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]))) {
+      width = buffer.readUInt32BE(16)
+      height = buffer.readUInt32BE(20)
+    }
+
+    return { success: true, base64, path: filepath, width, height, platform }
   } catch (e: any) {
     return { success: false, error: e.message }
   }
