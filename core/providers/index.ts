@@ -16,18 +16,14 @@ import OpenAI from 'openai'
 import type { Provider } from '../config.js'
 import type { ProviderType } from './types.js'
 
+export { createProviderAdapter, type ProviderAdapter, type ChatOptions, type ProviderChatResponse } from './adapter.js'
+export { usageTracker, type UsageRecord, type UsageSummary } from './usage-tracker.js'
+
 export function isOpenAICompatible(type: ProviderType): boolean {
   return type === 'openai' || type === 'ollama' || type === 'custom'
 }
 
 export function createClient(provider: Provider) {
-  if (!isOpenAICompatible(provider.type)) {
-    throw new Error(
-      `Provider type '${provider.type}' is not OpenAI-compatible yet. ` +
-      `Gemini native support is on the roadmap (Stage 1d). ` +
-      `For now, use a proxy or switch to an OpenAI-compatible model.`,
-    )
-  }
   return new OpenAI({
     apiKey: provider.apiKey,
     baseURL: provider.baseUrl,
