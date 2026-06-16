@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useStore } from '../store'
 
-export default function ChatArea() {
+export default function ChatArea({ onToggleBrowser }: { onToggleBrowser?: () => void }) {
   const { conversations, currentId, addMessage, pendingPrompt, setPendingPrompt } = useStore()
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -209,6 +209,17 @@ export default function ChatArea() {
                 }}
               >{item.label}</button>
             ))}
+            {onToggleBrowser && (
+              <button
+                onClick={onToggleBrowser}
+                style={{
+                  background: '#e8e4f0', border: 'none', borderRadius: 16,
+                  padding: '4px 14px', fontSize: 13, color: '#667eea', cursor: 'pointer',
+                  fontWeight: 500,
+                }}
+                title="打开/关闭内置浏览器"
+              >🌐 浏览器</button>
+            )}
           </div>
           {/* Input */}
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>

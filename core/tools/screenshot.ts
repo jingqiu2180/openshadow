@@ -1,6 +1,11 @@
 /**
  * Screenshot tool - cross-platform screen capture with base64 output.
- * Works on macOS (screencapture), Windows (PowerShell), Linux (gnome-screenshot/scrot/grim).
+ *
+ * Two modes:
+ * 1. **Electron mode** (preferred): Uses desktopCapturer via IPC when running
+ *    inside Electron. No temp files, no external tools, gets real dimensions.
+ * 2. **CLI / Server mode** (fallback): Uses system commands —
+ *    macOS (screencapture), Windows (PowerShell), Linux (gnome-screenshot/scrot/grim).
  */
 
 import { execFile } from 'child_process'
@@ -23,14 +28,38 @@ export interface ScreenshotResult {
 export type ScreenshotError = { success: false; error: string }
 export type ScreenshotOutput = ScreenshotResult | ScreenshotError
 
+// ─── Electron IPC bridge detection ────────────────────────────────────
+
 /**
- * Capture screenshot on macOS / Windows / Linux.
- * Returns base64 PNG image.
+ * Check if Electron screenshot IPC is available.
+ * The preload script sets window.__REM_API__.screenshotCapture when running
+ * inside Electron. In CLI/server mode this won't exist.
  */
-export async function captureScreenshot(options: {
+function isElectronScreenshotAvailable(): boolean {
+  return typeof globalThis !== 'undefined'
+    && !!(globalThis as any).__REM_API__?.screenshotCapture
+}
+
+/**
+ * Capture screenshot via Electron IPC (desktopCapturer).
+ * Called from renderer process; the main process handles the actual capture.
+ */
+async function captureScreenshotElectron(displayId?: number): Promise<ScreenshotOutput> {
+  try {
+    const api = (globalThis as any).__REM_API__
+    const result = await api.screenshotCapture(displayId)
+    return result
+  } catch (e: any) {
+    return { success: false, error: `Electron screenshot failed: ${e.message}` }
+  }
+}
+
+// ─── System-command fallback (CLI / server mode) ──────────────────────
+
+async function captureScreenshotSystem(options: {
   filename?: string
   directory?: string
-} = {}): Promise<ScreenshotOutput> {
+}): Promise<ScreenshotOutput> {
   const platform = process.platform
   const filename = options.filename ?? `screenshot-${Date.now()}.png`
   const directory = options.directory ?? tmpdir()
@@ -90,4 +119,33 @@ Write-Output "ok"
   } catch (e: any) {
     return { success: false, error: e.message }
   }
+}
+
+// ─── Unified entry point ──────────────────────────────────────────────
+
+/**
+ * Capture screenshot — prefers Electron native (desktopCapturer) when
+ * available, falls back to system commands in CLI/server mode.
+ *
+ * In Electron mode: no temp file written, returns real dimensions.
+ * In CLI mode: writes temp PNG, reads back to base64, dimensions = 0.
+ */
+export async function captureScreenshot(options: {
+  filename?: string
+  directory?: string
+  displayId?: number
+} = {}): Promise<ScreenshotOutput> {
+  // Electron path: fast, no temp files, real dimensions
+  if (isElectronScreenshotAvailable()) {
+    const result = await captureScreenshotElectron(options.displayId)
+    if (result.success) return result
+    // Electron path failed — log and fall through to system commands
+    console.warn('[screenshot] Electron desktopCapturer failed, falling back to system command:', (result as ScreenshotError).error)
+  }
+
+  // CLI / server fallback
+  return captureScreenshotSystem({
+    filename: options.filename,
+    directory: options.directory,
+  })
 }

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, nativeImage } from 'electron'
 import { join } from 'path'
 import { config as configManager } from '../core/config.js'
 import { testConnection } from '../core/providers/tester.js'
@@ -128,6 +128,155 @@ function registerIpcHandlers() {
     })
     return canceled ? [] : filePaths
   })
+
+  // ─── Screenshot via desktopCapturer ─────────────────────────────────
+  ipcMain.handle('screenshot:capture', async (_e, displayId?: number) => {
+    try {
+      const targetDisplay = displayId ?? 0
+      const sources = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: 1920, height: 1080 },
+        fetchWindowIcons: false,
+      })
+
+      // Pick the requested screen (index into sources array)
+      const source = sources[targetDisplay] ?? sources[0]
+      if (!source) {
+        return { success: false as const, error: `No screen source found (requested index ${targetDisplay}, available ${sources.length})` }
+      }
+
+      const thumbnail = source.thumbnail
+      // thumbnail is a NativeImage; getSize returns {width, height}
+      const size = thumbnail.getSize()
+      const base64 = thumbnail.toPNG().toString('base64')
+
+      return {
+        success: true as const,
+        base64,
+        path: '',  // no file written — in-memory only
+        width: size.width,
+        height: size.height,
+        platform: process.platform,
+      }
+    } catch (e: any) {
+      return { success: false as const, error: `desktopCapturer failed: ${e.message}` }
+    }
+  })
+
+  // ─── Capture a specific BrowserWindow by ID ─────────────────────────
+  ipcMain.handle('screenshot:capture-window', async (_e, windowId?: number) => {
+    try {
+      const win = windowId
+        ? BrowserWindow.getAllWindows().find(w => w.id === windowId)
+        : mainWindow
+      if (!win || win.isDestroyed()) {
+        return { success: false as const, error: 'Target window not found' }
+      }
+      const image: Electron.NativeImage = await win.webContents.capturePage()
+      const size = image.getSize()
+      const base64 = image.toPNG().toString('base64')
+      return {
+        success: true as const,
+        base64,
+        path: '',
+        width: size.width,
+        height: size.height,
+        platform: process.platform,
+      }
+    } catch (e: any) {
+      return { success: false as const, error: `capturePage failed: ${e.message}` }
+    }
+  })
+
+  // ─── Browser webview IPC handlers ───────────────────────────────────
+  // The flow: core/tools/browser.ts (Node) → IPC invoke → main process
+  //   → sends 'browser:command' to renderer's BrowserPanel
+  //   → BrowserPanel executes on <webview> and sends 'browser:response' back
+  //   → main process resolves the IPC invoke promise
+
+  const pendingBrowserResponses = new Map<string, {
+    resolve: (result: any) => void
+    reject: (err: Error) => void
+    timer: ReturnType<typeof setTimeout>
+  }>()
+
+  // Listen for responses from BrowserPanel (renderer → main)
+  ipcMain.on('browser:response', (_event, response: { id: string; success: boolean; data?: any; error?: string }) => {
+    const pending = pendingBrowserResponses.get(response.id)
+    if (!pending) return
+    clearTimeout(pending.timer)
+    pendingBrowserResponses.delete(response.id)
+    if (response.success) {
+      pending.resolve({ success: true, ...response.data })
+    } else {
+      pending.resolve({ success: false, error: response.error ?? 'Unknown browser error' })
+    }
+  })
+
+  /**
+   * Send a command to the renderer's BrowserPanel and wait for response.
+   * Falls back to a timeout if the renderer doesn't respond.
+   */
+  function sendBrowserCommand(cmd: Omit<any, 'id'> & { type: string }, timeoutMs = 30000): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const id = `cmd-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      const timer = setTimeout(() => {
+        pendingBrowserResponses.delete(id)
+        resolve({ success: false, error: `Browser command timed out: ${cmd.type}` })
+      }, timeoutMs)
+
+      pendingBrowserResponses.set(id, { resolve, reject, timer })
+
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('browser:command', { id, ...cmd })
+      } else {
+        clearTimeout(timer)
+        pendingBrowserResponses.delete(id)
+        resolve({ success: false, error: 'Main window not available' })
+      }
+    })
+  }
+
+  ipcMain.handle('browser:create', async (_e, url?: string) => {
+    // Tell BrowserPanel to show and optionally navigate
+    return sendBrowserCommand({ type: 'create', url: url ?? 'about:blank' })
+  })
+
+  ipcMain.handle('browser:navigate', async (_e, url: string) => {
+    return sendBrowserCommand({ type: 'navigate', url })
+  })
+
+  ipcMain.handle('browser:screenshot', async () => {
+    return sendBrowserCommand({ type: 'screenshot' })
+  })
+
+  ipcMain.handle('browser:click', async (_e, selector: string) => {
+    return sendBrowserCommand({ type: 'click', selector })
+  })
+
+  ipcMain.handle('browser:type', async (_e, selector: string, text: string) => {
+    return sendBrowserCommand({ type: 'type', selector, text })
+  })
+
+  ipcMain.handle('browser:press-key', async (_e, key: string) => {
+    return sendBrowserCommand({ type: 'pressKey', key })
+  })
+
+  ipcMain.handle('browser:get-text', async (_e, selector: string) => {
+    return sendBrowserCommand({ type: 'getText', selector })
+  })
+
+  ipcMain.handle('browser:get-html', async () => {
+    return sendBrowserCommand({ type: 'getHtml' })
+  })
+
+  ipcMain.handle('browser:wait-for', async (_e, selector: string, timeout?: number) => {
+    return sendBrowserCommand({ type: 'waitForSelector', selector, timeout: timeout ?? 10000 })
+  })
+
+  ipcMain.handle('browser:close', async () => {
+    return sendBrowserCommand({ type: 'close' })
+  })
 }
 
 // ─── Main window ─────────────────────────────────────────────────────
@@ -139,9 +288,11 @@ function createMainWindow() {
     minHeight: 600,
     title: 'Rem Agent',
     webPreferences: {
+      preload: join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
       webSecurity: false,
+      webviewTag: true,
     },
     frame: true,
     backgroundColor: '#faf8f5',

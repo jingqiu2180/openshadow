@@ -13,6 +13,7 @@ import { PathGuard } from './tools/path-guard.js'
 import { config } from './config.js'
 import { createClient as createProviderClient, pickModel } from './providers/index.js'
 import { createFileTools, createBashTools, analyzeScreenshot, captureScreenshot, mouseMove, mouseClick, mouseDrag, keyboardType, keyboardHotkey, windowActivate, getScreenSize, browserNew, browserClose, browserNavigate, browserScreenshot, browserClick, browserType, browserPressKey, browserGetText } from './tools/index.js'
+import { mcpRegistry } from './mcp/index.js'
 import { createPlanner } from './planner.js'
 import { createCoderAgent } from './coder.js'
 import { speechToText, recordAudio } from './stt.js'
@@ -634,6 +635,59 @@ export class Agent {
   private _getTeam(): TeamLeader {
     if (!this._team) this._team = createTeam(this)
     return this._team
+  }
+
+  // ─── MCP Integration ──────────────────────────────────────────────────
+
+  /**
+   * Initialize MCP server connections from config.json.
+   * Call after Agent construction. Discovers and registers MCP tools.
+   */
+  async initMcp(): Promise<void> {
+    try {
+      await mcpRegistry.initialize()
+      this.refreshMcpTools()
+    } catch (e: any) {
+      console.warn('[agent] MCP initialization failed:', e.message)
+    }
+  }
+
+  /**
+   * Refresh the tools/toolMap arrays with the latest MCP tools
+   * from all connected servers. Called after MCP connect/disconnect.
+   */
+  refreshMcpTools(): void {
+    const mcpTools = mcpRegistry.getAllTools()
+    if (mcpTools.length === 0) return
+
+    for (const tool of mcpTools) {
+      const prefixedName = `mcp_${tool.serverId}_${tool.name}`
+
+      // Skip if already registered
+      if (this.toolMap[prefixedName]) continue
+
+      // Add tool spec
+      this.tools.push({
+        type: 'function',
+        function: {
+          name: prefixedName,
+          description: `[MCP:${tool.serverId}] ${tool.description ?? tool.name}`,
+          parameters: tool.inputSchema,
+        },
+      })
+
+      // Add tool implementation
+      this.toolMap[prefixedName] = async (args: Record<string, any>) => {
+        try {
+          const result = await mcpRegistry.callTool(`${tool.serverId}.${tool.name}`, args)
+          return result
+        } catch (e: any) {
+          return { error: `MCP tool ${prefixedName} failed: ${e.message}` }
+        }
+      }
+    }
+
+    console.log(`[agent] Registered ${mcpTools.length} MCP tool(s) from ${mcpRegistry.getConnections().filter(c => c.status === 'connected').length} server(s)`)
   }
 
   remember(content: string, importance: number = 1): void {

@@ -1,20 +1,26 @@
 /**
- * Browser automation tools using Playwright.
- * Enables Agent to control web browsers: navigate, click, type, screenshot.
+ * Browser automation tools — dual mode:
+ *
+ * 1. **Electron webview mode** (preferred): When running inside Electron,
+ *    browser operations go through IPC → main process → BrowserPanel (webview).
+ *    This gives the user a visible, interactive browser inside the app.
+ *
+ * 2. **Playwright fallback**: When running in CLI/server mode (no Electron),
+ *    falls back to Playwright's headless Chromium.
  */
 
 import { chromium, Browser, Page, BrowserContext } from '@playwright/test'
 
+// ─── Shared types ──────────────────────────────────────────────────────
+
 export interface BrowserInstance {
   id: string
-  browser: Browser
-  context: BrowserContext
-  page: Page
+  browser: Browser | null       // null in webview mode
+  context: BrowserContext | null // null in webview mode
+  page: Page | null             // null in webview mode
+  mode: 'webview' | 'playwright'
   createdAt: number
 }
-
-const instances = new Map<string, BrowserInstance>()
-let defaultId = 'default'
 
 export interface NavigateOptions {
   url: string
@@ -42,7 +48,25 @@ export interface ScreenshotOptions {
   fullPage?: boolean
 }
 
-// ─── Browser lifecycle ────────────────────────────────────────────────────────
+const instances = new Map<string, BrowserInstance>()
+let defaultId = 'default'
+
+// ─── Electron IPC detection ────────────────────────────────────────────
+
+function isElectronBrowserAvailable(): boolean {
+  return typeof globalThis !== 'undefined'
+    && !!(globalThis as any).__REM_API__?.browserCreate
+}
+
+async function browserIpc(method: string, ...args: any[]): Promise<any> {
+  const api = (globalThis as any).__REM_API__
+  if (!api) throw new Error('Electron browser API not available')
+  const fn = api[method]
+  if (typeof fn !== 'function') throw new Error(`Electron browser method not found: ${method}`)
+  return fn(...args)
+}
+
+// ─── Browser lifecycle ──────────────────────────────────────────────────
 
 export async function browserNew(options: NavigateOptions): Promise<{
   success: true
@@ -52,9 +76,34 @@ export async function browserNew(options: NavigateOptions): Promise<{
 } | { success: false; error: string }> {
   const id = options.browserId ?? defaultId
 
-  // Close existing if any
+  // Close existing instance if any
   await browserClose(id)
 
+  // ─── Electron webview mode ────────────────────────────────────────
+  if (isElectronBrowserAvailable()) {
+    try {
+      const result = await browserIpc('browserCreate', options.url || 'about:blank')
+      instances.set(id, {
+        id,
+        browser: null,
+        context: null,
+        page: null,
+        mode: 'webview',
+        createdAt: Date.now(),
+      })
+      return {
+        success: true,
+        id,
+        url: options.url || 'about:blank',
+        title: result?.title ?? '',
+      }
+    } catch (e: any) {
+      // Fall through to Playwright
+      console.warn('[browser] Electron webview failed, falling back to Playwright:', e.message)
+    }
+  }
+
+  // ─── Playwright fallback ──────────────────────────────────────────
   try {
     const browser = await chromium.launch({
       headless: options.headless ?? true,
@@ -75,6 +124,7 @@ export async function browserNew(options: NavigateOptions): Promise<{
       browser,
       context,
       page,
+      mode: 'playwright',
       createdAt: Date.now(),
     })
 
@@ -91,14 +141,20 @@ export async function browserClose(id?: string): Promise<{ success: true } | { s
   if (!inst) return { success: true }
 
   try {
-    await inst.context.close()
-    await inst.browser.close()
+    if (inst.mode === 'webview') {
+      await browserIpc('browserClose').catch(() => {})
+    } else {
+      if (inst.context) await inst.context.close()
+      if (inst.browser) await inst.browser.close()
+    }
     instances.delete(targetId)
   } catch (e: any) {
     return { success: false, error: e.message }
   }
   return { success: true }
 }
+
+// ─── Navigation ─────────────────────────────────────────────────────────
 
 export async function browserNavigate(url: string, id?: string): Promise<{
   success: true
@@ -108,14 +164,26 @@ export async function browserNavigate(url: string, id?: string): Promise<{
   const inst = instances.get(id ?? defaultId)
   if (!inst) return { success: false, error: `Browser ${id ?? defaultId} not open. Use browser_new first.` }
 
+  if (inst.mode === 'webview') {
+    try {
+      const result = await browserIpc('browserNavigate', url)
+      return { success: true, url, title: result?.title ?? '' }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  }
+
+  // Playwright
   try {
-    await inst.page.goto(url, { waitUntil: 'networkidle', timeout: 30000 })
-    const title = await inst.page.title()
+    await inst.page!.goto(url, { waitUntil: 'networkidle', timeout: 30000 })
+    const title = await inst.page!.title()
     return { success: true, url, title }
   } catch (e: any) {
     return { success: false, error: e.message }
   }
 }
+
+// ─── Screenshot ─────────────────────────────────────────────────────────
 
 export async function browserScreenshot(opts?: ScreenshotOptions): Promise<{
   success: true
@@ -126,13 +194,28 @@ export async function browserScreenshot(opts?: ScreenshotOptions): Promise<{
   const inst = instances.get(opts?.browserId ?? defaultId)
   if (!inst) return { success: false, error: `Browser not open. Use browser_new first.` }
 
+  if (inst.mode === 'webview') {
+    try {
+      const result = await browserIpc('browserScreenshot')
+      return {
+        success: true,
+        base64: result.base64,
+        width: result.width ?? 1920,
+        height: result.height ?? 1080,
+      }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  }
+
+  // Playwright
   try {
-    const buffer = await inst.page.screenshot({
+    const buffer = await inst.page!.screenshot({
       fullPage: opts?.fullPage ?? false,
       type: 'png',
     })
     const base64 = buffer.toString('base64')
-    const bbox = inst.page.viewportSize()
+    const bbox = inst.page!.viewportSize()
     return {
       success: true,
       base64,
@@ -144,6 +227,8 @@ export async function browserScreenshot(opts?: ScreenshotOptions): Promise<{
   }
 }
 
+// ─── Click ──────────────────────────────────────────────────────────────
+
 export async function browserClick(selector: string, id?: string): Promise<{
   success: true
   element: string
@@ -151,13 +236,24 @@ export async function browserClick(selector: string, id?: string): Promise<{
   const inst = instances.get(id ?? defaultId)
   if (!inst) return { success: false, error: `Browser not open` }
 
+  if (inst.mode === 'webview') {
+    try {
+      await browserIpc('browserClick', selector)
+      return { success: true, element: selector }
+    } catch (e: any) {
+      return { success: false, error: `Click failed: ${e.message}` }
+    }
+  }
+
   try {
-    await inst.page.click(selector, { timeout: 10000 })
+    await inst.page!.click(selector, { timeout: 10000 })
     return { success: true, element: selector }
   } catch (e: any) {
     return { success: false, error: `Click failed: ${e.message}` }
   }
 }
+
+// ─── Type ───────────────────────────────────────────────────────────────
 
 export async function browserType(text: string, selector: string | null, id?: string): Promise<{
   success: true
@@ -166,11 +262,24 @@ export async function browserType(text: string, selector: string | null, id?: st
   const inst = instances.get(id ?? defaultId)
   if (!inst) return { success: false, error: `Browser not open` }
 
+  if (inst.mode === 'webview') {
+    try {
+      if (selector) {
+        await browserIpc('browserType', selector, text)
+      } else {
+        await browserIpc('browserPressKey', text)
+      }
+      return { success: true, text }
+    } catch (e: any) {
+      return { success: false, error: `Type failed: ${e.message}` }
+    }
+  }
+
   try {
     if (selector) {
-      await inst.page.fill(selector, text)
+      await inst.page!.fill(selector, text)
     } else {
-      await inst.page.keyboard.type(text)
+      await inst.page!.keyboard.type(text)
     }
     return { success: true, text }
   } catch (e: any) {
@@ -178,19 +287,32 @@ export async function browserType(text: string, selector: string | null, id?: st
   }
 }
 
+// ─── Press key ──────────────────────────────────────────────────────────
+
 export async function browserPressKey(key: string, id?: string): Promise<{
   success: true
 } | { success: false; error: string }> {
   const inst = instances.get(id ?? defaultId)
   if (!inst) return { success: false, error: `Browser not open` }
 
+  if (inst.mode === 'webview') {
+    try {
+      await browserIpc('browserPressKey', key)
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  }
+
   try {
-    await inst.page.keyboard.press(key)
+    await inst.page!.keyboard.press(key)
     return { success: true }
   } catch (e: any) {
     return { success: false, error: e.message }
   }
 }
+
+// ─── Get text ───────────────────────────────────────────────────────────
 
 export async function browserGetText(selector: string, id?: string): Promise<{
   success: true
@@ -199,13 +321,24 @@ export async function browserGetText(selector: string, id?: string): Promise<{
   const inst = instances.get(id ?? defaultId)
   if (!inst) return { success: false, error: `Browser not open` }
 
+  if (inst.mode === 'webview') {
+    try {
+      const result = await browserIpc('browserGetText', selector)
+      return { success: true, text: result?.text ?? '' }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  }
+
   try {
-    const text = await inst.page.textContent(selector) ?? ''
+    const text = await inst.page!.textContent(selector) ?? ''
     return { success: true, text }
   } catch (e: any) {
     return { success: false, error: e.message }
   }
 }
+
+// ─── Get HTML ───────────────────────────────────────────────────────────
 
 export async function browserGetHtml(id?: string): Promise<{
   success: true
@@ -214,13 +347,24 @@ export async function browserGetHtml(id?: string): Promise<{
   const inst = instances.get(id ?? defaultId)
   if (!inst) return { success: false, error: `Browser not open` }
 
+  if (inst.mode === 'webview') {
+    try {
+      const result = await browserIpc('browserGetHtml')
+      return { success: true, html: result?.html ?? '' }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  }
+
   try {
-    const html = await inst.page.content()
+    const html = await inst.page!.content()
     return { success: true, html: html.slice(0, 5000) }
   } catch (e: any) {
     return { success: false, error: e.message }
   }
 }
+
+// ─── Wait for selector ─────────────────────────────────────────────────
 
 export async function browserWaitForSelector(selector: string, timeout = 10000, id?: string): Promise<{
   success: true
@@ -228,13 +372,24 @@ export async function browserWaitForSelector(selector: string, timeout = 10000, 
   const inst = instances.get(id ?? defaultId)
   if (!inst) return { success: false, error: `Browser not open` }
 
+  if (inst.mode === 'webview') {
+    try {
+      await browserIpc('browserWaitFor', selector, timeout)
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: `Wait timed out: ${e.message}` }
+    }
+  }
+
   try {
-    await inst.page.waitForSelector(selector, { timeout })
+    await inst.page!.waitForSelector(selector, { timeout })
     return { success: true }
   } catch (e: any) {
     return { success: false, error: `Wait timed out: ${e.message}` }
   }
 }
+
+// ─── Utils ──────────────────────────────────────────────────────────────
 
 export function listBrowserInstances(): string[] {
   return [...instances.keys()]
