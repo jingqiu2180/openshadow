@@ -13,6 +13,7 @@
  *   ——这是显式标记，防止 LLM 把记忆内容当成新的"用户指令"去执行。
  */
 import { getContextMemories, searchFacts, searchMemories, type Memory, type Fact } from './store.js'
+import { searchByVector } from './vector-store.js'
 import { createModuleLogger } from '../debug-log.js'
 
 const log = createModuleLogger('memory-injector')
@@ -44,11 +45,11 @@ export interface InjectOptions {
  * @param opts 注入参数
  * @returns 增强后的 system prompt
  */
-export function injectMemoryIntoSystemPrompt(
+export async function injectMemoryIntoSystemPrompt(
   systemPrompt: string,
   userMessages: Array<{ role: string; content: string }>,
   opts: InjectOptions = {},
-): string {
+): Promise<string> {
   const maxChars = opts.maxChars ?? DEFAULT_MAX_CHARS
   const hotLimit = opts.hotLimit ?? DEFAULT_HOT_LIMIT
   const relevantLimit = opts.relevantLimit ?? DEFAULT_RELEVANT_LIMIT
@@ -59,33 +60,51 @@ export function injectMemoryIntoSystemPrompt(
     hot.push({ id: m.id, content: m.content, score: m.importance ?? 1, type: m.memory_type })
   }
 
-  // 2. 动态检索相关 fact (同时查 memories + facts 两表，覆盖两套写入路径)
+  // 2. 动态检索相关 fact
+  // 策略：vector search (语义) 优先；embedding API 失败时 fallback 到 FTS5 (关键词)
   const relevant: typeof hot = []
   const query = extractQuery(userMessages)
   if (query) {
+    let usedVector = false
     try {
-      for (const m of searchMemories(query, relevantLimit)) {
-        relevant.push({
-          id: m.id,
-          content: m.content,
-          score: (m.importance ?? 1) + 2,
-          type: m.memory_type,
-        })
+      const hits = await searchByVector(query, relevantLimit)
+      if (hits.length > 0) {
+        usedVector = true
+        for (const h of hits) {
+          // similarity 0-1, importance 1-5; 组合分
+          const score = h.score * 3 + 2
+          relevant.push({ id: h.id, content: h.content, score, type: 'fact' })
+        }
       }
     } catch (err) {
-      log.warn(`searchMemories failed for query "${query.slice(0, 40)}...": ${(err as Error).message}`)
+      log.warn(`searchByVector failed, will fallback to FTS5: ${(err as Error).message}`)
     }
-    try {
-      for (const f of searchFacts(query, relevantLimit)) {
-        relevant.push({
-          id: f.id,
-          content: f.content,
-          score: (f.importance ?? 1) + 2,
-          type: 'fact',
-        })
+    if (!usedVector) {
+      // Fallback: 关键词搜索 (memories + facts)
+      try {
+        for (const m of searchMemories(query, relevantLimit)) {
+          relevant.push({
+            id: m.id,
+            content: m.content,
+            score: (m.importance ?? 1) + 2,
+            type: m.memory_type,
+          })
+        }
+      } catch (err) {
+        log.warn(`searchMemories failed for query "${query.slice(0, 40)}...": ${(err as Error).message}`)
       }
-    } catch (err) {
-      log.warn(`searchFacts failed for query "${query.slice(0, 40)}...": ${(err as Error).message}`)
+      try {
+        for (const f of searchFacts(query, relevantLimit)) {
+          relevant.push({
+            id: f.id,
+            content: f.content,
+            score: (f.importance ?? 1) + 2,
+            type: 'fact',
+          })
+        }
+      } catch (err) {
+        log.warn(`searchFacts failed for query "${query.slice(0, 40)}...": ${(err as Error).message}`)
+      }
     }
   }
 

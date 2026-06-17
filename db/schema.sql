@@ -83,7 +83,7 @@ CREATE TRIGGER IF NOT EXISTS facts_fts_insert AFTER INSERT ON facts BEGIN
 END;
 
 CREATE TRIGGER IF NOT EXISTS facts_fts_delete AFTER DELETE ON facts BEGIN
-  INSERT INTO facts_fts(memories_fts, rowid, content, tags) VALUES ('delete', old.rowid, old.content, old.tags);
+  INSERT INTO facts_fts(facts_fts, rowid, content, tags) VALUES ('delete', old.rowid, old.content, old.tags);
 END;
 
 CREATE TRIGGER IF NOT EXISTS facts_fts_update AFTER UPDATE ON facts BEGIN

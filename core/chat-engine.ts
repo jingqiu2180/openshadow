@@ -396,7 +396,7 @@ export class ChatEngine {
   }
 
   async chat(messages: ChatMessage[]): Promise<ChatResult> {
-    const systemContent = injectMemoryIntoSystemPrompt(this.systemPrompt, messages)
+    const systemContent = await injectMemoryIntoSystemPrompt(this.systemPrompt, messages)
 
     const baseMessages: any[] = [
       { role: 'system', content: systemContent },
@@ -479,7 +479,7 @@ export class ChatEngine {
     messages: ChatMessage[],
     onDelta: (chunk: string) => void,
   ): Promise<ChatResult> {
-    const systemContent = injectMemoryIntoSystemPrompt(this.systemPrompt, messages)
+    const systemContent = await injectMemoryIntoSystemPrompt(this.systemPrompt, messages)
 
     const baseMessages: any[] = [
       { role: 'system', content: systemContent },
