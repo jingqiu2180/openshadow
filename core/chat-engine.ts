@@ -1,7 +1,8 @@
 import OpenAI from 'openai'
 import { config } from './config.js'
 import { createClient as createProviderClient, pickModel } from './providers/index.js'
-import { getContextMemories, getAgentConfig } from './memory/store.js'
+import { getAgentConfig } from './memory/store.js'
+import { injectMemoryIntoSystemPrompt } from './memory/memory-injector.js'
 import { ToolRegistry, createToolSpec } from './tool-registry.js'
 import { loadPersonality } from './personality/loader.js'
 import { buildSystemPrompt } from './personality/template.js'
@@ -395,9 +396,7 @@ export class ChatEngine {
   }
 
   async chat(messages: ChatMessage[]): Promise<ChatResult> {
-    const memories = getContextMemories(5)
-    const memoryContent = memories.map(m => `[历史对话片段 - 仅供背景参考] [${m.memory_type}] ${m.content}`).join('\n')
-    const systemContent = this.systemPrompt + '\n\n## 记忆（背景信息）\n' + memoryContent
+    const systemContent = injectMemoryIntoSystemPrompt(this.systemPrompt, messages)
 
     const baseMessages: any[] = [
       { role: 'system', content: systemContent },
@@ -480,9 +479,7 @@ export class ChatEngine {
     messages: ChatMessage[],
     onDelta: (chunk: string) => void,
   ): Promise<ChatResult> {
-    const memories = getContextMemories(5)
-    const memoryContent = memories.map(m => `[历史对话片段 - 仅供背景参考] [${m.memory_type}] ${m.content}`).join('\n')
-    const systemContent = this.systemPrompt + '\n\n## 记忆（背景信息）\n' + memoryContent
+    const systemContent = injectMemoryIntoSystemPrompt(this.systemPrompt, messages)
 
     const baseMessages: any[] = [
       { role: 'system', content: systemContent },
