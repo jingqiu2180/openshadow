@@ -374,7 +374,7 @@ export default function DeskPanel() {
                   if (confirm(`确定删除 ${payload.path}？`)) await deleteFileNode(payload.path)
                 } else if (action === 'copy') {
                   await copyToClipboard(payload.path)
-                } else if (action === 'open') {
+                } else if ((action as string) === 'open') {
                   void openEditor(payload.path)
                 }
               }}
@@ -385,8 +385,8 @@ export default function DeskPanel() {
         {tab === 'workspace' && primaryWorkspace && (
           <SessionStatusCard
             workspace={primaryWorkspace}
-            modelName={settings.model || 'default'}
-            thinkingLevel={settings.thinkingLevel || 'off'}
+            modelName={(settings as any).model || 'default'}
+            thinkingLevel={(settings as any).thinkingLevel || 'off'}
             fileCount={tree.length}
           />
         )}
@@ -504,7 +504,7 @@ function TreeView({ nodes, expanded, onToggle, search, filter,
   setRenamingPath: (p: string | null) => void
   setCreatingIn: (c: { parentPath: string; type: 'file' | 'folder' } | null) => void
   onContextMenu: (e: React.MouseEvent, node: TreeNode) => void
-  onAction: (action: 'create' | 'rename' | 'delete' | 'copy', payload: any) => void
+  onAction: (action: 'create' | 'rename' | 'delete' | 'copy' | 'open', payload: any) => void
 }) {
   const filterNode = (n: TreeNode): boolean => {
     if (n.isDirectory) return true

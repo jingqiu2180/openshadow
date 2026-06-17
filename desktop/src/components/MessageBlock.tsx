@@ -53,7 +53,10 @@ function ToolGroupBlock({ block }: { block: ContentBlock }) {
   const isSingle = tools.length === 1
   const allDone = tools.every(t => t.status === 'success' || t.status === 'error')
   const failCount = tools.filter(t => t.status === 'error').length
-  const runningCount = tools.filter(t => t.status === 'running' || t.status === 'pending').length
+  const runningCount = tools.filter(t => {
+    const s: string = t.status
+    return s === 'running' || s === 'pending'
+  }).length
 
   let summary = ''
   if (allDone) {
@@ -148,8 +151,9 @@ function FileBlock({ block }: { block: ContentBlock }) {
     void navigator.clipboard.writeText(block.content || '')
   }, [block.content])
   const handleOpen = useCallback(() => {
-    if (window.platform?.openFile) {
-      void window.platform.openFile(block.content || '')
+    const w = window as any
+    if (w.platform?.openFile) {
+      void w.platform.openFile(block.content || '')
     } else {
       handleCopy()
     }
@@ -164,6 +168,7 @@ function FileBlock({ block }: { block: ContentBlock }) {
       onClick={handleOpen}
       actionSlot={
         <FileOutputActions
+          filePath={block.content || ''}
           displayName={block.content || ''}
           onOpen={handleOpen}
           onCopy={handleCopy}

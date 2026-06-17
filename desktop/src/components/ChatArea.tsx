@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { useStore, type FileEntry, type ModelInfo, type ThinkingLevel, type PermissionMode, type TreeNode } from '../store'
+import { useStore, type FileEntry, type ModelInfo, type ThinkingLevel, type PermissionMode, type TreeNode, type ContentBlock } from '../store'
 import PermissionModeSelect from './PermissionModeSelect'
 import InputStatusBars from './InputStatusBars'
 import { ContextRing } from './ContextRing'
@@ -387,7 +387,7 @@ export default function ChatArea() {
     return `${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
 
-  const renderMessage = (msg: { role: 'user' | 'assistant'; content: string; timestamp?: number; blocks?: typeof import('../store').ContentBlock[] }, key: React.Key) => {
+  const renderMessage = (msg: { role: 'user' | 'assistant'; content: string; timestamp?: number; blocks?: ContentBlock[] }, key: React.Key) => {
     const isUser = msg.role === 'user'
     const blocks = msg.blocks && msg.blocks.length > 0 ? msg.blocks : undefined
     const msgTs = msg.timestamp ?? Date.now()
@@ -408,6 +408,7 @@ export default function ChatArea() {
         onCopy={msg.content}
         onDelete={isStreamingMsg ? undefined : () => deleteMessage(conv?.id ?? '', msgTs)}
         onResend={isUser && !isStreamingMsg ? () => setInput(msg.content) : undefined}
+        onEdit={isUser && !isStreamingMsg ? () => setEditingMsgId(msgTs) : undefined}
         messageRef={el => {
           if (el) messageElementsRef.current.set(String(msgTs), el)
           else messageElementsRef.current.delete(String(msgTs))
@@ -1113,7 +1114,7 @@ function StopIcon() {
 }
 
 // ─── Message Row (with hover actions + timestamp) ─────────────
-function MessageRow({ isUser, timestamp, isStreaming, children, onCopy, onDelete, onResend, messageRef }: {
+function MessageRow({ isUser, timestamp, isStreaming, children, onCopy, onDelete, onResend, onEdit, messageRef }: {
   isUser: boolean
   timestamp: number
   isStreaming?: boolean
@@ -1121,6 +1122,7 @@ function MessageRow({ isUser, timestamp, isStreaming, children, onCopy, onDelete
   onCopy: string
   onDelete?: () => void
   onResend?: () => void
+  onEdit?: () => void
   messageRef?: (el: HTMLDivElement | null) => void
 }) {
   const [hovered, setHovered] = useState(false)
@@ -1169,10 +1171,11 @@ function MessageRow({ isUser, timestamp, isStreaming, children, onCopy, onDelete
             onDelete={() => onDelete?.()}
             onResend={() => onResend?.()}
             onRegenerate={() => onResend?.()}
-            onEdit={() => setEditingMsgId(timestamp)}
+            onEdit={() => onEdit?.()}
           />
         </div>
       )}
+    </div>
     </div>
   )
 }

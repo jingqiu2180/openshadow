@@ -238,7 +238,7 @@ export default function Sidebar({
               setRenamingId(id)
             } else if (action === 'copyId') {
               navigator.clipboard.writeText(id).catch(() => {})
-              pushToast({ type: 'info', text: '已复制会话 ID' })
+              pushToast('info', '已复制会话 ID')
             } else if (action === 'pin') {
               togglePin(id)
             } else if (action === 'archive') {
