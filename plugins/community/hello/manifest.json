@@ -1,0 +1,10 @@
+{
+  "id": "hello",
+  "name": "Hello Plugin",
+  "version": "1.0.0",
+  "description": "A simple example plugin for testing the remu plugin system",
+  "contributes": {
+    "tools": ["say-hello"],
+    "routes": ["status"]
+  }
+}

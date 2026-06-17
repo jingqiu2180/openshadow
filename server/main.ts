@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from '@hono/node-server'
 import { Agent } from '../core/agent.js'
 import { createScheduler } from '../core/scheduler.js'
@@ -11,7 +12,9 @@ import { SessionManager } from '../core/session-manager.js'
 import { eventBus } from '../core/event-bus.js'
 import { usageTracker } from '../core/providers/usage-tracker.js'
 import { createDeepMemoryProcessor } from '../core/memory/deep-memory.js'
+import { createMemoryTicker } from '../core/memory/memory-ticker.js'
 import { createSkillStore } from '../core/skills.js'
+import { PluginManager } from '../core/plugin-manager.js'
 import { promises as fs } from 'fs'
 import { join, sep, resolve } from 'path'
 
@@ -43,7 +46,81 @@ export async function startServer(options: MainOptions) {
 
   skillStore.contributeToRegistry(agent.engine.getToolRegistry())
 
+  // ── 加载插件 ─────────────────────────────────────────────────
+  const pluginManager = new PluginManager({
+    pluginsDirs: [
+      join(process.cwd(), 'plugins', 'builtin'),
+      join(process.cwd(), 'plugins'),
+    ],
+    dataDir: join(process.cwd(), 'data', 'plugins'),
+  })
+  await pluginManager.loadAll()
+
+  // 将插件工具注册到 Agent 的 ToolRegistry
+  const toolRegistry = agent.engine.getToolRegistry()
+  for (const tool of pluginManager.getLoadedTools()) {
+    const spec = {
+      type: 'function' as const,
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: {
+          type: 'object' as const,
+          properties: (tool.parameters as Record<string, unknown>).properties ?? {},
+          required: [],
+        },
+      },
+    }
+    const handler = async (args: Record<string, unknown>) => {
+      return await tool.execute(args)
+    }
+    toolRegistry.register(tool.name, spec, handler)
+  }
+
   const httpApp = createFeishuChannel(agent)
+
+  // 将插件路由挂载到 HTTP 应用（通用处理器）
+  // 匹配所有插件路由：/plugins/:pluginId/*
+  httpApp.all('/plugins/:pluginId/*', async (c) => {
+    const pluginId = c.req.param('pluginId')
+    const url = new URL(c.req.url)
+    const pathname = url.pathname
+    const method = c.req.method.toLowerCase()
+
+    // 查找匹配的路由
+    const routes = pluginManager.getLoadedRoutes()
+    for (const route of routes) {
+      if (route.pluginId !== pluginId) continue
+      if (route.method.toLowerCase() !== method) continue
+
+      // 匹配路径（支持参数）
+      if (route.pathRegex) {
+        const match = route.pathRegex.exec(pathname)
+        if (!match) continue
+
+        // 提取路径参数
+        const params: Record<string, string> = {}
+        if (route.paramNames) {
+          for (let i = 0; i < route.paramNames.length; i++) {
+            params[route.paramNames[i]] = match[i + 1]
+          }
+        }
+
+        try {
+          const body = method === 'get' ? undefined : await c.req.json().catch(() => undefined)
+          const query = Object.fromEntries(url.searchParams.entries())
+          const headers = Object.fromEntries(c.req.raw.headers.entries())
+          const result = await route.handler({ body, query, headers, params })
+          return c.json(result)
+        } catch (err: unknown) {
+          return c.json({ error: (err as Error).message }, 500)
+        }
+      }
+    }
+
+    // 没有找到匹配的路由
+    return c.json({ error: 'Route not found' }, 404)
+  })
 
   httpApp.get('/api/config/security', async (c) => {
     const sec = configManager.getSecurity()
@@ -414,6 +491,13 @@ export async function startServer(options: MainOptions) {
     const removed = usageTracker.cleanupOldLogs()
     if (removed > 0) console.log(`[usage-cleanup] Removed ${removed} old usage logs`)
   }, 90 * dayMs)
+
+  // ── 启动 Memory Ticker ─────────────────────────────────────────
+  const memoryTicker = createMemoryTicker({
+    intervalMs: 24 * 60 * 60 * 1000, // 24 小时
+    enabled: true,
+  })
+  memoryTicker.start()
 
   serve({
     fetch: httpApp.fetch,

@@ -2,17 +2,22 @@ import { SessionStore, type Session, sessionToChatMessages } from './session-sto
 import { SessionCompactor } from './session-compactor.js'
 import { ChatEngine, type ChatMessage, type ChatResult } from './chat-engine.js'
 import { addMemory } from './memory/store.js'
+import { MemoryManager } from './memory/memory-manager.js'
+import { createClient } from './providers/index.js'
+import { config } from './config.js'
 
 export class SessionManager {
   private readonly store: SessionStore
   private readonly compactor: SessionCompactor
   private readonly engine: ChatEngine
   private activeSessionId: string | null = null
+  private readonly memoryManager: MemoryManager
 
   constructor(engine: ChatEngine, store?: SessionStore) {
     this.engine = engine
     this.store = store ?? new SessionStore()
     this.compactor = new SessionCompactor()
+    this.memoryManager = new MemoryManager()
   }
 
   createSession(title?: string): Session {
@@ -40,6 +45,20 @@ export class SessionManager {
     if (this.activeSessionId === sessionId) {
       this.activeSessionId = null
     }
+
+    // 通知 MemoryManager：session 即将删除，触发最终记忆编译
+    setImmediate(async () => {
+      try {
+        const provider = config.getActiveProvider('small')
+        if (provider) {
+          const client = createClient(provider)
+          await this.memoryManager.onSessionEnd(sessionId, client)
+        }
+      } catch (err) {
+        console.error('[SessionManager] Failed to notify MemoryManager on session end:', (err as Error).message)
+      }
+    })
+
     return this.store.delete(sessionId)
   }
 
@@ -84,6 +103,19 @@ export class SessionManager {
   private buildMessages(session: Session): ChatMessage[] {
     const messages: ChatMessage[] = []
 
+    // 注入编译后的长期记忆（先于 session 摘要）
+    try {
+      const longtermMemory = this.memoryManager.getCompiledMemory('longterm')
+      if (longtermMemory) {
+        messages.push({
+          role: 'system',
+          content: `[Long-term Memory]\n${longtermMemory}`,
+        })
+      }
+    } catch {
+      // 记忆系统未初始化，跳过
+    }
+
     if (session.summary) {
       messages.push({
         role: 'system',
@@ -111,6 +143,17 @@ export class SessionManager {
       summary,
     }
     this.store.save(trimmedSession)
+
+    // 通知 MemoryManager：session 已压缩，保存摘要
+    try {
+      const provider = config.getActiveProvider('small')
+      if (provider) {
+        const client = createClient(provider)
+        await this.memoryManager.onSessionCompact(sessionId, summary, client)
+      }
+    } catch (err) {
+      console.error('[SessionManager] Failed to notify MemoryManager:', (err as Error).message)
+    }
   }
 
   getSessionStore(): SessionStore {

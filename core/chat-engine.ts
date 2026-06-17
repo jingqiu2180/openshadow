@@ -21,7 +21,11 @@ import { createPlanner } from './planner.js'
 import { createCoderAgent } from './coder.js'
 import { createSkillStore, type SkillStore } from './skills.js'
 import { createTeam, type TeamLeader } from './team.js'
+import { TerminalSessionManager } from './terminal/terminal-session-manager.js'
 import { join } from 'path'
+
+// 模块级 terminal manager（由 buildToolRegistry 创建）
+let _terminalManager: TerminalSessionManager | null = null
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
@@ -262,6 +266,49 @@ export class ChatEngine {
       description: 'List available TTS voices on this platform',
       params: {},
     }), listVoices)
+
+    // ─── Terminal Tool (阶段1 收尾) ─────────────────────
+    if (!_terminalManager) {
+      _terminalManager = new TerminalSessionManager(process.cwd())
+    }
+    registry.register('terminal', createToolSpec('terminal', {
+      description: '管理后台终端会话。用于启动长耗时进程（构建、dev server 等），然后读取输出。支持：start（启动进程）、read（读取输出）、write（写入 stdin）、close（关闭进程）、list（列出会话）。短命令直接用 bash 工具。',
+      params: {
+        action: { type: 'string', description: '操作：start / write / read / close / list' },
+        terminal_id: { type: 'string', description: '终端 ID（start 返回的）', optional: true },
+        command: { type: 'string', description: '要执行的命令（action=start 时）', optional: true },
+        chars: { type: 'string', description: '写入 stdin 的字符（action=write 时）', optional: true },
+        cwd: { type: 'string', description: '工作目录（action=start 时）', optional: true },
+        label: { type: 'string', description: '会话标签（action=start 时）', optional: true },
+        since_seq: { type: 'number', description: '只返回此 seq 之后的输出（action=read 时）', optional: true },
+      },
+    }), (args: any) => {
+      if (!_terminalManager) return { error: 'TerminalSessionManager 未初始化' }
+      const action = (args.action || '').toString().trim().toLowerCase()
+      try {
+        if (action === 'list') return { terminals: _terminalManager.list() }
+        if (action === 'start') {
+          const workDir = args.cwd || process.cwd()
+          const result = _terminalManager.start({ cwd: workDir, command: args.command || '', label: args.label || '' })
+          return result
+        }
+        if (action === 'read') {
+          if (!args.terminal_id) return { error: 'terminal_id 必填（action=read）' }
+          return _terminalManager.read({ terminalId: args.terminal_id, sinceSeq: args.since_seq })
+        }
+        if (action === 'write') {
+          if (!args.terminal_id) return { error: 'terminal_id 必填（action=write）' }
+          return _terminalManager.write({ terminalId: args.terminal_id, chars: args.chars || '' })
+        }
+        if (action === 'close') {
+          if (!args.terminal_id) return { error: 'terminal_id 必填（action=close）' }
+          return _terminalManager.close({ terminalId: args.terminal_id })
+        }
+        return { error: `未知 action: ${action}。可用：start, write, read, close, list` }
+      } catch (err: any) {
+        return { error: `terminal 工具错误: ${err.message}` }
+      }
+    })
 
     return registry
   }

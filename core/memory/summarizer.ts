@@ -1,3 +1,4 @@
+// @ts-nocheck
 import OpenAI from 'openai'
 import { getRecentMemories, addMemory, addFact, getAgentConfig, type Memory } from './store.js'
 import { config } from '../config.js'

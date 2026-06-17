@@ -9,3 +9,17 @@ config.json
 
 # Stage 1a transient: .cjs mirror of test-stage1a.ts (kept for diff, not for running)
 test-stage1a.cjs
+
+# WorkBuddy / CodeBuddy internal files
+.workbuddy/
+.codebuddy/
+
+# Runtime data (database, sessions, memory)
+data/
+
+# Test scripts (transient)
+test-*.ts
+e2e-*.ts
+
+# Transient shared/ directory (if not part of core)
+shared/
