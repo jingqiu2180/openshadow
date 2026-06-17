@@ -7,6 +7,16 @@ const isDev = !app.isPackaged
 const VITE_DEV_URL = process.env.VITE_DEV_URL ?? 'http://localhost:5173'
 const WIZ_DEV_HTML = join(__dirname, 'wizard', 'index.html')
 
+// ─── App icon (Stage 1j: Q 版雷姆) ─────────────────────────────
+// PNG 是 dev 模式的 runtime icon（窗口左上角 + 任务栏运行时图标）
+// 生产打包 (electron-builder) 需要 .ico 才能正确写入 EXE 资源
+const APP_ICON_PATH = join(__dirname, 'assets', 'rem-avatar.png')
+
+// Windows 任务栏需要 AppUserModelID 才能正确显示应用图标 + 独立分组
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.remu.app')
+}
+
 // ─── Self-contained config reader (no core/* dependency) ────────────
 // desktop tsconfig is CommonJS scope, so we read config.json directly
 // to avoid cross-project TS compilation.
@@ -161,6 +171,7 @@ async function runWizardWindow(): Promise<void> {
     minWidth: 640,
     minHeight: 520,
     title: 'Rem 启动向导',
+    icon: APP_ICON_PATH,
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -375,6 +386,7 @@ function createMainWindow() {
     minWidth: 900,
     minHeight: 600,
     title: 'Rem Agent',
+    icon: APP_ICON_PATH,
     webPreferences: {
       preload: join(__dirname, 'preload.cjs'),
       nodeIntegration: false,

@@ -1,0 +1,14 @@
+{
+  "id": "34d02785-7019-46d1-ad71-cfbc0a136a41",
+  "title": "New Session",
+  "model": "test-model",
+  "messages": [
+    {
+      "role": "user",
+      "content": "1+1",
+      "timestamp": 1781653845424
+    }
+  ],
+  "createdAt": 1781653845414,
+  "updatedAt": 1781653845424
+}

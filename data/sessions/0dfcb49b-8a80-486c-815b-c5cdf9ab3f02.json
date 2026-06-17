@@ -1,0 +1,34 @@
+{
+  "id": "0dfcb49b-8a80-486c-815b-c5cdf9ab3f02",
+  "title": "New Session",
+  "model": "test-model",
+  "messages": [
+    {
+      "role": "user",
+      "content": "请帮我截个图，分析一下当前屏幕上有什么",
+      "timestamp": 1781619584718
+    },
+    {
+      "role": "user",
+      "content": "帮我打开百度首页",
+      "timestamp": 1781619591658
+    },
+    {
+      "role": "user",
+      "content": "帮我搜索一下：",
+      "timestamp": 1781619594443
+    },
+    {
+      "role": "user",
+      "content": "请列出 D:\\src\\aicoding\\remu 目录下的文件",
+      "timestamp": 1781619596963
+    },
+    {
+      "role": "user",
+      "content": "1+1",
+      "timestamp": 1781619610281
+    }
+  ],
+  "createdAt": 1781619584708,
+  "updatedAt": 1781619610281
+}
