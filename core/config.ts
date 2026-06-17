@@ -279,9 +279,12 @@ export class ConfigManager {
       }
     }
 
-    // 2. isDefault flag
+    // 2. isDefault flag (only if the provider is actually usable)
+    //    A provider is "usable" if it has both apiKey and baseUrl. If the
+    //    default provider is incomplete (e.g. baseUrl is empty), fall through
+    //    to the legacy / env-var paths so we can still get a working config.
     const def = providers.find(p => p.isDefault)
-    if (def) return def
+    if (def && def.apiKey && def.baseUrl) return def
 
     // 3. Legacy single-provider (agent.* fields)
     const a = this.config.agent
