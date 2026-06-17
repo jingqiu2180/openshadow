@@ -13,7 +13,7 @@ import { usageTracker } from '../core/providers/usage-tracker.js'
 import { createDeepMemoryProcessor } from '../core/memory/deep-memory.js'
 import { createSkillStore } from '../core/skills.js'
 import { promises as fs } from 'fs'
-import { join, relative, sep, resolve } from 'path'
+import { join, sep, resolve } from 'path'
 
 export interface MainOptions {
   port?: number
@@ -122,6 +122,49 @@ export async function startServer(options: MainOptions) {
 
       const tree = await buildTree(abs, depth, 0)
       return c.json({ tree })
+    } catch (e: any) {
+      return c.json({ ok: false, error: e.message }, 500)
+    }
+  })
+
+  // ─── 2.6 /api/fs/read — 读文件内容 ────────────────────────
+  httpApp.get('/api/fs/read', async (c) => {
+    try {
+      const reqPath = c.req.query('path') ?? ''
+      if (!reqPath) return c.json({ ok: false, error: 'path required' }, 400)
+      const sec = configManager.getSecurity()
+      const roots: string[] = sec.workspaceRoots ?? []
+      const abs = resolve(reqPath)
+      const ok = roots.some(r => {
+        const rr = resolve(r)
+        return abs === rr || abs.startsWith(rr + sep) || abs.startsWith(rr + '/')
+      })
+      if (!ok) return c.json({ ok: false, error: 'Path outside workspace roots' }, 403)
+      const stat = await fs.stat(abs)
+      if (stat.isDirectory()) return c.json({ ok: false, error: 'Is a directory' }, 400)
+      if (stat.size > 2 * 1024 * 1024) return c.json({ ok: false, error: 'File too large (>2MB)' }, 413)
+      const content = await fs.readFile(abs, 'utf-8')
+      return c.json({ ok: true, content, size: stat.size, mtime: stat.mtimeMs })
+    } catch (e: any) {
+      return c.json({ ok: false, error: e.message }, 500)
+    }
+  })
+
+  // ─── 2.7 /api/fs/write — 写文件内容 ────────────────────────
+  httpApp.post('/api/fs/write', async (c) => {
+    try {
+      const body = await c.req.json() as { path?: string; content?: string }
+      if (!body.path) return c.json({ ok: false, error: 'path required' }, 400)
+      const sec = configManager.getSecurity()
+      const roots: string[] = sec.workspaceRoots ?? []
+      const abs = resolve(body.path)
+      const ok = roots.some(r => {
+        const rr = resolve(r)
+        return abs === rr || abs.startsWith(rr + sep) || abs.startsWith(rr + '/')
+      })
+      if (!ok) return c.json({ ok: false, error: 'Path outside workspace roots' }, 403)
+      await fs.writeFile(abs, body.content ?? '', 'utf-8')
+      return c.json({ ok: true })
     } catch (e: any) {
       return c.json({ ok: false, error: e.message }, 500)
     }
@@ -245,7 +288,7 @@ export async function startServer(options: MainOptions) {
       // 同步写回 config.models[role] = 'provider::model'
       const models = configManager.get('models') ?? {}
       ;(models as any)[r] = `${provider}::${model}`
-      configManager.set('models', models)
+      ;(configManager as any).set('models', models)
       return c.json({ ok: true, model: { provider, model, role: r } })
     } catch (e: any) {
       return c.json({ ok: false, error: e.message }, 500)

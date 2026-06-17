@@ -1,0 +1,113 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.card {
+  background: #faf8f5;
+  border: 1px solid #ece6d8;
+  border-radius: 14px;
+  padding: 18px 22px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon { font-size: 20px; }
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.body {
+  font-size: 13.5px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.toolRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  background: #f4ecdc;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.toolLabel {
+  color: #888;
+  font-weight: 500;
+}
+
+.toolName {
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 12px;
+  color: #b08a4e;
+}
+
+.args {
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11.5px;
+  color: #555;
+  background: #f0ede8;
+  padding: 8px 10px;
+  border-radius: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.btn {
+  font-size: 12.5px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btnDeny {
+  background: transparent;
+  border-color: #d0d0d0;
+  color: #666;
+}
+.btnDeny:hover { background: #f0f0f0; }
+
+.btnAllowOnce {
+  background: #fff;
+  border-color: #b08a4e;
+  color: #b08a4e;
+}
+.btnAllowOnce:hover { background: #f4ecdc; }
+
+.btnAlways {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+.btnAlways:hover { background: #5568d3; }

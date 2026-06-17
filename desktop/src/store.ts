@@ -1,9 +1,29 @@
 import { create } from 'zustand'
 
+// ─── Content Block Types ─────────────────────────────────────
+export type ContentBlockType = 'text' | 'thinking' | 'tool_group' | 'image' | 'file' | 'interlude' | 'mood' | 'plugin_card' | 'todo' | 'workflow' | 'subagent' | 'settings_confirm' | 'settings_update'
+
+export interface ContentBlock {
+  id: string
+  type: ContentBlockType
+  /** text / thinking: 文本内容 */
+  content: string
+  /** tool_group: 工具调用列表 */
+  tools?: Array<{ name: string; status: 'running' | 'success' | 'error'; output?: string }>
+  /** 是否为流式中（thinking 或 tool_group 正在更新） */
+  streaming?: boolean
+  /** 时间戳 */
+  timestamp?: number
+}
+
 export interface Message {
   role: 'user' | 'assistant'
   content: string
+  /** 结构化 blocks（为空时退化为 content 纯文本） */
+  blocks?: ContentBlock[]
   timestamp: number
+  /** 编辑消息 ID（重编辑后指向的原消息） */
+  editedFrom?: string
 }
 
 export interface Conversation {
@@ -51,6 +71,32 @@ interface AppState {
   pendingPrompt: string | null
   /** Sidebar 会话搜索关键词 */
   searchQuery: string
+  /** 引用选区 — 鼠标选中消息文本后注入的引用片段 */
+  quotedSelection: string | null
+  /** 已选文件/附件 — 发送时随 prompt 一起提交 */
+  attachedFiles: FileEntry[]
+  /** 当前会话 TODO 列表 */
+  sessionTodos: Array<{ id: string; content: string; status: 'pending' | 'in_progress' | 'completed' | 'failed'; activeForm?: string }>
+  /** 当前 agent 活动 step */
+  agentActivity: { step: string; elapsed: number; lastResult?: string } | null
+  /** 工作流进度（skill 调用时） */
+  workflow: { id: string; name: string; steps: Array<{ name: string; status: 'pending' | 'running' | 'done' | 'error' }>; currentStep: number } | null
+  /** 待确认配置变更 */
+  settingsConfirm: { id: string; key: string; oldValue: any; newValue: any; description: string } | null
+  /** 工具/操作执行前的会话级确认 prompt (allow once / always / deny) */
+  confirmationPrompt: {
+    id: string
+    title: string
+    description: string
+    toolName?: string
+    args?: any
+  } | null
+  /** 解析确认结果 */
+  resolveConfirmation: (choice: 'allow' | 'always' | 'deny') => void
+  /** 自动应用配置更新（无确认） */
+  settingsUpdate: { id: string; key: string; newValue: any; description: string } | null
+  /** 能力漂移提示（启动时检测到不匹配） */
+  capabilityDrift: { severity: 'info' | 'warning' | 'error'; title: string; detail: string; dismissable: boolean } | null
 
   settings: {
     workspaceRoots: string[]
@@ -75,6 +121,8 @@ interface AppState {
 
   // Chat
   addMessage: (convId: string, msg: Message) => void
+  deleteMessage: (convId: string, msgTimestamp: number) => void
+  updateMessage: (convId: string, msgTimestamp: number, content: string) => void
   newConversation: () => string
   setActive: (id: string) => void
   renameConversation: (id: string, title: string) => void
@@ -106,6 +154,20 @@ interface AppState {
   // Cross-component
   setPendingPrompt: (prompt: string | null) => void
   setSearchQuery: (q: string) => void
+  setQuotedSelection: (q: string | null) => void
+  addAttachedFile: (f: FileEntry) => void
+  removeAttachedFile: (index: number) => void
+  clearAttachedFiles: () => void
+  setSessionTodos: (todos: AppState['sessionTodos']) => void
+  updateTodo: (id: string, status: AppState['sessionTodos'][number]['status']) => void
+  clearSessionTodos: () => void
+  setAgentActivity: (a: AppState['agentActivity']) => void
+  setWorkflow: (w: AppState['workflow']) => void
+  setSettingsConfirm: (s: AppState['settingsConfirm']) => void
+  resolveSettingsConfirm: (accept: boolean) => void
+  setConfirmationPrompt: (p: AppState['confirmationPrompt']) => void
+  setSettingsUpdate: (s: AppState['settingsUpdate']) => void
+  setCapabilityDrift: (c: AppState['capabilityDrift']) => void
 
   // Settings
   loadSettings: () => Promise<void>
@@ -162,6 +224,15 @@ export const useStore = create<AppState>((set, get) => ({
   tree: [],
   pendingPrompt: null,
   searchQuery: '',
+  quotedSelection: null,
+  attachedFiles: [] as FileEntry[],
+  sessionTodos: [] as AppState['sessionTodos'],
+  agentActivity: null,
+  workflow: null,
+  settingsConfirm: null,
+  settingsUpdate: null,
+  capabilityDrift: null,
+  confirmationPrompt: null,
 
   settings: {
     workspaceRoots: [],
@@ -197,6 +268,32 @@ export const useStore = create<AppState>((set, get) => ({
       const conversations = state.conversations.map(c =>
         c.id === convId ? { ...c, messages: [...c.messages, msg], updatedAt: Date.now() } : c
       )
+      persistConversations(conversations)
+      return { conversations }
+    })
+  },
+
+  deleteMessage: (convId, msgTimestamp) => {
+    set(state => {
+      const conversations = state.conversations.map(c => {
+        if (c.id !== convId) return c
+        const messages = c.messages.filter(m => m.timestamp !== msgTimestamp)
+        return { ...c, messages, updatedAt: Date.now() }
+      })
+      persistConversations(conversations)
+      return { conversations }
+    })
+  },
+
+  updateMessage: (convId, msgTimestamp, content) => {
+    set(state => {
+      const conversations = state.conversations.map(c => {
+        if (c.id !== convId) return c
+        const messages = c.messages.map(m =>
+          m.timestamp === msgTimestamp ? { ...m, content } : m
+        )
+        return { ...c, messages, updatedAt: Date.now() }
+      })
       persistConversations(conversations)
       return { conversations }
     })
@@ -347,6 +444,32 @@ export const useStore = create<AppState>((set, get) => ({
 
   setPendingPrompt: (pendingPrompt) => set({ pendingPrompt }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
+  setQuotedSelection: (quotedSelection) => set({ quotedSelection }),
+  addAttachedFile: (f) => set(s => ({ attachedFiles: [...s.attachedFiles, f] })),
+  removeAttachedFile: (index) => set(s => ({ attachedFiles: s.attachedFiles.filter((_, i) => i !== index) })),
+  clearAttachedFiles: () => set({ attachedFiles: [] }),
+  setSessionTodos: (sessionTodos) => set({ sessionTodos }),
+  updateTodo: (id, status) => set(s => ({
+    sessionTodos: s.sessionTodos.map(t => t.id === id ? { ...t, status } : t)
+  })),
+  clearSessionTodos: () => set({ sessionTodos: [] }),
+  setAgentActivity: (agentActivity) => set({ agentActivity }),
+  setWorkflow: (workflow) => set({ workflow }),
+  setSettingsConfirm: (settingsConfirm) => set({ settingsConfirm }),
+  resolveSettingsConfirm: (accept) => {
+    const s = get().settingsConfirm
+    if (!s) return
+    // TODO: 真实场景写回 config
+    set({ settingsConfirm: null })
+  },
+  setSettingsUpdate: (settingsUpdate) => set({ settingsUpdate }),
+  setCapabilityDrift: (capabilityDrift) => set({ capabilityDrift }),
+  setConfirmationPrompt: (confirmationPrompt) => set({ confirmationPrompt }),
+  resolveConfirmation: (choice) => {
+    set({ confirmationPrompt: null })
+    // TODO: 真实场景把选择发送回 agent
+    void choice
+  },
 
   loadSettings: async () => {
     try {

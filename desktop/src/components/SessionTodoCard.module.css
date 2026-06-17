@@ -1,0 +1,139 @@
+.card {
+  background: #faf8f5;
+  border: 1px solid #ece6d8;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.progress {
+  font-size: 11px;
+  color: #b08a4e;
+  font-weight: 500;
+}
+
+.progressBar {
+  height: 3px;
+  background: #ececec;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #c5a878, #b08a4e);
+  transition: width 0.3s ease;
+}
+
+.todoList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.todoItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  padding: 2px 0;
+}
+
+.todoItem[data-status="completed"] .todoText {
+  color: #999;
+  text-decoration: line-through;
+}
+
+.todoItem[data-status="failed"] .todoText {
+  color: #c05050;
+}
+
+.todoItem[data-status="in_progress"] .todoText {
+  color: #b08a4e;
+  font-weight: 500;
+}
+
+.todoIcon {
+  flex: 0 0 14px;
+  width: 14px;
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.todoItem[data-status="completed"] .todoIcon { color: #5cb85c; }
+.todoItem[data-status="in_progress"] .todoIcon { color: #c5a878; }
+.todoItem[data-status="failed"] .todoIcon { color: #c05050; }
+
+.todoText {
+  flex: 1;
+  word-break: break-word;
+}
+
+.todoSpinner {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid #e0d8c8;
+  border-top-color: #c5a878;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #ece6d8;
+  font-size: 11.5px;
+  color: #888;
+}
+
+.activityDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c5a878;
+  animation: pulse 1.4s infinite;
+  flex: 0 0 auto;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.85); }
+}
+
+.activityStep { flex: 1; }
+.activityElapsed {
+  font-variant-numeric: tabular-nums;
+  color: #b08a4e;
+  font-weight: 500;
+}

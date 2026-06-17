@@ -2,7 +2,18 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useStore, type FileEntry, type ModelInfo, type ThinkingLevel, type PermissionMode, type TreeNode } from '../store'
+import PermissionModeSelect from './PermissionModeSelect'
+import InputStatusBars from './InputStatusBars'
+import { ContextRing } from './ContextRing'
+import { MessageBlock } from './MessageBlock'
+import { MessageActions } from './MessageActions'
+import { CodeBlock } from './CodeBlock'
+import { QuotedSelectionCard } from './QuotedSelectionCard'
+import { SettingsConfirmCard } from './SettingsConfirmCard'
+import { CapabilityDriftNotice } from './CapabilityDriftNotice'
+import { ChatTimelineNavigator } from './ChatTimelineNavigator'
 import remAvatar from '../assets/rem-avatar.png'
+import styles from './ChatArea.module.css'
 
 const TEXT_EXT = new Set(['txt', 'md', 'json', 'js', 'ts', 'tsx', 'jsx', 'py', 'html', 'css', 'scss', 'yaml', 'yml', 'xml', 'csv', 'log', 'sh', 'bat', 'c', 'cpp', 'h', 'hpp', 'rs', 'go', 'java', 'rb', 'php'])
 const IMAGE_EXT = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp'])
@@ -34,33 +45,68 @@ interface SlashCtx {
   args: string
 }
 
-export default function ChatArea({ onToggleBrowser }: { onToggleBrowser?: () => void }) {
+export default function ChatArea() {
   const {
     conversations, currentId, addMessage, pendingPrompt, setPendingPrompt,
     settings, memoryOn, setMemoryOn, permissionMode, setPermissionMode,
     currentModel, availableModels, setCurrentModel, thinkingLevel, setThinkingLevel,
     loadModels, loadSettings, refreshTree, tree,
-    setWsStatus, pushToast,
+    setWsStatus, pushToast, deleteMessage, updateMessage,
+    quotedSelection, setQuotedSelection,
   } = useStore()
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [streaming, setStreaming] = useState('')
   const [openPopover, setOpenPopover] = useState<'slash' | 'thinking' | 'model' | null>(null)
+  const [editingMsgId, setEditingMsgId] = useState<number | null>(null)
   const [slashFilter, setSlashFilter] = useState('')
   const [atFilter, setAtFilter] = useState('')
   const [atStartPos, setAtStartPos] = useState(-1)
   const [attachedFiles, setAttachedFiles] = useState<FileEntry[]>([])
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const chatRef = useRef<HTMLDivElement>(null)
+  const messageElementsRef = useRef<Map<string, HTMLDivElement>>(new Map())
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const conv = conversations.find(c => c.id === currentId) ?? conversations[0]
   const messages = conv?.messages ?? []
   const isEmpty = messages.length === 0 && !streaming
 
+  // ─── Smart scroll: only auto-scroll when user is near bottom ───
+  const userScrolledUp = useRef(false)
+
   useEffect(() => {
-    if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight
+    if (!chatRef.current) return
+    const el = chatRef.current
+
+    // When user sends a message, always scroll to bottom
+    const lastMsg = messages[messages.length - 1]
+    if (lastMsg?.role === 'user') {
+      el.scrollTop = el.scrollHeight
+      userScrolledUp.current = false
+      return
+    }
+
+    // When streaming, only follow if user hasn't scrolled up
+    if (streaming && !userScrolledUp.current) {
+      const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+      if (distFromBottom < 60) {
+        el.scrollTop = el.scrollHeight
+      }
+    }
   }, [messages, streaming])
+
+  // Listen for user scroll to detect manual scroll-up
+  useEffect(() => {
+    const el = chatRef.current
+    if (!el) return
+    const onScroll = () => {
+      const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+      userScrolledUp.current = distFromBottom > 100
+    }
+    el.addEventListener('scroll', onScroll)
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     loadModels()
@@ -75,15 +121,82 @@ export default function ChatArea({ onToggleBrowser }: { onToggleBrowser?: () => 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingPrompt])
 
+  // 监听 chat 容器内的文本选区 — 选中后注入到 input 下方
+  useEffect(() => {
+    const el = chatRef.current
+    if (!el) return
+    const onMouseUp = () => {
+      const sel = window.getSelection()
+      if (!sel || sel.isCollapsed) return
+      const text = sel.toString().trim()
+      // 仅当选择发生在 chat 容器内
+      if (!text || text.length < 4 || text.length > 2000) return
+      const range = sel.getRangeAt(0)
+      if (!el.contains(range.commonAncestorContainer)) return
+      setQuotedSelection(text)
+    }
+    el.addEventListener('mouseup', onMouseUp)
+    return () => el.removeEventListener('mouseup', onMouseUp)
+  }, [setQuotedSelection])
+
+  // 消息级快捷键：↑ 编辑最近一条用户消息 / Cmd+Shift+C 复制 / Cmd+R 重新生成
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const inInput = target?.tagName === 'TEXTAREA' || target?.tagName === 'INPUT' || target?.isContentEditable
+
+      // ↑ 在空 input 中按一次，载入最后一条用户消息到 input
+      if (e.key === 'ArrowUp' && inInput && target instanceof HTMLTextAreaElement) {
+        if (target.value === '' && !e.shiftKey) {
+          const last = [...conv.messages].reverse().find(m => m.role === 'user')
+          if (last) {
+            e.preventDefault()
+            setInput(last.content)
+          }
+        }
+      }
+
+      // Cmd+Shift+C 复制最后一条 assistant 消息
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+        const lastAssistant = [...conv.messages].reverse().find(m => m.role === 'assistant')
+        if (lastAssistant) {
+          e.preventDefault()
+          void navigator.clipboard.writeText(lastAssistant.content)
+          pushToast('success', '已复制最后一条回复')
+        }
+      }
+
+      // Cmd+R 重新生成最后一条 assistant 消息
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R') && !e.shiftKey) {
+        // 让浏览器自己的刷新继续生效，仅当非浏览器快捷键时
+        if (inInput) return
+        const userMsgs = conv.messages.filter(m => m.role === 'user')
+        if (userMsgs.length === 0) return
+        const lastUser = userMsgs[userMsgs.length - 1]
+        e.preventDefault()
+        send(lastUser.content)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [conv, send, pushToast, setInput])
+
   async function send(text: string) {
     if (!text.trim() || sending || !currentId) return
-    const fullText = attachedFiles.length
-      ? text + '\n\n[附件]\n' + attachedFiles.map(f => `- ${f.name} (${f.path})`).join('\n')
-      : text
+    const parts: string[] = []
+    if (quotedSelection) {
+      parts.push(`> ${quotedSelection.replace(/\n/g, '\n> ')}`)
+    }
+    if (attachedFiles.length) {
+      parts.push(attachedFiles.map(f => `- ${f.name} (${f.path})`).join('\n'))
+    }
+    parts.push(text)
+    const fullText = parts.join('\n\n')
     const userMsg = { role: 'user' as const, content: fullText, timestamp: Date.now() }
     addMessage(currentId, userMsg)
     setInput('')
     setAttachedFiles([])
+    setQuotedSelection(null)
     setSending(true)
     setStreaming('')
     setWsStatus('connecting')
@@ -268,15 +381,36 @@ export default function ChatArea({ onToggleBrowser }: { onToggleBrowser?: () => 
     }
   }, [handleAttach])
 
-  const renderBubble = (role: 'user' | 'assistant', content: string, key: React.Key) => {
-    const isUser = role === 'user'
+  const timestampLabel = (ts: number) => {
+    const d = new Date(ts)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+
+  const renderMessage = (msg: { role: 'user' | 'assistant'; content: string; timestamp?: number; blocks?: typeof import('../store').ContentBlock[] }, key: React.Key) => {
+    const isUser = msg.role === 'user'
+    const blocks = msg.blocks && msg.blocks.length > 0 ? msg.blocks : undefined
+    const msgTs = msg.timestamp ?? Date.now()
+    const isStreamingMsg = key === 'streaming' || key === 'streaming-steer'
+
+    const editingId = editingMsgId
+    const isEditing = editingId === msgTs
+    const saveEdit = (newContent: string) => {
+      if (!conv) return
+      updateMessage(conv.id, msgTs, newContent)
+      setEditingMsgId(null)
+      // 重新发送
+      send(newContent)
+    }
+
     return (
-      <div
-        key={key}
-        style={{
-          display: 'flex',
-          justifyContent: isUser ? 'flex-end' : 'flex-start',
-          marginBottom: 16,
+      <MessageRow key={key} isUser={isUser} timestamp={msgTs} isStreaming={isStreamingMsg}
+        onCopy={msg.content}
+        onDelete={isStreamingMsg ? undefined : () => deleteMessage(conv?.id ?? '', msgTs)}
+        onResend={isUser && !isStreamingMsg ? () => setInput(msg.content) : undefined}
+        messageRef={el => {
+          if (el) messageElementsRef.current.set(String(msgTs), el)
+          else messageElementsRef.current.delete(String(msgTs))
         }}
       >
         {!isUser && (
@@ -287,32 +421,34 @@ export default function ChatArea({ onToggleBrowser }: { onToggleBrowser?: () => 
             color: 'white', fontSize: 13, fontWeight: 600, marginRight: 10, flexShrink: 0,
           }}>R</div>
         )}
-        <div
-          className={isUser ? '' : 'md-bubble'}
-          style={{
-            maxWidth: '80%',
-            padding: '10px 14px',
-            borderRadius: 14,
-            fontSize: 14,
-            lineHeight: 1.6,
-            whiteSpace: isUser ? 'pre-wrap' : 'normal',
-            ...(isUser ? {
-              background: '#667eea',
-              color: 'white',
-              borderBottomRightRadius: 4,
-            } : {
-              background: 'white',
-              color: '#333',
-              borderBottomLeftRadius: 4,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-            }),
-          }}
-        >
-          {isUser ? content : (
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+        <div style={{
+          maxWidth: '80%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+        }}>
+          {blocks ? (
+            blocks.map((block) => (
+              <MessageBlock
+                key={block.id}
+                block={block}
+                isUser={false}
+                isEditing={isEditing && isUser}
+                onSaveEdit={saveEdit}
+                onCancelEdit={() => setEditingMsgId(null)}
+              />
+            ))
+          ) : (
+            <MessageBlock
+              block={{ id: String(msgTs), type: 'text', content: msg.content }}
+              isUser={isUser}
+              isEditing={isEditing}
+              onSaveEdit={saveEdit}
+              onCancelEdit={() => setEditingMsgId(null)}
+            />
           )}
         </div>
-      </div>
+      </MessageRow>
     )
   }
 
@@ -330,7 +466,21 @@ export default function ChatArea({ onToggleBrowser }: { onToggleBrowser?: () => 
         style={{ display: 'none' }}
         onChange={(e) => handleAttach(e.target.files)}
       />
-      <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+      <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', position: 'relative' }}>
+        <div style={{ marginBottom: 12 }}>
+          <CapabilityDriftNotice />
+        </div>
+        <ChatTimelineNavigator
+          anchors={messages
+            .filter(m => m.content?.length > 0 || m.blocks?.length)
+            .map(m => ({
+              messageId: String(m.timestamp),
+              label: m.content?.slice(0, 30) || (m.role === 'user' ? '用户消息' : 'AI 回复'),
+              type: m.role,
+            }))}
+          scrollRef={chatRef}
+          messageElementsRef={messageElementsRef}
+        />
         {isEmpty ? (
           <WelcomePanel
             workspaceRoots={settings.workspaceRoots}
@@ -340,8 +490,12 @@ export default function ChatArea({ onToggleBrowser }: { onToggleBrowser?: () => 
           />
         ) : (
           <div style={{ maxWidth: 700, margin: '0 auto' }}>
-            {messages.map((msg, i) => renderBubble(msg.role, msg.content, i))}
-            {streaming && renderBubble('assistant', streaming, 'streaming')}
+            {messages.map((msg, i) => renderMessage(msg, i))}
+            {streaming && (
+              <div className="streaming-tail-fade">
+                {renderMessage({ role: 'assistant', content: streaming }, 'streaming')}
+              </div>
+            )}
             {!streaming && sending && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 10 }}>
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ccc', animation: 'blink 1s infinite' }} />
@@ -402,9 +556,14 @@ export default function ChatArea({ onToggleBrowser }: { onToggleBrowser?: () => 
             onSend={handleSend}
             onPaste={handlePaste}
             sending={sending}
+            streaming={streaming.length > 0}
+            onStop={() => {
+              // TODO: close WS connection when WS ref is available
+              setSending(false)
+              setStreaming('')
+            }}
             permissionMode={permissionMode}
-            onTogglePermission={() => setPermissionMode(permissionMode === 'ask' ? 'auto' : 'ask')}
-            onToggleBrowser={onToggleBrowser}
+            onPermissionChange={setPermissionMode}
             openPopover={openPopover}
             setOpenPopover={setOpenPopover}
             slashFilter={slashFilter}
@@ -427,9 +586,14 @@ export default function ChatArea({ onToggleBrowser }: { onToggleBrowser?: () => 
             setThinkingLevel={setThinkingLevel}
             onAttach={() => fileInputRef.current?.click()}
             attachedFiles={attachedFiles}
-            onRemoveAttached={(i) => setAttachedFiles(prev => prev.filter((_, idx) => idx !== i))}
+            onRemoveAttached={(i) => {
+              if (i < 0) { setAttachedFiles([]); return }
+              setAttachedFiles(prev => prev.filter((_, idx) => idx !== i))
+            }}
             tree={tree}
           />
+          <QuotedSelectionCard />
+          <SettingsConfirmCard />
           {isDraggingOver && (
             <div style={{
               position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -561,9 +725,10 @@ function InputCard(props: {
   onSend: () => void
   onPaste?: (e: React.ClipboardEvent) => void
   sending: boolean
+  streaming: boolean
+  onStop: () => void
   permissionMode: PermissionMode
-  onTogglePermission: () => void
-  onToggleBrowser?: () => void
+  onPermissionChange: (m: PermissionMode) => void
   openPopover: 'slash' | 'thinking' | 'model' | null
   setOpenPopover: (p: 'slash' | 'thinking' | 'model' | null) => void
   slashFilter: string
@@ -582,14 +747,16 @@ function InputCard(props: {
   onRemoveAttached: (i: number) => void
   tree: TreeNode[]
 }) {
-  const { value, onChange, onKeyDown, onSend, onPaste, sending,
-    permissionMode, onTogglePermission, onToggleBrowser,
+  const { value, onChange, onKeyDown, onSend, onPaste, sending, streaming, onStop,
+    permissionMode, onPermissionChange,
     openPopover, setOpenPopover, slashFilter, runSlash,
     atFilter, atStartPos, onInsertAtMention, onCloseAtMention,
     currentModel, availableModels, setCurrentModel, thinkingLevel, setThinkingLevel,
     onAttach, attachedFiles, onRemoveAttached, tree } = props
   const [focused, setFocused] = useState(false)
-  const canSend = !sending && value.trim().length > 0
+  const isStreaming = sending || streaming
+  const hasInput = value.trim().length > 0
+  const canSend = !sending && hasInput
   const showSlash = openPopover === 'slash' || (value.startsWith('/') && !value.includes(' '))
   const filteredSlash = SLASH_COMMANDS.filter(c =>
     !slashFilter || c.cmd.slice(1).toLowerCase().includes(slashFilter)
@@ -613,13 +780,7 @@ function InputCard(props: {
   const showAtMention = atStartPos >= 0 && filteredFiles.length > 0
 
   return (
-    <div
-      style={{
-        position: 'relative',
-      }}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
-      {/* Slash command menu */}
+    <div className={styles.inputRoot} onMouseDown={(e) => e.stopPropagation()}>
       {showSlash && filteredSlash.length > 0 && (
         <Popover anchor="above" align="left">
           <SlashMenu
@@ -628,6 +789,14 @@ function InputCard(props: {
           />
         </Popover>
       )}
+
+      {/* Input status bars */}
+      <InputStatusBars
+        slashBusyLabel={null}
+        compactingLabel={null}
+        inlineError={null}
+        slashResult={null}
+      />
 
       {/* @ file mention menu */}
       {showAtMention && (
@@ -661,27 +830,23 @@ function InputCard(props: {
       )}
 
       {/* Input card */}
-      <div
-        style={{
-          background: 'white',
-          border: `1px solid ${focused ? '#c4a890' : '#e8e4df'}`,
-          borderRadius: 16,
-          padding: '14px 16px',
-          boxShadow: focused
-            ? '0 4px 18px rgba(0, 0, 0, 0.07)'
-            : '0 2px 12px rgba(0, 0, 0, 0.04)',
-          transition: 'border-color 0.2s, box-shadow 0.2s',
-        }}
-      >
-        {/* Attached files chips */}
+      <div className={`${styles.inputCard}${focused ? ` ${styles.inputCardFocused}` : ''}`}>
+        {/* Attached files chips — 文件附件条 (P2-6) */}
         {attachedFiles.length > 0 && (
-          <div style={{
-            display: 'flex', flexWrap: 'wrap', gap: 4,
-            marginBottom: 8,
-          }}>
-            {attachedFiles.map((f, i) => (
-              <AttachedFileChip key={i} file={f} onRemove={() => onRemoveAttached(i)} />
-            ))}
+          <div className={styles.attachedFilesRow}>
+            <div className={styles.attachedFilesChips}>
+              {attachedFiles.map((f, i) => (
+                <AttachedFileChip key={i} file={f} onRemove={() => onRemoveAttached(i)} />
+              ))}
+            </div>
+            <button
+              type="button"
+              className={styles.attachedFilesClear}
+              onClick={() => onRemoveAttached(-1)}
+              title="清除全部附件"
+            >
+              清空
+            </button>
           </div>
         )}
 
@@ -695,86 +860,50 @@ function InputCard(props: {
           placeholder="把文件直接拖进输入框, 就能附带发送（输入 / 触发命令）"
           disabled={sending}
           rows={2}
-          style={{
-            width: '100%', padding: 0, border: 'none', outline: 'none',
-            resize: 'none', fontFamily: 'inherit', fontSize: 14,
-            lineHeight: 1.6, color: '#2c2c2c', background: 'transparent',
-            minHeight: 52, maxHeight: 200,
-          }}
+          className={styles.inputTextarea}
         />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
-          <button onClick={onAttach} title="附件" style={iconBtnStyle}>+</button>
+        <div className={styles.controlBar}>
+          <button onClick={onAttach} title="附件" className={styles.iconBtn}>+</button>
           <button
             onClick={() => setOpenPopover(openPopover === 'slash' ? null : 'slash')}
             title="命令 (/)"
-            style={{
-              ...iconBtnStyle,
-              color: openPopover === 'slash' ? '#667eea' : '#888',
-            }}
+            className={`${styles.iconBtn}${openPopover === 'slash' ? ` ${styles.iconBtnActive}` : ''}`}
           >✦</button>
-          <button
-            onClick={onTogglePermission}
-            title="操作前询问"
-            style={{
-              ...pillBtnStyle,
-              color: permissionMode === 'ask' ? '#5a5a5a' : '#aaa',
-              background: permissionMode === 'ask' ? '#f5f1ea' : 'transparent',
-              fontWeight: permissionMode === 'ask' ? 500 : 400,
-            }}
-          >
-            <QuestionIcon />
-            <span>{permissionMode === 'ask' ? '操作前问问' : '操作前不问'}</span>
-          </button>
-          {onToggleBrowser && (
-            <button
-              onClick={onToggleBrowser}
-              title="浏览器"
-              style={pillBtnStyle}
-            >
-              <GlobeIcon />
-              <span>浏览器</span>
-            </button>
-          )}
-          <div style={{ flex: 1 }} />
+          <PermissionModeSelect
+            mode={permissionMode}
+            onChange={onPermissionChange}
+          />
+          <ContextRing />
+          <div className={styles.spacer} />
           <button
             onClick={() => setOpenPopover(openPopover === 'thinking' ? null : 'thinking')}
             title={`思考深度: ${thinkingLevel}`}
-            style={{
-              ...iconBtnStyle,
-              color: thinkingLevel !== 'off' ? '#667eea' : '#888',
-            }}
+            className={`${styles.iconBtn}${thinkingLevel !== 'off' ? ` ${styles.iconBtnActive}` : ''}`}
           >
             <LightbulbIcon />
           </button>
           <button
             onClick={() => setOpenPopover(openPopover === 'model' ? null : 'model')}
             title="选择模型"
-            style={{
-              ...pillBtnStyle,
-              minWidth: 110,
-              justifyContent: 'space-between',
-              color: '#5a5a5a',
-              background: openPopover === 'model' ? '#f0ede8' : 'transparent',
-            }}
+            className={`${styles.pillBtn}${openPopover === 'model' ? ` ${styles.pillBtnOpen}` : ''}`}
           >
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span className={styles.pillBtnLabel}>
               {currentModel.label ?? currentModel.model}
             </span>
-            <span style={{ fontSize: 9, opacity: 0.6 }}>▾</span>
+            <span className={styles.pillBtnArrow}>▾</span>
           </button>
           <button
-            onClick={onSend}
-            disabled={!canSend}
-            style={{
-              background: canSend ? '#667eea' : '#d4cfc6',
-              color: 'white', border: 'none', borderRadius: 8,
-              padding: '6px 14px', fontSize: 13, fontWeight: 500,
-              cursor: canSend ? 'pointer' : 'not-allowed',
-              display: 'flex', alignItems: 'center', gap: 4,
-              transition: 'background 0.15s',
-            }}
+            onClick={isStreaming ? (hasInput ? onSend : onStop) : onSend}
+            disabled={!isStreaming && !hasInput}
+            className={`${styles.sendBtn} ${isStreaming && !hasInput ? styles.sendBtnStop : ''} ${isStreaming && hasInput ? styles.sendBtnSteer : ''}`}
           >
-            <span>发送</span>
+            {isStreaming && !hasInput ? (
+              <><StopIcon /><span>停止</span></>
+            ) : isStreaming && hasInput ? (
+              <><SteerIcon /><span>插话</span></>
+            ) : (
+              <><SendIcon /><span>发送</span></>
+            )}
           </button>
         </div>
       </div>
@@ -790,20 +919,10 @@ function Popover({ children, anchor, align, offset = 0 }: {
   offset?: number
 }) {
   return (
-    <div style={{
-      position: 'absolute',
-      bottom: anchor === 'above' ? 'calc(100% + 6px)' : undefined,
-      top: anchor === 'below' ? 'calc(100% + 6px)' : undefined,
-      [align]: offset,
-      zIndex: 100,
-      background: 'white',
-      border: '1px solid #d4cfc6',
-      borderRadius: 8,
-      boxShadow: '0 4px 18px rgba(0, 0, 0, 0.12)',
-      minWidth: 200,
-      maxWidth: 340,
-      overflow: 'hidden',
-    } as React.CSSProperties}>
+    <div
+      className={`${styles.popover} ${anchor === 'above' ? styles.popoverAbove : styles.popoverBelow} ${styles[`popover${align.charAt(0).toUpperCase() + align.slice(1)}` as keyof typeof styles]}`}
+      style={{ [align]: offset } as React.CSSProperties}
+    >
       {children}
     </div>
   )
@@ -815,24 +934,18 @@ function SlashMenu({ commands, onSelect }: {
   onSelect: (cmd: string) => void
 }) {
   return (
-    <div style={{ padding: 4, maxHeight: 280, overflowY: 'auto' }}>
-      <div style={{
-        fontSize: 11, color: '#aaa', padding: '6px 10px 4px',
-        letterSpacing: '0.02em',
-      }}>命令</div>
+    <div className={styles.dropdown}>
+      <div className={styles.dropdownHeader}>命令</div>
       {commands.map(c => (
         <div
           key={c.cmd}
           onClick={() => onSelect(c.cmd)}
-          style={{
-            padding: '8px 10px', borderRadius: 6,
-            cursor: 'pointer', transition: 'background 0.1s',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#f5f2ed')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          className={styles.dropdownItem}
         >
-          <div style={{ fontFamily: 'monospace', fontSize: 13, color: '#667eea' }}>{c.cmd}</div>
-          <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{c.desc}</div>
+          <div>
+            <div className={styles.slashMenuCmd}>{c.cmd}</div>
+            <div className={styles.slashMenuDesc}>{c.desc}</div>
+          </div>
         </div>
       ))}
     </div>
@@ -845,25 +958,20 @@ function FileMentionMenu({ files, onSelect }: {
   onSelect: (path: string) => void
 }) {
   return (
-    <div style={{ padding: 4, maxHeight: 280, overflowY: 'auto' }}>
-      <div style={{ fontSize: 11, color: '#aaa', padding: '6px 10px 4px' }}>文件</div>
+    <div className={styles.dropdown}>
+      <div className={styles.dropdownHeader}>文件</div>
       {files.map(p => {
         const name = p.split(/[\\/]/).pop() || p
         return (
           <div
             key={p}
             onClick={() => onSelect(p)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#f5f2ed')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            className={styles.dropdownItem}
           >
-            <span style={{ fontSize: 12 }}>📄</span>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ fontSize: 13, color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-              <div style={{ fontSize: 10, color: '#999', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p}</div>
+            <span className={styles.fileMentionIcon}>📄</span>
+            <div className={styles.fileMentionMain}>
+              <div className={styles.fileMentionName}>{name}</div>
+              <div className={styles.dropdownItemDesc}>{p}</div>
             </div>
           </div>
         )
@@ -884,24 +992,21 @@ function ThinkingDropdown({ current, onChange }: {
     { value: 'high', label: '高', desc: '深度推理' },
   ]
   return (
-    <div style={{ padding: 4 }}>
-      <div style={{ fontSize: 11, color: '#aaa', padding: '6px 10px 4px' }}>思考深度</div>
-      {options.map(o => (
-        <div
-          key={o.value}
-          onClick={() => onChange(o.value)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
-            background: current === o.value ? 'rgba(102, 126, 234, 0.08)' : 'transparent',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#f5f2ed')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = current === o.value ? 'rgba(102, 126, 234, 0.08)' : 'transparent')}
-        >
-          <span style={{ fontSize: 13, color: '#333', minWidth: 32, fontWeight: current === o.value ? 600 : 400 }}>{o.label}</span>
-          <span style={{ fontSize: 11, color: '#888' }}>{o.desc}</span>
-        </div>
-      ))}
+    <div className={styles.dropdown}>
+      <div className={styles.dropdownHeader}>思考深度</div>
+      {options.map(o => {
+        const active = current === o.value
+        return (
+          <div
+            key={o.value}
+            onClick={() => onChange(o.value)}
+            className={`${styles.dropdownItem}${active ? ` ${styles.dropdownItemActive}` : ''}`}
+          >
+            <span className={`${styles.dropdownItemLabel}${active ? ` ${styles.dropdownItemLabelActive}` : ''}`}>{o.label}</span>
+            <span className={styles.dropdownItemDesc}>{o.desc}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -913,12 +1018,10 @@ function ModelDropdown({ current, available, onChange }: {
   onChange: (m: ModelInfo) => void
 }) {
   return (
-    <div style={{ padding: 4, maxHeight: 320, overflowY: 'auto' }}>
-      <div style={{ fontSize: 11, color: '#aaa', padding: '6px 10px 4px' }}>选择模型</div>
+    <div className={styles.dropdown}>
+      <div className={styles.dropdownHeader}>选择模型</div>
       {available.length === 0 && (
-        <div style={{ padding: '8px 10px', fontSize: 12, color: '#aaa' }}>
-          暂无可用模型
-        </div>
+        <div className={styles.slashMenuEmpty}>暂无可用模型</div>
       )}
       {available.map(m => {
         const isCurrent = m.provider === current.provider && m.model === current.model
@@ -926,15 +1029,12 @@ function ModelDropdown({ current, available, onChange }: {
           <div
             key={`${m.provider}::${m.model}`}
             onClick={() => onChange(m)}
-            style={{
-              padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
-              background: isCurrent ? 'rgba(102, 126, 234, 0.08)' : 'transparent',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#f5f2ed')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = isCurrent ? 'rgba(102, 126, 234, 0.08)' : 'transparent')}
+            className={`${styles.dropdownItem}${isCurrent ? ` ${styles.dropdownItemActive}` : ''}`}
           >
-            <div style={{ fontSize: 13, color: '#333', fontWeight: isCurrent ? 600 : 400 }}>{m.model}</div>
-            <div style={{ fontSize: 11, color: '#888' }}>{m.provider}</div>
+            <div>
+              <div className={`${styles.dropdownItemLabel}${isCurrent ? ` ${styles.dropdownItemLabelActive}` : ''}`}>{m.model}</div>
+              <div className={styles.dropdownItemDesc}>{m.provider}</div>
+            </div>
           </div>
         )
       })}
@@ -946,43 +1046,18 @@ function ModelDropdown({ current, available, onChange }: {
 function AttachedFileChip({ file, onRemove }: { file: FileEntry; onRemove: () => void }) {
   const isImage = file.kind === 'image' && file.preview
   return (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      padding: '2px 6px 2px 4px',
-      background: '#f5f1ea', border: '1px solid #e8e4df',
-      borderRadius: 4, fontSize: 11, color: '#5a5a5a',
-    }}>
+    <div className={styles.attachedChip}>
       {isImage ? (
-        <img src={file.preview} style={{ width: 18, height: 18, borderRadius: 2, objectFit: 'cover' }} />
+        <img src={file.preview} className={styles.attachedChipImage} alt={file.name} />
       ) : (
         <span>{file.kind === 'text' ? '📃' : '📄'}</span>
       )}
-      <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
-      <button
-        onClick={onRemove}
-        style={{
-          background: 'none', border: 'none', padding: 0,
-          color: '#888', cursor: 'pointer', fontSize: 13, lineHeight: 1,
-        }}
-      >×</button>
+      <span className={styles.attachedChipName}>{file.name}</span>
+      <button onClick={onRemove} className={styles.attachedChipRemove}>
+        ×
+      </button>
     </div>
   )
-}
-
-// ─── Styles ───────────────────────────────────────────────────
-const iconBtnStyle: React.CSSProperties = {
-  width: 28, height: 28, borderRadius: 6, border: '1px solid transparent',
-  background: 'transparent', cursor: 'pointer',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  color: '#888', fontSize: 16, transition: 'background 0.15s, border-color 0.15s',
-}
-
-const pillBtnStyle: React.CSSProperties = {
-  height: 28, borderRadius: 6, border: '1px solid transparent',
-  background: 'transparent', cursor: 'pointer',
-  display: 'flex', alignItems: 'center', gap: 4,
-  padding: '0 10px', color: '#888', fontSize: 12,
-  transition: 'background 0.15s, border-color 0.15s',
 }
 
 // ─── Icons ────────────────────────────────────────────────────
@@ -1012,23 +1087,93 @@ function DiamondIcon({ active }: { active: boolean }) {
   )
 }
 
-function QuestionIcon() {
+function SendIcon() {
   return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-      <line x1="12" y1="17" x2="12.01" y2="17" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 10 4 15 9 20" />
+      <path d="M20 4v7a4 4 0 01-4 4H4" />
     </svg>
   )
 }
 
-function GlobeIcon() {
+function SteerIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
     </svg>
+  )
+}
+
+function StopIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff">
+      <rect x="6" y="6" width="12" height="12" rx="2" />
+    </svg>
+  )
+}
+
+// ─── Message Row (with hover actions + timestamp) ─────────────
+function MessageRow({ isUser, timestamp, isStreaming, children, onCopy, onDelete, onResend, messageRef }: {
+  isUser: boolean
+  timestamp: number
+  isStreaming?: boolean
+  children: React.ReactNode
+  onCopy: string
+  onDelete?: () => void
+  onResend?: () => void
+  messageRef?: (el: HTMLDivElement | null) => void
+}) {
+  const [hovered, setHovered] = useState(false)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const d = new Date(timestamp)
+  const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`
+
+  return (
+    <div ref={messageRef}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: isUser ? 'flex-end' : 'flex-start',
+        marginBottom: 20,
+        position: 'relative',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {children}
+      <div style={{
+        position: 'absolute',
+        bottom: -3,
+        [isUser ? 'right' : 'left']: 0,
+        fontSize: 10,
+        color: '#bbb',
+        whiteSpace: 'nowrap',
+        opacity: hovered ? 1 : 0.6,
+        transition: 'opacity 0.15s',
+      }}>
+        {timeStr}
+      </div>
+      {hovered && !isStreaming && (
+        <div style={{
+          position: 'absolute',
+          top: -2,
+          [isUser ? 'left' : 'right']: 0,
+          transform: isUser ? 'translateX(-100%)' : 'translateX(100%)',
+          marginLeft: isUser ? 0 : 8,
+          marginRight: isUser ? 8 : 0,
+        }}>
+          <MessageActions
+            messageId={String(timestamp)}
+            role={isUser ? 'user' : 'assistant'}
+            content={typeof onCopy === 'string' ? onCopy : ''}
+            onDelete={() => onDelete?.()}
+            onResend={() => onResend?.()}
+            onRegenerate={() => onResend?.()}
+            onEdit={() => setEditingMsgId(timestamp)}
+          />
+        </div>
+      )}
+    </div>
   )
 }
 

@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect, DragEvent } from 'react'
 import { useStore, FileEntry, TreeNode } from '../store'
+import { DeskEditor } from './DeskEditor'
+import { WorkspaceCompanionRail } from './WorkspaceCompanionRail'
 
 const TEXT_EXT = new Set(['txt', 'md', 'json', 'js', 'ts', 'tsx', 'jsx', 'py', 'html', 'css', 'scss', 'yaml', 'yml', 'xml', 'csv', 'log', 'sh', 'bat', 'c', 'cpp', 'h', 'hpp', 'rs', 'go', 'java', 'rb', 'php'])
 const IMAGE_EXT = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp'])
@@ -27,6 +29,7 @@ export default function DeskPanel() {
     files, addFile, addFiles, removeFile,
     settings, tree, refreshTree, loadSettings, deskPath,
     createFile, createFolder, renameFileNode, deleteFileNode, copyToClipboard,
+    pushToast,
   } = useStore()
   const [dragging, setDragging] = useState(false)
   const [tab, setTab] = useState<Tab>('workspace')
@@ -36,6 +39,8 @@ export default function DeskPanel() {
   const [fileMenu, setFileMenu] = useState<{ x: number; y: number; node: TreeNode } | null>(null)
   const [renamingPath, setRenamingPath] = useState<string | null>(null)
   const [creatingIn, setCreatingIn] = useState<{ parentPath: string; type: 'file' | 'folder' } | null>(null)
+  const [editing, setEditing] = useState<{ path: string; content: string } | null>(null)
+  const [editingLoading, setEditingLoading] = useState(false)
 
   // 点击外部 / Esc 关闭文件菜单
   useEffect(() => {
@@ -135,6 +140,46 @@ export default function DeskPanel() {
     setExpanded(all)
   }
 
+  const openEditor = useCallback(async (filePath: string) => {
+    setEditingLoading(true)
+    setEditing({ path: filePath, content: '' })
+    try {
+      const r = await fetch(`/api/fs/read?path=${encodeURIComponent(filePath)}`)
+      const data = await r.json()
+      if (data.ok) {
+        setEditing({ path: filePath, content: data.content })
+      } else {
+        pushToast('error', `读取失败: ${data.error}`)
+        setEditing(null)
+      }
+    } catch (e: any) {
+      pushToast('error', `读取失败: ${e.message}`)
+      setEditing(null)
+    } finally {
+      setEditingLoading(false)
+    }
+  }, [pushToast])
+
+  const handleSave = useCallback(async (content: string) => {
+    if (!editing) return
+    try {
+      const r = await fetch('/api/fs/write', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: editing.path, content }),
+      })
+      const data = await r.json()
+      if (data.ok) {
+        pushToast('success', '已保存')
+        await refreshTree()
+      } else {
+        pushToast('error', `保存失败: ${data.error}`)
+      }
+    } catch (e: any) {
+      pushToast('error', `保存失败: ${e.message}`)
+    }
+  }, [editing, pushToast, refreshTree])
+
   return (
     <div
       style={{
@@ -169,18 +214,46 @@ export default function DeskPanel() {
             </button>
           )}
         </div>
-        <button
-          onClick={() => loadSettings()}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 4,
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 12, color: '#888', padding: '2px 6px',
-          }}
-          title="项目技能"
-        >
-          <SparkleIcon />
-          <span>项目技能</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {tab === 'workspace' && primaryWorkspace && (
+            <>
+              <button
+                onClick={() => setCreatingIn({ parentPath: primaryWorkspace, type: 'file' })}
+                title="新建文件"
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#888', fontSize: 11, padding: '2px 6px', borderRadius: 4,
+                  display: 'flex', alignItems: 'center', gap: 3,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#e8e4df')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              ><AddFileIcon /> 文件</button>
+              <button
+                onClick={() => setCreatingIn({ parentPath: primaryWorkspace, type: 'folder' })}
+                title="新建文件夹"
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#888', fontSize: 11, padding: '2px 6px', borderRadius: 4,
+                  display: 'flex', alignItems: 'center', gap: 3,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#e8e4df')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              ><AddFolderIcon /> 文件夹</button>
+            </>
+          )}
+          <button
+            onClick={() => loadSettings()}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 12, color: '#888', padding: '2px 6px',
+            }}
+            title="项目技能"
+          >
+            <SparkleIcon />
+            <span>项目技能</span>
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -301,10 +374,38 @@ export default function DeskPanel() {
                   if (confirm(`确定删除 ${payload.path}？`)) await deleteFileNode(payload.path)
                 } else if (action === 'copy') {
                   await copyToClipboard(payload.path)
+                } else if (action === 'open') {
+                  void openEditor(payload.path)
                 }
               }}
             />
           )
+        )}
+        {/* Session status card below file tree */}
+        {tab === 'workspace' && primaryWorkspace && (
+          <SessionStatusCard
+            workspace={primaryWorkspace}
+            modelName={settings.model || 'default'}
+            thinkingLevel={settings.thinkingLevel || 'off'}
+            fileCount={tree.length}
+          />
+        )}
+        {/* P2-15: 右侧协作栏 - 任务/活动/工作流切换 */}
+        {tab === 'workspace' && (
+          <div style={{ padding: '0 12px 12px' }}>
+            <WorkspaceCompanionRail />
+          </div>
+        )}
+        {/* P2-16: 内联编辑器 */}
+        {editing && !editingLoading && (
+          <div style={{ padding: '0 16px 12px' }}>
+            <DeskEditor
+              filePath={editing.path}
+              content={editing.content}
+              onClose={() => setEditing(null)}
+              onSave={handleSave}
+            />
+          </div>
         )}
       </div>
 
@@ -447,7 +548,7 @@ function TreeNodeRow({ node, depth, expanded, onToggle, filterNode,
   setRenamingPath: (p: string | null) => void
   setCreatingIn: (c: { parentPath: string; type: 'file' | 'folder' } | null) => void
   onContextMenu: (e: React.MouseEvent, node: TreeNode) => void
-  onAction: (action: 'create' | 'rename' | 'delete' | 'copy', payload: any) => void
+  onAction: (action: 'create' | 'rename' | 'delete' | 'copy' | 'open', payload: any) => void
 }) {
   const isDir = node.isDirectory
   const isOpen = expanded.has(node.path)
@@ -534,6 +635,7 @@ function TreeNodeRow({ node, depth, expanded, onToggle, filterNode,
   return (
     <div
       onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); onContextMenu(e, node) }}
+      onDoubleClick={() => { if (!node.isDirectory) onAction('open', { path: node.path }) }}
       style={{
         display: 'flex', alignItems: 'center', gap: 4,
         padding: `4px 12px 4px ${12 + depth * 14 + 14}px`,
@@ -742,3 +844,67 @@ function RefreshIcon() {
     </svg>
   )
 }
+
+function AddFileIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="12" y1="18" x2="12" y2="12" />
+      <line x1="9" y1="15" x2="15" y2="15" />
+    </svg>
+  )
+}
+
+function AddFolderIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
+      <line x1="12" y1="11" x2="12" y2="17" />
+      <line x1="9" y1="14" x2="15" y2="14" />
+    </svg>
+  )
+}
+
+// ─── Session Status Card ──────────────────────────────────────
+function SessionStatusCard({ workspace, modelName, thinkingLevel, fileCount }: {
+  workspace: string
+  modelName: string
+  thinkingLevel: string
+  fileCount: number
+}) {
+  const folderName = workspace.split(/[\\/]/).filter(Boolean).pop() || workspace
+  return (
+    <div style={{
+      margin: '12px 12px 20px',
+      padding: '12px 14px',
+      background: 'white',
+      border: '1px solid #e8e4df',
+      borderRadius: 10,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: '#888', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        会话状态
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <StatusRow icon="📁" label="工作目录" value={folderName} />
+        <StatusRow icon="🧠" label="模型" value={modelName} />
+        <StatusRow icon="💡" label="思考深度" value={thinkingLevel} />
+        <StatusRow icon="📄" label="文件数" value={String(fileCount)} />
+      </div>
+    </div>
+  )
+}
+
+function StatusRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span style={{ fontSize: 14 }}>{icon}</span>
+      <span style={{ fontSize: 12, color: '#888', minWidth: 52 }}>{label}</span>
+      <span style={{ fontSize: 12, color: '#333', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {value}
+      </span>
+    </div>
+  )
+}
+

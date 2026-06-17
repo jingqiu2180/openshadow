@@ -24,7 +24,7 @@ export default function Sidebar({
 }) {
   const {
     conversations, currentId, newConversation, setActive,
-    searchQuery, setSearchQuery,
+    searchQuery, setSearchQuery, pushToast,
     togglePin, archiveConversation, renameConversation, deleteConversation,
   } = useStore()
   const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; convId: string } | null>(null)
@@ -112,6 +112,17 @@ export default function Sidebar({
               fontFamily: 'inherit',
             }}
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                background: 'none', border: 'none', color: '#999',
+                cursor: 'pointer', fontSize: 14, padding: 0,
+                lineHeight: 1, display: 'flex',
+              }}
+              title="清空搜索"
+            >×</button>
+          )}
         </div>
       </div>
 
@@ -225,6 +236,9 @@ export default function Sidebar({
             const id = contextMenu.convId
             if (action === 'rename') {
               setRenamingId(id)
+            } else if (action === 'copyId') {
+              navigator.clipboard.writeText(id).catch(() => {})
+              pushToast({ type: 'info', text: '已复制会话 ID' })
             } else if (action === 'pin') {
               togglePin(id)
             } else if (action === 'archive') {
@@ -262,7 +276,7 @@ function ContextMenu({ x, y, conv, onClose, onAction }: {
   x: number; y: number
   conv: { id: string; pinned?: boolean; archived?: boolean }
   onClose: () => void
-  onAction: (action: 'rename' | 'pin' | 'archive' | 'delete') => void
+  onAction: (action: 'rename' | 'pin' | 'archive' | 'delete' | 'copyId') => void
 }) {
   // 防止菜单超出视口
   const adjustedX = Math.min(x, window.innerWidth - 180)
@@ -277,6 +291,7 @@ function ContextMenu({ x, y, conv, onClose, onAction }: {
       }}
     >
       <MenuItem icon="✏️" label="重命名" onClick={() => onAction('rename')} />
+      <MenuItem icon="📋" label="复制 ID" onClick={() => onAction('copyId')} />
       <MenuItem icon={conv.pinned ? '📌' : '📍'} label={conv.pinned ? '取消置顶' : '置顶'} onClick={() => onAction('pin')} />
       <MenuItem icon="📦" label={conv.archived ? '取消归档' : '归档'} onClick={() => onAction('archive')} />
       <div style={{ height: 1, background: '#e8e4df', margin: '4px 0' }} />

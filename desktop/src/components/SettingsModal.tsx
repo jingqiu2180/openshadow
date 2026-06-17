@@ -78,6 +78,23 @@ export default function SettingsModal({ onClose }: Props) {
           <div style={{ padding: '0 16px 16px', fontSize: 16, fontWeight: 600, color: '#333' }}>
             设置
           </div>
+          <div style={{ padding: '0 12px 12px' }}>
+            <input
+              type="text"
+              placeholder="搜索设置..."
+              style={{
+                width: '100%',
+                padding: '6px 10px',
+                border: '1px solid #d4cfc6',
+                borderRadius: 6,
+                fontSize: 12,
+                color: '#333',
+                background: 'white',
+                outline: 'none',
+                fontFamily: 'inherit',
+              }}
+            />
+          </div>
           {TABS.map(t => (
             <button
               key={t.id}

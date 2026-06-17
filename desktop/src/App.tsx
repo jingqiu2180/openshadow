@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
 import DeskPanel from './components/DeskPanel'
-import BrowserPanel from './components/BrowserPanel'
 import SettingsModal from './components/SettingsModal'
+import { SessionConfirmationPrompt } from './components/SessionConfirmationPrompt'
 import { useStore } from './store'
 
 export type MainView = 'chat' | 'channels' | 'activity' | 'tasks'
@@ -11,7 +11,6 @@ export type MainView = 'chat' | 'channels' | 'activity' | 'tasks'
 const DESK_WIDTH_KEY = 'rem.deskWidth'
 
 export default function App() {
-  const [browserVisible, setBrowserVisible] = useState(false)
   const [tab, setTab] = useState<MainView>('chat')
   const [showSettings, setShowSettings] = useState(false)
   const [deskWidth, setDeskWidth] = useState<number>(() => {
@@ -108,7 +107,7 @@ export default function App() {
           <Sidebar onNavigate={setTab} activeView={tab} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          {tab === 'chat' && <ChatArea onToggleBrowser={() => setBrowserVisible(v => !v)} />}
+          {tab === 'chat' && <ChatArea />}
           {tab === 'channels' && <ChannelsPlaceholder />}
           {tab === 'activity' && <ActivityPlaceholder />}
           {tab === 'tasks' && <TasksPlaceholder />}
@@ -131,8 +130,8 @@ export default function App() {
         </div>
       </div>
 
-      <BrowserPanel visible={browserVisible} onClose={() => setBrowserVisible(false)} />
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      <SessionConfirmationPrompt />
 
       {/* StatusBar (右下角) */}
       <StatusBar wsStatus={wsStatus} model={currentModel} permissionMode={permissionMode} />
