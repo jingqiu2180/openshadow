@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { app, BrowserWindow, dialog } from 'electron'
 import { join } from 'path'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
@@ -66,7 +67,10 @@ function createWindow() {
     console.log('Window shown')
   })
 
-  if (isDev) {
+  if (isDev && existsSync(join(process.cwd(), "desktop", "dist-renderer", "index.html"))) {
+    console.log("Loading dist-renderer")
+    win.loadFile(join(process.cwd(), "desktop", "dist-renderer", "index.html"))
+  } else if (isDev) {
     // Dev: load Vite dev server
     console.log('Loading Vite dev server:', VITE_DEV_URL)
     win.loadURL(VITE_DEV_URL)

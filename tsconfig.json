@@ -19,6 +19,6 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["core/**/*", "server/**/*", "channels/**/*", "db/**/*"],
-  "exclude": ["node_modules", "dist", "desktop", "tests"]
+  "include": ["core/**/*", "server/**/*", "channels/**/*", "db/**/*", "hub/**/*", "plugins/**/*", "lib/**/*", "shared/**/*", "desktop/**/*", "packages/plugin-protocol/**/*", "packages/plugin-sdk/**/*", "packages/plugin-runtime/**/*"],
+  "exclude": ["node_modules", "dist", "tests", "desktop/src/react"]
 }

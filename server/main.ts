@@ -1,20 +1,20 @@
 // @ts-nocheck
 import { serve } from '@hono/node-server'
-import { Agent } from '../core/agent.js'
-import { createScheduler } from '../core/scheduler.js'
-import { createSummarizer } from '../core/memory/summarizer.js'
-import { addCronJob, saveAgentConfig, cleanupOldMemories } from '../core/memory/store.js'
-import { createFeishuChannel } from '../channels/feishu.js'
-import { createWsServer } from '../server/ws.js'
-import { config as configManager } from '../core/config.js'
-import { modelManager } from '../core/model-manager.js'
-import { SessionManager } from '../core/session-manager.js'
-import { eventBus } from '../core/event-bus.js'
-import { usageTracker } from '../core/providers/usage-tracker.js'
-import { createDeepMemoryProcessor } from '../core/memory/deep-memory.js'
-import { createMemoryTicker } from '../core/memory/memory-ticker.js'
-import { createSkillStore } from '../core/skills.js'
-import { PluginManager } from '../core/plugin-manager.js'
+import { Agent } from '../core/agent'
+import { createScheduler } from '../core/scheduler'
+import { createSummarizer } from '../core/memory/summarizer'
+import { addCronJob, saveAgentConfig, cleanupOldMemories } from '../core/memory/store'
+import { createFeishuChannel } from '../channels/feishu'
+import { createWsServer } from '../server/ws'
+import { config as configManager } from '../core/config'
+import { ModelManager } from '../core/model-manager'
+import { SessionManager } from '../core/session-manager'
+import { eventBus } from '../core/event-bus'
+import { usageTracker } from '../core/providers/usage-tracker'
+import { createDeepMemoryProcessor } from '../core/memory/deep-memory'
+import { createMemoryTicker } from '../core/memory/memory-ticker'
+import { createSkillStore } from '../core/skills'
+import { PluginManager } from '../core/plugin-manager'
 import { promises as fs } from 'fs'
 import { join, sep, resolve } from 'path'
 
@@ -23,12 +23,25 @@ export interface MainOptions {
   wsPort?: number
   agentId: string
   allowedPaths?: string[]
+  agentsDir?: string
+  productDir?: string
+  userDir?: string
 }
 
 export async function startServer(options: MainOptions) {
   const port = options.port ?? 3000
   const wsPort = options.wsPort ?? 8080
   const agentId = options.agentId
+  const cwd = process.cwd()
+
+  const agentsDir = options.agentsDir ?? join(cwd, 'agents')
+  const productDir = options.productDir ?? join(cwd, 'product')
+  const userDir = options.userDir ?? join(cwd, 'user')
+
+  // 确保目录存在
+  await fs.mkdir(agentsDir, { recursive: true })
+  await fs.mkdir(productDir, { recursive: true })
+  await fs.mkdir(userDir, { recursive: true })
 
   saveAgentConfig({
     id: agentId,
@@ -37,10 +50,10 @@ export async function startServer(options: MainOptions) {
     model: process.env.AGENT_MODEL ?? 'abab6.5s-chat',
     apiKey: process.env.AGENT_API_KEY ?? '',
     baseUrl: process.env.AGENT_BASE_URL ?? 'https://api.openai.com/v1',
-    allowedPaths: options.allowedPaths ?? ['/tmp', process.cwd()],
+    allowedPaths: options.allowedPaths ?? ['/tmp', cwd],
   })
 
-  const agent = new Agent({ agentId })
+  const agent = new Agent({ id: agentId, agentsDir, productDir, userDir })
   const sessionManager = new SessionManager(agent.engine)
   const skillStore = createSkillStore()
 

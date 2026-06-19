@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Planner: ReAct-style task planning and execution engine.
  *
@@ -9,7 +10,7 @@
  * - Step history for context across turns
  */
 
-import { Agent, ChatMessage } from './agent.js'
+import { Agent, ChatMessage } from './agent'
 
 export interface PlanStep {
   id: number

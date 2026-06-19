@@ -14,8 +14,9 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createModuleLogger } from "../debug-log.js";
-import { SessionSummaryManager } from "./session-summary.js";
+import { createModuleLogger } from '../debug-log';
+import { SessionSummaryManager } from './session-summary';
+import { addFact } from './store';
 
 const log = createModuleLogger("deep-memory");
 
@@ -194,12 +195,21 @@ ${summary}
   }
 
   /**
-   * 保存事实到文件
+   * 保存事实：同时写文件（备份）和 SQLite facts 表（主检索）
    * @param {MetaFact} fact
+   * @param {string} [userId='default'] - 多用户隔离
    */
-  _saveFact(fact) {
+  _saveFact(fact, userId = 'default') {
+    // 1. 文件备份（保留原有逻辑）
     const fp = path.join(this.factsDir, `${fact.id}.json`);
     fs.writeFileSync(fp, JSON.stringify(fact, null, 2) + "\n", 'utf8');
+
+    // 2. 写入 SQLite facts 表（供 memory-injector 检索）
+    try {
+      addFact(fact.content, fact.tags || [], fact.sourceSession || '', 'extraction', Math.round((fact.confidence || 0.5) * 5), userId);
+    } catch (err) {
+      log.warn(`Failed to save fact to SQLite: ${err.message}`);
+    }
   }
 
   // ══════════════════════════

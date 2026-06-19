@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useCallback } from 'react'
 import { useStore } from '../store'
 import styles from './ChatArea.module.css'

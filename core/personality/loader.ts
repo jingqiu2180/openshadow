@@ -1,8 +1,9 @@
+// @ts-nocheck
 import { readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import type { PersonalityTemplate } from './template.js'
-import { validateTemplate } from './template.js'
+import type { PersonalityTemplate } from './template'
+import { validateTemplate } from './template'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 

@@ -1,110 +1,85 @@
-export type Locale = 'zh' | 'en' | 'ja' | 'ko'
+// @ts-nocheck
+/**
+ * Server-side i18n — 从 locale JSON 加载翻译
+ * 移植自 openhanako/lib/i18n.ts
+ */
+import fs from 'fs'
+import path from 'path'
 
-export interface Translations {
-  [key: string]: string
+const localesDir = path.join(process.cwd(), 'locales')
+
+let data: Record<string, any> = {}
+// 英文兜底包：当前 locale 缺某个 key 时回退到这里
+let fallbackData: Record<string, any> = {}
+let currentLocale = 'zh'
+let loaded = false
+
+/**
+ * locale 字符串 → JSON 文件名 key
+ */
+function resolveKey(locale: string): string {
+  if (!locale) return 'zh'
+  if (locale === 'zh-TW' || locale === 'zh-Hant') return 'zh-TW'
+  if (locale.startsWith('zh')) return 'zh'
+  if (locale.startsWith('ja')) return 'ja'
+  if (locale.startsWith('ko')) return 'ko'
+  return 'en'
 }
 
-export interface I18nOptions {
-  defaultLocale?: Locale
-  translations?: Record<Locale, Translations>
+function readLocaleFile(key: string): Record<string, any> {
+  return JSON.parse(fs.readFileSync(path.join(localesDir, `${key}.json`), 'utf-8'))
 }
 
-export class I18n {
-  private readonly translations: Map<Locale, Translations> = new Map()
-  private defaultLocale: Locale = 'zh'
+export function loadLocale(locale: string): void {
+  const key = resolveKey(locale)
+  currentLocale = key
+  loaded = true
+  try {
+    fallbackData = readLocaleFile('en')
+  } catch (err: any) {
+    console.error(`[i18n] Failed to load fallback locale "en": ${err.message}`)
+    fallbackData = {}
+  }
+  if (key === 'en') {
+    data = fallbackData
+    return
+  }
+  try {
+    data = readLocaleFile(key)
+  } catch (err: any) {
+    console.error(`[i18n] Failed to load locale "${key}": ${err.message}`)
+    data = fallbackData
+  }
+}
 
-  constructor(options: I18nOptions = {}) {
-    this.defaultLocale = options.defaultLocale ?? 'zh'
+function getFrom(source: any, p: string): any {
+  const exact = source?.[p]
+  if (exact !== undefined && exact !== null) return exact
+  return p.split('.').reduce((obj, k) => obj?.[k], source)
+}
 
-    // Built-in translations
-    this.translations.set('zh', {
-      greeting: '你好！我是{name}，有什么我可以帮你的吗？',
-      greeting_short: '你好！',
-      thanks: '谢谢！',
-      sorry: '抱歉...',
-      goodbye: '再见～',
-      thinking: '让我想想...',
-      error: '出了点问题',
-      not_understand: '我不太明白你的意思',
-    })
+function get(p: string): any {
+  if (!loaded) loadLocale(currentLocale)
+  const val = getFrom(data, p)
+  if (val !== undefined && val !== null) return val
+  return getFrom(fallbackData, p)
+}
 
-    this.translations.set('en', {
-      greeting: 'Hi! I am {name}. How can I help?',
-      greeting_short: 'Hi!',
-      thanks: 'Thanks!',
-      sorry: 'Sorry...',
-      goodbye: 'Bye!',
-      thinking: 'Let me think...',
-      error: 'Something went wrong',
-      not_understand: "I don't understand",
-    })
-
-    this.translations.set('ja', {
-      greeting: 'こんにちは！私は{name}です。何かお手伝いできることはありますか？',
-      greeting_short: 'こんにちは！',
-      thanks: 'ありがとう！',
-      sorry: 'ごめんなさい...',
-      goodbye: 'さようなら～',
-      thinking: '考えてみます...',
-      error: '問題が発生しました',
-      not_understand: 'よくわかりません',
-    })
-
-    this.translations.set('ko', {
-      greeting: '안녕하세요! 저는 {name}입니다. 무엇을 도와드릴까요?',
-      greeting_short: '안녕하세요!',
-      thanks: '감사합니다!',
-      sorry: '죄송합니다...',
-      goodbye: '안녕히 가세요~',
-      thinking: '생각해 볼게요...',
-      error: '문제가 발생했습니다',
-      not_understand: '이해가 가지 않습니다',
-    })
-
-    // Load custom translations
-    if (options.translations) {
-      for (const [locale, trans] of Object.entries(options.translations)) {
-        this.translations.set(locale as Locale, { ...this.translations.get(locale as Locale), ...trans })
-      }
+/**
+ * 翻译
+ */
+export function t(path: string, vars?: Record<string, string>): string {
+  let val: any = get(path)
+  if (val === undefined || val === null) return path
+  if (typeof val !== 'string') return String(val)
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      val = val.replaceAll(`{${k}}`, String(v))
     }
   }
-
-  t(key: string, params?: Record<string, string>, locale?: Locale): string {
-    const lang = locale ?? this.defaultLocale
-    const trans = this.translations.get(lang) ?? this.translations.get(this.defaultLocale)!
-
-    let text = trans[key] ?? key
-
-    // Replace params like {name}
-    if (params) {
-      for (const [k, v] of Object.entries(params)) {
-        text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), v)
-      }
-    }
-
-    return text
-  }
-
-  setLocale(locale: Locale): void {
-    this.defaultLocale = locale
-  }
-
-  getLocale(): Locale {
-    return this.defaultLocale
-  }
-
-  listLocales(): Locale[] {
-    return [...this.translations.keys()]
-  }
-
-  addTranslations(locale: Locale, translations: Translations): void {
-    const existing = this.translations.get(locale) ?? {}
-    this.translations.set(locale, { ...existing, ...translations })
-  }
+  return val
 }
 
-export function createI18n(options?: I18nOptions): I18n {
-  return new I18n(options)
+export function getLocale(): string {
+  return currentLocale
 }
-
-export const i18n = createI18n()

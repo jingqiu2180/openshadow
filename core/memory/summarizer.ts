@@ -1,8 +1,8 @@
 // @ts-nocheck
 import OpenAI from 'openai'
-import { getRecentMemories, addMemory, addFact, getAgentConfig, type Memory } from './store.js'
-import { config } from '../config.js'
-import { createClient as createProviderClient, pickModel } from '../providers/index.js'
+import { getRecentMemories, addMemory, addFact, getAgentConfig, type Memory } from './store'
+import { config } from '../config'
+import { createClient as createProviderClient, pickModel } from '../providers/index'
 
 export interface SummarizerOptions {
   agentId: string

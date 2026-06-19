@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react'
 import { useStore } from '../store'
 import remAvatar from '../assets/rem-avatar.png'

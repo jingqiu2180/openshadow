@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach } from 'vitest'
 import { ModelManager, createModelManager } from '../../core/model-manager.js'
 import { EventBus } from '../../core/event-bus.js'

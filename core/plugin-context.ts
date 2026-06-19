@@ -1,177 +1,180 @@
-import { createPluginConfigStore, PluginConfigSchema } from "./plugin-config.js";
+// @ts-nocheck
+import path from "path";
+import { serializeSessionFile } from '../lib/session-files/session-file-response';
+import { createPluginConfigStore } from './plugin-config';
 
 /**
- * 插件路由定义 —— 插件通过此接口注册 HTTP 端点。
- *
- * 路径参数支持：在 path 中使用 `:paramName` 语法，如 `/users/:id`。
- * 参数会通过 `params.params` 传递给 handler。
+ * Create a PluginContext for a plugin.
+ * @param {{ pluginId: string, pluginKey?: string, source?: string, pluginDir: string, dataDir: string, bus: object, accessLevel?: "full-access" | "restricted", permissions?: string[], capabilities?: string[] | null, sensitiveCapabilities?: string[] | null, registerSessionFile?: Function, configSchema?: object, logSink?: Function, runtimeContext?: object }} opts
  */
-export interface PluginRouteDef {
-  /** HTTP 方法 */
-  method: "get" | "post" | "put" | "delete" | "patch";
-  /** 路径（相对于插件前缀，如 "/status" 会挂载到 "/plugins/<pluginId>/status"）
-   *  支持路径参数：如 "/users/:id"
-   */
-  path: string;
-  /** 路由描述（用于生成 OpenAPI 文档） */
-  description?: string;
-  /** 请求参数 Schema（可选，用于验证） */
-  requestSchema?: Record<string, unknown>;
-  /** 处理函数 */
-  handler: (params: { body: unknown; query: Record<string, string>; headers: Record<string, string>; params: Record<string, string> }) => Promise<unknown> | unknown;
-}
+export function createPluginContext({ pluginId, pluginKey, source, pluginDir, dataDir, bus, accessLevel, permissions, capabilities, sensitiveCapabilities, registerSessionFile: registerSessionFileImpl, configSchema, logSink, runtimeContext }) {
+  const config = createPluginConfigStore({ dataDir, schema: configSchema });
+  const runtimeScope = runtimeContext ? {
+    serverId: runtimeContext.serverId,
+    serverNodeId: runtimeContext.serverNodeId ?? runtimeContext.serverId,
+    userId: runtimeContext.userId,
+    studioId: runtimeContext.studioId,
+    connectionKind: runtimeContext.connectionKind,
+    credentialKind: runtimeContext.credentialKind,
+    platformAccountId: runtimeContext.platformAccountId ?? null,
+    officialServiceKind: runtimeContext.officialServiceKind ?? null,
+    executionBoundary: clonePlain(runtimeContext.executionBoundary),
+  } : {};
 
-/**
- * 插件上下文 —— 插件开发者通过此对象访问 remu 运行时。
- */
-export interface PluginContext {
-  pluginId: string;
-  pluginKey: string;
-  source: "builtin" | "dev" | "community";
-  pluginDir: string;
-  dataDir: string;
+  const resolvedAccess = accessLevel || "restricted";
+  const grantedPermissions = normalizePermissions(permissions);
+  const declaredCapabilities = normalizeCapabilityList(capabilities);
+  const declaredSensitiveCapabilities = normalizeCapabilityList(sensitiveCapabilities);
+  const pluginBus = resolvedAccess === "full-access"
+    ? bus
+    : createRestrictedBusProxy(bus, grantedPermissions);
 
-  /** 插件私有配置 */
-  config: PluginContextConfig;
-
-  /** 日志（带插件前缀） */
-  log: PluginLogger;
-
-  /**
-   * 动态注册工具（供插件 onLoad 中调用）。
-   * 返回 dispose 函数，调用即移除该工具。
-   */
-  registerTool(toolDef: PluginToolDef): () => void;
-
-  /** 运行时只读信息 */
-  runtime: PluginRuntimeInfo;
-
-  /**
-   * 注册 HTTP 路由（供插件 onLoad 中调用）。
-   * 路由会挂载到 `/plugins/<pluginId>/<path>`。
-   * 返回 dispose 函数，调用即移除该路由。
-   */
-  registerRoute(routeDef: PluginRouteDef): () => void;
-}
-
-export interface PluginContextConfig {
-  get(key?: string): unknown;
-  getAll(options?: { redacted?: boolean }): Record<string, unknown>;
-  set(key: string, value: unknown): void;
-  setMany(values: Record<string, unknown>): Record<string, unknown>;
-  getSchema(): PluginConfigSchema;
-}
-
-export interface PluginLogger {
-  info(...args: unknown[]): void;
-  warn(...args: unknown[]): void;
-  error(...args: unknown[]): void;
-  debug(...args: unknown[]): void;
-}
-
-export interface PluginToolDef {
-  name: string;
-  description: string;
-  parameters?: Record<string, unknown>;
-  execute: (params: Record<string, unknown>, ctx: PluginContext) => Promise<unknown> | unknown;
-}
-
-export interface PluginRuntimeInfo {
-  version: string;
-  pluginApiVersion: string;
-}
-
-// ── 实现 ────────────────────────────────────────────────────────────────
-
-export interface CreatePluginContextOpts {
-  pluginId: string;
-  pluginKey: string;
-  source: "builtin" | "dev" | "community";
-  pluginDir: string;
-  dataDir: string;
-  schema?: PluginConfigSchema;
-  /** PluginManager 注入：动态注册工具 */
-  onRegisterTool?: (toolDef: PluginToolDef) => () => void;
-  /** PluginManager 注入：动态注册路由 */
-  onRegisterRoute?: (routeDef: PluginRouteDef) => () => void;
-  logSink?: (entry: { pluginId: string; level: string; args: unknown[]; ts: string }) => void;
-}
-
-export function createPluginContext(opts: CreatePluginContextOpts): PluginContext {
-  const { pluginId, pluginKey, source, pluginDir, dataDir, schema, onRegisterTool, onRegisterRoute, logSink } = opts;
-
-  // 1. 配置存储
-  const configStore = createPluginConfigStore({ dataDir, schema: schema ?? { pluginId, type: "object", properties: {} } });
-
-  const config: PluginContextConfig = {
-    get(key?: string): unknown {
-      return key ? configStore.get(key) : configStore.getAll();
-    },
-    getAll(options?: { redacted?: boolean }): Record<string, unknown> {
-      return configStore.getAll(options);
-    },
-    set(key: string, value: unknown): void {
-      configStore.set(key, value);
-    },
-    setMany(values: Record<string, unknown>): Record<string, unknown> {
-      return configStore.setMany(values);
-    },
-    getSchema(): PluginConfigSchema {
-      return configStore.getSchema();
-    },
-  };
-
-  // 2. 日志
   const prefix = `[plugin:${pluginId}]`;
-  const log: PluginLogger = {
-    info(...args: unknown[]): void {
-      console.log(prefix, ...args);
-      logSink?.({ pluginId, level: "info", args, ts: new Date().toISOString() });
-    },
-    warn(...args: unknown[]): void {
-      console.warn(prefix, ...args);
-      logSink?.({ pluginId, level: "warn", args, ts: new Date().toISOString() });
-    },
-    error(...args: unknown[]): void {
-      console.error(prefix, ...args);
-      logSink?.({ pluginId, level: "error", args, ts: new Date().toISOString() });
-    },
-    debug(...args: unknown[]): void {
-      if (process.env.DEBUG_PLUGINS) {
-        console.debug(prefix, ...args);
-        logSink?.({ pluginId, level: "debug", args, ts: new Date().toISOString() });
-      }
-    },
+  const recordLog = (level, args) => {
+    if (typeof logSink !== "function") return;
+    try {
+      logSink({ pluginId, level, args, ts: new Date().toISOString() });
+    } catch {
+      // Logging must never break plugin execution.
+    }
+  };
+  const log = {
+    info: (...args) => { recordLog("info", args); console.log(prefix, ...args); },
+    warn: (...args) => { recordLog("warn", args); console.warn(prefix, ...args); },
+    error: (...args) => { recordLog("error", args); console.error(prefix, ...args); },
+    debug: (...args) => { recordLog("debug", args); console.debug(prefix, ...args); },
   };
 
-  // 3. 上下文对象
-  const ctx: PluginContext = {
+  function registerSessionFile(entry: any = {}) {
+    if (typeof registerSessionFileImpl !== "function") {
+      throw new Error("plugin session file registry unavailable");
+    }
+    const { sessionPath, filePath, label, origin = "plugin_output" } = entry;
+    const storageKind = origin === "plugin_output" ? "plugin_data" : "external";
+    if (!sessionPath) throw new Error("plugin registerSessionFile requires sessionPath");
+    if (!filePath || !path.isAbsolute(filePath)) {
+      throw new Error("plugin registerSessionFile requires an absolute filePath");
+    }
+    return serializeSessionFile(registerSessionFileImpl({
+      sessionPath,
+      filePath,
+      label,
+      origin,
+      storageKind,
+    }), { runtimeContext: runtimeScope });
+  }
+
+  function toMediaItem(file) {
+    return {
+      type: "session_file",
+      fileId: file.fileId || file.id,
+      sessionPath: file.sessionPath,
+      filePath: file.filePath,
+      label: file.label || file.displayName || file.filename,
+      ...(file.mime ? { mime: file.mime } : {}),
+      ...(file.size !== undefined ? { size: file.size } : {}),
+      ...(file.kind ? { kind: file.kind } : {}),
+    };
+  }
+
+  function stageFile(entry: any = {}) {
+    const { origin: _origin, storageKind: _storageKind, ...safeEntry } = entry;
+    const file = registerSessionFile({ ...safeEntry, origin: "plugin_output" });
+    return { file, mediaItem: toMediaItem(file) };
+  }
+
+  return {
+    ...runtimeScope,
     pluginId,
-    pluginKey,
-    source,
+    pluginKey: pluginKey || pluginId,
+    source: source || "community",
     pluginDir,
     dataDir,
+    capabilities: declaredCapabilities,
+    sensitiveCapabilities: declaredSensitiveCapabilities,
+    bus: pluginBus,
     config,
     log,
-    registerTool(toolDef: PluginToolDef): () => void {
-      if (!onRegisterTool) {
-        log.warn("registerTool called but no handler is registered in PluginManager");
-        return () => {};
-      }
-      return onRegisterTool(toolDef);
-    },
-    registerRoute(routeDef: PluginRouteDef): () => void {
-      if (!onRegisterRoute) {
-        log.warn("registerRoute called but no handler is registered in PluginManager");
-        return () => {};
-      }
-      return onRegisterRoute(routeDef);
-    },
-    runtime: {
-      version: "0.1.0",
-      pluginApiVersion: "1.0.0",
-    },
+    registerSessionFile,
+    stageFile,
+  };
+}
+
+function createRestrictedBusProxy(bus, grantedPermissions) {
+  const canReadUsage = hasPermission(grantedPermissions, "usage.read");
+  const getCapability = typeof bus.getCapability === "function"
+    ? bus.getCapability.bind(bus)
+    : () => null;
+  const assertUsagePermission = (type, action) => {
+    const capability = getCapability(type);
+    if (capability?.permission !== "usage.read") return;
+    if (canReadUsage) return;
+    throw forbiddenBusError(type, action, "usage.read");
   };
 
-  return ctx;
+  return Object.freeze({
+    emit(event, sessionPath) {
+      if (event?.type === "llm_usage") {
+        throw forbiddenBusError("llm_usage", "emit", "usage.read");
+      }
+      return bus.emit(event, sessionPath);
+    },
+    subscribe(callback, filter = {}) {
+      const requestedTypes = typesFromFilter(filter);
+      if (!canReadUsage && requestedTypes?.has("llm_usage")) {
+        throw forbiddenBusError("llm_usage", "subscribe", "usage.read");
+      }
+      const wrapped = (event, sessionPath) => {
+        if (!canReadUsage && event?.type === "llm_usage") return;
+        return callback(event, sessionPath);
+      };
+      return bus.subscribe(wrapped, filter);
+    },
+    async request(type, payload, options) {
+      assertUsagePermission(type, "request");
+      return bus.request(type, payload, options);
+    },
+    hasHandler: bus.hasHandler.bind(bus),
+    listCapabilities: typeof bus.listCapabilities === "function" ? bus.listCapabilities.bind(bus) : () => [],
+    getCapability,
+  });
+}
+
+function normalizePermissions(permissions) {
+  if (!Array.isArray(permissions)) return new Set();
+  return new Set(permissions.filter((permission) => typeof permission === "string" && permission.trim()).map((permission) => permission.trim()));
+}
+
+function normalizeCapabilityList(capabilities) {
+  if (!Array.isArray(capabilities)) return [];
+  return [...new Set(capabilities
+    .filter((capability) => typeof capability === "string" && capability.trim())
+    .map((capability) => capability.trim()))];
+}
+
+function hasPermission(grantedPermissions, permission) {
+  if (grantedPermissions.has("*")) return true;
+  if (grantedPermissions.has(permission)) return true;
+  const [namespace] = permission.split(".");
+  return grantedPermissions.has(`${namespace}.*`);
+}
+
+function typesFromFilter(filter) {
+  const types = filter?.types;
+  if (types instanceof Set) return types;
+  if (Array.isArray(types)) return new Set(types);
+  return null;
+}
+
+function forbiddenBusError(type, action, permission) {
+  const err: any = new Error(`Plugin bus ${action} "${type}" requires permission "${permission}"`);
+  err.code = "FORBIDDEN";
+  err.type = type;
+  err.permission = permission;
+  return err;
+}
+
+function clonePlain(value) {
+  if (value === undefined) return undefined;
+  return JSON.parse(JSON.stringify(value));
 }

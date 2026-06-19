@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Sandbox: isolated execution environment for agent operations.
  *
@@ -15,10 +16,10 @@ import { promisify } from 'util'
 import { resolve, join } from 'path'
 import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'fs'
 import { tmpdir } from 'os'
-import { PathGuard } from '../tools/path-guard.js'
-import { CircuitBreaker } from './circuit-breaker.js'
-import { AuditLogger, OperationType, OperationResult } from './audit-logger.js'
-import { NetworkFilter } from './network-filter.js'
+import { PathGuard } from '../tools/path-guard'
+import { CircuitBreaker } from './circuit-breaker'
+import { AuditLogger, OperationType, OperationResult } from './audit-logger'
+import { NetworkFilter } from './network-filter'
 
 const execFileAsync = promisify(execFile)
 

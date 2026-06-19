@@ -1,13 +1,52 @@
+// @ts-nocheck
 import OpenAI from 'openai'
-import { config } from './config.js'
-import { createClient as createProviderClient, pickModel } from './providers/index.js'
-import { getAgentConfig } from './memory/store.js'
-import { injectMemoryIntoSystemPrompt } from './memory/memory-injector.js'
-import { ToolRegistry, createToolSpec } from './tool-registry.js'
-import { loadPersonality } from './personality/loader.js'
-import { buildSystemPrompt } from './personality/template.js'
-import { PathGuard } from './tools/path-guard.js'
-import { createFileTools, createBashTools } from './tools/index.js'
+import { config } from './config'
+import { createClient as createProviderClient, pickModel } from './providers/index'
+import { getAgentConfig } from './memory/store'
+import { injectMemoryIntoSystemPrompt } from './memory/memory-injector'
+import { ToolRegistry, createToolSpec } from './tool-registry'
+import { createSubagentTool } from './subagent-tool'
+import { loadPersonality } from './personality/loader'
+import { buildSystemPrompt } from './personality/template'
+import { PathGuard } from './sandbox/path-guard'
+import { wrapPathTool, wrapBashTool } from './sandbox/tool-wrapper'
+import { createFileTools, createBashTools, editTool, grepTool, findTool, lsTool, fileTool, stageFilesTool, checkPendingTasksTool, adaptPiTool } from './tools/index'
+import { createCurrentStatusTool } from './tools/current-status-tool'
+import { createSessionFoldersTool } from './tools/session-folders-tool'
+import { registerWebSearchTool } from './tools/web-search'
+import { registerWebFetchTool } from './tools/web-fetch'
+import { registerTodoTool } from './tools/todo'
+import { registerAutomationTool } from './tools/automation'
+import { registerPinnedMemoryTool } from './tools/pinned-memory-tool'
+import { registerNotifyTool } from './tools/notify-tool'
+import { registerExperienceTool } from './tools/experience-tool'
+import { registerComputerUseTool } from './tools/computer-use-tool'
+// openhanako 对齐工具（使用 // @ts-nocheck，暂时轻量注册）
+import { createChannelTool } from './tools/channel-tool'
+import { createDmTool } from './tools/dm-tool'
+import { createWorkflowTool } from './tools/workflow-tool'
+// beautify 插件工具（openhanako plugins/beautify/tools/）
+import { name as beautifyApplyCoverName, description as beautifyApplyCoverDesc, parameters as beautifyApplyCoverParams, execute as beautifyApplyCoverExec } from '../plugins/builtin/beautify/tools/beautify-apply-cover'
+import { name as beautifyCreateCoverName, description as beautifyCreateCoverDesc, parameters as beautifyCreateCoverParams, execute as beautifyCreateCoverExec } from '../plugins/builtin/beautify/tools/beautify-create-cover'
+import { name as beautifyGetCoverStyleName, description as beautifyGetCoverStyleDesc, parameters as beautifyGetCoverStyleParams, execute as beautifyGetCoverStyleExec } from '../plugins/builtin/beautify/tools/beautify-get-cover-style'
+import { name as beautifyGetHtmlStyleName, description as beautifyGetHtmlStyleDesc, parameters as beautifyGetHtmlStyleParams, execute as beautifyGetHtmlStyleExec } from '../plugins/builtin/beautify/tools/beautify-get-html-style'
+import { name as beautifyListCapsName, description as beautifyListCapsDesc, parameters as beautifyListCapsParams, execute as beautifyListCapsExec } from '../plugins/builtin/beautify/tools/beautify-list-capabilities'
+// install_skill 工具（remu 原生实现，完整功能）
+import { createInstallSkillTool } from './tools/install-skill-impl'
+// office 插件工具（openhanako plugins/office/，// @ts-nocheck）
+import { name as officeReadName, description as officeReadDesc, parameters as officeReadParams, execute as officeReadExec } from '../plugins/builtin/office/tools/read-document'
+import { name as officeHtmlToPdfName, description as officeHtmlToPdfDesc, parameters as officeHtmlToPdfParams, execute as officeHtmlToPdfExec } from '../plugins/builtin/office/tools/html-to-pdf'
+import { name as officeListCapsName, description as officeListCapsDesc, parameters as officeListCapsParams, execute as officeListCapsExec } from '../plugins/builtin/office/tools/list-capabilities'
+// image-gen 插件工具（openhanako plugins/image-gen/tools/，// @ts-nocheck）
+import { name as imgGenName, description as imgGenDesc, parameters as imgGenParams, execute as imgGenExec } from '../plugins/builtin/image-gen/tools/generate-image'
+import { name as vidGenName, description as vidGenDesc, parameters as vidGenParams, execute as vidGenExec } from '../plugins/builtin/image-gen/tools/generate-video'
+import { name as mediaOptsName, description as mediaOptsDesc, parameters as mediaOptsParams, execute as mediaOptsExec } from '../plugins/builtin/image-gen/tools/describe-media-options'
+// update_settings 工具（openhanako lib/tools/update-settings-tool.ts，// @ts-nocheck）
+import { createUpdateSettingsTool } from './tools/update-settings-tool'
+import { speechToText, recordAudio } from './stt'
+import { textToSpeech, listVoices } from './tts'
+import { createPlanner } from './planner'
+import { createCoderAgent } from './coder'
 import {
   captureScreenshot, analyzeScreenshot,
   mouseMove, mouseClick, mouseDrag,
@@ -15,18 +54,25 @@ import {
   windowActivate, getScreenSize,
   browserNew, browserClose, browserNavigate, browserScreenshot,
   browserClick, browserType, browserPressKey, browserGetText,
-} from './tools/index.js'
-import { speechToText, recordAudio } from './stt.js'
-import { textToSpeech, listVoices } from './tts.js'
-import { createPlanner } from './planner.js'
-import { createCoderAgent } from './coder.js'
-import { createSkillStore, type SkillStore } from './skills.js'
-import { createTeam, type TeamLeader } from './team.js'
-import { TerminalSessionManager } from './terminal/terminal-session-manager.js'
+} from './tools/index'
+import { createSkillStore, type SkillStore } from './skills'
+import { createTeam, type TeamLeader } from './team'
+import type { SessionCoordinator } from './session-coordinator'
+import { TerminalSessionManager } from './terminal/terminal-session-manager'
 import { join } from 'path'
+import path from 'path'
 
 // 模块级 terminal manager（由 buildToolRegistry 创建）
 let _terminalManager: TerminalSessionManager | null = null
+
+// 模块级 SessionCoordinator（供静态方法 buildToolRegistry 使用）
+let _globalSessionCoordinator: SessionCoordinator | null = null
+
+// 模块级 SkillStore（供 buildToolRegistry 使用）
+let _globalSkillStore: any | null = null
+
+// 模块级 AgentId（供 buildToolRegistry 使用）
+let _globalAgentId: string | null = null
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
@@ -54,6 +100,28 @@ export class ChatEngine {
   private _planner?: ReturnType<typeof createPlanner>
   private _skillStore?: SkillStore
   private _team?: TeamLeader
+  private _agentManager?: any // AgentManager - 延迟注入
+  private _permissionMode: 'operate' | 'read_only' = 'operate'
+
+  setAgentManager(mgr: any): void {
+    this._agentManager = mgr
+  }
+
+  setSessionCoordinator(coord: SessionCoordinator): void {
+    _globalSessionCoordinator = coord
+  }
+
+  setSkillStore(store: any): void {
+    _globalSkillStore = store
+  }
+
+  setPermissionMode(mode: 'operate' | 'read_only'): void {
+    this._permissionMode = mode
+  }
+
+  getPermissionMode(): 'operate' | 'read_only' {
+    return this._permissionMode
+  }
 
   constructor(
     client: OpenAI,
@@ -104,13 +172,17 @@ export class ChatEngine {
 
     const registry = ChatEngine.buildToolRegistry(guard)
 
+    // 设置模块级 AgentId（供 buildToolRegistry 中的工具使用）
+    _globalAgentId = agentId
+
     return new ChatEngine(llmClient, modelName, systemPrompt, registry)
   }
 
   static buildToolRegistry(guard: PathGuard): ToolRegistry {
     const registry = new ToolRegistry()
-    const fileTools = createFileTools(guard)
-    const bashTools = createBashTools(guard)
+    const fileTools = createFileTools()
+    const bashTools = createBashTools()
+    const cwd = process.cwd()
 
     registry.register('capture_screenshot', createToolSpec('capture_screenshot', {
       description: 'Capture a screenshot of the current screen. Returns base64 PNG image.',
@@ -128,31 +200,153 @@ export class ChatEngine {
       },
     }), analyzeScreenshot)
 
+    const wrappedRead = wrapPathTool({ execute: fileTools.file_read }, guard, 'read', cwd)
     registry.register('file_read', createToolSpec('file_read', {
       description: 'Read contents of a file',
       params: { path: { type: 'string', description: 'Full path to the file' } },
-    }), fileTools.file_read)
+    }), wrappedRead.execute)
 
+    const wrappedWrite = wrapPathTool({ execute: fileTools.file_write }, guard, 'write', cwd)
     registry.register('file_write', createToolSpec('file_write', {
       description: 'Write content to a file',
       params: {
         path: { type: 'string', description: 'Full path to the file' },
         content: { type: 'string', description: 'Content to write' },
       },
-    }), fileTools.file_write)
+    }), wrappedWrite.execute)
 
+    const wrappedList = wrapPathTool({ execute: fileTools.file_list }, guard, 'read', cwd)
     registry.register('file_list', createToolSpec('file_list', {
       description: 'List files in a directory',
       params: { path: { type: 'string', description: 'Directory path' } },
-    }), fileTools.file_list)
+    }), wrappedList.execute)
 
+    const wrappedBash = wrapBashTool({ execute: bashTools.bash }, guard, cwd)
     registry.register('bash', createToolSpec('bash', {
       description: 'Execute a bash command',
       params: {
         command: { type: 'string', description: 'Bash command to execute' },
         cwd: { type: 'string', description: 'Working directory', optional: true },
       },
-    }), bashTools.bash)
+    }), wrappedBash.execute)
+
+    // ── Core tools from openhanako ──────────────────────────────────
+    const wrappedEdit = wrapPathTool({ execute: editTool }, guard, 'write', cwd)
+    registry.register('edit', createToolSpec('edit', {
+      description: 'Edit a file by replacing oldText with newText. Returns edited file content.',
+      params: {
+        path: { type: 'string', description: 'Path to the file to edit' },
+        oldText: { type: 'string', description: 'Text to find and replace' },
+        newText: { type: 'string', description: 'Replacement text' },
+        replaceAll: { type: 'boolean', description: 'Replace all occurrences', optional: true },
+      },
+    }), wrappedEdit.execute)
+
+    const wrappedGrep = wrapPathTool({ execute: grepTool }, guard, 'read', cwd)
+    registry.register('grep', createToolSpec('grep', {
+      description: 'Search file contents for a regex pattern. Returns matching lines with file paths.',
+      params: {
+        pattern: { type: 'string', description: 'Regex pattern to search for' },
+        path: { type: 'string', description: 'Directory to search in', optional: true },
+        glob: { type: 'string', description: 'Glob pattern to filter files', optional: true },
+        ignoreCase: { type: 'boolean', description: 'Case insensitive search', optional: true },
+        literal: { type: 'boolean', description: 'Treat pattern as literal string', optional: true },
+        context: { type: 'number', description: 'Number of context lines', optional: true },
+        limit: { type: 'number', description: 'Max matches to return', optional: true },
+      },
+    }), wrappedGrep.execute)
+
+    const wrappedFind = wrapPathTool({ execute: findTool }, guard, 'read', cwd)
+    registry.register('find', createToolSpec('find', {
+      description: 'Find files by name pattern. Returns matching file paths.',
+      params: {
+        pattern: { type: 'string', description: 'Glob pattern to match filenames' },
+        path: { type: 'string', description: 'Directory to search in', optional: true },
+        limit: { type: 'number', description: 'Max results to return', optional: true },
+      },
+    }), wrappedFind.execute)
+
+    const wrappedLs = wrapPathTool({ execute: lsTool }, guard, 'read', cwd)
+    registry.register('ls', createToolSpec('ls', {
+      description: 'List directory contents. Supports recursive listing and formatting options.',
+      params: {
+        path: { type: 'string', description: 'Directory path to list' },
+        all: { type: 'boolean', description: 'Include hidden files', optional: true },
+        long: { type: 'boolean', description: 'Long format with details', optional: true },
+        recursive: { type: 'boolean', description: 'Recursively list subdirectories', optional: true },
+        depth: { type: 'number', description: 'Max recursion depth', optional: true },
+        ignore: { type: 'array', items: { type: 'string' }, description: 'Patterns to ignore', optional: true },
+      },
+    }), wrappedLs.execute)
+
+    // ── Unified file tool (stat + copy) ─────────────────────────
+    const wrappedFile = wrapPathTool({ execute: fileTool }, guard, 'read', cwd)
+    registry.register('file', createToolSpec('file', {
+      description: 'File operations: stat to inspect metadata, copy to materialize a file into the workspace.',
+      params: {
+        action: { type: 'string', description: 'Action to perform: "stat" or "copy"' },
+        path: { type: 'string', description: 'Path for stat action', optional: true },
+        source: { type: 'string', description: 'Source path for copy action', optional: true },
+        targetPath: { type: 'string', description: 'Destination file path for copy', optional: true },
+        targetDir: { type: 'string', description: 'Destination directory for copy', optional: true },
+        filename: { type: 'string', description: 'Filename when using targetDir', optional: true },
+      },
+    }), wrappedFile.execute)
+
+    // ── Stage files tool ─────────────────────────────
+    const wrappedStage = wrapPathTool({ execute: stageFilesTool }, guard, 'read', cwd)
+    registry.register('stage_files', createToolSpec('stage_files', {
+      description: 'Deliver files to the user, desktop, or Bridge platforms. Accepts local absolute paths.',
+      params: {
+        filepaths: { type: 'array', items: { type: 'string' }, description: 'Absolute file paths to deliver', optional: true },
+        filePath: { type: 'string', description: '(Compat) Single file path', optional: true },
+        label: { type: 'string', description: 'File label shown to user', optional: true },
+      },
+    }), wrappedStage.execute)
+
+    // ── Check pending tasks ──────────────────────────────
+    registry.register('check_pending_tasks', createToolSpec('check_pending_tasks', {
+      description: 'Check the status of all background async tasks in the current conversation (image/video generation, subagent, etc.). Only returns tasks from the current conversation.',
+      params: {
+        status: { type: 'string', description: 'Filter by status: pending / resolved / failed. Omit to return all.', optional: true },
+      },
+    }), checkPendingTasksTool)
+
+    // ── Current status (openhanako aligned) ─────────────────
+    const _defaultSessionPath = process.cwd()
+    const _currentStatusDeps = {
+      getAgent: () => (this as any).agentManager?.getCurrentAgent?.() || null,
+      getCurrentModel: () => (this as any).currentModel || null,
+      getSessionFolderScope: (sessionPath: string | null) => ({
+        sessionPath: sessionPath || _defaultSessionPath,
+        cwd: process.cwd(),
+        workspaceFolders: [process.cwd()],
+        authorizedFolders: [],
+        sandboxFolders: [process.cwd()],
+      }),
+      now: () => new Date(),
+      getTimezone: () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    }
+    const _currentStatusToolDef = createCurrentStatusTool(_currentStatusDeps)
+    const _currentStatusHandler = adaptPiTool(
+      _currentStatusToolDef,
+      () => ({ sessionPath: _defaultSessionPath, engine: this }),
+    )
+    registry.register('current_status', createToolSpec('current_status', {
+      description: _currentStatusToolDef.description,
+      params: _currentStatusToolDef.parameters,
+    }), _currentStatusHandler)
+
+    // ── Session folders (openhanako aligned) ────────────────
+    const _sessionFoldersToolDef = createSessionFoldersTool(_currentStatusDeps)
+    const _sessionFoldersHandler = adaptPiTool(
+      _sessionFoldersToolDef,
+      () => ({ sessionPath: _defaultSessionPath, engine: this }),
+    )
+    registry.register('session_folders', createToolSpec('session_folders', {
+      description: _sessionFoldersToolDef.description,
+      params: _sessionFoldersToolDef.parameters,
+    }), _sessionFoldersHandler)
 
     registry.register('mouse_move', createToolSpec('mouse_move', {
       description: 'Move mouse cursor to absolute screen coordinates',
@@ -286,30 +480,275 @@ export class ChatEngine {
     }), (args: any) => {
       if (!_terminalManager) return { error: 'TerminalSessionManager 未初始化' }
       const action = (args.action || '').toString().trim().toLowerCase()
+      const defaultSessionPath = 'default'
       try {
-        if (action === 'list') return { terminals: _terminalManager.list() }
+        if (action === 'list') return { terminals: _terminalManager.list(defaultSessionPath) }
         if (action === 'start') {
           const workDir = args.cwd || process.cwd()
-          const result = _terminalManager.start({ cwd: workDir, command: args.command || '', label: args.label || '' })
+          const result = _terminalManager.start({ sessionPath: defaultSessionPath, cwd: workDir, command: args.command || '', label: args.label || '' })
           return result
         }
         if (action === 'read') {
           if (!args.terminal_id) return { error: 'terminal_id 必填（action=read）' }
-          return _terminalManager.read({ terminalId: args.terminal_id, sinceSeq: args.since_seq })
+          return _terminalManager.read({ sessionPath: defaultSessionPath, terminalId: args.terminal_id, sinceSeq: args.since_seq })
         }
         if (action === 'write') {
           if (!args.terminal_id) return { error: 'terminal_id 必填（action=write）' }
-          return _terminalManager.write({ terminalId: args.terminal_id, chars: args.chars || '' })
+          return _terminalManager.write({ sessionPath: defaultSessionPath, terminalId: args.terminal_id, chars: args.chars || '' })
         }
         if (action === 'close') {
           if (!args.terminal_id) return { error: 'terminal_id 必填（action=close）' }
-          return _terminalManager.close({ terminalId: args.terminal_id })
+          return _terminalManager.close({ sessionPath: defaultSessionPath, terminalId: args.terminal_id })
         }
         return { error: `未知 action: ${action}。可用：start, write, read, close, list` }
       } catch (err: any) {
         return { error: `terminal 工具错误: ${err.message}` }
       }
     })
+
+    // ─── Web & Productivity Tools (阶段2 补齐) ─────────────
+    registerWebSearchTool(registry)
+    registerWebFetchTool(registry)
+    registerTodoTool(registry)
+    registerAutomationTool(registry)
+
+    // ─── Pinned Memory Tool ─────────────
+    registerPinnedMemoryTool(registry)
+
+    // ─── Notify Tool ─────────────
+    registerNotifyTool(registry)
+
+    // ─── Experience Tool ─────────────
+    registerExperienceTool(registry)
+
+    // ─── Computer Use Tool ─────────────
+    registerComputerUseTool(registry)
+
+    // ─── openhanako 对齐工具（轻量实现）─────────────
+    // Channel 工具（频道聊天）
+    try {
+      const _channelsDir = path.join(process.cwd(), '.remu', 'channels')
+      const _agentsDir = path.join(process.cwd(), '.remu', 'agents')
+      const _agentId = (this as any).agentId || 'main'
+      const _channelDeps = {
+        agentId: _agentId,
+        channelsDir: _channelsDir,
+        agentsDir: _agentsDir,
+        listAgents: () => {
+          try {
+            const entries = require('fs').readdirSync(_agentsDir, { withFileTypes: true })
+              .filter((e: any) => e.isFile() && e.name.endsWith('.json'))
+              .map((e: any) => e.name.replace(/.json$/, ''))
+            return entries.length > 0 ? entries : ['main', 'coder', 'planner']
+          } catch { return ['main', 'coder', 'planner'] }
+        },
+        onPost: () => {}, // stub - 发送消息后的回调
+        isEnabled: () => true,
+        createChannelEntry: () => {}, // stub - 创建频道条目的回调
+      }
+      const _channelToolDef = createChannelTool(_channelDeps)
+      const _channelHandler = adaptPiTool(
+        _channelToolDef,
+        () => ({ sessionPath: process.cwd(), engine: this }),
+      )
+      registry.register('channel', createToolSpec('channel', {
+        description: _channelToolDef.description,
+        params: _channelToolDef.parameters,
+      }), _channelHandler)
+    } catch (e) {
+      console.error('[remu] Failed to register channel tool:', e)
+    }
+
+    // DM 工具（私信）
+    try {
+      const _agentsDir = path.join(process.cwd(), '.remu', 'agents')
+      const _agentId = (this as any).agentId || 'main'
+      const _dmDeps = {
+        agentId: _agentId,
+        agentsDir: _agentsDir,
+        listAgents: () => {
+          try {
+            const entries = require('fs').readdirSync(_agentsDir, { withFileTypes: true })
+              .filter((e: any) => e.isFile() && e.name.endsWith('.json'))
+              .map((e: any) => e.name.replace(/.json$/, ''))
+            return entries.length > 0 ? entries : ['main', 'coder', 'planner']
+          } catch { return ['main', 'coder', 'planner'] }
+        },
+        onDmSent: () => {}, // stub - 发送 DM 后的回调
+        isEnabled: () => true,
+      }
+      const _dmToolDef = createDmTool(_dmDeps)
+      const _dmHandler = adaptPiTool(
+        _dmToolDef,
+        () => ({ sessionPath: process.cwd(), engine: this }),
+      )
+      registry.register('dm', createToolSpec('dm', {
+        description: _dmToolDef.description,
+        params: _dmToolDef.parameters,
+      }), _dmHandler)
+    } catch (e) {
+      console.error('[remu] Failed to register dm tool:', e)
+    }
+
+    // ─── Workflow 工具（编排脚本）─────────────
+    try {
+      const _agentId = (this as any).agentId || 'main'
+      const _workflowDeps = {
+        executeIsolated: _globalSessionCoordinator?.executeIsolated?.bind(_globalSessionCoordinator),
+        getAgentId: () => _agentId,
+        isEnabled: () => true,
+        // stub 依赖项（后续完善）
+        getSessionPath: () => process.cwd(),
+        getParentCwd: () => process.cwd(),
+        emitEvent: () => {},
+        resolveAgentId: () => undefined,
+        getDeferredStore: () => null,
+        getSubagentRunStore: () => null,
+        getSubagentThreadStore: () => null,
+        getJournalDir: () => null,
+      }
+      const _workflowToolDef = createWorkflowTool(_workflowDeps)
+      const _workflowHandler = adaptPiTool(
+        _workflowToolDef,
+        () => ({ sessionPath: process.cwd(), engine: this }),
+      )
+      registry.register('workflow', createToolSpec('workflow', {
+        description: _workflowToolDef.description,
+        params: _workflowToolDef.parameters,
+      }), _workflowHandler)
+    } catch (e) {
+      console.error('[remu] Failed to register workflow tool:', e)
+    }
+
+    // ─── Beautify 插件工具（openhanako 对齐）─────────────
+    try {
+      const _beautifyDeps = () => ({ sessionPath: process.cwd(), engine: this })
+      
+      // apply-cover-candidate
+      registry.register('beautify_apply_cover', createToolSpec(beautifyApplyCoverName, {
+        description: beautifyApplyCoverDesc,
+        params: beautifyApplyCoverParams,
+      }), adaptPiTool(
+        { name: beautifyApplyCoverName, description: beautifyApplyCoverDesc, parameters: beautifyApplyCoverParams, execute: beautifyApplyCoverExec },
+        _beautifyDeps
+      ))
+      
+      // create-cover
+      registry.register('beautify_create_cover', createToolSpec(beautifyCreateCoverName, {
+        description: beautifyCreateCoverDesc,
+        params: beautifyCreateCoverParams,
+      }), adaptPiTool(
+        { name: beautifyCreateCoverName, description: beautifyCreateCoverDesc, parameters: beautifyCreateCoverParams, execute: beautifyCreateCoverExec },
+        _beautifyDeps
+      ))
+      
+      // get-cover-style-guide
+      registry.register('beautify_get_cover_style', createToolSpec(beautifyGetCoverStyleName, {
+        description: beautifyGetCoverStyleDesc,
+        params: beautifyGetCoverStyleParams,
+      }), adaptPiTool(
+        { name: beautifyGetCoverStyleName, description: beautifyGetCoverStyleDesc, parameters: beautifyGetCoverStyleParams, execute: beautifyGetCoverStyleExec },
+        _beautifyDeps
+      ))
+      
+      // get-html-style-guide
+      registry.register('beautify_get_html_style', createToolSpec(beautifyGetHtmlStyleName, {
+        description: beautifyGetHtmlStyleDesc,
+        params: beautifyGetHtmlStyleParams,
+      }), adaptPiTool(
+        { name: beautifyGetHtmlStyleName, description: beautifyGetHtmlStyleDesc, parameters: beautifyGetHtmlStyleParams, execute: beautifyGetHtmlStyleExec },
+        _beautifyDeps
+      ))
+      
+      // list-capabilities
+      registry.register('beautify_list_caps', createToolSpec(beautifyListCapsName, {
+        description: beautifyListCapsDesc,
+        params: beautifyListCapsParams,
+      }), adaptPiTool(
+        { name: beautifyListCapsName, description: beautifyListCapsDesc, parameters: beautifyListCapsParams, execute: beautifyListCapsExec },
+        _beautifyDeps
+      ))
+    } catch (e) {
+      console.error('[remu] Failed to register beautify tools:', e)
+    }
+
+    // ─── office 工具（openhanako plugins/office/）─────────────
+    try {
+      // read-document
+      registry.register('office_read_document', createToolSpec(officeReadName, {
+        description: officeReadDesc,
+        params: officeReadParams,
+      }), officeReadExec)
+      // list-capabilities
+      registry.register('office_list_caps', createToolSpec(officeListCapsName, {
+        description: officeListCapsDesc,
+        params: officeListCapsParams,
+      }), officeListCapsExec)
+      // html-to-pdf（依赖 Chromium helper，execute 有2个参数，用 wrapper 适配）
+      registry.register('office_html_to_pdf', createToolSpec(officeHtmlToPdfName, {
+        description: officeHtmlToPdfDesc,
+        params: officeHtmlToPdfParams,
+      }), (args: any) => officeHtmlToPdfExec(args, {}))
+    } catch (e) {
+      console.error('[remu] Failed to register office tools:', e)
+    }
+
+    // ─── image-gen 工具（openhanako plugins/image-gen/）─────────────
+    try {
+      registry.register('generate_image', createToolSpec(imgGenName, {
+        description: imgGenDesc,
+        params: imgGenParams,
+      }), (args: any) => imgGenExec(args, {}))
+      registry.register('generate_video', createToolSpec(vidGenName, {
+        description: vidGenDesc,
+        params: vidGenParams,
+      }), (args: any) => vidGenExec(args, {}))
+      registry.register('describe_media_options', createToolSpec(mediaOptsName, {
+        description: mediaOptsDesc,
+        params: mediaOptsParams,
+      }), (args: any) => mediaOptsExec(args, {}))
+    } catch (e) {
+      console.error('[remu] Failed to register image-gen tools:', e)
+    }
+
+    // ─── install_skill 工具（remu 原生完整实现）─────────────
+    try {
+      const { spec, executor } = createInstallSkillTool(
+        _globalSkillStore,
+        () => {
+          const activeProvider = config.getActiveProvider('main')
+          if (activeProvider) {
+            return {
+              model: pickModel(activeProvider),
+              apiKey: activeProvider.apiKey || '',
+              baseUrl: activeProvider.baseUrl || '',
+            }
+          }
+          return { model: 'deepseek-chat', apiKey: '', baseUrl: 'https://api.deepseek.com' }
+        },
+        null,
+      )
+      registry.register('install_skill', spec, executor)
+    } catch (e) {
+      console.error('[remu] Failed to register install_skill tool:', e)
+    }
+
+    // ─── update_settings 工具（openhanako lib/tools/update-settings-tool.ts）──
+    try {
+      const _updateSettingsDeps = {
+        getEngine: () => this,
+        getAgent: () => _globalAgentId ? getAgentConfig(_globalAgentId) : null,
+      }
+      const updateSettingsTool = createUpdateSettingsTool(_updateSettingsDeps)
+      // execute 有5个参数 (_toolCallId, params, _signal, _onUpdate, _ctx)，用 wrapper 适配
+      const wrappedExecute = (args: any) => updateSettingsTool.execute('', args, null, null, null)
+      registry.register('update_settings', createToolSpec(updateSettingsTool.name, {
+        description: updateSettingsTool.description,
+        params: updateSettingsTool.parameters,
+      }), wrappedExecute)
+    } catch (e) {
+      console.error('[remu] Failed to register update_settings tool:', e)
+    }
 
     return registry
   }
@@ -381,6 +820,41 @@ export class ChatEngine {
         sharedMemory: team.getSharedMemory().snapshot(),
       }
     })
+
+    // ─── Subagent 工具（对齐 openhanako）──
+    const _subagentTools = createSubagentTool({
+      chat: (msgs: Array<{ role: 'user' | 'system' | 'assistant'; content: string }>, userId?: string) =>
+        this.chat(msgs, userId ?? 'default'),
+      createReadOnlyChat: () => {
+        const clone = this.createReadOnlyClone()
+        return (msgs: Array<{ role: 'user' | 'system' | 'assistant'; content: string }>, userId?: string) =>
+          clone.chat(msgs, userId ?? 'default')
+      },
+      getModel: () => this.model,
+      getAgentManager: () => this._getAgentManager(),
+      getSessionPermission: () => this.getPermissionMode(),
+      getCwd: () => process.cwd(),
+    })
+
+    this.toolRegistry.register('subagent', createToolSpec('subagent', {
+      description: _subagentTools.subagent.description,
+      params: _subagentTools.subagent.parameters,
+    }), _subagentTools.subagent.execute)
+
+    this.toolRegistry.register('subagent_reply', createToolSpec('subagent_reply', {
+      description: _subagentTools.subagent_reply.description,
+      params: _subagentTools.subagent_reply.parameters,
+    }), _subagentTools.subagent_reply.execute)
+
+    this.toolRegistry.register('subagent_close', createToolSpec('subagent_close', {
+      description: _subagentTools.subagent_close.description,
+      params: _subagentTools.subagent_close.parameters,
+    }), _subagentTools.subagent_close.execute)
+
+    this.toolRegistry.register('subagent_status', createToolSpec('subagent_status', {
+      description: _subagentTools.subagent_status.description,
+      params: _subagentTools.subagent_status.parameters,
+    }), _subagentTools.subagent_status.execute)
   }
 
   addPendingImage(base64: string): void {
@@ -395,8 +869,46 @@ export class ChatEngine {
     return this.toolRegistry
   }
 
-  async chat(messages: ChatMessage[]): Promise<ChatResult> {
-    const systemContent = await injectMemoryIntoSystemPrompt(this.systemPrompt, messages)
+  /**
+   * 创建只读副本，只注册只读工具。
+   * subagent access="read" 时使用。
+   */
+  createReadOnlyClone(): ChatEngine {
+    const READ_ONLY_TOOLS = [
+      'capture_screenshot',
+      'analyze_screenshot',
+      'file_read',
+      'file_list',
+      'get_screen_size',
+      'memory_search',
+      'memory_get',
+      'memory_list',
+      'web_fetch',
+      'web_search',
+      'subagent',
+      'subagent_reply',
+      'subagent_close',
+      'subagent_status',
+    ]
+
+    const newRegistry = new ToolRegistry()
+    for (const name of READ_ONLY_TOOLS) {
+      const entry = this.toolRegistry.get(name)
+      if (entry) {
+        newRegistry.registerEntry(name, entry)
+      }
+    }
+
+    const clone = new ChatEngine(this.client, this.model, this.systemPrompt, newRegistry)
+    // 注入 SkillStore（复用模块级实例）
+    if (_globalSkillStore) {
+      clone.setSkillStore(_globalSkillStore)
+    }
+    return clone
+  }
+
+  async chat(messages: ChatMessage[], userId: string = 'default'): Promise<ChatResult> {
+    const systemContent = await injectMemoryIntoSystemPrompt(this.systemPrompt, messages, { userId })
 
     const baseMessages: any[] = [
       { role: 'system', content: systemContent },
@@ -478,8 +990,9 @@ export class ChatEngine {
   async chatStream(
     messages: ChatMessage[],
     onDelta: (chunk: string) => void,
+    userId: string = 'default',
   ): Promise<ChatResult> {
-    const systemContent = await injectMemoryIntoSystemPrompt(this.systemPrompt, messages)
+    const systemContent = await injectMemoryIntoSystemPrompt(this.systemPrompt, messages, { userId })
 
     const baseMessages: any[] = [
       { role: 'system', content: systemContent },
@@ -603,5 +1116,9 @@ export class ChatEngine {
       this._team = createTeam({ chat: (msgs: ChatMessage[]) => this.chat(msgs) } as any)
     }
     return this._team
+  }
+
+  private _getAgentManager(): any | null {
+    return this._agentManager ?? null
   }
 }

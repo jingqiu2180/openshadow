@@ -12,9 +12,9 @@
 
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from "../../shared/safe-fs.js";
-import { createModuleLogger } from "../debug-log.js";
-import { SessionSummaryManager } from "./session-summary.js";
+import { atomicWriteSync } from '../../shared/safe-fs';
+import { createModuleLogger } from '../debug-log';
+import { SessionSummaryManager } from './session-summary';
 
 const log = createModuleLogger("memory-compile");
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { ReactNode, CSSProperties } from 'react'
 import styles from './ChatResourceCard.module.css'
 

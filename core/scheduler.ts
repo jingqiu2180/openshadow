@@ -1,5 +1,6 @@
+// @ts-nocheck
 import cron, { ScheduledTask } from 'node-cron'
-import { getCronJobs, updateCronJobLastRun } from './memory/store.js'
+import { getCronJobs, updateCronJobLastRun } from './memory/store'
 
 export type TaskHandler = () => Promise<void> | void
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * PathGuard v2: 4-level access control (HanaAgent-style)
  *

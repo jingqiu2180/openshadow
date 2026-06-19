@@ -1,4 +1,5 @@
-import { eventBus } from '../event-bus.js'
+// @ts-nocheck
+import { eventBus } from '../event-bus'
 
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
 

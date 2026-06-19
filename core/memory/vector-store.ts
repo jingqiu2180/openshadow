@@ -12,10 +12,10 @@
  * - 批处理：searchByVector 一次性 embed 多个候选 fact 的内容。
  */
 import type { Database } from 'better-sqlite3'
-import { getDb } from './store.js'
-import { config } from '../config.js'
-import { createClient, pickModel } from '../providers/index.js'
-import { createModuleLogger } from '../debug-log.js'
+import { getDb } from './store'
+import { config } from '../config'
+import { createClient, pickModel } from '../providers/index'
+import { createModuleLogger } from '../debug-log'
 
 const log = createModuleLogger('vector-store')
 
@@ -146,10 +146,12 @@ export interface VectorSearchHit {
  * Embeds the query once, then scores all facts in the `facts` table that
  * already have an embedding; lazily embeds facts that don't (up to
  * `embedBudget` per call to keep the request bounded).
+ * Only searches facts belonging to `userId` (default 'default').
  */
 export async function searchByVector(
   query: string,
   k: number = 5,
+  userId: string = 'default',
   embedBudget: number = 32,
 ): Promise<VectorSearchHit[]> {
   ensureEmbeddingTable()
@@ -162,10 +164,10 @@ export async function searchByVector(
     log.warn(`Query embedding failed: ${(err as Error).message}`)
     return []
   }
-  // 2. Load all facts (small dataset; FTS5/N is overkill here)
+  // 2. Load facts for this user (small dataset; FTS5/N is overkill here)
   const facts = db
-    .prepare('SELECT id, content, importance FROM facts ORDER BY importance DESC LIMIT 500')
-    .all() as Array<{ id: string; content: string; importance: number }>
+    .prepare('SELECT id, content, importance FROM facts WHERE user_id = ? ORDER BY importance DESC LIMIT 500')
+    .all(userId) as Array<{ id: string; content: string; importance: number }>
   // 3. Lazy-embed facts that don't have one yet (capped by embedBudget)
   let toEmbed = 0
   for (const f of facts) {

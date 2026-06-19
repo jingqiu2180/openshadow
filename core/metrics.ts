@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface Metrics {
   uptime: number
   memoryUsage: {

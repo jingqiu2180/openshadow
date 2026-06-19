@@ -9,14 +9,14 @@
  *   - 与 SessionSummaryManager 对接
  */
 
-import { createModuleLogger } from "./debug-log.js";
+import { createModuleLogger } from './debug-log';
 import {
   MAX_ROLLING_SUMMARY_FORMAT_REPAIRS,
   buildRollingSummaryFormatRequirements,
   buildRollingSummaryRepairInput,
   buildRollingSummaryRepairPrompt,
   validateRollingSummaryFormat,
-} from "./rolling-summary-format.js";
+} from './rolling-summary-format';
 
 const log = createModuleLogger("memory-reflection-runner");
 

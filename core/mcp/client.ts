@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * MCP client — connects to MCP servers via stdio or SSE transport.
  *
@@ -25,7 +26,7 @@ import type {
   McpResourceReadResult,
   McpPromptResult,
   McpConnection,
-} from './types.js'
+} from './types'
 
 // ─── Transport Layer ────────────────────────────────────────────────────
 

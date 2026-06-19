@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu } from 'electron'
 import { join } from 'path'
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'

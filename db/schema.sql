@@ -8,8 +8,10 @@ CREATE TABLE IF NOT EXISTS memories (
   access_count  INTEGER DEFAULT 0,
   memory_type   TEXT DEFAULT 'conversation' CHECK (memory_type IN ('conversation', 'fact', 'preference', 'system')),
   tags          TEXT DEFAULT '[]',
-  session_id    TEXT DEFAULT ''
+  session_id    TEXT DEFAULT '',
+  user_id       TEXT DEFAULT 'default'
 );
+CREATE INDEX IF NOT EXISTS idx_memories_user ON memories(user_id);
 
 -- FTS5 virtual table for full-text search
 CREATE VIRTUAL TABLE IF NOT EXISTS memories_fts USING fts5(
@@ -66,8 +68,10 @@ CREATE TABLE IF NOT EXISTS facts (
   session_id    TEXT DEFAULT '',
   created_at    INTEGER NOT NULL,
   source_type   TEXT DEFAULT 'extraction' CHECK (source_type IN ('extraction', 'user_input', 'system')),
-  importance    INTEGER DEFAULT 3
+  importance    INTEGER DEFAULT 3,
+  user_id       TEXT DEFAULT 'default'
 );
+CREATE INDEX IF NOT EXISTS idx_facts_user ON facts(user_id);
 
 -- FTS5 for facts
 CREATE VIRTUAL TABLE IF NOT EXISTS facts_fts USING fts5(

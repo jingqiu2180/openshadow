@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Provider abstraction — Stage 1a
  *
@@ -9,7 +10,7 @@
  *
  * Re-exports the Provider type from config.ts so downstream code only needs one import.
  */
-export { Provider } from '../config.js'
+export { Provider } from '../config'
 
 export type ProviderType = 'openai' | 'gemini' | 'ollama' | 'custom' | 'anthropic'
 

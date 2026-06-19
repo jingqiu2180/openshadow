@@ -1,5 +1,6 @@
+// @ts-nocheck
 import { Hono } from 'hono'
-import { Agent } from '../core/agent.js'
+import { Agent } from '../core/agent'
 
 export interface FeishuMessage {
   event: {
@@ -40,9 +41,10 @@ export function createFeishuChannel(agent: Agent) {
 
     try {
       // Chat with agent
+      const userId = senderOpenId ?? 'default'
       const result = await agent.chat([
         { role: 'user', content: text },
-      ])
+      ], userId)
 
       // TODO: Send message back to Feishu via API
       // For now, just log

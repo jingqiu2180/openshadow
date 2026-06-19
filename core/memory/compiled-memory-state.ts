@@ -11,7 +11,7 @@
 
 import fs from "fs";
 import path from "path";
-import { createModuleLogger } from "./debug-log.js";
+import { createModuleLogger } from './debug-log';
 
 const log = createModuleLogger("compiled-memory-state");
 

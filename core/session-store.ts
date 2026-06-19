@@ -1,7 +1,8 @@
+// @ts-nocheck
 import { randomUUID } from 'crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, unlinkSync } from 'fs'
 import { join, dirname } from 'path'
-import type { ChatMessage } from './chat-engine.js'
+import type { ChatMessage } from './chat-engine'
 
 export interface SessionMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'

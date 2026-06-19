@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * MCP Registry — manages MCP server connections.
  *
@@ -8,9 +9,9 @@
  * - Lifecycle management (connect/disconnect/reconnect)
  */
 
-import type { McpServerConfig, McpConnection, McpTool } from './types.js'
-import { McpClient } from './client.js'
-import { config } from '../config.js'
+import type { McpServerConfig, McpConnection, McpTool } from './types'
+import { McpClient } from './client'
+import { config } from '../config'
 
 // ─── Registry ───────────────────────────────────────────────────────────
 

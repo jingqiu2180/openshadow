@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "defaultStudioId": "studio_2e5e6f22-117a-4e90-b94c-c6c0d1bca8f2",
+  "studios": [
+    {
+      "studioId": "studio_2e5e6f22-117a-4e90-b94c-c6c0d1bca8f2",
+      "ownerUserId": "user_acb29141-fa37-44e5-9eb2-810d3cd1cc79",
+      "label": "Personal Studio",
+      "kind": "personal",
+      "storage": {
+        "provider": "legacy_hana_home",
+        "legacyRoot": true
+      },
+      "membershipModel": "single_user_implicit",
+      "createdAt": "2026-06-18T16:43:16.671Z",
+      "updatedAt": "2026-06-18T16:43:16.671Z"
+    }
+  ],
+  "createdAt": "2026-06-18T16:43:16.671Z",
+  "updatedAt": "2026-06-18T16:43:16.671Z"
+}

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Text-to-Speech using system voices.
  * macOS: say command

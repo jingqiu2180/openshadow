@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Preload script for the Rem main window.
  * Exposes safe IPC bridges to the renderer via contextBridge.

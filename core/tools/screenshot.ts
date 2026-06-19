@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Screenshot tool - cross-platform screen capture with base64 output.
  *

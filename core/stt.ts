@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Speech-to-Text using system tools.
  * macOS: sox

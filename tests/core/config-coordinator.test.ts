@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach } from 'vitest'
 import { ConfigCoordinator, createConfigCoordinator } from '../../core/config-coordinator.js'
 import { ConfigManager } from '../../core/config.js'

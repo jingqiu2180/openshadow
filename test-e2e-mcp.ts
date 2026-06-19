@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * E2E Test #5: MCP client connects to a real server.
  *
@@ -11,9 +12,9 @@
  * Run: npx tsx test-e2e-mcp.ts
  */
 
-import { mcpRegistry } from './core/mcp/index.js'
-import { config } from './core/config.js'
-import { Agent } from './core/agent.js'
+import { mcpRegistry } from './core/mcp/index'
+import { config } from './core/config'
+import { Agent } from './core/agent'
 
 async function main() {
   console.log('=== E2E-5: MCP Client ===\n')

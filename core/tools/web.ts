@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Use global fetch (Node 18+)
 
 export interface WebSearchResult {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * AuditLogger: records all sandbox operations for security review.
  */

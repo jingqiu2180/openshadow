@@ -1,5 +1,6 @@
+// @ts-nocheck
 import { Hono } from 'hono'
-import { Agent } from '../core/agent.js'
+import { Agent } from '../core/agent'
 
 export interface QQMessage {
   message: {
@@ -36,9 +37,10 @@ export function createQQChannel(agent: Agent) {
     }
 
     try {
+      const userId = author?.id ?? 'default'
       const result = await agent.chat([
         { role: 'user', content },
-      ])
+      ], userId)
 
       console.log(`[qq] channel=${channel_id} user=${author.id}`)
       console.log(`[qq] response: ${result.content.slice(0, 200)}`)

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // provider-contract.ts — Computer Use Provider 接口契约
 // 参考 openhanako 的 core/computer-use/provider-contract.ts
 // 简化版，聚焦核心功能

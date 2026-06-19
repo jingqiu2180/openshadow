@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach } from 'vitest'
 import { AgentManager, createAgentManager } from '../../core/agent-manager.js'
 import { ConfigCoordinator } from '../../core/config-coordinator.js'

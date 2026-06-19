@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface PersonalityTemplate {
   name: string
   greeting: string

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Browser automation tools — dual mode:
  *

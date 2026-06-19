@@ -1,0 +1,12 @@
+agent:
+  name: agent-gamma
+  yuan: hanako
+  avatar: null
+memory:
+  enabled: true
+desk:
+  heartbeat_enabled: false
+  heartbeat_interval: 31
+user:
+  name: User
+preferences: {}

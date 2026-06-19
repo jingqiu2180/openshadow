@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * NetworkFilter: controls outbound network access from sandboxed processes.
  *

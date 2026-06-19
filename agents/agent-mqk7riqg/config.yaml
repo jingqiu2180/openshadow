@@ -1,0 +1,16 @@
+agent:
+  name: "agent-mqk7riqg"
+  yuan: hanako
+  avatar: null
+
+memory:
+  enabled: true
+
+desk:
+  heartbeat_enabled: false
+  heartbeat_interval: 30
+
+user:
+  name: ""
+
+preferences: {}

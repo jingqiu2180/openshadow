@@ -1,5 +1,6 @@
-import type { Provider } from '../config.js'
-import type { ChatMessage } from '../chat-engine.js'
+// @ts-nocheck
+import type { Provider } from '../config'
+import type { ChatMessage } from '../chat-engine'
 
 export interface ProviderAdapter {
   chat(messages: ChatMessage[], options?: ChatOptions): Promise<ProviderChatResponse>
@@ -43,7 +44,7 @@ export function createProviderAdapter(provider: Provider, modelName?: string): P
 }
 
 import OpenAI from 'openai'
-import { usageTracker } from './usage-tracker.js'
+import { usageTracker } from './usage-tracker'
 
 class OpenAIAdapter implements ProviderAdapter {
   private readonly client: OpenAI

@@ -10,8 +10,8 @@
  * - 分批删除（默认 100/批），避免长事务。
  * - 永远保留 importance >= 4 的高价值 fact（业务关键信息不能误删）。
  */
-import { getDb } from './store.js'
-import { createModuleLogger } from '../debug-log.js'
+import { getDb } from './store'
+import { createModuleLogger } from '../debug-log'
 
 const log = createModuleLogger('memory-cleanup')
 
@@ -35,6 +35,8 @@ export interface CleanupOptions {
   batchSize?: number
   /** 试运行：只统计不真删 */
   dryRun?: boolean
+  /** 多用户隔离：只清理指定 userId 的记忆（不传则清所有用户） */
+  userId?: string
 }
 
 /**
@@ -46,23 +48,27 @@ export function cleanupOldFacts(opts: CleanupOptions = {}): CleanupResult {
     ?? Number(process.env.MEMORY_RETENTION_DAYS ?? DEFAULT_RETENTION_DAYS)
   const batchSize = opts.batchSize ?? DEFAULT_BATCH_SIZE
   const dryRun = opts.dryRun ?? false
+  const userId = opts.userId
   const cutoffMs = Date.now() - retentionDays * 24 * 60 * 60 * 1000
   const cutoffIso = new Date(cutoffMs).toISOString()
   const db = getDb()
+
+  const userFilter = userId ? 'AND user_id = ?' : ''
+  const userParams: any[] = userId ? [userId] : []
 
   // 1. Count how many we'd touch
   const countRow = db
     .prepare(
       `SELECT COUNT(*) AS n FROM facts
-       WHERE created_at < ? AND importance < ?`
+       WHERE created_at < ? AND importance < ? ${userFilter}`
     )
-    .get(cutoffMs, PROTECTED_IMPORTANCE) as { n: number }
+    .get(cutoffMs, PROTECTED_IMPORTANCE, ...userParams) as { n: number }
   const protectedRow = db
     .prepare(
       `SELECT COUNT(*) AS n FROM facts
-       WHERE created_at < ? AND importance >= ?`
+       WHERE created_at < ? AND importance >= ? ${userFilter}`
     )
-    .get(cutoffMs, PROTECTED_IMPORTANCE) as { n: number }
+    .get(cutoffMs, PROTECTED_IMPORTANCE, ...userParams) as { n: number }
 
   if (dryRun) {
     return {
@@ -74,28 +80,25 @@ export function cleanupOldFacts(opts: CleanupOptions = {}): CleanupResult {
     }
   }
 
-  // 2. Delete in batches (the fact_embeddings FK is ON DELETE CASCADE so
-  //    they go away with the fact row).
+  // 2. Delete in batches
   let deleted = 0
   while (true) {
     const ids = db
       .prepare(
         `SELECT id FROM facts
-         WHERE created_at < ? AND importance < ?
+         WHERE created_at < ? AND importance < ? ${userFilter}
          LIMIT ?`
       )
-      .all(cutoffMs, PROTECTED_IMPORTANCE, batchSize) as Array<{ id: string }>
+      .all(cutoffMs, PROTECTED_IMPORTANCE, ...userParams, batchSize) as Array<{ id: string }>
     if (ids.length === 0) break
-    const idList = ids.map(r => `'${r.id}'`).join(',')
-    const result = db.exec(`DELETE FROM facts WHERE id IN (${idList})`)
-    // better-sqlite3 returns { changes } per exec; sum them.
-    const changes = (result as any).changes ?? ids.length
-    deleted += changes
+    for (const { id } of ids) {
+      const result = db.prepare('DELETE FROM facts WHERE id = ?').run(id)
+      deleted += result.changes
+    }
     if (ids.length < batchSize) break
   }
 
-  // 3. Also clean up orphaned embeddings (in case FK CASCADE was ever
-  //    bypassed by a manual import).
+  // 3. Also cleanup orphaned embeddings
   const orphanResult = db
     .prepare(
       `DELETE FROM fact_embeddings
@@ -106,7 +109,8 @@ export function cleanupOldFacts(opts: CleanupOptions = {}): CleanupResult {
   log.info(
     `Cleanup done: deleted ${deleted} facts, removed ${orphanResult.changes} orphaned embeddings, ` +
     `skipped ${protectedRow.n} protected (importance >= ${PROTECTED_IMPORTANCE}), ` +
-    `cutoff=${cutoffIso}, retentionDays=${retentionDays}`
+    `cutoff=${cutoffIso}, retentionDays=${retentionDays}` +
+    (userId ? `, userId=${userId}` : '')
   )
 
   return {

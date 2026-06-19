@@ -1,0 +1,9 @@
+{
+  "sourceVersion": 1,
+  "targetVersion": 2,
+  "migratedAt": "2026-06-18T16:43:16.561Z",
+  "providers": [],
+  "copiedFiles": [
+    "added-models.yaml"
+  ]
+}

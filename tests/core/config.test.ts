@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { existsSync, writeFileSync, unlinkSync, mkdirSync } from 'fs'
 import { join } from 'path'

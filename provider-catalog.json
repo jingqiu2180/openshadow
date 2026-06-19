@@ -1,0 +1,62 @@
+{
+  "catalogVersion": 2,
+  "providers": {
+    "minimax-token-plan": {
+      "api_key": "sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro",
+      "models": [
+        {
+          "id": "MiniMax-M3",
+          "name": "MiniMax-M3",
+          "context": null,
+          "maxOutput": null
+        },
+        {
+          "id": "MiniMax-M2.1",
+          "name": "MiniMax-M2.1"
+        }
+      ]
+    }
+  },
+  "capabilities": {
+    "web.search": {
+      "providers": [
+        {
+          "id": "tavily",
+          "source": "api",
+          "requiresApiKey": true
+        },
+        {
+          "id": "brave",
+          "source": "api",
+          "requiresApiKey": true
+        },
+        {
+          "id": "serper",
+          "source": "api",
+          "requiresApiKey": true
+        },
+        {
+          "id": "bing_browser",
+          "source": "browser",
+          "requiresApiKey": false
+        },
+        {
+          "id": "google_browser",
+          "source": "browser",
+          "requiresApiKey": false
+        },
+        {
+          "id": "duckduckgo_browser",
+          "source": "browser",
+          "requiresApiKey": false
+        }
+      ]
+    }
+  },
+  "meta": {
+    "migratedAt": "2026-06-18T16:43:16.561Z",
+    "migrationSource": "added-models.yaml",
+    "deletedProviders": [],
+    "providerCatalogCutoverAt": "2026-06-18T16:43:16.807Z"
+  }
+}

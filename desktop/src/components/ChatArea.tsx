@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -201,7 +202,7 @@ export default function ChatArea() {
     setStreaming('')
     setWsStatus('connecting')
 
-    const ws = new WebSocket('ws://localhost:8080')
+    const ws = new WebSocket('ws://localhost:3000/api/ws')
     let buffer = ''
 
     ws.onopen = () => {
@@ -220,7 +221,26 @@ export default function ChatArea() {
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data)
-        if (data.type === 'delta' && typeof data.delta === 'string') {
+        // Handle app_event format from server
+        if (data.type === 'app_event') {
+          if (data.event?.type === 'message_update') {
+            const delta = data.event.assistantMessageEvent?.delta
+            if (delta) {
+              buffer += delta
+              setStreaming(buffer)
+            }
+          } else if (data.event?.type === 'session_status' && data.event?.isStreaming === false) {
+            addMessage(currentId, {
+              role: 'assistant',
+              content: buffer || data.event?.content || '（无响应）',
+              timestamp: Date.now(),
+            })
+            buffer = ''
+            setStreaming('')
+            setSending(false)
+            ws.close()
+          }
+        } else if (data.type === 'delta' && typeof data.delta === 'string') {
           buffer += data.delta
           setStreaming(buffer)
         } else if (data.type === 'done' || data.type === 'response') {

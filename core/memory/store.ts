@@ -19,6 +19,7 @@ export interface Memory {
   memory_type: 'conversation' | 'fact' | 'preference' | 'system'
   tags: string[]
   session_id: string
+  user_id: string
 }
 
 export interface Fact {
@@ -29,6 +30,7 @@ export interface Fact {
   created_at: number
   source_type: 'extraction' | 'user_input' | 'system'
   importance: number
+  user_id: string
 }
 
 let _db: Database.Database | null = null
@@ -48,6 +50,15 @@ export function getDb(): Database.Database {
 function initSchema(db: Database.Database): void {
   const schema = readFileSync(join(__dirname, '../../db/schema.sql'), 'utf-8')
   db.exec(schema)
+
+  // Migration: add user_id column to existing tables if missing
+  for (const tbl of ['memories', 'facts'] as const) {
+    const cols = db.prepare(`PRAGMA table_info(${tbl})`).all() as Array<{ name: string }>
+    if (!cols.some(c => c.name === 'user_id')) {
+      db.exec(`ALTER TABLE ${tbl} ADD COLUMN user_id TEXT DEFAULT 'default'`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_${tbl}_user ON ${tbl}(user_id)`)
+    }
+  }
 }
 
 function parseTags(raw: unknown): string[] {
@@ -69,6 +80,7 @@ function rowToMemory(row: any): Memory {
     memory_type: row.memory_type,
     tags: parseTags(row.tags),
     session_id: row.session_id ?? '',
+    user_id: row.user_id ?? 'default',
   }
 }
 
@@ -81,6 +93,7 @@ function rowToFact(row: any): Fact {
     created_at: row.created_at,
     source_type: row.source_type,
     importance: row.importance,
+    user_id: row.user_id ?? 'default',
   }
 }
 
@@ -92,30 +105,31 @@ export function addMemory(
   memoryType: Memory['memory_type'] = 'conversation',
   tags: string[] = [],
   sessionId: string = '',
+  userId: string = 'default',
 ): Memory {
   const db = getDb()
   const id = randomUUID()
   const now = Date.now()
 
   const stmt = db.prepare(`
-    INSERT INTO memories (id, content, importance, created_at, last_accessed, access_count, memory_type, tags, session_id)
-    VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)
+    INSERT INTO memories (id, content, importance, created_at, last_accessed, access_count, memory_type, tags, session_id, user_id)
+    VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
   `)
-  stmt.run(id, content, importance, now, now, memoryType, JSON.stringify(tags), sessionId)
+  stmt.run(id, content, importance, now, now, memoryType, JSON.stringify(tags), sessionId, userId)
 
-  return { id, content, importance, created_at: now, last_accessed: now, access_count: 0, memory_type: memoryType, tags, session_id: sessionId }
+  return { id, content, importance, created_at: now, last_accessed: now, access_count: 0, memory_type: memoryType, tags, session_id: sessionId, user_id: userId }
 }
 
-export function getRecentMemories(limit: number = 50): Memory[] {
+export function getRecentMemories(limit: number = 50, userId: string = 'default'): Memory[] {
   const db = getDb()
-  const stmt = db.prepare(`SELECT * FROM memories ORDER BY created_at DESC LIMIT ?`)
-  return (stmt.all(limit) as any[]).map(rowToMemory)
+  const stmt = db.prepare(`SELECT * FROM memories WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`)
+  return (stmt.all(userId, limit) as any[]).map(rowToMemory)
 }
 
-export function getMemoriesByType(type: Memory['memory_type'], limit: number = 20): Memory[] {
+export function getMemoriesByType(type: Memory['memory_type'], limit: number = 20, userId: string = 'default'): Memory[] {
   const db = getDb()
-  const stmt = db.prepare(`SELECT * FROM memories WHERE memory_type = ? ORDER BY importance DESC, created_at DESC LIMIT ?`)
-  return (stmt.all(type, limit) as any[]).map(rowToMemory)
+  const stmt = db.prepare(`SELECT * FROM memories WHERE memory_type = ? AND user_id = ? ORDER BY importance DESC, created_at DESC LIMIT ?`)
+  return (stmt.all(type, userId, limit) as any[]).map(rowToMemory)
 }
 
 export function accessMemory(id: string): void {
@@ -131,17 +145,35 @@ export function getMemoryById(id: string): Memory | null {
   return row ? rowToMemory(row) : null
 }
 
-export function cleanupOldMemories(maxAgeMs: number = 30 * 24 * 60 * 60 * 1000): number {
+export function cleanupOldMemories(
+  maxAgeMs: number = 30 * 24 * 60 * 60 * 1000,
+  userId?: string,
+): number {
   const db = getDb()
   const cutoff = Date.now() - maxAgeMs
-  const stmt = db.prepare(`
-    DELETE FROM memories
-    WHERE last_accessed < ?
-      AND access_count < 3
-      AND importance < 4
-      AND memory_type != 'fact'
-  `)
-  const result = stmt.run(cutoff)
+  let stmt: Database.Statement
+  let params: any[]
+  if (userId) {
+    stmt = db.prepare(`
+      DELETE FROM memories
+      WHERE last_accessed < ?
+        AND access_count < 3
+        AND importance < 4
+        AND memory_type != 'fact'
+        AND user_id = ?
+    `)
+    params = [cutoff, userId]
+  } else {
+    stmt = db.prepare(`
+      DELETE FROM memories
+      WHERE last_accessed < ?
+        AND access_count < 3
+        AND importance < 4
+        AND memory_type != 'fact'
+    `)
+    params = [cutoff]
+  }
+  const result = stmt.run(...params)
   return result.changes
 }
 
@@ -151,43 +183,43 @@ export function updateMemoryImportance(id: string, importance: number): void {
   stmt.run(importance, id)
 }
 
-export function getContextMemories(limit: number = 20): Memory[] {
+export function getContextMemories(limit: number = 20, userId: string = 'default'): Memory[] {
   const db = getDb()
   const stmt = db.prepare(`
     SELECT * FROM (
-      SELECT *, 1 as priority FROM memories WHERE memory_type = 'fact' AND importance >= 3
+      SELECT *, 1 as priority FROM memories WHERE memory_type = 'fact' AND importance >= 3 AND user_id = ?
       UNION ALL
-      SELECT *, 2 as priority FROM memories WHERE memory_type = 'preference' AND importance >= 3
+      SELECT *, 2 as priority FROM memories WHERE memory_type = 'preference' AND importance >= 3 AND user_id = ?
       UNION ALL
-      SELECT *, 3 as priority FROM memories ORDER BY created_at DESC LIMIT 30
+      SELECT *, 3 as priority FROM memories WHERE user_id = ? ORDER BY created_at DESC LIMIT 30
     ) combined
     ORDER BY priority, last_accessed DESC
     LIMIT ?
   `)
-  return (stmt.all(limit) as any[]).map(rowToMemory)
+  return (stmt.all(userId, userId, userId, limit) as any[]).map(rowToMemory)
 }
 
-export function searchMemories(query: string, limit: number = 10): Memory[] {
+export function searchMemories(query: string, limit: number = 10, userId: string = 'default'): Memory[] {
   const db = getDb()
   const stmt = db.prepare(`
     SELECT m.* FROM memories m
     JOIN memories_fts fts ON m.rowid = fts.rowid
-    WHERE memories_fts MATCH ?
+    WHERE memories_fts MATCH ? AND m.user_id = ?
     ORDER BY rank
     LIMIT ?
   `)
   try {
-    return (stmt.all(query, limit) as any[]).map(rowToMemory)
+    return (stmt.all(query, userId, limit) as any[]).map(rowToMemory)
   } catch {
-    const fallback = db.prepare(`SELECT * FROM memories WHERE content LIKE ? ORDER BY importance DESC LIMIT ?`)
-    return (fallback.all(`%${query}%`, limit) as any[]).map(rowToMemory)
+    const fallback = db.prepare(`SELECT * FROM memories WHERE content LIKE ? AND user_id = ? ORDER BY importance DESC LIMIT ?`)
+    return (fallback.all(`%${query}%`, userId, limit) as any[]).map(rowToMemory)
   }
 }
 
-export function findMemoriesByTag(tag: string, limit: number = 20): Memory[] {
+export function findMemoriesByTag(tag: string, limit: number = 20, userId: string = 'default'): Memory[] {
   const db = getDb()
-  const stmt = db.prepare(`SELECT * FROM memories WHERE tags LIKE ? ORDER BY importance DESC, created_at DESC LIMIT ?`)
-  return (stmt.all(`%"${tag}"%`, limit) as any[]).map(rowToMemory)
+  const stmt = db.prepare(`SELECT * FROM memories WHERE user_id = ? AND tags LIKE ? ORDER BY importance DESC, created_at DESC LIMIT ?`)
+  return (stmt.all(userId, `%"${tag}"%`, limit) as any[]).map(rowToMemory)
 }
 
 // ─── Fact Operations ─────────────────────────────────────────────────────────
@@ -198,47 +230,48 @@ export function addFact(
   sessionId: string = '',
   sourceType: Fact['source_type'] = 'extraction',
   importance: number = 3,
+  userId: string = 'default',
 ): Fact {
   const db = getDb()
   const id = randomUUID()
   const now = Date.now()
 
   const stmt = db.prepare(`
-    INSERT INTO facts (id, content, tags, session_id, created_at, source_type, importance)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO facts (id, content, tags, session_id, created_at, source_type, importance, user_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `)
-  stmt.run(id, content, JSON.stringify(tags), sessionId, now, sourceType, importance)
+  stmt.run(id, content, JSON.stringify(tags), sessionId, now, sourceType, importance, userId)
 
-  return { id, content, tags, session_id: sessionId, created_at: now, source_type: sourceType, importance }
+  return { id, content, tags, session_id: sessionId, created_at: now, source_type: sourceType, importance, user_id: userId }
 }
 
-export function getFacts(limit: number = 50): Fact[] {
+export function getFacts(limit: number = 50, userId: string = 'default'): Fact[] {
   const db = getDb()
-  const stmt = db.prepare(`SELECT * FROM facts ORDER BY importance DESC, created_at DESC LIMIT ?`)
-  return (stmt.all(limit) as any[]).map(rowToFact)
+  const stmt = db.prepare(`SELECT * FROM facts WHERE user_id = ? ORDER BY importance DESC, created_at DESC LIMIT ?`)
+  return (stmt.all(userId, limit) as any[]).map(rowToFact)
 }
 
-export function searchFacts(query: string, limit: number = 10): Fact[] {
+export function searchFacts(query: string, limit: number = 10, userId: string = 'default'): Fact[] {
   const db = getDb()
   const stmt = db.prepare(`
     SELECT f.* FROM facts f
     JOIN facts_fts fts ON f.rowid = fts.rowid
-    WHERE facts_fts MATCH ?
+    WHERE facts_fts MATCH ? AND f.user_id = ?
     ORDER BY rank
     LIMIT ?
   `)
   try {
-    return (stmt.all(query, limit) as any[]).map(rowToFact)
+    return (stmt.all(query, userId, limit) as any[]).map(rowToFact)
   } catch {
-    const fallback = db.prepare(`SELECT * FROM facts WHERE content LIKE ? ORDER BY importance DESC LIMIT ?`)
-    return (fallback.all(`%${query}%`, limit) as any[]).map(rowToFact)
+    const fallback = db.prepare(`SELECT * FROM facts WHERE content LIKE ? AND user_id = ? ORDER BY importance DESC LIMIT ?`)
+    return (fallback.all(`%${query}%`, userId, limit) as any[]).map(rowToFact)
   }
 }
 
-export function findFactsByTag(tag: string, limit: number = 20): Fact[] {
+export function findFactsByTag(tag: string, limit: number = 20, userId: string = 'default'): Fact[] {
   const db = getDb()
-  const stmt = db.prepare(`SELECT * FROM facts WHERE tags LIKE ? ORDER BY importance DESC, created_at DESC LIMIT ?`)
-  return (stmt.all(`%"${tag}"%`, limit) as any[]).map(rowToFact)
+  const stmt = db.prepare(`SELECT * FROM facts WHERE user_id = ? AND tags LIKE ? ORDER BY importance DESC, created_at DESC LIMIT ?`)
+  return (stmt.all(userId, `%"${tag}"%`, limit) as any[]).map(rowToFact)
 }
 
 // ─── Agent Operations ─────────────────────────────────────────────────────────

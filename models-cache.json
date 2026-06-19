@@ -1,0 +1,55 @@
+{
+  "minimax-token-plan": {
+    "models": [
+      {
+        "id": "MiniMax-M3",
+        "name": "MiniMax-M3",
+        "context": null,
+        "maxOutput": null
+      },
+      {
+        "id": "MiniMax-M2.7",
+        "name": "MiniMax-M2.7",
+        "context": null,
+        "maxOutput": null
+      },
+      {
+        "id": "MiniMax-M2.7-highspeed",
+        "name": "MiniMax-M2.7-Highspeed",
+        "context": null,
+        "maxOutput": null
+      },
+      {
+        "id": "MiniMax-M2.5",
+        "name": "MiniMax-M2.5",
+        "context": null,
+        "maxOutput": null
+      },
+      {
+        "id": "MiniMax-M2.5-highspeed",
+        "name": "MiniMax-M2.5-Highspeed",
+        "context": null,
+        "maxOutput": null
+      },
+      {
+        "id": "MiniMax-M2.1",
+        "name": "MiniMax-M2.1",
+        "context": null,
+        "maxOutput": null
+      },
+      {
+        "id": "MiniMax-M2.1-highspeed",
+        "name": "MiniMax-M2.1-Highspeed",
+        "context": null,
+        "maxOutput": null
+      },
+      {
+        "id": "MiniMax-M2",
+        "name": "MiniMax-M2",
+        "context": null,
+        "maxOutput": null
+      }
+    ],
+    "fetchedAt": "2026-06-19T02:18:59.481Z"
+  }
+}

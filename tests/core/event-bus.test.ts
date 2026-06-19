@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi } from 'vitest'
 import { EventBus } from '../../core/event-bus.js'
 

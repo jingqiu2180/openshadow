@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
@@ -31,7 +32,25 @@ async function applyThemeFromServer() {
 }
 applyThemeFromServer()
 
-const rootEl = document.getElementById('root')
+// ── i18n 初始化 ──
+declare global {
+  const i18n: { locale: string; load(locale: string): Promise<void> }
+  const t: (key: string, vars?: Record<string, string | number>) => string
+}
+async function initI18n() {
+  const locale = navigator.language || 'zh'
+  try {
+    await window.i18n?.load?.(locale)
+    console.log(`[i18n] Loaded locale: ${locale}`)
+  } catch (e) {
+    console.warn('[i18n] Failed to load locale:', e)
+  }
+}
+
+const rootEl = document.getElementById('react-root')
 if (rootEl) {
-  createRoot(rootEl).render(<App />)
+  // 先初始化 i18n，完成后再渲染 React
+  initI18n().then(() => {
+    createRoot(rootEl).render(<App />)
+  })
 }

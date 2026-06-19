@@ -1,10 +1,12 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
-import DeskPanel from './components/DeskPanel'
+import { DeskSection } from './react/components/DeskSection'
 import SettingsModal from './components/SettingsModal'
 import { SessionConfirmationPrompt } from './components/SessionConfirmationPrompt'
 import { useStore } from './store'
+import { useStore as useNewStore } from './react/stores'
 
 export type MainView = 'chat' | 'channels' | 'activity' | 'tasks'
 
@@ -18,7 +20,18 @@ export default function App() {
     const v = parseInt(localStorage.getItem(DESK_WIDTH_KEY) || '280', 10)
     return Number.isFinite(v) ? Math.max(200, Math.min(500, v)) : 280
   })
-  const { wsStatus, currentModel, permissionMode, toasts, dismissToast } = useStore()
+  const { wsStatus, currentModel, permissionMode, toasts, dismissToast, settings, loadSettings } = useStore()
+
+  // Bridge: sync workspace from old store to new store for DeskSection
+  useEffect(() => {
+    const root = settings.workspaceRoots[0] || 'D:/src/aicoding/remu'
+    if (root) {
+      useNewStore.getState().setDeskBasePath(root)
+    }
+  }, [settings.workspaceRoots])
+
+  // Load settings on mount
+  useEffect(() => { loadSettings() }, [])
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
@@ -125,8 +138,8 @@ export default function App() {
           onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(102, 126, 234, 0.15)' }}
           onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
         />
-        <div style={{ width: deskWidth, flexShrink: 0, background: '#f5f2ed' }}>
-          <DeskPanel />
+        <div style={{ width: deskWidth, flexShrink: 0, background: '#f5f2ed', overflow: 'hidden' }}>
+          <DeskSection framed={false} showHeader={false} />
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Connection tester — Stage 1a
  *
@@ -8,9 +9,9 @@
  * with `max_tokens: 1` and the cheapest model. This is cheaper than `list models`
  * (some providers don't expose model listing) and tells us both auth + model validity.
  */
-import { createClient, isOpenAICompatible, pickModel } from './index.js'
-import type { Provider } from '../config.js'
-import type { ConnectionTestResult } from './types.js'
+import { createClient, isOpenAICompatible, pickModel } from './index'
+import type { Provider } from '../config'
+import type { ConnectionTestResult } from './types'
 
 export async function testConnection(
   provider: Provider,

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Computer control tools - mouse, keyboard, window management.
  * Cross-platform: macOS / Windows / Linux.

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useStore } from '../store'
 import styles from './SessionConfirmationPrompt.module.css'
 

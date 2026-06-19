@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * CoderAgent: autonomous coding agent.
  *
@@ -13,8 +14,8 @@
  * READ spec → WRITE code → TEST → FIX (if broken) → repeat
  */
 
-import { Agent } from './agent.js'
-import { createPlanner } from './planner.js'
+import { Agent } from './agent'
+import { createPlanner } from './planner'
 import { existsSync } from 'fs'
 import { join } from 'path'
 

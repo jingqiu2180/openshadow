@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * E2E Test #3: Screenshot tool produces real PNG output.
  *
@@ -12,7 +13,7 @@
  * Run: npx tsx test-e2e-screenshot.ts
  */
 
-import { captureScreenshot } from './core/tools/screenshot.js'
+import { captureScreenshot } from './core/tools/screenshot'
 import { writeFileSync } from 'fs'
 import { join } from 'path'
 

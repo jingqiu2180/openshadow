@@ -1,0 +1,40 @@
+{
+    "providers": {
+        "minimax-token-plan": {
+            "baseUrl": "https://api.minimaxi.com/anthropic",
+            "api": "anthropic-messages",
+            "apiKey": "hana-runtime-api-key:minimax-token-plan",
+            "models": [
+                {
+                    "id": "MiniMax-M3",
+                    "name": "MiniMax-M3",
+                    "input": [
+                        "text",
+                        "image"
+                    ],
+                    "contextWindow": 1000000,
+                    "reasoning": true,
+                    "maxTokens": 524288,
+                    "compat": {
+                        "supportsDeveloperRole": false,
+                        "thinkingFormat": "anthropic"
+                    }
+                },
+                {
+                    "id": "MiniMax-M2.1",
+                    "name": "MiniMax-M2.1",
+                    "input": [
+                        "text"
+                    ],
+                    "contextWindow": 204800,
+                    "reasoning": true,
+                    "maxTokens": 204800,
+                    "compat": {
+                        "supportsDeveloperRole": false,
+                        "thinkingFormat": "anthropic"
+                    }
+                }
+            ]
+        }
+    }
+}

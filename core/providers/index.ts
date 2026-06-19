@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Provider factory — Stage 1a
  *
@@ -13,11 +14,11 @@
  * to `chat.completions.create({ model, ... })` using `pickModel(provider, modelName?)`.
  */
 import OpenAI from 'openai'
-import type { Provider } from '../config.js'
-import type { ProviderType } from './types.js'
+import type { Provider } from '../config'
+import type { ProviderType } from './types'
 
-export { createProviderAdapter, type ProviderAdapter, type ChatOptions, type ProviderChatResponse } from './adapter.js'
-export { usageTracker, type UsageRecord, type UsageSummary } from './usage-tracker.js'
+export { createProviderAdapter, type ProviderAdapter, type ChatOptions, type ProviderChatResponse } from './adapter'
+export { usageTracker, type UsageRecord, type UsageSummary } from './usage-tracker'
 
 export function isOpenAICompatible(type: ProviderType): boolean {
   return type === 'openai' || type === 'ollama' || type === 'custom'

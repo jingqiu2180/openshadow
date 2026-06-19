@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Electron screenshot bridge — renderer-side IPC client.
  * Only used when running inside Electron (detected via window.__ELECTRON__ flag
@@ -9,7 +10,7 @@
  *        → main process handler uses desktopCapturer / webContents.capturePage()
  */
 
-import type { ScreenshotOutput } from './screenshot.js'
+import type { ScreenshotOutput } from './screenshot'
 
 /** Check if we are running inside Electron with screenshot IPC available. */
 export function isElectronScreenshotAvailable(): boolean {

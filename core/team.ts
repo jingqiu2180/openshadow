@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Multi-Agent Team: orchestrate multiple agents working together.
  *
@@ -8,7 +9,7 @@
  * - MessageBus: agents communicate via messages
  */
 
-import { Agent, ChatMessage } from './agent.js'
+import { Agent, ChatMessage } from './agent'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

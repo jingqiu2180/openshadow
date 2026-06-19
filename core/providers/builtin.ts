@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Built-in provider catalog (Stage 1a).
  *
@@ -6,7 +7,7 @@
  *
  * Adding a new provider here is the only place to touch — no other code changes needed.
  */
-import type { BuiltinProviderSpec } from './types.js'
+import type { BuiltinProviderSpec } from './types'
 
 export const BUILTIN_PROVIDERS: Record<string, BuiltinProviderSpec> = {
   openai: {

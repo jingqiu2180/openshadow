@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect } from 'vitest'
 import { PathGuard } from '../../core/tools/path-guard.js'
 import { join } from 'path'

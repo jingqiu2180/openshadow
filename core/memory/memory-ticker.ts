@@ -7,8 +7,8 @@
  * - 调用 DeepMemoryProcessor 提取事实
  */
 
-import { DeepMemoryManager } from "./deep-memory.js";
-import { cleanupOldFacts, type CleanupResult } from "./memory-cleanup.js";
+import { DeepMemoryManager } from './deep-memory';
+import { cleanupOldFacts, type CleanupResult } from './memory-cleanup';
 
 const DEFAULT_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 小时
 

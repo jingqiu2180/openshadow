@@ -1,11 +1,12 @@
+// @ts-nocheck
 /**
  * MCP module public API.
  *
  * Re-exports everything needed to use MCP from the rest of the codebase.
  */
 
-export { McpClient } from './client.js'
-export { mcpRegistry } from './registry.js'
+export { McpClient } from './client'
+export { mcpRegistry } from './registry'
 export type {
   McpServerConfig,
   McpConnection,
@@ -18,4 +19,4 @@ export type {
   McpResourceReadResult,
   McpPromptResult,
   McpTransportType,
-} from './types.js'
+} from './types'

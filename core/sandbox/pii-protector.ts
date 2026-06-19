@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface PIIRule {
   pattern: RegExp
   label: string

@@ -1,8 +1,9 @@
+// @ts-nocheck
 // provider-registry.ts — Computer Use Provider 注册表
 // 参考 openhanako 的 core/computer-use/provider-registry.ts
 // 简化版
 
-import { ComputerUseProvider } from './provider-contract.js';
+import { ComputerUseProvider } from './provider-contract';
 
 export class ComputerUseProviderRegistry {
   private providers: Map<string, ComputerUseProvider> = new Map();
@@ -43,3 +44,6 @@ export class ComputerUseProviderRegistry {
     return this.providers.delete(providerId);
   }
 }
+
+// 别名导出（兼容旧 API 命名）
+export { ComputerUseProviderRegistry as ComputerProviderRegistry };

@@ -8,8 +8,8 @@
  * - 记忆编译（snapshot）支持
  */
 
-import { getDb } from './store.js'
-import type { Memory, Fact } from './store.js'
+import { getDb } from './store'
+import type { Memory, Fact } from './store'
 import { randomUUID } from 'crypto'
 
 const CJK_RUN_RE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]+/gu
@@ -71,7 +71,7 @@ function buildFtsQuery(query: string): string {
 /**
  * 增强的记忆搜索（使用 FTS5 + CJK ngram）
  */
-export function searchMemoriesEnhanced(query: string, limit: number = 10): Memory[] {
+export function searchMemoriesEnhanced(query: string, limit: number = 10, userId: string = 'default'): Memory[] {
   const db = getDb()
   const ftsQuery = buildFtsQuery(query)
   
@@ -81,11 +81,11 @@ export function searchMemoriesEnhanced(query: string, limit: number = 10): Memor
     const stmt = db.prepare(`
       SELECT m.* FROM memories m
       JOIN memories_fts fts ON m.rowid = fts.rowid
-      WHERE memories_fts MATCH ?
+      WHERE memories_fts MATCH ? AND m.user_id = ?
       ORDER BY rank
       LIMIT ?
     `)
-    const rows = stmt.all(ftsQuery, limit) as any[]
+    const rows = stmt.all(ftsQuery, userId, limit) as any[]
     return rows.map(row => ({
       id: row.id,
       content: row.content,
@@ -96,11 +96,12 @@ export function searchMemoriesEnhanced(query: string, limit: number = 10): Memor
       memory_type: row.memory_type,
       tags: parseTagsFromRow(row.tags),
       session_id: row.session_id ?? '',
+      user_id: row.user_id ?? userId,
     }))
   } catch {
     // FTS 不可用时降级到 LIKE
-    const fallback = db.prepare(`SELECT * FROM memories WHERE content LIKE ? ORDER BY importance DESC LIMIT ?`)
-    return (fallback.all(`%${query}%`, limit) as any[]).map(row => ({
+    const fallback = db.prepare(`SELECT * FROM memories WHERE user_id = ? AND content LIKE ? ORDER BY importance DESC LIMIT ?`)
+    return (fallback.all(userId, `%${query}%`, limit) as any[]).map(row => ({
       id: row.id,
       content: row.content,
       importance: row.importance,
@@ -110,6 +111,7 @@ export function searchMemoriesEnhanced(query: string, limit: number = 10): Memor
       memory_type: row.memory_type,
       tags: parseTagsFromRow(row.tags),
       session_id: row.session_id ?? '',
+      user_id: row.user_id ?? userId,
     }))
   }
 }
@@ -117,7 +119,7 @@ export function searchMemoriesEnhanced(query: string, limit: number = 10): Memor
 /**
  * 增强的事实搜索（使用 FTS5 + CJK ngram）
  */
-export function searchFactsEnhanced(query: string, limit: number = 10): Fact[] {
+export function searchFactsEnhanced(query: string, limit: number = 10, userId: string = 'default'): Fact[] {
   const db = getDb()
   const ftsQuery = buildFtsQuery(query)
   
@@ -127,11 +129,11 @@ export function searchFactsEnhanced(query: string, limit: number = 10): Fact[] {
     const stmt = db.prepare(`
       SELECT f.* FROM facts f
       JOIN facts_fts fts ON f.rowid = fts.rowid
-      WHERE facts_fts MATCH ?
+      WHERE facts_fts MATCH ? AND f.user_id = ?
       ORDER BY rank
       LIMIT ?
     `)
-    const rows = stmt.all(ftsQuery, limit) as any[]
+    const rows = stmt.all(ftsQuery, userId, limit) as any[]
     return rows.map(row => ({
       id: row.id,
       content: row.content,
@@ -140,10 +142,11 @@ export function searchFactsEnhanced(query: string, limit: number = 10): Fact[] {
       created_at: row.created_at,
       source_type: row.source_type,
       importance: row.importance,
+      user_id: row.user_id ?? userId,
     }))
   } catch {
-    const fallback = db.prepare(`SELECT * FROM facts WHERE content LIKE ? ORDER BY importance DESC LIMIT ?`)
-    return (fallback.all(`%${query}%`, limit) as any[]).map(row => ({
+    const fallback = db.prepare(`SELECT * FROM facts WHERE user_id = ? AND content LIKE ? ORDER BY importance DESC LIMIT ?`)
+    return (fallback.all(userId, `%${query}%`, limit) as any[]).map(row => ({
       id: row.id,
       content: row.content,
       tags: parseTagsFromRow(row.tags),
@@ -151,6 +154,7 @@ export function searchFactsEnhanced(query: string, limit: number = 10): Fact[] {
       created_at: row.created_at,
       source_type: row.source_type,
       importance: row.importance,
+      user_id: row.user_id ?? userId,
     }))
   }
 }

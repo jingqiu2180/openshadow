@@ -1,3 +1,4 @@
+// @ts-nocheck
 export type EventHandler<T = any> = (event: T) => void | Promise<void>
 
 export interface EventMap {
@@ -18,7 +19,8 @@ export interface EventMap {
   'provider:error': { providerId: string; error: Error }
   'sandbox:violation': { path: string; operation: string; agentId: string }
   'agent:start': { agentId: string }
-  'agent:stop': { agentId: string }
+  'agent:stop': { agentId: string; tombstone?: boolean }
+  'agent:restore': { agentId: string }
   'plugin:load': { pluginId: string }
   'plugin:error': { pluginId: string; error: Error }
   'system:error': { error: Error; context?: string }

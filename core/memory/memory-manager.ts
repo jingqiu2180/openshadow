@@ -11,9 +11,9 @@
  * 3. 每天一次 → 编译 weekly + longterm + 深度记忆
  */
 
-import { SessionSummaryManager } from "./session-summary.js";
-import { MemoryCompiler } from "./compile.js";
-import { DeepMemoryManager } from "./deep-memory.js";
+import { SessionSummaryManager } from './session-summary';
+import { MemoryCompiler } from './compile';
+import { DeepMemoryManager } from './deep-memory';
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
