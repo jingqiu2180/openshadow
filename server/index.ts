@@ -72,6 +72,7 @@ app.get('/', (c) => c.json({
 }))
 
 app.get('/health', (c) => c.json({ ok: true }))
+app.get('/api/health', (c) => c.json({ ok: true }))
 
 /**
  * 异步启动：创建引擎 → init() → 挂载路由 → 启动 HTTP 服务
