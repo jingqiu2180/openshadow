@@ -93,7 +93,7 @@ export async function createAgentSession(_opts: any): Promise<{ session: any; mo
     for (let round = 0; round < 5; round++) {
       const body = JSON.stringify({
         model: minimaxModel,
-        sessionMessages,
+        messages: sessionMessages,
         tools: TOOLS,
         tool_choice: 'auto',
         stream: true,

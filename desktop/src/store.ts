@@ -476,39 +476,31 @@ export const useStore = create<AppState>((set, get) => ({
 
   loadSettings: async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/config/security')
-      if (!res.ok) {
-        console.warn('loadSettings: /api/config/security not implemented (404), using defaults')
-        set(state => ({
-          settings: {
-            ...state.settings,
-            workspaceRoots: state.settings.workspaceRoots.length > 0
-              ? state.settings.workspaceRoots
-              : ['D:/src/aicoding/remu'],
-            loaded: true,
-          }
-        }))
-        get().refreshTree()
-        return
-      }
-      const data = await res.json()
+      const res = await fetch('http://localhost:3000/api/config')
+      if (!res.ok) throw new Error(`GET /api/config failed: ${res.status}`)
+      const config = await res.json()
       set(state => {
-        const workspaceRoots = (data.workspaceRoots && data.workspaceRoots.length > 0)
-          ? data.workspaceRoots
-          : (state.settings.workspaceRoots.length > 0 ? state.settings.workspaceRoots : ['D:/src/aicoding/remu'])
+        // 尝试多个位置读 workspaceRoots（兼容不同后端实现）
+        const sec = config.security || {}
+        const workspaceRoots =
+          (sec.workspaceRoots && sec.workspaceRoots.length > 0)
+            ? sec.workspaceRoots
+            : ((config.workspaceRoots && config.workspaceRoots.length > 0)
+              ? config.workspaceRoots
+              : (state.settings.workspaceRoots.length > 0 ? state.settings.workspaceRoots : ['D:/src/aicoding/remu']))
         return {
           settings: {
             ...state.settings,
             workspaceRoots,
-            allowExternalReads: data.allowExternalReads ?? true,
-            sandbox: data.sandbox ?? true,
+            allowExternalReads: sec.allowExternalReads ?? config.allowExternalReads ?? true,
+            sandbox: config.sandbox ?? sec.sandbox ?? true,
             loaded: true,
           }
         }
       })
       get().refreshTree()
     } catch (e) {
-      console.error('loadSettings failed:', e)
+      console.warn('loadSettings: failed to load from server, using defaults', e)
       set(state => ({
         settings: {
           ...state.settings,

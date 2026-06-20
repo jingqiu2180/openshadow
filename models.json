@@ -35,6 +35,126 @@
                     }
                 }
             ]
+        },
+        "minimax": {
+            "baseUrl": "https://api.minimaxi.com/anthropic",
+            "api": "anthropic-messages",
+            "apiKey": "hana-runtime-api-key:minimax",
+            "models": [
+                {
+                    "id": "MiniMax-M3",
+                    "name": "MiniMax M3",
+                    "input": [
+                        "text",
+                        "image"
+                    ],
+                    "contextWindow": 1000000,
+                    "reasoning": true,
+                    "maxTokens": 524288,
+                    "compat": {
+                        "supportsDeveloperRole": false,
+                        "thinkingFormat": "anthropic"
+                    }
+                },
+                {
+                    "id": "MiniMax-M2.7",
+                    "name": "MiniMax M2.7",
+                    "input": [
+                        "text"
+                    ],
+                    "contextWindow": 204800,
+                    "reasoning": true,
+                    "maxTokens": 204800,
+                    "compat": {
+                        "supportsDeveloperRole": false,
+                        "thinkingFormat": "anthropic"
+                    }
+                },
+                {
+                    "id": "MiniMax-M2.7-highspeed",
+                    "name": "MiniMax M2.7 Highspeed",
+                    "input": [
+                        "text"
+                    ],
+                    "contextWindow": 204800,
+                    "reasoning": true,
+                    "maxTokens": 204800,
+                    "compat": {
+                        "supportsDeveloperRole": false,
+                        "thinkingFormat": "anthropic"
+                    }
+                },
+                {
+                    "id": "MiniMax-M2.5",
+                    "name": "MiniMax M2.5",
+                    "input": [
+                        "text"
+                    ],
+                    "contextWindow": 204800,
+                    "reasoning": true,
+                    "maxTokens": 204800,
+                    "compat": {
+                        "supportsDeveloperRole": false,
+                        "thinkingFormat": "anthropic"
+                    }
+                },
+                {
+                    "id": "MiniMax-M2.5-highspeed",
+                    "name": "MiniMax M2.5 Highspeed",
+                    "input": [
+                        "text"
+                    ],
+                    "contextWindow": 204800,
+                    "reasoning": true,
+                    "maxTokens": 204800,
+                    "compat": {
+                        "supportsDeveloperRole": false,
+                        "thinkingFormat": "anthropic"
+                    }
+                },
+                {
+                    "id": "MiniMax-M2.1",
+                    "name": "MiniMax M2.1",
+                    "input": [
+                        "text"
+                    ],
+                    "contextWindow": 204800,
+                    "reasoning": true,
+                    "maxTokens": 204800,
+                    "compat": {
+                        "supportsDeveloperRole": false,
+                        "thinkingFormat": "anthropic"
+                    }
+                },
+                {
+                    "id": "MiniMax-M2.1-highspeed",
+                    "name": "MiniMax M2.1 Highspeed",
+                    "input": [
+                        "text"
+                    ],
+                    "contextWindow": 204800,
+                    "reasoning": true,
+                    "maxTokens": 204800,
+                    "compat": {
+                        "supportsDeveloperRole": false,
+                        "thinkingFormat": "anthropic"
+                    }
+                },
+                {
+                    "id": "MiniMax-M2",
+                    "name": "MiniMax M2",
+                    "input": [
+                        "text"
+                    ],
+                    "contextWindow": 204800,
+                    "reasoning": true,
+                    "maxTokens": 204800,
+                    "compat": {
+                        "supportsDeveloperRole": false,
+                        "thinkingFormat": "anthropic"
+                    }
+                }
+            ]
         }
     }
 }

@@ -119,5 +119,48 @@ export function createFsRoute(engine) {
     }
   });
 
+  // GET /fs/tree?path=...&depth=3 → 目录树结构
+  route.get("/fs/tree", async (c) => {
+    const filePath = c.req.query("path");
+    const depthStr = c.req.query("depth") || "3";
+    const maxDepth = Math.max(1, Math.min(10, parseInt(depthStr) || 3));
+    if (!filePath) return c.json({ error: "missing path" }, 400);
+    const allowedPath = resolveAllowedPath(filePath, getAllowedRoots(c));
+    if (!allowedPath) return c.json({ error: "path not allowed" }, 403);
+    try {
+      const stat = fs.statSync(allowedPath);
+      if (!stat.isDirectory()) return c.json({ error: "not a directory" }, 400);
+      const tree = buildTree(allowedPath, allowedPath, 0, maxDepth);
+      return c.json({ tree });
+    } catch (err: any) {
+      if (err?.code === "ENOENT") return c.json({ error: "path not found" }, 404);
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
   return route;
+}
+
+// 递归构建目录树
+function buildTree(fullPath: string, rootPath: string, currentDepth: number, maxDepth: number): any[] {
+  if (currentDepth >= maxDepth) return [];
+  let entries: fs.Dirent[];
+  try { entries = fs.readdirSync(fullPath, { withFileTypes: true }); }
+  catch { return []; }
+  const result: any[] = [];
+  for (const entry of entries) {
+    const entryPath = path.join(fullPath, entry.name);
+    const relativePath = entryPath.slice(rootPath.length).replace(/^[/\\]/, "");
+    const item: any = {
+      name: entry.name,
+      path: entryPath,
+      relativePath,
+      isDirectory: entry.isDirectory(),
+    };
+    if (entry.isDirectory()) {
+      item.children = buildTree(entryPath, rootPath, currentDepth + 1, maxDepth);
+    }
+    result.push(item);
+  }
+  return result;
 }

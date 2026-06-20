@@ -3,6 +3,7 @@
  * 配置管理 REST 路由
  */
 import fs from "fs/promises";
+import fsSync from "fs";
 import path from "path";
 import { Hono } from "hono";
 import { emitAppEvent } from '../app-events';
@@ -196,6 +197,15 @@ export function createConfigRoute(engine: any) {
       const config = { ...engine.config };
       const raw = getRawConfig(engine.configPath) || {};
 
+      // 直接读项目根目录的 config.json，确保 security 对象存在
+      try {
+        const projectConfigPath = path.join(process.cwd(), 'config.json');
+        const fullConfig = JSON.parse(fsSync.readFileSync(projectConfigPath, 'utf-8'));
+        if (fullConfig.security) {
+          raw.security = fullConfig.security;
+        }
+      } catch {}
+
       // 附带原始配置结构（未经 fallback 解析，让前端知道用户显式设了什么）
       config._raw = {
         api: { provider: raw.api?.provider || "", base_url: raw.api?.base_url || "" },
@@ -218,6 +228,11 @@ export function createConfigRoute(engine: any) {
         };
       }
       config.providers = providerEntries;
+
+      // 确保 security 对象返回（前端需要 workspaceRoots）
+      if (raw.security) {
+        config.security = raw.security;
+      }
 
       // 自动注入全局字段（schema-driven）
       injectGlobalFields(config, engine);

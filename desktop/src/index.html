@@ -8,6 +8,10 @@
 </head>
 <body>
   <div id="react-root"></div>
+  <!-- platform.js 必须在 React 之前加载，设置 window.platform -->
+  <script src="/modules/platform.js"></script>
+  <!-- i18n 必须在 main.tsx 之前加载，否则 window.i18n 为 undefined -->
+  <script src="/lib/i18n.js"></script>
   <!-- Vite 会把这个文件编译成 JS 并注入 -->
   <script type="module" src="/main.tsx"></script>
 </body>

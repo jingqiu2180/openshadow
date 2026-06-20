@@ -762,10 +762,16 @@ export class SessionCoordinator {
     const ownerAgentId = explicitAgentId || agent.id || this._d.getActiveAgentId();
     const effectiveCwd = cwd || this._d.getHomeCwd(agent.id) || process.cwd();
     restoreDefaultWorkspaceIfMissing(effectiveCwd);
+    // 强制兜底：如果所有方法都失败，直接用 availableModels[0]
     const models = this._d.getModels();
-    // restore 模式：不指定 model，让 PI SDK 从 JSONL 恢复（session model 单一数据源）
-    const effectiveModel = restore ? null : (model || this._pendingModel || models.currentModel);
+    // 先清 pendingModel（防止覆盖）
     this._pendingModel = null;
+    if (!models.currentModel && models.availableModels?.length > 0) {
+      models._defaultModel = models.availableModels[0];
+    }
+    const fallbackModel = models.availableModels?.length > 0 ? models.availableModels[0] : null;
+    const effectiveModel = restore ? null : (model || models.currentModel || fallbackModel);
+    this._pendingModel = null;  // 再次清（防止后面逻辑改）
     log.log(`createSession cwd=${effectiveCwd} restore=${restore} (传入: ${cwd || "未指定"})`);
 
     await this._d.onBeforeSessionCreate?.(effectiveCwd);

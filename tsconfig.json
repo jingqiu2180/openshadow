@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "commonjs",
+    "moduleResolution": "node",
     "lib": ["ES2022"],
     "outDir": "./dist",
     "rootDir": "./",
@@ -19,6 +19,6 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["core/**/*", "server/**/*", "channels/**/*", "db/**/*", "hub/**/*", "plugins/**/*", "lib/**/*", "shared/**/*", "desktop/**/*", "packages/plugin-protocol/**/*", "packages/plugin-sdk/**/*", "packages/plugin-runtime/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "desktop/src/react"]
+  "include": ["core/**/*", "server/**/*", "channels/**/*", "db/**/*", "hub/**/*", "plugins/**/*", "lib/**/*", "shared/**/*", "desktop/src/electron-main.ts", "desktop/src/preload.ts", "desktop/src/store.ts", "desktop/src/model-manager.ts", "packages/plugin-protocol/**/*", "packages/plugin-sdk/**/*", "packages/plugin-runtime/**/*"],
+  "exclude": ["node_modules", "dist", "tests", "desktop/src/react", "desktop/vite-test.config.ts"]
 }

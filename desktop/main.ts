@@ -56,6 +56,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       webSecurity: false,
+      preload: join(__dirname, 'preload.cjs'),
     },
     frame: true,
     backgroundColor: '#faf8f5',

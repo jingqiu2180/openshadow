@@ -24,6 +24,37 @@
 
 const { contextBridge, ipcRenderer } = require('electron')
 
+// 构建 platform API 对象（兼容 platform.js 的检查）
+const platformApi = {
+  // 服务器连接
+  getServerPort: async () => 3000,
+  getServerToken: async () => null,
+  onServerRestarted: (callback: (data: { port: number; token?: string | null }) => void) => {
+    ipcRenderer.on('server-restarted', (_event: any, data: any) => callback(data))
+    return () => { ipcRenderer.removeListener('server-restarted', callback as any) }
+  },
+  appReady: async () => {},
+
+  // 文件 I/O
+  readFile: (p: string) => ipcRenderer.invoke('fs:read', p),
+  writeFile: (p: string, content: string) => ipcRenderer.invoke('fs:write', p, content),
+  selectFolder: async () => ipcRenderer.invoke('dialog:selectFolder'),
+  selectFiles: async () => ipcRenderer.invoke('dialog:selectFiles'),
+
+  // OS 集成
+  openExternal: (url: string) => { try { require('electron').shell.openExternal(url) } catch {} },
+
+  // 窗口控制
+  windowMinimize: () => ipcRenderer.send('window:minimize'),
+  windowMaximize: () => ipcRenderer.send('window:maximize'),
+  windowClose: () => ipcRenderer.send('window:close'),
+  getPlatform: async () => process.platform,
+}
+
+// 注入 window.hana（兼容 platform.js）
+contextBridge.exposeInMainWorld('hana', platformApi)
+
+// 注入 window.__REM_API__（现有功能）
 contextBridge.exposeInMainWorld('__REM_API__', {
   // ─── Screenshot ──────────────────────────────────────────────────────
   screenshotCapture: (displayId?: number) => ipcRenderer.invoke('screenshot:capture', displayId),

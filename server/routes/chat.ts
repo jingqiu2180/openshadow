@@ -1340,6 +1340,28 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
               return;
             }
 
+            // ── remu 兼容：前端 ChatArea 发 type='chat'，映射为 prompt ──
+            if (msg.type === "chat" && msg.content) {
+              msg.type = "prompt";
+              msg.text = msg.content;
+              // 后端需要 sessionPath，前端没发就自动找/创建 session
+              if (!msg.sessionPath) {
+                const sc = (engine as any)._sessionCoord;
+                msg.sessionPath = sc?._currentSessionPath
+                  || (sc?._sessions?.size > 0 ? sc._sessions.keys().next().value : null)
+                  || null;
+                // 都没找到 → 自动新建 session
+                if (!msg.sessionPath) {
+                  try {
+                    const result = await engine.createSession(null, process.cwd(), true, null, {});
+                    msg.sessionPath = result?.sessionPath || result?.path || null;
+                  } catch (e) {
+                    console.error('[chat-adapter] auto-create session failed:', (e as any).message);
+                  }
+                }
+              }
+            }
+
             if ((msg.type === "prompt" || msg.type === "interject") && (msg.text || msg.images?.length || msg.videos?.length || msg.audios?.length)) {
               const interject = msg.type === "interject";
               // 图片校验：最多 10 张，单张 ≤ 20MB，仅允许常见图片 MIME

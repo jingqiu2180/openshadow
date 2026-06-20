@@ -1,2 +1,62 @@
-/* styles.css — global fallback styles */
-/* This file is referenced by index.html. Add global styles here. */
+@import url('../animations.css');
+
+/* Rem Agent — 全局样式 (Stage 1c: 主题化) */
+
+/* ── Theme variables are set by [data-theme="..."] blocks in themes/*.css ── */
+/* This file just consumes them via var(--token). Default falls back to warm-paper tokens defined in :root. */
+
+:root,
+[data-theme="warm-paper"] {
+  --bg: #faf8f5;
+  --bg-elevated: #ffffff;
+  --bg-subtle: #f3efe8;
+  --bg-hover: #ece6db;
+  --text: #2c2c2c;
+  --text-muted: #888;
+  --text-faint: #b8b3ac;
+  --border: #e0dbd3;
+  --border-strong: #c4beb5;
+  --primary: #e8a0b8;
+  --primary-hover: #d68ba6;
+  --primary-text: #ffffff;
+  --accent: #667eea;
+  --accent-light: #e8f0fe;
+  --danger: #f5576c;
+  --success: #6ba368;
+  --code-bg: #1e1e1e;
+  --code-text: #d4d4d4;
+  --inline-code-bg: #f4f1ec;
+  --inline-code-text: #d6336c;
+  --link: #667eea;
+  --scrollbar-thumb: #d8d3cc;
+  --scrollbar-thumb-hover: #b8b3ac;
+}
+
+/* ── Sidebar action buttons ─────────────────────────────── */
+/* 修复：桌面端 sidebar 按钮 hover 变空白（之前没有这段 CSS） */
+
+.sidebar-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  background: none;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  transition: all 120ms ease-out;
+  -webkit-app-region: no-drag;
+}
+
+.sidebar-action-btn:hover {
+  background: var(--accent-light, #e8f0fe);
+  color: var(--accent, #667eea);
+}
+
+.sidebar-action-btn:active {
+  background: var(--accent-light, #e8f0fe);
+  color: var(--accent, #667eea);
+  opacity: 0.85;
+}

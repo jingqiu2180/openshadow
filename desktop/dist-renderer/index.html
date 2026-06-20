@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rem Agent</title>
   <!-- Vite 会自动注入 HMR 脚本，不需要手动写 script 标签 -->
-  <script type="module" crossorigin src="./assets/index-CMuIfgUN.js"></script>
+  <script type="module" crossorigin src="./assets/index-BnSeBch8.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-CvJnczeO.css">
 </head>
 <body>
   <div id="react-root"></div>
+  <!-- i18n 必须在 main.tsx 之前加载，否则 window.i18n 为 undefined -->
+  <script src="/lib/i18n.js"></script>
   <!-- Vite 会把这个文件编译成 JS 并注入 -->
 </body>
 </html>

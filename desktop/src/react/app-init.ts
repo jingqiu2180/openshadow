@@ -113,8 +113,17 @@ export async function initApp(): Promise<void> {
   });
 
   // 1. 获取 server 连接信息并存入 Zustand
-  const serverPort = await platform.getServerPort();
-  const serverToken = await platform.getServerToken();
+  let serverPort: string | number | null = null;
+  try {
+    serverPort = await platform.getServerPort();
+  } catch {
+    console.warn('[init] platform.getServerPort() failed, using default 3000');
+  }
+  if (!serverPort) {
+    console.info('[init] No server port from platform, using default 3000');
+    serverPort = 3000;
+  }
+  const serverToken = await platform.getServerToken().catch(() => null);
   const localServerConnection = createLocalServerConnection({ serverPort, serverToken });
   const persistedConnections = readPersistedServerConnectionState();
   const initialRegistry = localServerConnection

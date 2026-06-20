@@ -491,7 +491,21 @@ async function blobToBase64(blob: Blob): Promise<string> {
 }
 
 export async function loadDeskTreeFiles(subdir = '', options: { force?: boolean; overrideDir?: string | null; overrideMountId?: string | null } = {}): Promise<void> {
-  const s = useStore.getState();
+  let s = useStore.getState();
+  // 如果没有连接，自动创建本地连接（Electron 中 initApp 异步，可能还没完成）
+  if (!hasServerConnection(s)) {
+    const { createLocalServerConnection } = await import('../services/server-connection');
+    const conn = createLocalServerConnection({ serverPort: s.serverPort || '3000', serverToken: s.serverToken });
+    if (conn) {
+      useStore.setState({
+        serverPort: String(conn.baseUrl.match(/:(\d+)/)?.[1] || '3000'),
+        serverToken: conn.token,
+        activeServerConnection: conn,
+        activeServerConnectionId: conn.connectionId,
+      });
+      s = useStore.getState();
+    }
+  }
   if (!hasServerConnection(s)) return;
   const mountId = activeDeskMountId(s, options.overrideMountId);
   const dir = mountId ? undefined : activeDeskRoot(s, options.overrideDir);

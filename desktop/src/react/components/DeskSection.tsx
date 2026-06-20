@@ -107,6 +107,13 @@ export function DeskSection({
   const [inlineEdit, setInlineEdit] = useState<InlineTreeEdit>(null);
   const t = window.t ?? ((p: string) => p);
 
+  // 初始化：deskBasePath 变化时自动加载根目录文件
+  useEffect(() => {
+    if (deskBasePath) {
+      void loadDeskTreeFiles('');
+    }
+  }, [deskBasePath]);
+
   useEffect(() => {
     if (!deskBasePath || deskDirtyTreePaths.length === 0) return;
     const { reloadSubdirs, clearSubdirs } = visibleDirtyTreeReloads(deskBasePath, deskDirtyTreePaths, deskExpandedPaths);

@@ -14,46 +14,46 @@ import path from 'path'
 import * as fsSync from 'fs'
 import { createNodeWebSocket } from '@hono/node-ws'
 
-import { HanaEngine } from '../core/engine'
-import { createAccessRoute } from './routes/access'
-import { createAgentsRoute } from './routes/agents'
-import { createAuthRoute } from './routes/auth'
-import { createAvatarRoute } from './routes/avatar'
-import { createBridgeRoute } from './routes/bridge'
-import { createChannelsRoute } from './routes/channels'
-import { createCharacterCardsRoute } from './routes/character-cards'
-import { createChatRoute } from './routes/chat'
-import { Hub } from '../hub/index'
-import { setMiniMaxConfig } from '../lib/pi-sdk/index'
-import { createCheckpointsRoute } from './routes/checkpoints'
-import { createCommandsRoute } from './routes/commands'
-import { createConfigRoute } from './routes/config'
-import { createConfirmRoute } from './routes/confirm'
-import { createDeskRoute } from './routes/desk'
-import { createDevicesRoute } from './routes/devices'
-import { createDiaryRoute } from './routes/diary'
-import { createDmRoute } from './routes/dm'
-import { createExperimentsRoute } from './routes/experiments'
-import { createFsRoute } from './routes/fs'
-import { createHtmlPreviewRoute } from './routes/html-preview'
-import { createMediaRoute } from './routes/media'
-import { createMobileStaticRoute } from './routes/mobile-static'
-import { createMobileWorkbenchRoute } from './routes/mobile-workbench'
-import { createModelsRoute } from './routes/models'
-import { createPluginProxyRoute } from './routes/plugins'
-import { createPreferencesRoute } from './routes/preferences'
-import { createProvidersRoute } from './routes/providers'
-import { createResourcesRoute } from './routes/resources'
-import { createServerIdentityRoute } from './routes/server-identity'
-import { createSessionProjectsRoute } from './routes/session-projects'
-import { createSessionsRoute } from './routes/sessions'
-import { createSettingsSnapshotRoute } from './routes/settings-snapshot'
-import { createSkillsRoute } from './routes/skills'
-import { createSpeechRecognitionRoute } from './routes/speech-recognition'
-import { createStudioWorkspacesRoute } from './routes/studio-workspaces'
-import { createUploadRoute } from './routes/upload'
-import { createUsageRoute } from './routes/usage'
-import { createWebAuthRoute } from './routes/web-auth'
+import { HanaEngine } from '../core/engine.js'
+import { createAccessRoute } from './routes/access.js'
+import { createAgentsRoute } from './routes/agents.js'
+import { createAuthRoute } from './routes/auth.js'
+import { createAvatarRoute } from './routes/avatar.js'
+import { createBridgeRoute } from './routes/bridge.js'
+import { createChannelsRoute } from './routes/channels.js'
+import { createCharacterCardsRoute } from './routes/character-cards.js'
+import { createChatRoute } from './routes/chat.js'
+import { Hub } from '../hub/index.js'
+import { setMiniMaxConfig } from '../lib/pi-sdk/index.js'
+import { createCheckpointsRoute } from './routes/checkpoints.js'
+import { createCommandsRoute } from './routes/commands.js'
+import { createConfigRoute } from './routes/config.js'
+import { createConfirmRoute } from './routes/confirm.js'
+import { createDeskRoute } from './routes/desk.js'
+import { createDevicesRoute } from './routes/devices.js'
+import { createDiaryRoute } from './routes/diary.js'
+import { createDmRoute } from './routes/dm.js'
+import { createExperimentsRoute } from './routes/experiments.js'
+import { createFsRoute } from './routes/fs.js'
+import { createHtmlPreviewRoute } from './routes/html-preview.js'
+import { createMediaRoute } from './routes/media.js'
+import { createMobileStaticRoute } from './routes/mobile-static.js'
+import { createMobileWorkbenchRoute } from './routes/mobile-workbench.js'
+import { createModelsRoute } from './routes/models.js'
+import { createPluginProxyRoute } from './routes/plugins.js'
+import { createPreferencesRoute } from './routes/preferences.js'
+import { createProvidersRoute } from './routes/providers.js'
+import { createResourcesRoute } from './routes/resources.js'
+import { createServerIdentityRoute } from './routes/server-identity.js'
+import { createSessionProjectsRoute } from './routes/session-projects.js'
+import { createSessionsRoute } from './routes/sessions.js'
+import { createSettingsSnapshotRoute } from './routes/settings-snapshot.js'
+import { createSkillsRoute } from './routes/skills.js'
+import { createSpeechRecognitionRoute } from './routes/speech-recognition.js'
+import { createStudioWorkspacesRoute } from './routes/studio-workspaces.js'
+import { createUploadRoute } from './routes/upload.js'
+import { createUsageRoute } from './routes/usage.js'
+import { createWebAuthRoute } from './routes/web-auth.js'
 
 const app = new Hono()
 
@@ -72,9 +72,6 @@ app.get('/', (c) => c.json({
 }))
 
 app.get('/health', (c) => c.json({ ok: true }))
-
-// WebSocket endpoint - redirect to ws server
-app.get('/ws', (c) => c.text('Use WebSocket server on port 8080'))
 
 /**
  * 异步启动：创建引擎 → init() → 挂载路由 → 启动 HTTP 服务
@@ -151,8 +148,21 @@ async function start() {
         })
       }
       // 注入到 pi-sdk session 创建层
-      setMiniMaxConfig('sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro', 'https://api.minimaxi.com/v1')
+      // 用 config.json 里的 minimax provider 配置（OpenAI 兼容端点）
+      setMiniMaxConfig('sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro', 'https://api.minimax.chat/v1')
       console.log('[rem] MiniMax API config injected to pi-sdk')
+      // 手动设置默认模型（因为 _modelRegistry 是占位实现，syncAndRefresh() 没法自动初始化）
+      if (models && mmModels.length > 0) {
+        models._defaultModel = mmModels[0];
+        // 强制设置（绕过所有检查，确保 engine.currentModel 非 null）
+        (engine as any).forceSetCurrentModel?.(mmModels[0]);
+        console.log('[rem] Default model set:', models._defaultModel?.id);
+        console.log('[rem] _availableModels:', models._availableModels?.length || 0);
+        // 不调 syncAndRefresh()（保护逻辑可能有漏洞，直接跳过）
+        // models.syncAndRefresh().catch((err: any) => {
+        //   console.warn('[rem] syncAndRefresh() after injection failed:', err?.message);
+        // });
+      }
     } catch (e) {
       console.warn('[rem] MiniMax injection failed:', (e as any).message)
     }
@@ -197,6 +207,8 @@ async function start() {
   const { restRoute: chatRestRoute, wsRoute: chatWsRoute } = createChatRoute(engine, hub, { upgradeWebSocket })
   app.route('/api', chatRestRoute)
   app.route('/api', chatWsRoute)
+  // Also mount WS at root /ws for Electron frontend compatibility
+  app.route('/', chatWsRoute)
   app.route('/api', createCheckpointsRoute(engine))
   app.route('/api', createCommandsRoute(engine))
   app.route('/api', createConfigRoute(engine))

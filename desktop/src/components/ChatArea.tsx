@@ -256,7 +256,7 @@ export default function ChatArea() {
         } else if (data.type === 'error') {
           addMessage(currentId, {
             role: 'assistant',
-            content: '错误: ' + (data.content || '未知错误'),
+            content: '错误: ' + (data.message || data.content || '未知错误'),
             timestamp: Date.now(),
           })
           buffer = ''

@@ -7,9 +7,42 @@
  * 使用方式：所有前端代码调 platform.xxx()，不再直接碰 window.hana。
  */
 (function () {
-  if (window.hana) {
-    // Electron — 直接用 preload 注入的 IPC bridge
-    window.platform = window.hana;
+  // Electron 环境：检查 window.__REM_API__ 或 window.hana
+  if (window.__REM_API__ || window.hana) {
+    // 使用 Electron IPC 或默认配置
+    const isElectron = window.__REM_API__?.isElectron || window.hana?.isElectron || true;
+    const platform = window.__REM_API__?.platform || window.hana?.platform || 'win32';
+
+    window.platform = {
+      // 服务器连接（Electron 环境默认连 localhost:3000）
+      getServerPort: async () => 3000,
+      getServerToken: async () => null,
+      onServerRestarted: (callback) => {
+        // Electron IPC 监听服务器重启
+        if (window.__REM_API__?.onServerRestarted) {
+          return window.__REM_API__.onServerRestarted(callback);
+        }
+        return () => {};
+      },
+      appReady: async () => {},
+      syncWindowTheme: () => {},
+      runEditCommand: async () => false,
+
+      // 文件 I/O
+      readFile: (p) => fetch(`/api/fs/read?path=${encodeURIComponent(p)}`).then(r => r.ok ? r.text() : null),
+      writeFile: async () => false,
+      selectFolder: async () => null,
+      selectFiles: async () => [],
+
+      // OS 集成
+      openExternal: (url) => { try { window.open(url, "_blank"); } catch {} },
+
+      // 窗口控制
+      windowMinimize: () => {},
+      windowMaximize: () => {},
+      windowClose: () => {},
+      getPlatform: async () => platform,
+    };
     return;
   }
 

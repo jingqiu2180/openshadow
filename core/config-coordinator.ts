@@ -367,6 +367,10 @@ export class ConfigCoordinator {
 
   async syncAndRefresh() {
     const models = this._d.getModels();
+    // 如果已有注入的模型，直接 return（不执行后续同步，避免覆盖）
+    if (models.availableModels?.length > 0) {
+      return false;
+    }
     const synced = await models.syncAndRefresh();
     this.normalizeUtilityApiPreferences();
     return synced;

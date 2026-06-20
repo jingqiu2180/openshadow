@@ -27,6 +27,7 @@ export default function App() {
     const root = settings.workspaceRoots[0] || 'D:/src/aicoding/remu'
     if (root) {
       useNewStore.getState().setDeskBasePath(root)
+      useNewStore.getState().markDeskTreeDirty('')
     }
   }, [settings.workspaceRoots])
 

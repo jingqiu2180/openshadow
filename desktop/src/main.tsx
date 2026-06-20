@@ -15,12 +15,12 @@ function applyThemeSync() {
   document.documentElement.setAttribute('data-theme', cached)
 }
 async function applyThemeFromServer() {
-  // Apply cached first to avoid FOUC, then upgrade from server
   applyThemeSync()
   try {
-    const res = await fetch('http://localhost:3000/api/config/theme')
+    const res = await fetch('http://localhost:3000/api/config')
     if (res.ok) {
-      const { theme } = await res.json()
+      const config = await res.json()
+      const theme = config.theme
       if (theme) {
         document.documentElement.setAttribute('data-theme', theme)
         localStorage.setItem(THEME_KEY, theme)

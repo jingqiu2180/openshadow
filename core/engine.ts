@@ -911,8 +911,11 @@ export class HanaEngine {
   get factStore() { return this.agent.factStore; }
   /** 下一次新对话将使用的模型（UI 选择器绑定此值） */
   get currentModel() {
-    return this._sessionCoord.pendingModel
-      ?? this._models.currentModel;
+    // 兜底：如果 _defaultModel 是 null 但有可用模型，自动选第一个
+    if (!this._models.currentModel && this._models.availableModels?.length > 0) {
+      this._models._defaultModel = this._models.availableModels[0];
+    }
+    return this._models.currentModel;
   }
   /** 当前活跃 session 实际使用的模型（已创建的对话不随选择器变） */
   get activeSessionModel() {
@@ -1088,6 +1091,13 @@ export class HanaEngine {
     return this._sessionCoord.switchSessionModel(sessionPath, model);
   }
   async setDefaultModel(id, provider, opts) { return this._configCoord.setDefaultModel(id, provider, opts); }
+  /** 强制设置当前模型（绕过所有检查，用于注入场景） */
+  forceSetCurrentModel(model: any) {
+    if (model && this._models) {
+      this._models._defaultModel = model;
+      console.log('[engine] forceSetCurrentModel:', model.id);
+    }
+  }
   getThinkingLevel() { return this._configCoord.getThinkingLevel(); }
   setThinkingLevel(l) { return this._configCoord.setThinkingLevel(l); }
   getDefaultThinkingLevel() { return this._sessionCoord.getDefaultThinkingLevel(); }
