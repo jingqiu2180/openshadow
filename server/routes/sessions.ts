@@ -1735,6 +1735,34 @@ export function createSessionsRoute(engine, hub = null) {
     }
   });
 
+  // ── 思考深度 ──
+  route.get("/session-thinking-level", async (c) => {
+    try {
+      const model = engine.currentModel;
+      const defaultLevel = engine.getThinkingLevel?.() ?? 'off';
+      const levels = engine.getModelThinkingLevels?.(model) ?? [
+        { value: 'off', label: 'Off' },
+        { value: 'low', label: 'Low' },
+        { value: 'medium', label: 'Medium' },
+        { value: 'high', label: 'High' },
+      ];
+      return c.json({ defaultLevel, levels, model: model?.id });
+    } catch (err) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  route.post("/session-thinking-level", async (c) => {
+    try {
+      const body = await safeJson(c);
+      const { level } = body;
+      engine.setThinkingLevel?.(level);
+      return c.json({ ok: true, level });
+    } catch (err) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
   return route;
 }
 

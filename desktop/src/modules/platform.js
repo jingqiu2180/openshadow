@@ -24,6 +24,12 @@
         }
         return () => {};
       },
+      onSettingsChanged: (callback) => {
+        return () => {}; // no-op unsubscribe
+      },
+      onMenuAction: (callback) => {
+        return () => {}; // no-op unsubscribe
+      },
       appReady: async () => {},
       syncWindowTheme: () => {},
       runEditCommand: async () => false,

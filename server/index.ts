@@ -225,7 +225,7 @@ async function start() {
   app.route('/api', createMobileStaticRoute({ distDir: path.join(process.cwd(), 'dist', 'mobile-static') }))
   app.route('/api', createMobileWorkbenchRoute(engine))
   app.route('/api', createModelsRoute(engine))
-  app.route('/api', createPluginProxyRoute(null))
+  app.route('/api', createPluginProxyRoute({ getPages: () => [], getWidgets: () => [] }))
   app.route('/api', createPreferencesRoute(engine, {}))
   app.route('/api', createProvidersRoute(engine))
   app.route('/api', createResourcesRoute(engine))
