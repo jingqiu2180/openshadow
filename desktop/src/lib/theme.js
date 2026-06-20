@@ -1,7 +1,6 @@
 /**
- * theme.js — 主题切换运行时 (stub)
+ * theme.js — 主题切换运行时
  * 由 desktop/src/lib/theme.ts 编译生成，或内联在 index.html 前执行。
- * 提供：window.__applyTheme(themeName) 供运行时调用
  */
 (function() {
   const THEME_KEY = 'rem.theme';
@@ -15,4 +14,12 @@
     document.documentElement.setAttribute('data-theme', cached);
   } catch(e) {}
   window.__applyTheme = applyTheme;
+
+  // openhanako 兼容：bootstrap.ts 需要这些全局函数
+  window.loadSavedTheme = function() {
+    try { applyTheme(localStorage.getItem(THEME_KEY) || 'warm-paper'); } catch(e) {}
+  };
+  window.loadSavedFont = function() {};
+  window.loadSavedPaperTexture = function() {};
+  window.initPlatform = function() {};
 })();

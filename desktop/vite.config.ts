@@ -20,7 +20,7 @@ const SHARED_DIRS = [
 ]
 
 function tryResolve(subpath: string): string | undefined {
-  const exts = ['', '.ts', '.tsx', '.js', '.jsx', '/index.ts', '/index.tsx']
+  const exts = ['.ts', '.tsx', '.js', '.jsx', '/index.ts', '/index.tsx']
   for (const dir of SHARED_DIRS) {
     if (!existsSync(dir)) continue
     const base = resolve(dir, subpath)
@@ -47,7 +47,7 @@ function sharedResolverPlugin() {
       if (id === '@/ui' || id.startsWith('@/ui/')) {
         const sub = id.startsWith('@/ui/') ? id.slice('@/ui/'.length) : ''
         const full = resolve(PROJECT_ROOT, 'src', 'react', 'ui', sub)
-        for (const ext of ['', '.tsx', '.ts', '.js', '.jsx', '/index.tsx', '/index.ts']) {
+        for (const ext of ['.tsx', '.ts', '.js', '.jsx', '/index.tsx', '/index.ts']) {
           if (existsSync(full + ext)) {
             console.error('[remu-resolver]', id, '->', full + ext)
             return full + ext
@@ -65,6 +65,9 @@ export default defineConfig({
   base: './',
   resolve: {
     tsconfigPaths: true,
+    alias: {
+      '@hana/plugin-protocol': resolve(PROJECT_ROOT, '..', 'packages', 'plugin-protocol', 'src', 'index.ts'),
+    },
   },
   build: {
     outDir: OUT_DIR,

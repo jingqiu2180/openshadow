@@ -3,16 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="modules/connection-csp.js"></script>
   <title>Rem Agent</title>
-  <!-- Vite 会自动注入 HMR 脚本，不需要手动写 script 标签 -->
+  <link rel="stylesheet" href="styles/global.css">
+  <link rel="stylesheet" href="styles/themes/cool-night.css">
+  <link rel="stylesheet" href="styles/themes/auto.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="themes/warm-paper.css" id="themeSheet">
 </head>
 <body>
   <div id="react-root"></div>
-  <!-- platform.js 必须在 React 之前加载，设置 window.platform -->
-  <script src="/modules/platform.js"></script>
-  <!-- i18n 必须在 main.tsx 之前加载，否则 window.i18n 为 undefined -->
-  <script src="/lib/i18n.js"></script>
-  <!-- Vite 会把这个文件编译成 JS 并注入 -->
+  <script src="lib/i18n.js"></script>
+  <script src="lib/theme.js"></script>
+  <script src="modules/platform.js"></script>
   <script type="module" src="/main.tsx"></script>
 </body>
 </html>

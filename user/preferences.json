@@ -32,5 +32,11 @@
         }
       }
     }
+  },
+  "appearance": {
+    "theme": "warm-paper",
+    "serif": true,
+    "paperTexture": false,
+    "leavesOverlay": false
   }
 }
