@@ -6,8 +6,8 @@ import path from "path";
 import {
   readAgentAppearanceProfileResource,
   readAgentAvatarResource,
-} from '../agent-appearance-summary';
-import { modelSupportsDirectImageInput } from '../../shared/model-capabilities';
+} from '../agent-appearance-summary.js';
+import { modelSupportsDirectImageInput } from '../../shared/model-capabilities.js';
 
 const AVATAR_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
 const MIME_BY_EXT = Object.freeze({

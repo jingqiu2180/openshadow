@@ -521,7 +521,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
       focusFrameRef.current = null;
       if (!editor || editor.isDestroyed) return;
       if (!shouldAllowInputFocus({ inputRoot: inputSurfaceRef.current })) return;
-      editor.commands.focus();
+      editor?.commands.focus();
     };
 
     if (typeof window.requestAnimationFrame === 'function') {
@@ -1144,7 +1144,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
         setDraft(currentSessionPath, text);
       }
       // 内容超出可见区域时，自动滚动到光标位置
-      requestAnimationFrame(() => editor.commands.scrollIntoView());
+      requestAnimationFrame(() => editor?.commands.scrollIntoView());
     };
     editor.on('update', handler);
     return () => { editor.off('update', handler); };
@@ -1157,7 +1157,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
     const current = editor.getText();
     if (draft !== current) {
       if (!draft) {
-        editor.commands.setContent('', { emitUpdate: false });
+        editor?.commands.setContent('', { emitUpdate: false });
       } else {
         const doc = {
           type: 'doc' as const,
@@ -1166,7 +1166,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
             content: line ? [{ type: 'text' as const, text: line }] : [],
           })),
         };
-        editor.commands.setContent(doc, { emitUpdate: false });
+        editor?.commands.setContent(doc, { emitUpdate: false });
       }
     }
   }, [editor, currentSessionPath]);
@@ -1300,7 +1300,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
     const plainUrlPaste = extractPlainUrlPaste(e.clipboardData);
     if (plainUrlPaste && editor) {
       e.preventDefault();
-      editor.commands.insertContent(plainUrlPaste);
+      editor?.commands.insertContent(plainUrlPaste);
       return true;
     }
     return false;
@@ -1370,8 +1370,16 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
   // ── Send / interject message ──
   const submitEditorMessage = useCallback(async (type: 'prompt' | 'interject') => {
     if (inputLocked) return;
-    if (!editor) return;
-    const editorJson = editor.getJSON();
+    if (!editor || editor.isDestroyed) return;
+
+    // Defensive: wrap entire send to catch Tiptap internal errors (e.g., destroyed editor mid-send)
+    let editorJson: Record<string, unknown> | undefined;
+    try {
+      editorJson = editor.getJSON();
+    } catch (e) {
+      console.warn('[InputArea] getJSON failed:', e);
+      return;
+    }
     const { text: rawText, skills, fileRefs } = serializeEditor(editorJson);
     const text = rawText.trim();
 
@@ -1581,7 +1589,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
       const allFiles = [...(hasFiles ? inputFiles : [])];
       if (docForRender) allFiles.push({ path: docForRender.path, name: docForRender.name });
 
-      editor.commands.clearContent();
+      try { editor?.commands.clearContent(); } catch (e) { console.warn('[InputArea] clearContent failed:', e); }
       if (currentSessionPath) clearDraft(currentSessionPath);
       clearAttachedFiles();
       if (useStore.getState().quotedSelections.length > 0) useStore.getState().clearQuotedSelections();

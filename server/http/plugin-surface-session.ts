@@ -1,13 +1,13 @@
 // @ts-nocheck
-import { normalizePrincipal } from '../../core/security-principal';
+import { normalizePrincipal } from '../../core/security-principal.js';
 import {
   PluginSurfaceSessionError,
   verifyPluginSurfaceSession,
-} from '../../core/plugin-surface-session-service';
+} from '../../core/plugin-surface-session-service.js';
 import {
   PLUGIN_SURFACE_SESSION_HEADER,
   PLUGIN_SURFACE_SESSION_QUERY,
-} from '../../packages/plugin-protocol/src/index';
+} from '../../packages/plugin-protocol/src/index.js';
 
 export { PluginSurfaceSessionError };
 export { PLUGIN_SURFACE_SESSION_HEADER, PLUGIN_SURFACE_SESSION_QUERY };

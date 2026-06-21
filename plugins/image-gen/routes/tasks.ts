@@ -5,7 +5,7 @@
  * REST API for task data. Used by card iframe and management panel.
  */
 
-import { retryImageTask } from '../lib/image-task-runner';
+import { retryImageTask } from '../lib/image-task-runner.js';
 
 export default function (app, ctx) {
   const store = () => ctx._mediaGen?.store;

@@ -5,7 +5,7 @@ import {
   DEFERRED_RESULT_RECORD_TYPE,
   isUiOnlyDeferredResultTask,
   shouldNotifyAgentOnFailure,
-} from './deferred-result-notification';
+} from './deferred-result-notification.js';
 
 const DEFAULT_RETRY_INTERVAL_MS = 30_000;
 

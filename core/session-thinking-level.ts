@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { lookupKnown } from '../shared/known-models';
+import { lookupKnown } from '../shared/known-models.js';
 
 export const DEFAULT_SESSION_THINKING_LEVEL = "medium";
 const VALID_THINKING_LEVELS = new Set(["off", "low", "medium", "high", "xhigh", "max"]);

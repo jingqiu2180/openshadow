@@ -9,9 +9,9 @@ import {
   markSectionRead,
   missingRequiredSections,
   sessionTrackingKey,
-} from '../lib/html-style-guide';
-import { isBeautifyEnabledForAgentConfig } from '../lib/availability';
-import { t } from '../../../../lib/i18n';
+} from '../lib/html-style-guide.js';
+import { isBeautifyEnabledForAgentConfig } from '../lib/availability.js';
+import { t } from '../../../../lib/i18n.js';
 
 export const name = "get-html-style-guide";
 export const description = t("toolDef.getHtmlStyleGuide.description");

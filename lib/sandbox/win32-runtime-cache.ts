@@ -2,7 +2,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { isWin32PathLike } from '../shell/shell-utils';
+import { isWin32PathLike } from '../shell/shell-utils.js';
 
 const CACHE_DIR = "win32-sandbox-runtime";
 const MARKER_FILE = ".hana-sandbox-runtime.json";

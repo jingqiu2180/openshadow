@@ -1,16 +1,16 @@
 // @ts-nocheck
 import path from "path";
 import { Hono } from "hono";
-import { safeJson } from '../hono-helpers';
-import { denyWithoutScope } from '../http/capability-guard';
+import { safeJson } from '../hono-helpers.js';
+import { denyWithoutScope } from '../http/capability-guard.js';
 import {
   listResolvedExperiments,
   setExperimentValue,
-} from '../../lib/experiments/registry';
+} from '../../lib/experiments/registry.js';
 import {
   deleteCacheSnapshotObservation,
   readCacheSnapshotObservation,
-} from '../../lib/memory/cache-snapshot-observation';
+} from '../../lib/memory/cache-snapshot-observation.js';
 
 function normalizeAgentId(value) {
   const id = String(value || "").trim();

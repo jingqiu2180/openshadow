@@ -13,24 +13,24 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import { debugLog, createModuleLogger } from '../debug-log';
+import { debugLog, createModuleLogger } from '../debug-log.js';
 import {
   compileToday,
   compileWeek,
   compileLongterm,
   compileFacts,
   assemble,
-} from './compile';
-import { processDirtySessions } from './deep-memory';
-import { getLogicalDay } from '../time-utils';
-import { readCompiledResetAt } from './compiled-memory-state';
-import { listSessionFiles, readSessionMessages, sessionIdFromFilename } from '../session-jsonl';
-import { isAgentPhoneSessionPath } from '../conversations/agent-phone-session';
-import { buildSourceTimeRange } from './time-context';
-import { writeCacheSnapshotObservation } from './cache-snapshot-observation';
-import { runMemoryReflection as defaultRunMemoryReflection } from './memory-reflection-runner';
-import { validateRollingSummaryFormat } from './rolling-summary-format';
-import { CACHE_STRATEGIES } from '../llm/cache-strategy-contract';
+} from './compile.js';
+import { processDirtySessions } from './deep-memory.js';
+import { getLogicalDay } from '../time-utils.js';
+import { readCompiledResetAt } from './compiled-memory-state.js';
+import { listSessionFiles, readSessionMessages, sessionIdFromFilename } from '../session-jsonl.js';
+import { isAgentPhoneSessionPath } from '../conversations/agent-phone-session.js';
+import { buildSourceTimeRange } from './time-context.js';
+import { writeCacheSnapshotObservation } from './cache-snapshot-observation.js';
+import { runMemoryReflection as defaultRunMemoryReflection } from './memory-reflection-runner.js';
+import { validateRollingSummaryFormat } from './rolling-summary-format.js';
+import { CACHE_STRATEGIES } from '../llm/cache-strategy-contract.js';
 
 const log = createModuleLogger("memory-ticker");
 

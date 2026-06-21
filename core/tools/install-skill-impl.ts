@@ -19,12 +19,12 @@ import path from 'path'
 import { promisify } from 'util'
 import { exec as execCb } from 'child_process'
 import { mkdir, readFile, rm, readdir, stat as fsStat } from 'fs/promises'
-import { createToolSpec } from '../tool-registry'
+import { createToolSpec } from '../tool-registry.js'
 import {
   registerSessionFile,
   resolveSessionFile,
   serializeSessionFile,
-} from './session-file-registry'
+} from './session-file-registry.js'
 
 const exec = promisify(execCb)
 const GITHUB_API_TIMEOUT = 15_000

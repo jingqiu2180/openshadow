@@ -6,21 +6,21 @@
  * session meta 持久化、updateConfig 联动。
  * 不持有 engine 引用，通过构造器注入依赖。
  */
-import { createModuleLogger } from '../lib/debug-log';
-import { findModel, parseModelRef, requireModelRef } from '../shared/model-ref';
-import { t } from '../lib/i18n';
-import { resolveDefaultWorkspacePath } from '../shared/default-workspace';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { findModel, parseModelRef, requireModelRef } from '../shared/model-ref.js';
+import { t } from '../lib/i18n.js';
+import { resolveDefaultWorkspacePath } from '../shared/default-workspace.js';
 import {
   AUTO_SEARCH_PROVIDER,
   isSearchApiProvider,
   mergeSearchApiKeys,
   normalizeSearchApiKeys,
   normalizeSearchProvider,
-} from '../shared/search-providers';
+} from '../shared/search-providers.js';
 import {
   classifyWorkspacePathForGc,
   pruneMissingWorkspaceConfig,
-} from '../shared/workspace-persistence-gc';
+} from '../shared/workspace-persistence-gc.js';
 
 const log = createModuleLogger("config");
 

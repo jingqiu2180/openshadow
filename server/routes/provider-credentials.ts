@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { isMaskedSecretValue } from '../../shared/secret-custody';
+import { isMaskedSecretValue } from '../../shared/secret-custody.js';
 
 export function hasInlineProviderCredentialPatch(block: any) {
   return !!block && typeof block === "object" && (

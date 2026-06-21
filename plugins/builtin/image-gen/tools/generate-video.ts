@@ -6,7 +6,7 @@
  * which owns adapter selection, task metadata, deferred notifications, and
  * polling.
  */
-import { t } from '../../../../lib/i18n';
+import { t } from '../../../../lib/i18n.js';
 
 export const name = "generate-video";
 export const description = t("toolDef.generateVideo.description");

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import crypto from "crypto";
-import { COMPUTER_USE_ERRORS, computerUseError } from './errors';
+import { COMPUTER_USE_ERRORS, computerUseError } from './errors.js';
 
 function leaseKey(sessionPath: any, agentId: any, leaseId: any) {
   return `${sessionPath || ""}\0${agentId || ""}\0${leaseId}`;

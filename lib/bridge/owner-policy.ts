@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { parseSessionKey } from './session-key';
+import { parseSessionKey } from './session-key.js';
 
 export function getConfiguredBridgeOwner(agent, platform) {
   const owner = agent?.config?.bridge?.[platform]?.owner;

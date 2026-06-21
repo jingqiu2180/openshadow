@@ -3,10 +3,10 @@ import {
   classifySessionPermission,
   normalizeSessionPermissionMode,
   SESSION_PERMISSION_MODES,
-} from '../../core/session-permission-mode';
-import { getToolSessionPath } from './tool-session';
-import { toolError, toolOk } from './tool-result';
-import { t } from '../i18n';
+} from '../../core/session-permission-mode.js';
+import { getToolSessionPath } from './tool-session.js';
+import { toolError, toolOk } from './tool-result.js';
+import { t } from '../i18n.js';
 
 function findRuntimeCtx(args: any[]) {
   for (let i = args.length - 1; i >= 2; i--) {

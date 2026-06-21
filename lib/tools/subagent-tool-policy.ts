@@ -25,7 +25,7 @@
 import {
   SESSION_PERMISSION_MODES,
   isReadOnlyPermissionMode,
-} from '../../core/session-permission-mode';
+} from '../../core/session-permission-mode.js';
 
 // 乙策略用的精选集（= 收口前 subagent 的现状）。仅 strip 策略下生效。
 const STRIP_CUSTOM_TOOLS = ["web_search", "web_fetch", "todo_write", "browser"];

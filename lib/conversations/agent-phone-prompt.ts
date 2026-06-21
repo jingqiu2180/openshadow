@@ -1,6 +1,6 @@
 // @ts-nocheck
 import path from "path";
-import { loadConfig } from '../memory/config-loader';
+import { loadConfig } from '../memory/config-loader.js';
 
 export const DEFAULT_AGENT_PHONE_GUARD_LIMIT_PER_MEMBER = 12;
 

@@ -2,7 +2,7 @@
 import {
   normalizeSessionSearchText,
   tokenizeSessionSearchQuery,
-} from './session-search-tokenizer';
+} from './session-search-tokenizer.js';
 
 const DEFAULT_LIMIT = 30;
 const MAX_LIMIT = 50;

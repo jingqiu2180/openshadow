@@ -5,8 +5,8 @@
  * 通过 TaskRegistry 终止任何类型的后台任务（子代理、生图、生视频等）。
  */
 
-import { Type } from '../pi-sdk/index';
-import { t } from '../i18n';
+import { Type } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
 
 export function createStopTaskTool(deps) {
   return {

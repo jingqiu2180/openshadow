@@ -8,8 +8,8 @@
 import {
   MODEL_AUDIO_TRANSPORTS,
   resolveModelAudioInputTransport,
-} from '../../shared/model-capabilities';
-import { normalizeOpenAIInputAudioPayload } from './input-audio';
+} from '../../shared/model-capabilities.js';
+import { normalizeOpenAIInputAudioPayload } from './input-audio.js';
 
 export function matches(model) {
   return resolveModelAudioInputTransport(model) === MODEL_AUDIO_TRANSPORTS.OPENAI_INPUT_AUDIO;

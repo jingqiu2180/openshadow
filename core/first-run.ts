@@ -9,15 +9,15 @@
 import fs from "fs";
 import path from "path";
 import YAML from "js-yaml";
-import { safeCopyDir } from '../shared/safe-fs';
-import { AppError } from '../shared/errors';
-import { errorBus } from '../shared/error-bus';
+import { safeCopyDir } from '../shared/safe-fs.js';
+import { AppError } from '../shared/errors.js';
+import { errorBus } from '../shared/error-bus.js';
 import {
   DEFAULT_HEARTBEAT_INTERVAL_MINUTES,
   ensureDefaultWorkspace,
-} from '../shared/default-workspace';
-import { createModuleLogger } from '../lib/debug-log';
-import { USER_PROFILE_FILENAME } from '../lib/user-profile-store';
+} from '../shared/default-workspace.js';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { USER_PROFILE_FILENAME } from '../lib/user-profile-store.js';
 
 const log = createModuleLogger("first-run");
 

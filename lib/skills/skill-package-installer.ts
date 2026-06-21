@@ -2,10 +2,10 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { extractZip } from '../extract-zip';
-import { safeCopyDir } from '../../shared/safe-fs';
-import { parseSkillMetadata } from './skill-metadata';
-import { createSkillSourceIdentity } from './skill-file-identity';
+import { extractZip } from '../extract-zip.js';
+import { safeCopyDir } from '../../shared/safe-fs.js';
+import { parseSkillMetadata } from './skill-metadata.js';
+import { createSkillSourceIdentity } from './skill-file-identity.js';
 
 const SAFE_SKILL_NAME = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/;
 

@@ -14,12 +14,12 @@
  */
 
 import WebSocket from "ws";
-import { debugLog } from '../debug-log';
-import { webSocketOptionsForUrl } from '../net/outbound-proxy';
-import { createMediaCapabilities } from './media-capabilities';
-import { createBridgeOutboundHttp } from './outbound-http';
-import { QQApiError, QQ_FILE_TYPE, QQ_UPLOAD_SIZE_LIMITS, uploadQQLocalFile } from './qq-local-upload';
-import { createModuleLogger } from '../debug-log';
+import { debugLog } from '../debug-log.js';
+import { webSocketOptionsForUrl } from '../net/outbound-proxy.js';
+import { createMediaCapabilities } from './media-capabilities.js';
+import { createBridgeOutboundHttp } from './outbound-http.js';
+import { QQApiError, QQ_FILE_TYPE, QQ_UPLOAD_SIZE_LIMITS, uploadQQLocalFile } from './qq-local-upload.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("qq");
 

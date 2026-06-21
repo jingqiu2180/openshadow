@@ -2,12 +2,12 @@
 import {
   hashCacheContractValue,
   stableSerialize,
-} from '../lib/llm/cache-prefix-contract';
+} from '../lib/llm/cache-prefix-contract.js';
 import {
   CACHE_STRATEGIES,
   buildCacheStrategyMetadata,
-} from '../lib/llm/cache-strategy-contract';
-import { normalizeRequestThinkingLevel } from './session-thinking-level';
+} from '../lib/llm/cache-strategy-contract.js';
+import { normalizeRequestThinkingLevel } from './session-thinking-level.js';
 
 export const SESSION_CACHE_SNAPSHOT_VERSION = 1;
 

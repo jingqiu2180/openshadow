@@ -12,7 +12,7 @@ import {
   mediaMode,
   noReferenceImages,
   referenceImages,
-} from './media-schema-helpers';
+} from './media-schema-helpers.js';
 
 const GPT_IMAGE_2_PROPERTIES = {
   ratio: enumParam(OPENAI_FLEXIBLE_IMAGE_RATIOS, "3:2"),

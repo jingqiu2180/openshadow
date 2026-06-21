@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { t } from '../../../lib/i18n';
+import { t } from '../../../lib/i18n.js';
 
 export const HTML_STYLE_GUIDE_VERSION = "2026-06-10";
 

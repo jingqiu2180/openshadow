@@ -7,10 +7,10 @@
  * writes only when that suggestion is applied.
  */
 
-import { Type, StringEnum } from '../pi-sdk/index';
-import { getToolSessionCwd, getToolSessionPath } from './tool-session';
-import { createAgentSessionAutomationExecutor } from '../desk/agent-run-automation';
-import { applyConfirmedAutomationDraft } from './automation-draft';
+import { Type, StringEnum } from '../pi-sdk/index.js';
+import { getToolSessionCwd, getToolSessionPath } from './tool-session.js';
+import { createAgentSessionAutomationExecutor } from '../desk/agent-run-automation.js';
+import { applyConfirmedAutomationDraft } from './automation-draft.js';
 
 function normalizeSchedule(params, existing: any = null) {
   const type = params.scheduleType || params.type || existing?.type;

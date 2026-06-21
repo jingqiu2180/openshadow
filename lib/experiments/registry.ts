@@ -3,11 +3,11 @@ import {
   cloneExperiment,
   normalizeExperimentDefinition,
   normalizeExperimentValue,
-} from '../../shared/experiments-schema';
+} from '../../shared/experiments-schema.js';
 import {
   COMPACTION_MODE_EXPERIMENT_ID,
   COMPACTION_MODES,
-} from '../../shared/compaction-mode';
+} from '../../shared/compaction-mode.js';
 
 export const CACHE_SNAPSHOT_EXPERIMENT_ID = "memory.cache_snapshot_reflection";
 export const DEEPSEEK_ROLEPLAY_REASONING_PATCH_EXPERIMENT_ID = "provider.deepseek_roleplay_reasoning_patch";

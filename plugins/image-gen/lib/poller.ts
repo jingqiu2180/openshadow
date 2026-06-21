@@ -14,8 +14,8 @@
  */
 
 import { dirname, join as pathJoin } from "node:path";
-import { readImageSize } from './image-size';
-import { isResponseDelivery } from './image-task-runner';
+import { readImageSize } from './image-size.js';
+import { isResponseDelivery } from './image-task-runner.js';
 
 const TICK_MS = 5_000;
 const TWO_MINUTES = 2 * 60 * 1000;

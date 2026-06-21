@@ -7,7 +7,7 @@
  * add/remove 需要动态修改 PathGuard，当前暂不支持。
  */
 
-import { Type, StringEnum } from '../../lib/pi-sdk/index'
+import { Type, StringEnum } from '../../lib/pi-sdk/index.js'
 
 export function createSessionFoldersTool(deps: Record<string, any> = {}) {
   return {

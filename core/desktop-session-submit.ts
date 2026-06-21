@@ -25,11 +25,11 @@
  * @returns {Promise<{ text: string | null, toolMedia: string[] }>}
  */
 import path from "path";
-import { extOfName, inferFileKind } from '../lib/file-metadata';
-import { collectMediaItems } from '../lib/tools/media-details';
-import { formatSettingsUpdateText } from '../lib/tools/settings-update-result';
-import { materializeBridgeInboundFiles } from '../lib/session-files/bridge-inbound-files';
-import { serializeSessionFile } from '../lib/session-files/session-file-response';
+import { extOfName, inferFileKind } from '../lib/file-metadata.js';
+import { collectMediaItems } from '../lib/tools/media-details.js';
+import { formatSettingsUpdateText } from '../lib/tools/settings-update-result.js';
+import { materializeBridgeInboundFiles } from '../lib/session-files/bridge-inbound-files.js';
+import { serializeSessionFile } from '../lib/session-files/session-file-response.js';
 
 /**
  * 非桌面来源（bridge /rc 等）用户消息的来源元信息持久化条目类型。

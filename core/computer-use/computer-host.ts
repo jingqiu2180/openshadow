@@ -3,8 +3,8 @@
 // 参考 openhanako 的 core/computer-use/computer-host.ts
 // 简化版，聚焦核心功能
 
-import { ComputerUseProvider, ComputerSnapshot, ComputerAction, ComputerActionResult } from './provider-contract';
-import { ComputerUseProviderRegistry } from './provider-registry';
+import { ComputerUseProvider, ComputerSnapshot, ComputerAction, ComputerActionResult } from './provider-contract.js';
+import { ComputerUseProviderRegistry } from './provider-registry.js';
 
 // 租约（谁当前可以控制计算机）
 export interface ComputerLease {

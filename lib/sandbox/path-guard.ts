@@ -10,7 +10,7 @@
 
 import fs from "fs";
 import path from "path";
-import { t } from '../i18n';
+import { t } from '../i18n.js';
 import {
   BLOCKED_FILES,
   BLOCKED_DIRS,
@@ -20,7 +20,7 @@ import {
   READ_WRITE_AGENT_DIRS,
   READ_WRITE_AGENT_FILES,
   READ_WRITE_HOME_DIRS,
-} from './policy';
+} from './policy.js';
 
 export const AccessLevel = {
   BLOCKED: "blocked",

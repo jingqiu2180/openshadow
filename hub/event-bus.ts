@@ -6,8 +6,8 @@
  * 支持带过滤的订阅：按 sessionPath / event type 过滤。
  * 支持 request/handle 请求响应模式，供 plugin 间通信使用。
  */
-import { EventBusCapabilityDirectory } from './event-bus-capabilities';
-import { createModuleLogger } from '../lib/debug-log';
+import { EventBusCapabilityDirectory } from './event-bus-capabilities.js';
+import { createModuleLogger } from '../lib/debug-log.js';
 
 const log = createModuleLogger("event-bus");
 

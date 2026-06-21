@@ -4,13 +4,13 @@
  * 移植自 openhanako/lib/tools/experience.ts
  * 经验库采用渐进式披露
  */
-import type { ToolRegistry } from '../tool-registry'
-import { createToolSpec } from '../tool-registry'
-import { t } from '../i18n'
+import type { ToolRegistry } from '../tool-registry.js'
+import { createToolSpec } from '../tool-registry.js'
+import { t } from '../i18n.js'
 import {
   recordEntry,
   findExperienceDocument,
-} from '../experience-store'
+} from '../experience-store.js'
 
 function isExperienceEnabled(isEnabled?: () => boolean): boolean {
   if (typeof isEnabled !== 'function') return false

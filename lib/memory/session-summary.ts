@@ -15,20 +15,20 @@
 
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../../shared/safe-fs';
-import { scrubPII } from '../pii-guard';
-import { callText } from '../../core/llm-client';
-import { getToolArgs, isToolCallBlock } from '../../core/llm-utils';
-import { getLocale } from '../i18n';
-import { readCompiledResetAt } from './compiled-memory-state';
-import { attachPromptLayoutMetadata, buildUtilityPromptLayout } from '../llm/prompt-layout';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
+import { scrubPII } from '../pii-guard.js';
+import { callText } from '../../core/llm-client.js';
+import { getToolArgs, isToolCallBlock } from '../../core/llm-utils.js';
+import { getLocale } from '../i18n.js';
+import { readCompiledResetAt } from './compiled-memory-state.js';
+import { attachPromptLayoutMetadata, buildUtilityPromptLayout } from '../llm/prompt-layout.js';
 import {
   buildSourceTimeRange,
   formatZonedDateTime,
   resolveMemoryTimeZone,
-} from './time-context';
-import { createModuleLogger } from '../debug-log';
-import { withMemoryReasoningBuffer } from './llm-budget';
+} from './time-context.js';
+import { createModuleLogger } from '../debug-log.js';
+import { withMemoryReasoningBuffer } from './llm-budget.js';
 import {
   MAX_ROLLING_SUMMARY_FORMAT_REPAIRS,
   buildRollingSummaryFormatRequirements,
@@ -37,7 +37,7 @@ import {
   getFactSectionTitle,
   getTimelineSectionTitle,
   validateRollingSummaryFormat,
-} from './rolling-summary-format';
+} from './rolling-summary-format.js';
 
 const log = createModuleLogger("session-summary");
 

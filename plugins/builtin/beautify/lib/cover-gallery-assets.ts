@@ -1,8 +1,8 @@
 // @ts-nocheck
 import fs from "node:fs";
 import path from "node:path";
-import { fromRoot } from '../../../shared/hana-root';
-import { getCoverGalleryPreset } from '../../../shared/cover-gallery-presets';
+import { fromRoot } from '../../../shared/hana-root.js';
+import { getCoverGalleryPreset } from '../../../shared/cover-gallery-presets.js';
 
 const COVER_GALLERY_ASSET_SEGMENTS = ["desktop", "src", "assets", "cover-gallery"];
 

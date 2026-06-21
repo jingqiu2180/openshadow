@@ -1,9 +1,9 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../../shared/safe-fs';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
 import { randomBytes } from "crypto";
-import { assertExecutionCwd } from '../shell/execution-cwd';
+import { assertExecutionCwd } from '../shell/execution-cwd.js';
 
 const TERMINAL_ROOT = path.join(".ephemeral", "terminal-sessions");
 

@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { createModuleLogger } from '../lib/debug-log';
-import { t } from '../lib/i18n';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { t } from '../lib/i18n.js';
 
 const log = createModuleLogger("slash");
 const CMD_RE = /^\s*\/([a-zA-Z0-9_-]+)(?:\s+([\s\S]*?))?\s*$/;

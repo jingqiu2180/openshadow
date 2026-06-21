@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { spawn as spawnChild } from "child_process";
-import { resolveTerminalShell } from './shell-resolver';
+import { resolveTerminalShell } from './shell-resolver.js';
 
 export async function createAsyncNodePtyBackend() {
   const pty = await import("node-pty");

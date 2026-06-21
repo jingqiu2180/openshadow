@@ -3,9 +3,9 @@
 import fs from "fs";
 import path from "path";
 import YAML from "js-yaml";
-import { atomicWriteSync, safeReadYAMLSync } from '../shared/safe-fs';
-import { lookupKnown } from '../shared/known-models';
-import { inferMediaProtocolId } from './media-protocols';
+import { atomicWriteSync, safeReadYAMLSync } from '../shared/safe-fs.js';
+import { lookupKnown } from '../shared/known-models.js';
+import { inferMediaProtocolId } from './media-protocols.js';
 
 function isPlainObject(value) {
   return !!value && typeof value === "object" && !Array.isArray(value);

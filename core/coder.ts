@@ -14,8 +14,8 @@
  * READ spec → WRITE code → TEST → FIX (if broken) → repeat
  */
 
-import { Agent } from './agent'
-import { createPlanner } from './planner'
+import { Agent } from './agent.js'
+import { createPlanner } from './planner.js'
 import { existsSync } from 'fs'
 import { join } from 'path'
 

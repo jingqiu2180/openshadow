@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Hono } from 'hono'
-import { Agent } from '../core/agent'
+import { Agent } from '../core/agent.js'
 
 export interface FeishuMessage {
   event: {

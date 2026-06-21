@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { parseSessionKey } from './session-key';
-import { interactionCapabilitiesForPlatform } from './interaction-capabilities';
+import { parseSessionKey } from './session-key.js';
+import { interactionCapabilitiesForPlatform } from './interaction-capabilities.js';
 
 export const BRIDGE_NOTIFY_PLATFORMS = ["wechat", "feishu", "telegram", "qq"];
 

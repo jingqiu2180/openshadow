@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { principalHasScope as principalHasNormalizedScope } from '../../core/security-principal';
-import { isLocalOwnerPrincipal, scopeAllows } from './route-security';
+import { principalHasScope as principalHasNormalizedScope } from '../../core/security-principal.js';
+import { isLocalOwnerPrincipal, scopeAllows } from './route-security.js';
 
 export function principalHasScope(principal, scope) {
   if (isLocalOwnerPrincipal(principal)) return true;

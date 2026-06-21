@@ -9,23 +9,23 @@ import fs from "fs";
 import fsp from "fs/promises";
 import path from "path";
 import YAML from "js-yaml";
-import { Agent } from './agent';
-import { safeReadYAMLSync } from '../shared/safe-fs';
-import { createModuleLogger } from '../lib/debug-log';
-import { clearConfigCache } from '../lib/memory/config-loader';
-import { hasCompiledMemory, writeCompiledMemorySnapshot } from '../lib/memory/compiled-memory-snapshot';
-import { t } from '../lib/i18n';
-import { ActivityStore } from '../lib/desk/activity-store';
+import { Agent } from './agent.js';
+import { safeReadYAMLSync } from '../shared/safe-fs.js';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { clearConfigCache } from '../lib/memory/config-loader.js';
+import { hasCompiledMemory, writeCompiledMemorySnapshot } from '../lib/memory/compiled-memory-snapshot.js';
+import { t } from '../lib/i18n.js';
+import { ActivityStore } from '../lib/desk/activity-store.js';
 import { createHash } from "crypto";
 import {
   generateAgentId as _generateAgentId,
   generateDescription,
-} from './llm-utils';
-import { findModel, parseModelRef } from '../shared/model-ref';
-import { DEFAULT_HEARTBEAT_INTERVAL_MINUTES } from '../shared/default-workspace';
-import { relativePathInsideBase } from './message-utils';
-import { detachAgentFromBundles } from '../lib/skill-bundles/store';
-import { assertKnownYuan, getAgentConfigRepairState } from './yuan-registry';
+} from './llm-utils.js';
+import { findModel, parseModelRef } from '../shared/model-ref.js';
+import { DEFAULT_HEARTBEAT_INTERVAL_MINUTES } from '../shared/default-workspace.js';
+import { relativePathInsideBase } from './message-utils.js';
+import { detachAgentFromBundles } from '../lib/skill-bundles/store.js';
+import { assertKnownYuan, getAgentConfigRepairState } from './yuan-registry.js';
 
 const log = createModuleLogger("agent-mgr");
 const DELETED_AGENT_TOMBSTONE = ".deleted-agent.json";

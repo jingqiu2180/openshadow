@@ -4,13 +4,13 @@ import crypto from "crypto";
 import os from "os";
 import path from "path";
 import { spawn as defaultSpawn } from "child_process";
-import { isWin32PathLike } from '../shell/shell-utils';
+import { isWin32PathLike } from '../shell/shell-utils.js';
 import {
   buildWin32HanaWriteAclCleanupArgs,
   buildWin32LegacyAclDiagnosticArgs,
   buildWin32LegacyProfileCleanupArgs,
-} from './win32-legacy-maintenance';
-import { resolveWin32SandboxHelper } from './win32-sandbox-helper';
+} from './win32-legacy-maintenance.js';
+import { resolveWin32SandboxHelper } from './win32-sandbox-helper.js';
 
 const LEGACY_PROFILE_PREFIX = "com.hanako.sandbox.";
 const DEFAULT_TIMEOUT_MS = 15_000;

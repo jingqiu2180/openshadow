@@ -2,8 +2,8 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { loadStudioMountRegistry } from './studio-mounts';
-import { createModuleLogger } from '../lib/debug-log';
+import { loadStudioMountRegistry } from './studio-mounts.js';
+import { createModuleLogger } from '../lib/debug-log.js';
 
 const log = createModuleLogger("mount-files");
 

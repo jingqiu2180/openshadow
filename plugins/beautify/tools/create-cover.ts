@@ -1,8 +1,8 @@
 // @ts-nocheck
 import path from "node:path";
-import { applyMarkdownCoverFromGeneratedFile } from '../lib/markdown-cover-service';
-import { isBeautifyEnabledForAgentConfig } from '../lib/availability';
-import { t } from '../../../lib/i18n';
+import { applyMarkdownCoverFromGeneratedFile } from '../lib/markdown-cover-service.js';
+import { isBeautifyEnabledForAgentConfig } from '../lib/availability.js';
+import { t } from '../../../lib/i18n.js';
 
 export const name = "create-cover";
 export const description = t("toolDef.createCover.description");

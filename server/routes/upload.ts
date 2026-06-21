@@ -17,24 +17,24 @@ import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { Hono } from "hono";
-import { safeJson } from '../hono-helpers';
-import { t } from '../../lib/i18n';
-import { isSensitivePath } from '../utils/path-security';
+import { safeJson } from '../hono-helpers.js';
+import { t } from '../../lib/i18n.js';
+import { isSensitivePath } from '../utils/path-security.js';
 import {
   MAX_CHAT_IMAGE_BASE64_CHARS,
   extensionFromChatImageMime,
   isAllowedChatImageMime,
   isChatImageBase64WithinLimit,
-} from '../../shared/image-mime';
+} from '../../shared/image-mime.js';
 import {
   MAX_CHAT_AUDIO_BASE64_CHARS,
   extensionFromChatAudioMime,
   isAllowedChatAudioMime,
   isAllowedUploadAudioMime,
   isChatAudioBase64WithinLimit,
-} from '../../shared/audio-mime';
-import { registerSessionFileFromRequest, serializeSessionFile } from '../../lib/session-files/session-file-response';
-import { buildSessionFileSourceKey, sessionFilesCacheDir } from '../../lib/session-files/session-file-registry';
+} from '../../shared/audio-mime.js';
+import { registerSessionFileFromRequest, serializeSessionFile } from '../../lib/session-files/session-file-response.js';
+import { buildSessionFileSourceKey, sessionFilesCacheDir } from '../../lib/session-files/session-file-registry.js';
 
 const MAX_FILES = 9;
 const MAX_FILENAME_BYTES = 255;

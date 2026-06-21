@@ -5,7 +5,7 @@ import path from "path";
 import {
   createSkillPointerIdentity,
   sourceIdentityForSkill,
-} from './skill-file-identity';
+} from './skill-file-identity.js';
 
 function jsonClone(value, fallback) {
   try {

@@ -9,7 +9,7 @@
 import fs from "fs";
 import { promises as fsp } from "fs";
 import path from "path";
-import { safeConversationStem } from './agent-phone-projection';
+import { safeConversationStem } from './agent-phone-projection.js';
 
 export function getAgentPhoneRuntimePath(agentDir, conversationId) {
   return path.join(agentDir, "phone", "session-runtime", `${safeConversationStem(conversationId)}.json`);

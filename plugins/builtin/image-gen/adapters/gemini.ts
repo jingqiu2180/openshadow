@@ -4,8 +4,8 @@ import {
   normalizeBaseUrl,
   normalizeImageInput,
   saveBase64Images,
-} from './common';
-import { t } from '../../../../lib/i18n';
+} from './common.js';
+import { t } from '../../../../lib/i18n.js';
 
 const DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 const GEMINI_25_RATIOS = ["1:1", "3:2", "2:3", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"];

@@ -8,8 +8,8 @@
  * - 记忆编译（snapshot）支持
  */
 
-import { getDb } from './store'
-import type { Memory, Fact } from './store'
+import { getDb } from './store.js'
+import type { Memory, Fact } from './store.js'
 import { randomUUID } from 'crypto'
 
 const CJK_RUN_RE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]+/gu

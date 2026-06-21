@@ -14,8 +14,8 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { atomicWriteSync } from '../shared/safe-fs';
-import { createModuleLogger } from '../debug-log';
+import { atomicWriteSync } from '../shared/safe-fs.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("session-summary");
 

@@ -9,9 +9,9 @@
  */
 
 import path from "path";
-import { t } from '../lib/i18n';
-import { materializeExecutorIdentity } from '../lib/subagent-executor-metadata';
-import { buildAutomationSuggestionBlock } from './suggestion-blocks';
+import { t } from '../lib/i18n.js';
+import { materializeExecutorIdentity } from '../lib/subagent-executor-metadata.js';
+import { buildAutomationSuggestionBlock } from './suggestion-blocks.js';
 
 export const BLOCK_EXTRACTORS = {
   // COMPAT(present_files, remove no earlier than v0.133):

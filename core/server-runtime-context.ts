@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { loadServerIdentity } from './server-identity';
-import { createRuntimeExecutionBoundary } from './execution-boundary';
+import { loadServerIdentity } from './server-identity.js';
+import { createRuntimeExecutionBoundary } from './execution-boundary.js';
 
 const LOCAL_CAPABILITIES = ["chat", "resources", "tools"];
 

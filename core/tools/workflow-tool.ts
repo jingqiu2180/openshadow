@@ -1,15 +1,15 @@
 // @ts-nocheck
 // lib/tools/workflow-tool.js
 import path from "node:path";
-import { Type } from '../../lib/pi-sdk/index';
-import { t } from '../i18n';
-import { runWorkflowScript } from '../workflow/sandbox';
-import { extractMeta } from '../workflow/meta';
-import { createHostApi } from '../workflow/host-api';
-import { createLimiter } from '../workflow/concurrency';
-import { WorkflowJournal } from '../workflow/journal';
-import { getToolSessionPath, getToolSessionCwd } from './tool-session';
-import { toolOk, toolError } from './tool-result';
+import { Type } from '../../lib/pi-sdk/index.js';
+import { t } from '../i18n.js';
+import { runWorkflowScript } from '../workflow/sandbox.js';
+import { extractMeta } from '../workflow/meta.js';
+import { createHostApi } from '../workflow/host-api.js';
+import { createLimiter } from '../workflow/concurrency.js';
+import { WorkflowJournal } from '../workflow/journal.js';
+import { getToolSessionPath, getToolSessionCwd } from './tool-session.js';
+import { toolOk, toolError } from './tool-result.js';
 
 const WORKFLOW_DEADLINE_MS = 10 * 60 * 1000;
 // 后台兜底超时：略大于内部 deadline，防 runWorkflowScript 在 deadline 之外卡死。

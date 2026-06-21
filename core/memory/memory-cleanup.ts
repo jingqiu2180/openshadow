@@ -10,8 +10,8 @@
  * - 分批删除（默认 100/批），避免长事务。
  * - 永远保留 importance >= 4 的高价值 fact（业务关键信息不能误删）。
  */
-import { getDb } from './store'
-import { createModuleLogger } from '../debug-log'
+import { getDb } from './store.js'
+import { createModuleLogger } from '../debug-log.js'
 
 const log = createModuleLogger('memory-cleanup')
 

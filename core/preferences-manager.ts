@@ -7,47 +7,47 @@
  */
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 import {
   approveComputerUseApp,
   normalizeComputerUseSettings,
   revokeComputerUseApp,
-} from './computer-use/settings';
+} from './computer-use/settings.js';
 import {
   normalizeAutomationPermissionMode,
   normalizeBridgePermissionMode,
   normalizeSessionPermissionMode,
   SESSION_PERMISSION_MODES,
-} from './session-permission-mode';
+} from './session-permission-mode.js';
 import {
   mergeEditorTypography,
   normalizeEditorTypography,
-} from '../shared/editor-typography';
+} from '../shared/editor-typography.js';
 import {
   getWorkspaceUiStateEntry,
   upsertWorkspaceUiState,
-} from '../shared/workspace-ui-state';
-import { pruneMissingWorkspaceUiState } from '../shared/workspace-persistence-gc';
+} from '../shared/workspace-ui-state.js';
+import { pruneMissingWorkspaceUiState } from '../shared/workspace-persistence-gc.js';
 import {
   mergeSidebarUiPrefs,
   normalizeSidebarUiPrefs,
-} from '../shared/sidebar-ui-state';
-import { normalizeWorkspacePath } from '../shared/workspace-history';
-import { normalizeNetworkProxyConfig } from '../shared/network-proxy';
+} from '../shared/sidebar-ui-state.js';
+import { normalizeWorkspacePath } from '../shared/workspace-history.js';
+import { normalizeNetworkProxyConfig } from '../shared/network-proxy.js';
 import {
   mergeNotificationPreferences,
   normalizeNotificationPreferences,
-} from '../shared/notification-preferences';
+} from '../shared/notification-preferences.js';
 import {
   mergeQuickChatPreferences,
   normalizeQuickChatPreferences,
-} from '../shared/quick-chat-preferences';
+} from '../shared/quick-chat-preferences.js';
 import {
   mergeBrowserPreferences,
   normalizeBrowserPreferences,
-} from '../shared/browser-preferences';
-import { createModuleLogger } from '../lib/debug-log';
-import { normalizeSessionThinkingLevel } from './session-thinking-level';
+} from '../shared/browser-preferences.js';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { normalizeSessionThinkingLevel } from './session-thinking-level.js';
 
 const log = createModuleLogger("preferences");
 

@@ -3,15 +3,15 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { Hono } from "hono";
-import { MountAwareFileError, MountAwareFileService } from '../../core/mount-aware-file-service';
+import { MountAwareFileError, MountAwareFileService } from '../../core/mount-aware-file-service.js';
 import {
   listStudioMountsForStudio,
   upsertStudioMount,
-} from '../../core/studio-mounts';
-import { safeJson } from '../hono-helpers';
-import { createRequestContext } from '../http/boundary';
-import { recordSecurityAuditEvent } from '../http/security-audit';
-import { isLocalOwnerPrincipal } from '../http/route-security';
+} from '../../core/studio-mounts.js';
+import { safeJson } from '../hono-helpers.js';
+import { createRequestContext } from '../http/boundary.js';
+import { recordSecurityAuditEvent } from '../http/security-audit.js';
+import { isLocalOwnerPrincipal } from '../http/route-security.js';
 
 export function createStudioWorkspacesRoute(engine) {
   const route = new Hono();

@@ -2,13 +2,13 @@
 import fs from "fs";
 import { Readable } from "stream";
 import { Hono } from "hono";
-import { ResourceError } from '../../core/resource-service';
+import { ResourceError } from '../../core/resource-service.js';
 import {
   issueResourceTicket,
   verifyResourceTicket,
   ResourceTicketError,
-} from '../../core/resource-ticket-service';
-import { createRequestContext, jsonError } from '../http/boundary';
+} from '../../core/resource-ticket-service.js';
+import { createRequestContext, jsonError } from '../http/boundary.js';
 
 export function createResourcesRoute(engine) {
   const route = new Hono();

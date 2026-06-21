@@ -557,11 +557,49 @@ export function handleServerMessage(msg: any): void {
       import('../stores/plugin-ui-actions').then(m => m.refreshPluginUI());
       break;
 
-    case 'app_event':
-      if (msg.event?.type) {
-        handleAppEvent(msg.event.type, msg.event.payload || {}, { source: msg.event.source || 'server' });
+    case 'app_event': {
+      console.log('[ws-handler] app_event received, inner type:', msg.event?.type, 'keys:', msg.event ? Object.keys(msg.event) : [], 'message type:', typeof msg.event?.message);
+      if (!msg.event?.type) break;
+
+      handleAppEvent(msg.event.type, msg.event.payload || {}, { source: msg.event.source || 'server' });
+
+      // 解包嵌套的聊天事件 — 服务端把 session_user_message / message_update
+      // 包装在 app_event 里发送，但 handleAppEvent 不处理这些类型
+      const inner = msg.event;
+      if (inner.type === 'session_user_message' && inner.sessionPath && inner.message) {
+        console.log('[ws-handler] >>> processing session_user_message, path=', inner.sessionPath.slice(-30), 'text=', (inner.message.text||'').slice(0, 60));
+        useStore.setState({ welcomeVisible: false });
+        try {
+          useStore.getState().appendOptimisticUserMessage(inner.sessionPath, {
+            id: inner.clientMessageId || String(Date.now()),
+            role: 'user',
+            text: inner.message.text || '',
+            timestamp: Date.now(),
+            sendStatus: 'confirmed',
+          });
+          console.log('[ws-handler] <<< appendOptimisticUserMessage done, items count:', useStore.getState().chatSessions?.[inner.sessionPath]?.items?.length);
+        } catch(e) {
+          console.error('[ws-handler] appendOptimisticUserMessage ERROR:', e);
+        }
+      } else if (
+        (inner.type === 'message_update' || inner.type === 'stream_start') &&
+        inner.assistantMessageEvent &&
+        inner.sessionPath
+      ) {
+        const ae = inner.assistantMessageEvent;
+        if (REACT_CHAT_EVENTS.has(ae.type)) {
+          streamBufferManager.handleEvent(ae, inner.sessionPath);
+        }
+      } else if (inner.type === 'session_status' && typeof inner.isStreaming === 'boolean') {
+        if (inner.isStreaming) {
+          useStore.getState().addStreamingSession(inner.sessionPath);
+        } else {
+          useStore.getState().forceRemoveStreamingSession(inner.sessionPath);
+        }
       }
+
       break;
+    }
 
     case 'bridge_message':
       if (msg.message) {
@@ -571,6 +609,7 @@ export function handleServerMessage(msg: any): void {
 
     case 'session_user_message': {
       const sp = msg.sessionPath;
+      console.log('[ws-debug] session_user_message received, sp=', sp, 'currentSessionPath=', useStore.getState().currentSessionPath);
       if (!sp || !msg.message) break;
       if (!useStore.getState().chatSessions[sp]) {
         useStore.getState().initSession(sp, [], false);
@@ -603,16 +642,14 @@ export function handleServerMessage(msg: any): void {
       };
       if (clientMessageId && useStore.getState().confirmOptimisticUserMessage(sp, clientMessageId, data)) {
         bumpMessageLiveVersion(sp);
-        if (sp === useStore.getState().currentSessionPath) {
-          useStore.setState({ welcomeVisible: false });
-        }
+        // 强制关 welcome（不管 sp 是否等于 currentSessionPath）
+        useStore.setState({ welcomeVisible: false });
         break;
       }
       useStore.getState().appendItem(sp, { type: 'message', data });
       bumpMessageLiveVersion(sp);
-      if (sp === useStore.getState().currentSessionPath) {
-        useStore.setState({ welcomeVisible: false });
-      }
+      // 强制关 welcome（不管 sp 是否等于 currentSessionPath）
+      useStore.setState({ welcomeVisible: false });
       break;
     }
 

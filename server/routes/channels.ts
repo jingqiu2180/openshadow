@@ -18,8 +18,8 @@
 import fs from "fs";
 import path from "path";
 import { Hono } from "hono";
-import { safeJson } from '../hono-helpers';
-import { debugLog } from '../../lib/debug-log';
+import { safeJson } from '../hono-helpers.js';
+import { debugLog } from '../../lib/debug-log.js';
 import {
   parseChannel,
   appendMessage,
@@ -33,9 +33,9 @@ import {
   addChannelMember,
   removeChannelMember,
   updateChannelMeta,
-} from '../../lib/channels/channel-store';
-import { extractMentionedAgentIds } from '../../lib/channels/channel-mentions';
-import { normalizeAgentPhoneToolMode } from '../../lib/conversations/agent-phone-session';
+} from '../../lib/channels/channel-store.js';
+import { extractMentionedAgentIds } from '../../lib/channels/channel-mentions.js';
+import { normalizeAgentPhoneToolMode } from '../../lib/conversations/agent-phone-session.js';
 import {
   DEFAULT_AGENT_PHONE_SETTINGS,
   defaultAgentPhoneGuardLimit,
@@ -43,15 +43,15 @@ import {
   positiveIntegerOrDefault,
   readBoolean,
   resolveAgentPhoneGuardLimit,
-} from '../../lib/conversations/agent-phone-prompt';
+} from '../../lib/conversations/agent-phone-prompt.js';
 import {
   getAgentPhoneProjectionPath,
   readAgentPhoneProjection,
   updateAgentPhoneProjectionMeta,
-} from '../../lib/conversations/agent-phone-projection';
-import { resolveAgent } from '../utils/resolve-agent';
-import { findModel } from '../../shared/model-ref';
-import { createModuleLogger } from '../../lib/debug-log';
+} from '../../lib/conversations/agent-phone-projection.js';
+import { resolveAgent } from '../utils/resolve-agent.js';
+import { findModel } from '../../shared/model-ref.js';
+import { createModuleLogger } from '../../lib/debug-log.js';
 
 const log = createModuleLogger("channel");
 

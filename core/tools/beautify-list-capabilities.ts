@@ -1,10 +1,10 @@
 // @ts-nocheck
-import { t } from '../../../../lib/i18n';
+import { t } from '../../../../lib/i18n.js';
 
 export const name = "list-capabilities";
 export const description = t("toolDef.listCapabilities.description");
 
-export { isBeautifyEnabledForAgentConfig as isEnabledForAgentConfig } from '../lib/availability';
+export { isBeautifyEnabledForAgentConfig as isEnabledForAgentConfig } from '../lib/availability.js';
 
 export const parameters = {
   type: "object",

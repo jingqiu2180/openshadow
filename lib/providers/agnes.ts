@@ -14,7 +14,7 @@ import {
   mediaMode,
   noReferenceImages,
   referenceImages,
-} from './media-schema-helpers';
+} from './media-schema-helpers.js';
 
 const AGNES_IMAGE_RATIOS = ["1:1", "4:3", "3:4", "3:2", "2:3", "16:9", "9:16", "21:9"];
 const AGNES_VIDEO_RATIOS = ["3:2"];

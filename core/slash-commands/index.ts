@@ -1,9 +1,9 @@
 // @ts-nocheck
-import { SlashCommandRegistry } from '../slash-command-registry';
-import { SlashCommandDispatcher } from '../slash-command-dispatcher';
-import { createSessionOps } from './session-ops';
-import { bridgeCommands } from './bridge-commands';
-import { RcStateStore } from './rc-state';
+import { SlashCommandRegistry } from '../slash-command-registry.js';
+import { SlashCommandDispatcher } from '../slash-command-dispatcher.js';
+import { createSessionOps } from './session-ops.js';
+import { bridgeCommands } from './bridge-commands.js';
+import { RcStateStore } from './rc-state.js';
 
 // 注：此前这里曾有 exposeSkillsAsCommands 把 agent 的 runtime skills 暴露成
 // /<skillName> 斜杠命令。但实际链路是：

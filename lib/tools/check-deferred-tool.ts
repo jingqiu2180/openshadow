@@ -7,9 +7,9 @@
  * 按当前 sessionPath 隔离，不跨 session。
  */
 
-import { Type } from '../pi-sdk/index';
-import { getToolSessionPath } from './tool-session';
-import { t } from '../i18n';
+import { Type } from '../pi-sdk/index.js';
+import { getToolSessionPath } from './tool-session.js';
+import { t } from '../i18n.js';
 
 /**
  * @param {{

@@ -4,7 +4,7 @@ import path from "path";
 import {
   createSessionFileResourceEnvelope,
   fileIdFromSessionFileResourceId,
-} from '../lib/resources/resource-envelope';
+} from '../lib/resources/resource-envelope.js';
 
 export class ResourceError extends Error {
   declare status: number;

@@ -9,8 +9,8 @@
  */
 import fs from "fs";
 import path from "path";
-import { createModuleLogger } from '../lib/debug-log';
-import { t } from '../lib/i18n';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { t } from '../lib/i18n.js';
 import {
   addBookmarkEntry,
   createChannel,
@@ -18,7 +18,7 @@ import {
   removeChannelMember,
   removeBookmarkEntry,
   deleteChannel,
-} from '../lib/channels/channel-store';
+} from '../lib/channels/channel-store.js';
 
 const log = createModuleLogger("channel");
 

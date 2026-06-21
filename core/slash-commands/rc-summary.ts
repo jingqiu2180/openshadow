@@ -18,11 +18,11 @@
  * 避免"摘要器"和"文案兜底"两个职责互相纠缠。
  */
 import fs from "fs";
-import { callText } from '../llm-client';
-import { callTextWithLengthContract, type OutputLengthContract } from '../output-length-contract';
-import { getLocale } from '../../lib/i18n';
-import { isToolCallBlock } from '../llm-utils';
-import { createModuleLogger } from '../../lib/debug-log';
+import { callText } from '../llm-client.js';
+import { callTextWithLengthContract, type OutputLengthContract } from '../output-length-contract.js';
+import { getLocale } from '../../lib/i18n.js';
+import { isToolCallBlock } from '../llm-utils.js';
+import { createModuleLogger } from '../../lib/debug-log.js';
 
 const log = createModuleLogger("rc-summary");
 

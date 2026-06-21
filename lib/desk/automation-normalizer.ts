@@ -3,7 +3,7 @@ import {
   buildNotifyAgentRunPrompt,
   buildPluginActionAgentRunPrompt,
   createAgentSessionAutomationExecutor,
-} from './agent-run-automation';
+} from './agent-run-automation.js';
 
 export const AUTOMATION_SCHEMA_VERSION = 3;
 

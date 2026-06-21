@@ -1,7 +1,7 @@
 // @ts-nocheck
 import fs from "node:fs";
 import path from "node:path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 
 export const SUBAGENT_RUN_STORE_VERSION = 1;
 

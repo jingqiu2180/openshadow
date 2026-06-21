@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { COVER_GALLERY_PRESETS, type CoverGalleryPreset } from '../../../shared/cover-gallery-presets';
+import { COVER_GALLERY_PRESETS, type CoverGalleryPreset } from '../../../shared/cover-gallery-presets.js';
 
 // In Node.js, we can't import .jpg files directly (that's a Vite feature).
 // Instead, we just use the path strings directly.

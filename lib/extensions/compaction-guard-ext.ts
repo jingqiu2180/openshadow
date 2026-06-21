@@ -27,31 +27,31 @@
  *     显式 cache_preserving 模式仍 cancel，保留严格诊断能力
  */
 
-import { computeHardTruncation, estimatePreparationTokens, truncateTextHeadTail } from '../../core/compaction-utils';
+import { computeHardTruncation, estimatePreparationTokens, truncateTextHeadTail } from '../../core/compaction-utils.js';
 import {
   createCachePreservingCompactionResult,
   shouldHardTruncateCachePreservingCompaction,
   stripInlineMediaFromCompactionPreparation,
-} from '../../core/session-compactor';
+} from '../../core/session-compactor.js';
 import {
   normalizeProviderContextMessages,
   normalizeProviderPayload,
-} from '../../core/provider-compat';
+} from '../../core/provider-compat.js';
 import {
   ensureReasoningContentForToolCalls,
   isReasoningReplayUnavailable,
-} from '../../core/provider-compat/reasoning-content-replay';
+} from '../../core/provider-compat/reasoning-content-replay.js';
 import {
   CACHE_STRATEGIES,
   buildCacheStrategyMetadata,
-} from '../llm/cache-strategy-contract';
+} from '../llm/cache-strategy-contract.js';
 import {
   COMPACTION_MODES,
   normalizeCompactionMode,
-} from '../../shared/compaction-mode';
-import { convertAgentMessagesToLlm } from '../pi-sdk/index';
-import { createModuleLogger } from '../debug-log';
-import { normalizeRequestThinkingLevel } from '../../core/session-thinking-level';
+} from '../../shared/compaction-mode.js';
+import { convertAgentMessagesToLlm } from '../pi-sdk/index.js';
+import { createModuleLogger } from '../debug-log.js';
+import { normalizeRequestThinkingLevel } from '../../core/session-thinking-level.js';
 
 const log = createModuleLogger("compaction-guard");
 

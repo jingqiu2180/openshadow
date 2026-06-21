@@ -1,9 +1,9 @@
 // @ts-nocheck
-import { authorizeHttpRoute } from './route-security';
+import { authorizeHttpRoute } from './route-security.js';
 import {
   PluginSurfaceSessionError,
   authenticatePluginSurfaceRequest,
-} from './plugin-surface-session';
+} from './plugin-surface-session.js';
 
 /**
  * HTTP 入口的 principal 解析 + 路由授权。server/index.ts 的全局鉴权中间件与

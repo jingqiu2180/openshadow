@@ -7,25 +7,25 @@
  */
 
 import * as lark from "@larksuiteoapi/node-sdk";
-import { debugLog } from '../debug-log';
-import { downloadMedia, detectMime, formatSize, streamToBuffer } from './media-utils';
-import { createMediaCapabilities } from './media-capabilities';
-import { createStreamingCapabilities } from './streaming-capabilities';
+import { debugLog } from '../debug-log.js';
+import { downloadMedia, detectMime, formatSize, streamToBuffer } from './media-utils.js';
+import { createMediaCapabilities } from './media-capabilities.js';
+import { createStreamingCapabilities } from './streaming-capabilities.js';
 import {
   createBridgePresentation,
   FEISHU_CARDKIT_STREAM_ELEMENT_ID,
   renderFeishuCardKitCard,
   renderFeishuCardKitSettings,
-} from './bridge-presentation';
-import { createModuleLogger } from '../debug-log';
+} from './bridge-presentation.js';
+import { createModuleLogger } from '../debug-log.js';
 import {
   renderFeishuOutbound,
   renderFeishuPostMessageContent,
-} from './feishu-outbound-renderer';
+} from './feishu-outbound-renderer.js';
 import type {
   FeishuOutboundKind,
   FeishuOutboundMessage,
-} from './feishu-outbound-renderer';
+} from './feishu-outbound-renderer.js';
 
 const log = createModuleLogger("feishu");
 

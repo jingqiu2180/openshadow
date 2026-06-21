@@ -10,8 +10,8 @@
  */
 
 import { createRequire } from "module";
-import { scrubPII } from '../pii-guard';
-import { createModuleLogger } from '../debug-log';
+import { scrubPII } from '../pii-guard.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("fact-store");
 

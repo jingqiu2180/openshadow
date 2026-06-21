@@ -26,13 +26,13 @@ import {
   getReasoningProfile,
   isOfficialMimoEndpoint,
   resolveModelAudioInputTransport,
-} from '../../shared/model-capabilities';
+} from '../../shared/model-capabilities.js';
 import {
   ensureAssistantContentForToolCalls,
   ensureReasoningContentForToolCalls,
   stripReasoningContent,
-} from './reasoning-content-replay';
-import { normalizeOpenAIInputAudioPayload } from './input-audio';
+} from './reasoning-content-replay.js';
+import { normalizeOpenAIInputAudioPayload } from './input-audio.js';
 
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 

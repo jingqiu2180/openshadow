@@ -769,6 +769,10 @@
     display: flex;
     flex-direction: column;
     height: 300px;
+    min-width: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-all;
 }
 
 .editorHeader {

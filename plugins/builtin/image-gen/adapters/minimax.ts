@@ -5,8 +5,8 @@ import {
   normalizeBaseUrl,
   normalizeImageInput,
   saveBase64Images,
-} from './common';
-import { t } from '../../../../lib/i18n';
+} from './common.js';
+import { t } from '../../../../lib/i18n.js';
 
 const DEFAULT_BASE_URL = "https://api.minimaxi.com/v1";
 const MINIMAX_IMAGE_RATIOS = new Set(["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "21:9"]);

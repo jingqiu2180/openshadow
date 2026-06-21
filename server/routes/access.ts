@@ -2,25 +2,25 @@
 import os from "os";
 import QRCode from "qrcode";
 import { Hono } from "hono";
-import { createDeviceCredential, loadDeviceAccessRegistries } from '../../core/device-registry';
+import { createDeviceCredential, loadDeviceAccessRegistries } from '../../core/device-registry.js';
 import {
   loadServerNetworkConfig,
   saveServerNetworkConfig,
-} from '../../core/server-network-config';
+} from '../../core/server-network-config.js';
 import {
   clearLocalAccountPassword,
   getLocalAccountSummary,
   setLocalAccountPassword,
   updateLocalAccountProfile,
-} from '../../core/local-user-account';
-import { readAuthPrincipal } from '../http/capability-guard';
-import { isLocalOwnerPrincipal } from '../http/route-security';
-import { recordSecurityAuditEvent } from '../http/security-audit';
-import { safeJson } from '../hono-helpers';
+} from '../../core/local-user-account.js';
+import { readAuthPrincipal } from '../http/capability-guard.js';
+import { isLocalOwnerPrincipal } from '../http/route-security.js';
+import { recordSecurityAuditEvent } from '../http/security-audit.js';
+import { safeJson } from '../hono-helpers.js';
 import {
   DESKTOP_REMOTE_ACCESS_SCOPES,
   MOBILE_REMOTE_ACCESS_SCOPES,
-} from '../../shared/access-scope-profiles';
+} from '../../shared/access-scope-profiles.js';
 const ACCESS_PROFILES = Object.freeze({
   mobile: Object.freeze({
     deviceKind: "mobile",

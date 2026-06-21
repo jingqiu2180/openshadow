@@ -14,23 +14,23 @@
 import fs from "fs";
 import path from "path";
 import YAML from "js-yaml";
-import { atomicWriteSync, safeReadYAMLSync } from '../shared/safe-fs';
-import { fromRoot } from '../shared/hana-root';
-import { lookupKnown } from '../shared/known-models';
+import { atomicWriteSync, safeReadYAMLSync } from '../shared/safe-fs.js';
+import { fromRoot } from '../shared/hana-root.js';
+import { lookupKnown } from '../shared/known-models.js';
 import {
   normalizeProviderHeaders,
   normalizeProviderAuthType,
   providerCredentialAllowsMissingApiKey,
-} from '../shared/provider-auth';
-import { validateProviderModels } from '../shared/provider-model-validation';
+} from '../shared/provider-auth.js';
+import { validateProviderModels } from '../shared/provider-model-validation.js';
 import {
   normalizeModelProtocolCompat,
   normalizeToolUseContract,
   normalizeVisionCapabilities,
-} from '../shared/model-capabilities';
-import { validateProviderRuntime } from './media-runtime-contract';
-import { capabilityKey, inferMediaProtocolId } from './media-protocols';
-import { ProviderCatalogStore } from './provider-catalog';
+} from '../shared/model-capabilities.js';
+import { validateProviderRuntime } from './media-runtime-contract.js';
+import { capabilityKey, inferMediaProtocolId } from './media-protocols.js';
+import { ProviderCatalogStore } from './provider-catalog.js';
 import {
   LocalProviderPluginStore,
   isLocalProviderPlugin,
@@ -38,7 +38,7 @@ import {
   providerConfigHasLocalDefinition,
   providerPluginToCatalogDefinition,
   splitLocalProviderConfig,
-} from './local-provider-plugin-store';
+} from './local-provider-plugin-store.js';
 
 const _defaultModels = JSON.parse(
   fs.readFileSync(fromRoot("lib", "default-models.json"), "utf-8"),
@@ -318,44 +318,44 @@ function normalizeUserMediaModels(providerId, userConfig, capabilityName, declar
 
 // ── 内置插件 ────────────────────────────────────────────────────────────────
 
-import { dashscopePlugin } from '../lib/providers/dashscope';
-import { agnesPlugin } from '../lib/providers/agnes';
-import { openaiPlugin } from '../lib/providers/openai';
-import { anthropicPlugin } from '../lib/providers/anthropic';
-import { deepseekPlugin } from '../lib/providers/deepseek';
-import { geminiPlugin } from '../lib/providers/gemini';
-import { openrouterPlugin } from '../lib/providers/openrouter';
-import { ollamaPlugin } from '../lib/providers/ollama';
-import { minimaxPlugin } from '../lib/providers/minimax';
-import { minimaxTokenPlanPlugin } from '../lib/providers/minimax-token-plan';
-import { openaiCodexOAuthPlugin } from '../lib/providers/openai-codex-oauth';
+import { dashscopePlugin } from '../lib/providers/dashscope.js';
+import { agnesPlugin } from '../lib/providers/agnes.js';
+import { openaiPlugin } from '../lib/providers/openai.js';
+import { anthropicPlugin } from '../lib/providers/anthropic.js';
+import { deepseekPlugin } from '../lib/providers/deepseek.js';
+import { geminiPlugin } from '../lib/providers/gemini.js';
+import { openrouterPlugin } from '../lib/providers/openrouter.js';
+import { ollamaPlugin } from '../lib/providers/ollama.js';
+import { minimaxPlugin } from '../lib/providers/minimax.js';
+import { minimaxTokenPlanPlugin } from '../lib/providers/minimax-token-plan.js';
+import { openaiCodexOAuthPlugin } from '../lib/providers/openai-codex-oauth.js';
 // 中国
-import { siliconflowPlugin } from '../lib/providers/siliconflow';
-import { zhipuPlugin } from '../lib/providers/zhipu';
-import { moonshotPlugin } from '../lib/providers/moonshot';
-import { baichuanPlugin } from '../lib/providers/baichuan';
-import { stepfunPlugin } from '../lib/providers/stepfun';
-import { volcenginePlugin } from '../lib/providers/volcengine';
-import { volcengineSpeechPlugin } from '../lib/providers/volcengine-speech';
-import { hunyuanPlugin } from '../lib/providers/hunyuan';
-import { baiduCloudPlugin } from '../lib/providers/baidu-cloud';
-import { modelscopePlugin } from '../lib/providers/modelscope';
-import { infiniPlugin } from '../lib/providers/infini';
-import { mimoPlugin } from '../lib/providers/mimo';
-import { mimoTokenPlanPlugin } from '../lib/providers/mimo-token-plan';
-import { systemSpeechPlugin } from '../lib/providers/system-speech';
+import { siliconflowPlugin } from '../lib/providers/siliconflow.js';
+import { zhipuPlugin } from '../lib/providers/zhipu.js';
+import { moonshotPlugin } from '../lib/providers/moonshot.js';
+import { baichuanPlugin } from '../lib/providers/baichuan.js';
+import { stepfunPlugin } from '../lib/providers/stepfun.js';
+import { volcenginePlugin } from '../lib/providers/volcengine.js';
+import { volcengineSpeechPlugin } from '../lib/providers/volcengine-speech.js';
+import { hunyuanPlugin } from '../lib/providers/hunyuan.js';
+import { baiduCloudPlugin } from '../lib/providers/baidu-cloud.js';
+import { modelscopePlugin } from '../lib/providers/modelscope.js';
+import { infiniPlugin } from '../lib/providers/infini.js';
+import { mimoPlugin } from '../lib/providers/mimo.js';
+import { mimoTokenPlanPlugin } from '../lib/providers/mimo-token-plan.js';
+import { systemSpeechPlugin } from '../lib/providers/system-speech.js';
 // 国际
-import { groqPlugin } from '../lib/providers/groq';
-import { togetherPlugin } from '../lib/providers/together';
-import { fireworksPlugin } from '../lib/providers/fireworks';
-import { mistralPlugin } from '../lib/providers/mistral';
-import { perplexityPlugin } from '../lib/providers/perplexity';
-import { xaiPlugin } from '../lib/providers/xai';
+import { groqPlugin } from '../lib/providers/groq.js';
+import { togetherPlugin } from '../lib/providers/together.js';
+import { fireworksPlugin } from '../lib/providers/fireworks.js';
+import { mistralPlugin } from '../lib/providers/mistral.js';
+import { perplexityPlugin } from '../lib/providers/perplexity.js';
+import { xaiPlugin } from '../lib/providers/xai.js';
 // Coding Plan
-import { dashscopeCodingPlugin } from '../lib/providers/dashscope-coding';
-import { kimiCodingPlugin } from '../lib/providers/kimi-coding';
-import { volcegineCodingPlugin } from '../lib/providers/volcengine-coding';
-import { zhipuCodingPlugin } from '../lib/providers/zhipu-coding';
+import { dashscopeCodingPlugin } from '../lib/providers/dashscope-coding.js';
+import { kimiCodingPlugin } from '../lib/providers/kimi-coding.js';
+import { volcegineCodingPlugin } from '../lib/providers/volcengine-coding.js';
+import { zhipuCodingPlugin } from '../lib/providers/zhipu-coding.js';
 
 const BUILTIN_PLUGINS = [
   agnesPlugin,

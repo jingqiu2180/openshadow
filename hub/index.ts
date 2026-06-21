@@ -16,23 +16,23 @@
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import { EventBus } from './event-bus';
-import { ChannelRouter } from './channel-router';
-import { GuestHandler } from './guest-handler';
-import { Scheduler } from './scheduler';
-import { DmRouter } from './dm-router';
-import { AgentPhoneActivityStore } from '../lib/conversations/agent-phone-activity';
+import { EventBus } from './event-bus.js';
+import { ChannelRouter } from './channel-router.js';
+import { GuestHandler } from './guest-handler.js';
+import { Scheduler } from './scheduler.js';
+import { DmRouter } from './dm-router.js';
+import { AgentPhoneActivityStore } from '../lib/conversations/agent-phone-activity.js';
 import {
   extractTextContent,
   filterUnreferencedInlineImages,
   loadSessionHistoryMessages,
   isValidSessionPath,
-} from '../core/message-utils';
-import { submitDesktopSessionMessage } from '../core/desktop-session-submit';
-import { extOfName, inferFileKind } from '../lib/file-metadata';
-import { createModuleLogger } from '../lib/debug-log';
-import { normalizeSessionTurnContext } from '../core/session-turn-context';
-import { findModel } from '../shared/model-ref';
+} from '../core/message-utils.js';
+import { submitDesktopSessionMessage } from '../core/desktop-session-submit.js';
+import { extOfName, inferFileKind } from '../lib/file-metadata.js';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { normalizeSessionTurnContext } from '../core/session-turn-context.js';
+import { findModel } from '../shared/model-ref.js';
 
 const log = createModuleLogger("hub");
 

@@ -4,7 +4,7 @@ import {
   consumeExecutionLease,
   issueExecutionLease,
   revokeExecutionLease,
-} from './execution-lease-registry';
+} from './execution-lease-registry.js';
 
 export function issueRemoteWriteLease({
   hanakoHome,

@@ -1,8 +1,8 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
-import { createModuleLogger } from '../lib/debug-log';
+import { atomicWriteSync } from '../shared/safe-fs.js';
+import { createModuleLogger } from '../lib/debug-log.js';
 
 const log = createModuleLogger("plugin-config");
 

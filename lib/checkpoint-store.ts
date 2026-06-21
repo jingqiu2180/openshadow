@@ -2,7 +2,7 @@
 import fs from "fs";
 import path from "path";
 import { randomBytes } from "crypto";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 
 const BINARY_EXTENSIONS = new Set([
   ".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".ico", ".svg",

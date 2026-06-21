@@ -2,9 +2,9 @@
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
-import { detectMime, extOfName } from '../file-metadata';
-import { serializeSessionFile } from './session-file-response';
-import { sessionFilesCacheDir } from './session-file-registry';
+import { detectMime, extOfName } from '../file-metadata.js';
+import { serializeSessionFile } from './session-file-response.js';
+import { sessionFilesCacheDir } from './session-file-registry.js';
 
 const MIME_EXTENSIONS = {
   "image/jpeg": "jpg",

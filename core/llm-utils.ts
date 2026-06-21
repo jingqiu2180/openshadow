@@ -7,11 +7,11 @@
  */
 import fs from "fs";
 import path from "path";
-import { callText } from './llm-client';
-import { callTextWithLengthContract, type OutputLengthContract } from './output-length-contract';
-import { getLocale } from '../lib/i18n';
-import { normalizePlainDescription } from '../lib/text/internal-narration';
-import { createModuleLogger } from '../lib/debug-log';
+import { callText } from './llm-client.js';
+import { callTextWithLengthContract, type OutputLengthContract } from './output-length-contract.js';
+import { getLocale } from '../lib/i18n.js';
+import { normalizePlainDescription } from '../lib/text/internal-narration.js';
+import { createModuleLogger } from '../lib/debug-log.js';
 
 const log = createModuleLogger("llm-utils");
 

@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { MediaAdapterRegistry } from './media-adapter-registry';
-import { builtinSpeechRecognitionAdapters } from './speech-recognition/adapters';
-import { createModuleLogger } from '../lib/debug-log';
+import { MediaAdapterRegistry } from './media-adapter-registry.js';
+import { builtinSpeechRecognitionAdapters } from './speech-recognition/adapters.js';
+import { createModuleLogger } from '../lib/debug-log.js';
 
 const CAPABILITY = "speech_recognition";
 const log = createModuleLogger("speech-recognition");

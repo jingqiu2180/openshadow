@@ -10,7 +10,7 @@
  *        → main process handler uses desktopCapturer / webContents.capturePage()
  */
 
-import type { ScreenshotOutput } from './screenshot'
+import type { ScreenshotOutput } from './screenshot.js'
 
 /** Check if we are running inside Electron with screenshot IPC available. */
 export function isElectronScreenshotAvailable(): boolean {

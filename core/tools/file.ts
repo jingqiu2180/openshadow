@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { readFile, writeFile, stat, readdir } from 'fs/promises'
-import { PathGuard } from './path-guard'
+import { PathGuard } from './path-guard.js'
 
 export interface FileReadResult {
   success: true

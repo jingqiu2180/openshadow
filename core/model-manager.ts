@@ -10,21 +10,21 @@
  * 都在这个数组上完成，不再经过中间层。
  */
 import path from "path";
-import { AuthStorage, createModelRegistry } from '../lib/pi-sdk/index';
-import { t } from '../lib/i18n';
-import { ProviderRegistry } from './provider-registry';
-import { ExecutionRouter } from './execution-router';
-import { findModel, parseModelRef } from '../shared/model-ref';
-import { isLocalBaseUrl } from '../shared/net-utils';
-import { syncModels } from './model-sync';
-import { enrichModelFromKnownMetadata } from './model-known-enrichment';
-import { migrateLegacyApiKeyAuthToProviders } from './provider-auth-migration';
+import { AuthStorage, createModelRegistry } from '../lib/pi-sdk/index.js';
+import { t } from '../lib/i18n.js';
+import { ProviderRegistry } from './provider-registry.js';
+import { ExecutionRouter } from './execution-router.js';
+import { findModel, parseModelRef } from '../shared/model-ref.js';
+import { isLocalBaseUrl } from '../shared/net-utils.js';
+import { syncModels } from './model-sync.js';
+import { enrichModelFromKnownMetadata } from './model-known-enrichment.js';
+import { migrateLegacyApiKeyAuthToProviders } from './provider-auth-migration.js';
 import {
   normalizeSessionThinkingLevel,
   normalizeThinkingLevelChoices,
   normalizeThinkingLevelForModel,
   resolveModelDefaultThinkingLevel,
-} from './session-thinking-level';
+} from './session-thinking-level.js';
 
 function isRecord(value): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value);

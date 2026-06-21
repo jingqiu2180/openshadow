@@ -2,7 +2,7 @@
 import fs from "fs";
 import path from "path";
 import { Hono } from "hono";
-import { guessMime } from '../http/file-content';
+import { guessMime } from '../http/file-content.js';
 
 export function createMobileStaticRoute({ distDir }: { distDir?: string } = {}) {
   if (!distDir) throw new Error("distDir required");

@@ -3,10 +3,10 @@
  * 模型管理 REST 路由
  */
 import { Hono } from "hono";
-import { safeJson } from '../hono-helpers';
-import { t } from '../../lib/i18n';
-import { modelRefEquals, parseModelRef } from '../../shared/model-ref';
-import { lookupKnown } from '../../shared/known-models';
+import { safeJson } from '../hono-helpers.js';
+import { t } from '../../lib/i18n.js';
+import { modelRefEquals, parseModelRef } from '../../shared/model-ref.js';
+import { lookupKnown } from '../../shared/known-models.js';
 import {
   modelSupportsAudioInput,
   modelSupportsImageInput,
@@ -16,9 +16,9 @@ import {
   normalizeToolUseContract,
   resolveModelAudioInputTransport,
   resolveModelVideoInputTransport,
-} from '../../shared/model-capabilities';
-import { callText } from '../../core/llm-client';
-import { getModelThinkingLevels, modelSupportsXhigh, resolveModelDefaultThinkingLevel } from '../../core/session-thinking-level';
+} from '../../shared/model-capabilities.js';
+import { callText } from '../../core/llm-client.js';
+import { getModelThinkingLevels, modelSupportsXhigh, resolveModelDefaultThinkingLevel } from '../../core/session-thinking-level.js';
 
 const HEALTH_CHECK_PROMPT = "Reply exactly OK.";
 const HEALTH_CHECK_MAX_TOKENS = 128;

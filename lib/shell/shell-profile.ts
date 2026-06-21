@@ -4,7 +4,7 @@ import {
   envValue,
   resolveWin32CmdExecutable,
   resolveWin32PowerShellExecutable,
-} from './shell-utils';
+} from './shell-utils.js';
 
 function basenameForPath(filePath) {
   return baseNameForShellPath(filePath, { stripExe: true });

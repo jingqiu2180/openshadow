@@ -8,11 +8,11 @@
  * so future context replay cannot resend large base64 payloads.
  */
 
-import { stripAllInlineMediaForHistory } from './message-sanitizer';
+import { stripAllInlineMediaForHistory } from './message-sanitizer.js';
 import {
   readSessionEntriesFile,
   writeSessionEntriesFile,
-} from './session-jsonl-file';
+} from './session-jsonl-file.js';
 
 function emptyResult() {
   return { stripped: 0, strippedImages: 0, strippedVideos: 0, strippedAudios: 0 };

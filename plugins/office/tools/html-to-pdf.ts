@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { renderHtmlToPdf } from '../lib/html-to-pdf';
+import { renderHtmlToPdf } from '../lib/html-to-pdf.js';
 
-export { isOfficeEnabledForAgentConfig as isEnabledForAgentConfig } from '../lib/availability';
+export { isOfficeEnabledForAgentConfig as isEnabledForAgentConfig } from '../lib/availability.js';
 
 export const name = "html-to-pdf";
 

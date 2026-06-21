@@ -13,7 +13,7 @@ import {
   normalizeNetworkProxyConfig,
   proxyConfigFromEnvironment,
   resolveProxyForUrl,
-} from '../../shared/network-proxy';
+} from '../../shared/network-proxy.js';
 
 const originalGlobalDispatcher = getGlobalDispatcher();
 let currentConfig = normalizeNetworkProxyConfig(undefined);

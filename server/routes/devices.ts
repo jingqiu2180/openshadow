@@ -6,11 +6,11 @@ import {
   loadDeviceAccessRegistries,
   revokeDevice,
   revokeDeviceCredential,
-} from '../../core/device-registry';
-import { isLocalOwnerPrincipal } from '../http/route-security';
-import { readAuthPrincipal } from '../http/capability-guard';
-import { recordSecurityAuditEvent } from '../http/security-audit';
-import { safeJson } from '../hono-helpers';
+} from '../../core/device-registry.js';
+import { isLocalOwnerPrincipal } from '../http/route-security.js';
+import { readAuthPrincipal } from '../http/capability-guard.js';
+import { recordSecurityAuditEvent } from '../http/security-audit.js';
+import { safeJson } from '../hono-helpers.js';
 
 const DEFAULT_DEVICE_SCOPES = Object.freeze(["chat", "resources.read", "files.read", "files.write"]);
 

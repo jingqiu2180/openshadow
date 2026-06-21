@@ -1,17 +1,17 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { createPluginContext } from './plugin-context';
+import { createPluginContext } from './plugin-context.js';
 import {
   createPluginRouteRequestContext,
   isPluginBusCapabilityError,
-} from './plugin-route-request-context';
-import { freshImport } from './fresh-import';
-import { normalizePluginConfigSchema } from './plugin-config';
-import { semverGte } from '../lib/plugin-versioning';
-import { detectIncompatiblePluginFormat } from '../lib/plugin-format-guard';
-import { createModuleLogger } from '../lib/debug-log';
-import { getToolSessionPath, normalizeToolRuntimeContext } from '../lib/tools/tool-session';
+} from './plugin-route-request-context.js';
+import { freshImport } from './fresh-import.js';
+import { normalizePluginConfigSchema } from './plugin-config.js';
+import { semverGte } from '../lib/plugin-versioning.js';
+import { detectIncompatiblePluginFormat } from '../lib/plugin-format-guard.js';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { getToolSessionPath, normalizeToolRuntimeContext } from '../lib/tools/tool-session.js';
 
 const log = createModuleLogger("plugin-manager");
 

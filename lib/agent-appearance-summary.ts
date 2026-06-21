@@ -3,8 +3,8 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
-import { callTextWithLengthContract } from '../core/output-length-contract';
-import { modelSupportsDirectImageInput } from '../shared/model-capabilities';
+import { callTextWithLengthContract } from '../core/output-length-contract.js';
+import { modelSupportsDirectImageInput } from '../shared/model-capabilities.js';
 
 const AVATAR_EXTENSIONS = ["png", "jpg", "jpeg", "webp"] as const;
 const APPEARANCE_CACHE_VERSION = 1;

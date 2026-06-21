@@ -2,8 +2,8 @@
 import fs from "fs";
 import path from "path";
 import YAML from "js-yaml";
-import { atomicWriteSync, safeReadYAMLSync } from '../shared/safe-fs';
-import { SEARCH_CAPABILITY_KIND, SEARCH_CAPABILITY_PROVIDERS } from '../shared/search-providers';
+import { atomicWriteSync, safeReadYAMLSync } from '../shared/safe-fs.js';
+import { SEARCH_CAPABILITY_KIND, SEARCH_CAPABILITY_PROVIDERS } from '../shared/search-providers.js';
 
 export const PROVIDER_CATALOG_VERSION = 2;
 export const PROVIDER_CATALOG_FILE = "provider-catalog.json";

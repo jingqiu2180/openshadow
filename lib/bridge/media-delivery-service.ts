@@ -1,9 +1,9 @@
 // @ts-nocheck
 import path from "path";
-import { debugLog } from '../debug-log';
-import { extOfName, inferFileKind } from '../file-metadata';
-import { downloadMedia, detectMime, resolveAllowedLocalPath } from './media-utils';
-import { normalizeMediaItems } from './media-item-normalizer';
+import { debugLog } from '../debug-log.js';
+import { extOfName, inferFileKind } from '../file-metadata.js';
+import { downloadMedia, detectMime, resolveAllowedLocalPath } from './media-utils.js';
+import { normalizeMediaItems } from './media-item-normalizer.js';
 
 export class MediaDeliveryService {
   declare engine: any;

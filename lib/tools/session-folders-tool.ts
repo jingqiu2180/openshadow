@@ -1,10 +1,10 @@
 // @ts-nocheck
 import path from "path";
-import { SESSION_PERMISSION_MODES, normalizeSessionPermissionMode } from '../../core/session-permission-mode';
-import { StringEnum, Type } from '../pi-sdk/index';
-import { getToolSessionPath } from './tool-session';
-import { toolError, toolOk } from './tool-result';
-import { t } from '../i18n';
+import { SESSION_PERMISSION_MODES, normalizeSessionPermissionMode } from '../../core/session-permission-mode.js';
+import { StringEnum, Type } from '../pi-sdk/index.js';
+import { getToolSessionPath } from './tool-session.js';
+import { toolError, toolOk } from './tool-result.js';
+import { t } from '../i18n.js';
 
 function toStatus(action) {
   if (action === "confirmed") return "confirmed";

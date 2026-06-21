@@ -3,17 +3,17 @@ import fs from "fs";
 import path from "path";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
-import { MountAwareFileError, MountAwareFileService } from '../../core/mount-aware-file-service';
+import { MountAwareFileError, MountAwareFileService } from '../../core/mount-aware-file-service.js';
 import {
   consumeRemoteWriteLease,
   issueRemoteWriteLease,
   revokeRemoteWriteLease,
-} from '../../core/execution-lease-service';
-import { safeJson } from '../hono-helpers';
-import { serveFileContent } from '../http/file-content';
-import { createRequestContext } from '../http/boundary';
-import { recordSecurityAuditEvent } from '../http/security-audit';
-import { isLocalOwnerPrincipal } from '../http/route-security';
+} from '../../core/execution-lease-service.js';
+import { safeJson } from '../hono-helpers.js';
+import { serveFileContent } from '../http/file-content.js';
+import { createRequestContext } from '../http/boundary.js';
+import { recordSecurityAuditEvent } from '../http/security-audit.js';
+import { isLocalOwnerPrincipal } from '../http/route-security.js';
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 // 25MB decoded bytes become ~34MB base64 JSON; 80MB keeps normal multi-file uploads while bounding total request memory.

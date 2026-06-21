@@ -2,7 +2,7 @@
 import {
   computeToolSnapshot,
   DEFAULT_DISABLED_TOOL_NAMES,
-} from '../shared/tool-categories';
+} from '../shared/tool-categories.js';
 
 export function toolNamesFromObjects(tools, { includePluginTools = true } = {}) {
   return (tools || [])

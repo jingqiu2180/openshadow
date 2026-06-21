@@ -19,27 +19,27 @@
  * core/provider-compat/<name>.js 子模块。
  */
 
-import * as deepseek from './provider-compat/deepseek';
-import * as kimi from './provider-compat/kimi';
-import * as mimo from './provider-compat/mimo';
-import * as qwen from './provider-compat/qwen';
-import * as zhipu from './provider-compat/zhipu';
-import * as openaiInputAudio from './provider-compat/openai-input-audio';
-import * as openaiVideoUrl from './provider-compat/openai-video-url';
-import * as openrouter from './provider-compat/openrouter';
-import * as anthropic from './provider-compat/anthropic';
-import { normalizeImplicitOutputBudget } from './provider-compat/output-budget';
-import { stripOrphanToolResults } from './provider-compat/tool-pairing';
-import { normalizeOpenAIInputAudioPayload } from './provider-compat/input-audio';
+import * as deepseek from './provider-compat/deepseek.js';
+import * as kimi from './provider-compat/kimi.js';
+import * as mimo from './provider-compat/mimo.js';
+import * as qwen from './provider-compat/qwen.js';
+import * as zhipu from './provider-compat/zhipu.js';
+import * as openaiInputAudio from './provider-compat/openai-input-audio.js';
+import * as openaiVideoUrl from './provider-compat/openai-video-url.js';
+import * as openrouter from './provider-compat/openrouter.js';
+import * as anthropic from './provider-compat/anthropic.js';
+import { normalizeImplicitOutputBudget } from './provider-compat/output-budget.js';
+import { stripOrphanToolResults } from './provider-compat/tool-pairing.js';
+import { normalizeOpenAIInputAudioPayload } from './provider-compat/input-audio.js';
 import {
   MODEL_AUDIO_TRANSPORTS,
   resolveModelAudioInputTransport,
-} from '../shared/model-capabilities';
+} from '../shared/model-capabilities.js';
 import {
   getReasoningProfile as getDeclaredReasoningProfile,
   getThinkingFormat as getDeclaredThinkingFormat,
-} from '../shared/model-capabilities';
-import { normalizeRequestThinkingLevel } from './session-thinking-level';
+} from '../shared/model-capabilities.js';
+import { normalizeRequestThinkingLevel } from './session-thinking-level.js';
 
 interface ProviderModule {
   matches(model: any): boolean;

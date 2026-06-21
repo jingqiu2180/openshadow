@@ -1,9 +1,9 @@
 // @ts-nocheck
-import { adaptVisualContextMessages } from './visual-context-pipeline';
+import { adaptVisualContextMessages } from './visual-context-pipeline.js';
 import {
   VISION_CONTEXT_END,
   VISION_CONTEXT_START,
-} from './vision-bridge';
+} from './vision-bridge.js';
 
 export const VISION_CONTEXT_INJECTION_FAILED = "VISION_CONTEXT_INJECTION_FAILED";
 

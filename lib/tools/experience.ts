@@ -9,8 +9,8 @@
  * 索引由 rebuildIndex 自动生成，不手写。
  */
 
-import { Type } from '../pi-sdk/index';
-import { t } from '../i18n';
+import { Type } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";

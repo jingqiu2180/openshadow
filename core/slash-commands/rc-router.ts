@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { collectMediaItems } from '../../lib/tools/media-details';
-import { formatSettingsUpdateText } from '../../lib/tools/settings-update-result';
-import { modelSupportsDirectImageInput } from '../../shared/model-capabilities';
+import { collectMediaItems } from '../../lib/tools/media-details.js';
+import { formatSettingsUpdateText } from '../../lib/tools/settings-update-result.js';
+import { modelSupportsDirectImageInput } from '../../shared/model-capabilities.js';
 
 /**
  * rc-router.js — /rc 接管态的消息路由层

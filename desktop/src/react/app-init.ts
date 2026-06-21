@@ -9,6 +9,11 @@
 
 import { useStore } from './stores';
 import { hanaFetch } from './hooks/use-hana-fetch';
+
+// 暴露 Zustand store 到 window（供 Playwright / 调试用）
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).useStore = useStore;
+
 import { applyAgentIdentity, loadAgents, loadAvatars } from './stores/agent-actions';
 import { loadSessions, switchSession } from './stores/session-actions';
 import { initSessionProjectCatalog } from './stores/session-project-actions';
@@ -202,7 +207,10 @@ export async function initApp(): Promise<void> {
     applyEditorTypography(configData.editor);
 
     // 3. 加载 i18n
-    await i18n.load(configData.locale || 'zh-CN');
+    // 注意：语言文件名为 zh.json / en.json，不是 zh-CN.json
+    // 所以不需要映射，直接用 configData.locale（空时用 'zh'）
+    const rawLocale = (configData.locale || 'zh').trim();
+    await i18n.load(rawLocale);
     useStore.setState({ locale: i18n.locale });
 
     // 4. 应用 agent 身份
@@ -236,9 +244,17 @@ export async function initApp(): Promise<void> {
   await loadModels();
 
   // 10. 加载 agents + sessions
-  useStore.setState({ pendingNewSession: true });
   await loadAgents();
   await loadSessions();
+
+  // 10b. 自动选中第一个会话（如果当前没有选中的话）
+  // pendingNewSession 可能在 init 时被设为 true 阻止了 loadSessions 内部的自动选中
+  { const s = useStore.getState();
+    if (!s.currentSessionPath && s.sessions?.length > 0) {
+      const first = (Array.isArray(s.sessions) ? s.sessions : Object.values(s.sessions))[0];
+      if (first && first.path) { void switchSession(first.path); }
+    }
+  }
 
   // 10b. 加载项目目录（带重试）。放在 sessions 之后：此时 server 已确认可用，
   // 避免项目目录像过去那样只靠 SessionList 挂载时一次性拉取、失败即长期空白，

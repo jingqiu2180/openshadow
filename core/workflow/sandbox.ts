@@ -1,6 +1,6 @@
 // @ts-nocheck
 import vm from "node:vm";
-import { extractMeta } from './meta';
+import { extractMeta } from './meta.js';
 
 const DEFAULT_DEADLINE_MS = 5 * 60 * 1000;
 

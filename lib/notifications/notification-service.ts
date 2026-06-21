@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { normalizeBridgePlatforms } from '../bridge/bridge-context';
+import { normalizeBridgePlatforms } from '../bridge/bridge-context.js';
 
 const CHANNEL_DESKTOP = "desktop";
 const CHANNEL_BRIDGE_OWNER = "bridge_owner";

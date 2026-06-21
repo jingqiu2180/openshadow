@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { buildCliArgs, validateCliCommandSpec } from '../../../../core/media-runtime-contract';
+import { buildCliArgs, validateCliCommandSpec } from '../../../../core/media-runtime-contract.js';
 
 const execFileAsync = promisify(execFile);
 

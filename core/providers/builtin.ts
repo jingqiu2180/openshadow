@@ -7,7 +7,7 @@
  *
  * Adding a new provider here is the only place to touch — no other code changes needed.
  */
-import type { BuiltinProviderSpec } from './types'
+import type { BuiltinProviderSpec } from './types.js'
 
 export const BUILTIN_PROVIDERS: Record<string, BuiltinProviderSpec> = {
   openai: {

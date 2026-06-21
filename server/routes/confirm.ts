@@ -6,8 +6,8 @@
  */
 
 import { Hono } from "hono";
-import { safeJson } from '../hono-helpers';
-import { createRequestContext } from '../http/boundary';
+import { safeJson } from '../hono-helpers.js';
+import { createRequestContext } from '../http/boundary.js';
 
 export function createConfirmRoute(confirmStore, engine) {
   const route = new Hono();

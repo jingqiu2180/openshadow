@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { resolveShellProfile as resolveDefaultShellProfile } from '../shell/shell-profile';
+import { resolveShellProfile as resolveDefaultShellProfile } from '../shell/shell-profile.js';
 import {
   baseNameForShellPath,
   isWin32PathLike,
@@ -7,11 +7,11 @@ import {
   resolveWin32CmdExecutable,
   resolveWin32PowerShellExecutable,
   splitShellLikeArgs,
-} from '../shell/shell-utils';
+} from '../shell/shell-utils.js';
 import {
   getWin32ShellEnvForRuntime,
   resolveWin32ShellRuntime,
-} from '../sandbox/win32-exec';
+} from '../sandbox/win32-exec.js';
 
 function tokenBaseName(token) {
   return baseNameForShellPath(token).toLowerCase();

@@ -12,15 +12,15 @@
 
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../../shared/safe-fs';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
 import { createHash } from "crypto";
-import { Type, StringEnum } from '../pi-sdk/index';
-import { debugLog, createModuleLogger } from '../debug-log';
+import { Type, StringEnum } from '../pi-sdk/index.js';
+import { debugLog, createModuleLogger } from '../debug-log.js';
 import {
   WORKSPACE_OUTPUT_ROOT_DIRNAME,
   resolveAgentWorkspaceOutputDirs,
   resolveAgentWorkspaceOutputRelativeDirs,
-} from '../../shared/workspace-output';
+} from '../../shared/workspace-output.js';
 
 const log = createModuleLogger("heartbeat");
 const EXEC_LOG_START = "<!-- exec-log -->";

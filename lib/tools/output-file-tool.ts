@@ -15,9 +15,9 @@
  */
 import fs from "fs";
 import path from "path";
-import { Type } from '../pi-sdk/index';
-import { t } from '../i18n';
-import { getToolSessionPath } from './tool-session';
+import { Type } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
+import { getToolSessionPath } from './tool-session.js';
 
 /** 修正 LLM 常见的路径问题：转义空格、URL 编码、多余引号 */
 function sanitizePath(p: any) {

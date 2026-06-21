@@ -7,8 +7,8 @@
  */
 import readline from "readline";
 import WebSocket from "ws";
-import { t } from '../lib/i18n';
-import { safeParseJSON } from '../shared/safe-parse';
+import { t } from '../lib/i18n.js';
+import { safeParseJSON } from '../shared/safe-parse.js';
 
 // ── 终端颜色 ──
 const c = {

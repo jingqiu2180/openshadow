@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { createModuleLogger } from '../lib/debug-log';
+import { createModuleLogger } from '../lib/debug-log.js';
 
 const log = createModuleLogger("fresh-compact");
 

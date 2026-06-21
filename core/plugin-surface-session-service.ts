@@ -2,7 +2,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 
 /**
  * Plugin surface session — 插件 iframe 表面的请求级入口凭证。

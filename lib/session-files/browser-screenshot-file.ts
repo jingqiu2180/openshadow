@@ -2,8 +2,8 @@
 import fs from "fs";
 import path from "path";
 import { createHash } from "crypto";
-import { sessionFilesCacheDir } from './session-file-registry';
-import { serializeSessionFile } from './session-file-response';
+import { sessionFilesCacheDir } from './session-file-registry.js';
+import { serializeSessionFile } from './session-file-response.js';
 
 export function browserScreenshotExt(mimeType) {
   const lower = String(mimeType || "").toLowerCase();

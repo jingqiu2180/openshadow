@@ -6,23 +6,23 @@ import { appendFileSync } from "fs";
 import fs from "fs/promises";
 import path from "path";
 import { Hono } from "hono";
-import { safeJson } from '../hono-helpers';
-import { t } from '../../lib/i18n';
-import { extractBlocks, resolveMediaGenerationBlocks } from '../block-extractors';
-import { buildDeferredResultInterludeBlock, resolveDeferredReceiverName } from '../deferred-result-interlude';
-import { BrowserManager } from '../../lib/browser/browser-manager';
-import { sessionIdFromFilename } from '../../lib/session-jsonl';
+import { safeJson } from '../hono-helpers.js';
+import { t } from '../../lib/i18n.js';
+import { extractBlocks, resolveMediaGenerationBlocks } from '../block-extractors.js';
+import { buildDeferredResultInterludeBlock, resolveDeferredReceiverName } from '../deferred-result-interlude.js';
+import { BrowserManager } from '../../lib/browser/browser-manager.js';
+import { sessionIdFromFilename } from '../../lib/session-jsonl.js';
 import {
   DEFERRED_RESULT_MESSAGE_TYPE,
   DEFERRED_RESULT_RECORD_TYPE,
   buildDeferredResultRecord,
   parseDeferredResultNotification,
   parseDeferredResultRecord,
-} from '../../lib/deferred-result-notification';
+} from '../../lib/deferred-result-notification.js';
 import {
   materializeExecutorIdentity,
   readSubagentSessionMetaSync,
-} from '../../lib/subagent-executor-metadata';
+} from '../../lib/subagent-executor-metadata.js';
 import {
   extractTextContent,
   filterUnreferencedInlineImages,
@@ -31,23 +31,23 @@ import {
   isValidSessionPath,
   isActiveDesktopSessionPath,
   isArchivedDesktopSessionPath,
-} from '../../core/message-utils';
-import { sessionFileRevision } from '../../core/session-list-projection-cache';
+} from '../../core/message-utils.js';
+import { sessionFileRevision } from '../../core/session-list-projection-cache.js';
 import {
   extractLatestTodos,
   loadLatestTodoSnapshotFromSessionFile,
-} from '../../lib/tools/todo-compat';
-import { SessionManager } from '../../lib/pi-sdk/index';
-import { TODO_STATE_CUSTOM_TYPE } from '../../lib/tools/todo-constants';
-import { mergeWorkspaceHistory } from '../../shared/workspace-history';
+} from '../../lib/tools/todo-compat.js';
+import { SessionManager } from '../../lib/pi-sdk/index.js';
+import { TODO_STATE_CUSTOM_TYPE } from '../../lib/tools/todo-constants.js';
+import { mergeWorkspaceHistory } from '../../shared/workspace-history.js';
 import {
   deleteSessionFileSidecarSync,
   moveSessionFileSidecarSync,
   sessionFileSidecarPath,
-} from '../../lib/session-files/session-file-registry';
-import { serializeSessionFile } from '../../lib/session-files/session-file-response';
-import { browserScreenshotPath } from '../../lib/session-files/browser-screenshot-file';
-import { getModelThinkingLevels, normalizeSessionThinkingLevel, modelSupportsXhigh, resolveModelDefaultThinkingLevel } from '../../core/session-thinking-level';
+} from '../../lib/session-files/session-file-registry.js';
+import { serializeSessionFile } from '../../lib/session-files/session-file-response.js';
+import { browserScreenshotPath } from '../../lib/session-files/browser-screenshot-file.js';
+import { getModelThinkingLevels, normalizeSessionThinkingLevel, modelSupportsXhigh, resolveModelDefaultThinkingLevel } from '../../core/session-thinking-level.js';
 import {
   modelSupportsDirectAudioInput,
   modelSupportsDirectVideoInput,
@@ -55,13 +55,13 @@ import {
   modelSupportsVideoInput,
   resolveModelAudioInputTransport,
   resolveModelVideoInputTransport,
-} from '../../shared/model-capabilities';
-import { replayLatestUserTurn } from '../../core/session-turn-actions';
-import { createRequestContext } from '../http/boundary';
-import { createModuleLogger } from '../../lib/debug-log';
-import { searchSessions } from '../../lib/search/session-search';
-import { SessionSearchTokenizerUnavailableError } from '../../lib/search/session-search-tokenizer';
-import { MountAwareFileError, MountAwareFileService } from '../../core/mount-aware-file-service';
+} from '../../shared/model-capabilities.js';
+import { replayLatestUserTurn } from '../../core/session-turn-actions.js';
+import { createRequestContext } from '../http/boundary.js';
+import { createModuleLogger } from '../../lib/debug-log.js';
+import { searchSessions } from '../../lib/search/session-search.js';
+import { SessionSearchTokenizerUnavailableError } from '../../lib/search/session-search-tokenizer.js';
+import { MountAwareFileError, MountAwareFileService } from '../../core/mount-aware-file-service.js';
 
 const log = createModuleLogger("sessions");
 const lifecycleLog = createModuleLogger("sessions/lifecycle");

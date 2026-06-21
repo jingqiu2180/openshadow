@@ -1,9 +1,9 @@
 // @ts-nocheck
 import path from "path";
-import { Type } from '../pi-sdk/index';
-import { serializeSessionFile } from '../session-files/session-file-response';
-import { copyFileRefToPath, statFileRef } from '../file-ref/resource-io';
-import { getToolSessionPath } from './tool-session';
+import { Type } from '../pi-sdk/index.js';
+import { serializeSessionFile } from '../session-files/session-file-response.js';
+import { copyFileRefToPath, statFileRef } from '../file-ref/resource-io.js';
+import { getToolSessionPath } from './tool-session.js';
 
 function refFromParams(params: any = {}, key = "ref") {
   const explicit = params[key] || null;

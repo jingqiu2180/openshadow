@@ -2,7 +2,7 @@
 import fs from "fs/promises";
 import path from "path";
 
-import { readPdfDocument } from './read-pdf';
+import { readPdfDocument } from './read-pdf.js';
 
 const TEXT_EXTS = new Set([".txt", ".md", ".markdown", ".csv", ".tsv", ".html", ".htm"]);
 const DOCX_EXTS = new Set([".docx"]);

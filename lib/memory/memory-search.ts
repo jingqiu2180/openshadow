@@ -9,9 +9,9 @@
  * 两边的"语言习惯"天然接近，一致性有保障。
  */
 
-import { Type } from '../pi-sdk/index';
-import { t } from '../i18n';
-import { createModuleLogger } from '../debug-log';
+import { Type } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("memory-search");
 

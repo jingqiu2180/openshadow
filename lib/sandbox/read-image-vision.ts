@@ -2,11 +2,11 @@
 
 import crypto from "crypto";
 import path from "path";
-import { normalizeWin32ShellPath } from './win32-path';
-import { getToolSessionPath } from '../tools/tool-session';
-import { serializeSessionFile } from '../session-files/session-file-response';
-import { VISION_CONTEXT_END, VISION_CONTEXT_START } from '../../core/vision-bridge';
-import { modelSupportsDirectImageInput } from '../../shared/model-capabilities';
+import { normalizeWin32ShellPath } from './win32-path.js';
+import { getToolSessionPath } from '../tools/tool-session.js';
+import { serializeSessionFile } from '../session-files/session-file-response.js';
+import { VISION_CONTEXT_END, VISION_CONTEXT_START } from '../../core/vision-bridge.js';
+import { modelSupportsDirectImageInput } from '../../shared/model-capabilities.js';
 
 const CONFIG_ERROR_PATTERNS = [
   "vision auxiliary model is required",

@@ -19,7 +19,7 @@ import {
   READ_WRITE_AGENT_DIRS,
   READ_WRITE_AGENT_FILES,
   READ_WRITE_HOME_DIRS,
-} from './policy';
+} from './policy.js';
 
 export const AccessLevel = {
   BLOCKED: 'blocked',

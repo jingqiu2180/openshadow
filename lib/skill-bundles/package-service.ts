@@ -2,10 +2,10 @@
 import fs from "fs";
 import fsp from "fs/promises";
 import path from "path";
-import { safeCopyDir } from '../../shared/safe-fs';
-import { writeZipFromDirectory } from '../zip-writer';
-import { sanitizeSkillName } from '../tools/install-skill';
-import { loadSkillBundleStore } from './store';
+import { safeCopyDir } from '../../shared/safe-fs.js';
+import { writeZipFromDirectory } from '../zip-writer.js';
+import { sanitizeSkillName } from '../tools/install-skill.js';
+import { loadSkillBundleStore } from './store.js';
 
 const SCHEMA_VERSION = 1;
 

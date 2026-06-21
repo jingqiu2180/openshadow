@@ -10,7 +10,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 
 const CLEANUP_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 天
 

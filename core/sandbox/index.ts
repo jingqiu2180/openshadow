@@ -5,8 +5,8 @@
  * Provides factory + lifecycle management for Sandbox instances.
  */
 
-import { Sandbox, SandboxConfig } from './sandbox'
-import { AuditLogger } from './audit-logger'
+import { Sandbox, SandboxConfig } from './sandbox.js'
+import { AuditLogger } from './audit-logger.js'
 
 export interface SandboxManagerConfig {
   /** Root directory for all sandboxed workspaces */
@@ -93,11 +93,11 @@ export class SandboxManager {
   }
 }
 
-export { Sandbox } from './sandbox'
-export { AuditLogger } from './audit-logger'
-export { CircuitBreaker } from './circuit-breaker'
-export { NetworkFilter } from './network-filter'
-export type { SandboxConfig } from './sandbox'
-export type { AuditEntry, OperationType, OperationResult } from './audit-logger'
-export type { CircuitState, CircuitBreakerConfig } from './circuit-breaker'
-export type { NetworkFilterConfig } from './network-filter'
+export { Sandbox } from './sandbox.js'
+export { AuditLogger } from './audit-logger.js'
+export { CircuitBreaker } from './circuit-breaker.js'
+export { NetworkFilter } from './network-filter.js'
+export type { SandboxConfig } from './sandbox.js'
+export type { AuditEntry, OperationType, OperationResult } from './audit-logger.js'
+export type { CircuitState, CircuitBreakerConfig } from './circuit-breaker.js'
+export type { NetworkFilterConfig } from './network-filter.js'

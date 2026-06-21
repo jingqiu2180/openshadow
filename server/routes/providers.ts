@@ -6,19 +6,19 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import { Hono } from "hono";
-import { emitAppEvent } from '../app-events';
-import { safeJson } from '../hono-helpers';
-import { appendProviderApiPath, buildProviderRequestHeaders, normalizeProviderBaseUrlForApi, probeProvider } from '../../lib/llm/provider-client';
+import { emitAppEvent } from '../app-events.js';
+import { safeJson } from '../hono-helpers.js';
+import { appendProviderApiPath, buildProviderRequestHeaders, normalizeProviderBaseUrlForApi, probeProvider } from '../../lib/llm/provider-client.js';
 import {
   collectProviderHeaderSecretPatchPaths,
   maskProviderHeaders,
   resolveProviderHeadersPatch,
-} from '../../shared/provider-auth';
-import { filterDiscoveredProviderModels } from '../../shared/provider-model-validation';
-import { listKnownProviderModels, lookupKnown } from '../../shared/known-models';
-import { clearConfigCache } from '../../lib/memory/config-loader';
-import { collectSecretPatchPaths, isMaskedSecretValue, maskSecretValue } from '../../shared/secret-custody';
-import { denySecretMutationWithoutScope, denyWithoutScope } from '../http/capability-guard';
+} from '../../shared/provider-auth.js';
+import { filterDiscoveredProviderModels } from '../../shared/provider-model-validation.js';
+import { listKnownProviderModels, lookupKnown } from '../../shared/known-models.js';
+import { clearConfigCache } from '../../lib/memory/config-loader.js';
+import { collectSecretPatchPaths, isMaskedSecretValue, maskSecretValue } from '../../shared/secret-custody.js';
+import { denySecretMutationWithoutScope, denyWithoutScope } from '../http/capability-guard.js';
 
 // ── Models-cache helpers ──
 

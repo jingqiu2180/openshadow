@@ -1,9 +1,9 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { CronStore } from '../lib/desk/cron-store';
-import { createModuleLogger } from '../lib/debug-log';
-import { atomicWriteSync } from '../shared/safe-fs';
+import { CronStore } from '../lib/desk/cron-store.js';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 
 const log = createModuleLogger("studio-cron");
 const LEGACY_CRON_MIGRATION_VERSION = 1;

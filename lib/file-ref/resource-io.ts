@@ -1,7 +1,7 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { detectMime, extOfName, inferFileKind } from '../file-metadata';
+import { detectMime, extOfName, inferFileKind } from '../file-metadata.js';
 
 const DEFAULT_CONFLICT_POLICY = "fail";
 

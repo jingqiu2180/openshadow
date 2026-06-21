@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { appendSecurityAuditEvent } from '../../core/security-audit-log';
-import { readAuthPrincipal } from './capability-guard';
+import { appendSecurityAuditEvent } from '../../core/security-audit-log.js';
+import { readAuthPrincipal } from './capability-guard.js';
 
 export function recordSecurityAuditEvent(c, engine, {
   action,

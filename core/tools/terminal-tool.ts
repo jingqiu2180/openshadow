@@ -4,9 +4,9 @@
  * 管理持久化终端会话，支持 start / write / read / close / list
  */
 
-import { getTerminalSessionManager } from '../terminal/terminal-session-manager'
-import { createToolSpec } from '../tool-registry'
-import type { ToolRegistry } from '../tool-registry'
+import { getTerminalSessionManager } from '../terminal/terminal-session-manager.js'
+import { createToolSpec } from '../tool-registry.js'
+import type { ToolRegistry } from '../tool-registry.js'
 
 const DEFAULT_SESSION = 'default'
 

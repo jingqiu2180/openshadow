@@ -1,7 +1,7 @@
 // @ts-nocheck
 import path from "path";
-import { serializeSessionFile } from '../lib/session-files/session-file-response';
-import { createPluginConfigStore } from './plugin-config';
+import { serializeSessionFile } from '../lib/session-files/session-file-response.js';
+import { createPluginConfigStore } from './plugin-config.js';
 
 /**
  * Create a PluginContext for a plugin.

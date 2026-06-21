@@ -1,5 +1,5 @@
 // @ts-nocheck
-export { isOfficeEnabledForAgentConfig as isEnabledForAgentConfig } from '../lib/availability';
+export { isOfficeEnabledForAgentConfig as isEnabledForAgentConfig } from '../lib/availability.js';
 
 export const name = "list-capabilities";
 

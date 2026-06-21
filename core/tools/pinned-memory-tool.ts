@@ -4,9 +4,9 @@
  * 管理固定记忆，支持 pin / unpin / list / search / clear
  */
 
-import { getPinnedMemoryStore } from '../pinned-memory-store'
-import { createToolSpec } from '../tool-registry'
-import type { ToolRegistry } from '../tool-registry'
+import { getPinnedMemoryStore } from '../pinned-memory-store.js'
+import { createToolSpec } from '../tool-registry.js'
+import type { ToolRegistry } from '../tool-registry.js'
 
 export function registerPinnedMemoryTool(registry: ToolRegistry): void {
   const store = getPinnedMemoryStore()

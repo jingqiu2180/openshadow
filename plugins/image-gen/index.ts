@@ -2,16 +2,16 @@
 // plugins/image-gen/index.js
 import path from "node:path";
 import fs from "node:fs";
-import { AdapterRegistry } from './lib/adapter-registry';
-import { TaskStore } from './lib/task-store';
-import { Poller } from './lib/poller';
-import { volcengineImageAdapter } from './adapters/volcengine';
-import { openaiImageAdapter } from './adapters/openai';
-import { openaiCodexImageAdapter } from './adapters/openai-codex';
-import { minimaxImageAdapter } from './adapters/minimax';
-import { dashscopeImageAdapter } from './adapters/dashscope';
-import { geminiImageAdapter } from './adapters/gemini';
-import { submitImageGeneration } from './lib/submit-image';
+import { AdapterRegistry } from './lib/adapter-registry.js';
+import { TaskStore } from './lib/task-store.js';
+import { Poller } from './lib/poller.js';
+import { volcengineImageAdapter } from './adapters/volcengine.js';
+import { openaiImageAdapter } from './adapters/openai.js';
+import { openaiCodexImageAdapter } from './adapters/openai-codex.js';
+import { minimaxImageAdapter } from './adapters/minimax.js';
+import { dashscopeImageAdapter } from './adapters/dashscope.js';
+import { geminiImageAdapter } from './adapters/gemini.js';
+import { submitImageGeneration } from './lib/submit-image.js';
 
 export default class ImageGenPlugin {
   declare ctx: any;

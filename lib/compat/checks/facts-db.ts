@@ -8,8 +8,8 @@
 
 import fs from "fs";
 import path from "path";
-import { t } from '../../i18n';
-import { createModuleLogger } from '../../debug-log';
+import { t } from '../../i18n.js';
+import { createModuleLogger } from '../../debug-log.js';
 
 const moduleLog = createModuleLogger("compat");
 

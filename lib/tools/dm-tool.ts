@@ -10,12 +10,12 @@
  * - dm：异步、有聊天记录、对方以频道模式回复、像发微信
  */
 
-import { Type } from '../pi-sdk/index';
-import { t } from '../i18n';
+import { Type } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
 import fs from "fs";
 import path from "path";
-import { appendMessage } from '../channels/channel-store';
-import { resolveAgentParam } from './agent-id-resolver';
+import { appendMessage } from '../channels/channel-store.js';
+import { resolveAgentParam } from './agent-id-resolver.js';
 
 /**
  * 确保 DM 文件存在，不存在则创建（含 frontmatter）

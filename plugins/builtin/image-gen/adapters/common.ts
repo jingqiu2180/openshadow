@@ -1,7 +1,7 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { saveImage } from '../lib/download';
+import { saveImage } from '../lib/download.js';
 
 export function normalizeBaseUrl(baseUrl, fallback) {
   return (baseUrl || fallback).replace(/\/+$/, "");

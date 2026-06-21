@@ -2,10 +2,10 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { callText as defaultCallText } from './llm-client';
-import { normalizeModelImageInput } from './model-image-preprocess';
-import { modelSupportsImage } from './message-sanitizer';
-import { getVisionCapabilities, modelSupportsDirectImageInput } from '../shared/model-capabilities';
+import { callText as defaultCallText } from './llm-client.js';
+import { normalizeModelImageInput } from './model-image-preprocess.js';
+import { modelSupportsImage } from './message-sanitizer.js';
+import { getVisionCapabilities, modelSupportsDirectImageInput } from '../shared/model-capabilities.js';
 
 export const VISION_CONTEXT_START = "<vision-context>";
 export const VISION_CONTEXT_END = "</vision-context>";

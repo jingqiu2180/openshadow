@@ -2,7 +2,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 
 export const PLUGIN_IFRAME_TICKET_KEY_FILE = "plugin-iframe-ticket-key";
 export const PLUGIN_IFRAME_TICKET_ACTION = "plugins.iframe";

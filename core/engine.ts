@@ -16,30 +16,30 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { migrateConfigScope } from '../shared/migrate-config-scope';
-import { migrateToProvidersYaml } from './migrate-providers';
-import { migrateProviderMediaConfig } from './provider-media-config';
-import { runMigrations } from './migrations';
-import { createServerRuntimeContext } from './server-runtime-context';
-import { StudioCronService } from './studio-cron-service';
-import { createRuntimeExecutionBoundary } from './execution-boundary';
-import { ResourceAccessService } from './resource-access-service';
-import { ResourceService } from './resource-service';
-import { appendSecurityAuditEvent } from './security-audit-log';
-import { findModel } from '../shared/model-ref';
-import { resolveWorkspaceSkillPaths } from '../shared/workspace-skill-paths';
-import { resolveHanaPiAgentDir, resolveHanaPiProjectDir } from '../shared/hana-runtime-paths';
-import { PluginManager } from './plugin-manager';
-import { PluginDevService } from './plugin-dev-service';
-import { createPluginDevTools } from './plugin-dev-tools';
-import { DefaultResourceLoader, SettingsManager } from '../lib/pi-sdk/index';
-import { compactSessionWithCachePreservation, isStaleExtensionContextError } from './session-compactor';
-import { getFreshCompactNoopReason } from '../lib/fresh-compact/policy';
-import { DeferredResultCoordinator } from '../lib/deferred-result-coordinator';
-import { getToolSessionPath, normalizeToolRuntimeContext } from '../lib/tools/tool-session';
-import { loadLocale } from '../lib/i18n';
-import { createApprovalGateway, createModelApprovalReviewer } from '../lib/approval-gateway';
-import { callText } from './llm-client';
+import { migrateConfigScope } from '../shared/migrate-config-scope.js';
+import { migrateToProvidersYaml } from './migrate-providers.js';
+import { migrateProviderMediaConfig } from './provider-media-config.js';
+import { runMigrations } from './migrations.js';
+import { createServerRuntimeContext } from './server-runtime-context.js';
+import { StudioCronService } from './studio-cron-service.js';
+import { createRuntimeExecutionBoundary } from './execution-boundary.js';
+import { ResourceAccessService } from './resource-access-service.js';
+import { ResourceService } from './resource-service.js';
+import { appendSecurityAuditEvent } from './security-audit-log.js';
+import { findModel } from '../shared/model-ref.js';
+import { resolveWorkspaceSkillPaths } from '../shared/workspace-skill-paths.js';
+import { resolveHanaPiAgentDir, resolveHanaPiProjectDir } from '../shared/hana-runtime-paths.js';
+import { PluginManager } from './plugin-manager.js';
+import { PluginDevService } from './plugin-dev-service.js';
+import { createPluginDevTools } from './plugin-dev-tools.js';
+import { DefaultResourceLoader, SettingsManager } from '../lib/pi-sdk/index.js';
+import { compactSessionWithCachePreservation, isStaleExtensionContextError } from './session-compactor.js';
+import { getFreshCompactNoopReason } from '../lib/fresh-compact/policy.js';
+import { DeferredResultCoordinator } from '../lib/deferred-result-coordinator.js';
+import { getToolSessionPath, normalizeToolRuntimeContext } from '../lib/tools/tool-session.js';
+import { loadLocale } from '../lib/i18n.js';
+import { createApprovalGateway, createModelApprovalReviewer } from '../lib/approval-gateway.js';
+import { callText } from './llm-client.js';
 
 /** 已知的外部 AI 工具技能目录（相对 $HOME） */
 export const WELL_KNOWN_SKILL_PATHS = [
@@ -97,66 +97,66 @@ function resolveChannelsEnabledForToolAvailability(engine) {
   return undefined;
 }
 
-import { PreferencesManager } from './preferences-manager';
-import { ModelManager } from './model-manager';
-import { SessionProjectCatalogStore } from './session-project-catalog-store';
-import { SkillManager } from './skill-manager';
-import { BridgeSessionManager } from './bridge-session-manager';
-import { createSlashSystem } from './slash-commands/index';
-import { AgentManager } from './agent-manager';
-import { sanitizeMessagesForModel, stripHistoricalInlineMediaForReplay } from './message-sanitizer';
-import { normalizeProviderContextMessages, normalizeProviderPayload } from './provider-compat';
-import { VisionBridge } from './vision-bridge';
-import { SessionCoordinator } from './session-coordinator';
-import { ConfigCoordinator, SHARED_MODEL_KEYS } from './config-coordinator';
-import { ChannelManager } from './channel-manager';
+import { PreferencesManager } from './preferences-manager.js';
+import { ModelManager } from './model-manager.js';
+import { SessionProjectCatalogStore } from './session-project-catalog-store.js';
+import { SkillManager } from './skill-manager.js';
+import { BridgeSessionManager } from './bridge-session-manager.js';
+import { createSlashSystem } from './slash-commands/index.js';
+import { AgentManager } from './agent-manager.js';
+import { sanitizeMessagesForModel, stripHistoricalInlineMediaForReplay } from './message-sanitizer.js';
+import { normalizeProviderContextMessages, normalizeProviderPayload } from './provider-compat.js';
+import { VisionBridge } from './vision-bridge.js';
+import { SessionCoordinator } from './session-coordinator.js';
+import { ConfigCoordinator, SHARED_MODEL_KEYS } from './config-coordinator.js';
+import { ChannelManager } from './channel-manager.js';
 import {
   summarizeTitle as _summarizeTitle,
   translateSkillNames as _translateSkillNames,
   summarizeActivity as _summarizeActivity,
   summarizeActivityQuick as _summarizeActivityQuick,
-} from './llm-utils';
-import { debugLog, createModuleLogger } from '../lib/debug-log';
-import { createSandboxedTools } from '../lib/sandbox/index';
-import { externalReadPathsFromSessionFiles } from '../lib/sandbox/win32-policy';
-import { Win32LegacySandboxCleanupQueue } from '../lib/sandbox/win32-legacy-migration';
-import { t } from '../lib/i18n';
-import { CheckpointStore } from '../lib/checkpoint-store';
-import { assertAllToolsCategorized } from '../shared/tool-categories';
-import { workspaceRootsForSandbox } from '../shared/workspace-scope';
-import { wrapWithCheckpoint } from '../lib/checkpoint-wrapper';
-import { wrapWithSessionPermission } from '../lib/tools/session-permission-wrapper';
-import { filterToolObjectsByAvailability } from './tool-availability';
-import { TaskRegistry } from '../lib/task-registry';
-import { TerminalSessionManager } from '../lib/terminal/terminal-session-manager';
-import { PluginInstallRecords } from '../lib/plugin-install-records';
-import { ComputerHost } from './computer-use/computer-host';
-import { ComputerProviderRegistry } from './computer-use/provider-registry';
-import { createMockComputerProvider } from './computer-use/providers/mock-provider';
-import { createMacosCuaProvider } from './computer-use/providers/macos-cua-provider';
-import { createWindowsUiaProvider } from './computer-use/providers/windows-uia-provider';
+} from './llm-utils.js';
+import { debugLog, createModuleLogger } from '../lib/debug-log.js';
+import { createSandboxedTools } from '../lib/sandbox/index.js';
+import { externalReadPathsFromSessionFiles } from '../lib/sandbox/win32-policy.js';
+import { Win32LegacySandboxCleanupQueue } from '../lib/sandbox/win32-legacy-migration.js';
+import { t } from '../lib/i18n.js';
+import { CheckpointStore } from '../lib/checkpoint-store.js';
+import { assertAllToolsCategorized } from '../shared/tool-categories.js';
+import { workspaceRootsForSandbox } from '../shared/workspace-scope.js';
+import { wrapWithCheckpoint } from '../lib/checkpoint-wrapper.js';
+import { wrapWithSessionPermission } from '../lib/tools/session-permission-wrapper.js';
+import { filterToolObjectsByAvailability } from './tool-availability.js';
+import { TaskRegistry } from '../lib/task-registry.js';
+import { TerminalSessionManager } from '../lib/terminal/terminal-session-manager.js';
+import { PluginInstallRecords } from '../lib/plugin-install-records.js';
+import { ComputerHost } from './computer-use/computer-host.js';
+import { ComputerProviderRegistry } from './computer-use/provider-registry.js';
+import { createMockComputerProvider } from './computer-use/providers/mock-provider.js';
+import { createMacosCuaProvider } from './computer-use/providers/macos-cua-provider.js';
+import { createWindowsUiaProvider } from './computer-use/providers/windows-uia-provider.js';
 import {
   effectiveComputerUseSettings,
   isComputerUsePlatformSupported,
-} from './computer-use/platform-support';
-import { SessionFileRegistry } from '../lib/session-files/session-file-registry';
-import { serializeSessionFile } from '../lib/session-files/session-file-response';
-import { AutomationSuggestionStore } from '../lib/tools/automation-suggestion-store';
-import { NotificationService } from '../lib/notifications/notification-service';
-import { SpeechRecognitionService } from './speech-recognition-service';
-import { UniversalMediaManager } from './media/universal-media-manager';
-import { createCurrentTurnNativeMediaStore } from './current-turn-native-media';
+} from './computer-use/platform-support.js';
+import { SessionFileRegistry } from '../lib/session-files/session-file-registry.js';
+import { serializeSessionFile } from '../lib/session-files/session-file-response.js';
+import { AutomationSuggestionStore } from '../lib/tools/automation-suggestion-store.js';
+import { NotificationService } from '../lib/notifications/notification-service.js';
+import { SpeechRecognitionService } from './speech-recognition-service.js';
+import { UniversalMediaManager } from './media/universal-media-manager.js';
+import { createCurrentTurnNativeMediaStore } from './current-turn-native-media.js';
 import {
   getSkillNameTranslationCachePath,
   translateSkillNamesWithCache,
-} from '../lib/skills/skill-name-translation-cache';
-import { createUsageLedger } from '../lib/llm/usage-ledger';
+} from '../lib/skills/skill-name-translation-cache.js';
+import { createUsageLedger } from '../lib/llm/usage-ledger.js';
 import {
   autoProjectIdForCwd,
   isAutoProjectId,
   normalizeSessionProjectId,
   UNCATEGORIZED_PROJECT_ID,
-} from '../shared/session-projects';
+} from '../shared/session-projects.js';
 
 const moduleLog = createModuleLogger("engine");
 const toolAvailabilityLog = createModuleLogger("tool-availability");

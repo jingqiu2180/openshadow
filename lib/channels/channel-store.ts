@@ -11,7 +11,7 @@
 import fs, { promises as fsp } from "fs";
 import path from "path";
 import crypto from "crypto";
-import { getLocale, t } from '../i18n';
+import { getLocale, t } from '../i18n.js';
 
 export const MIN_CHANNEL_AGENT_MEMBERS = 2;
 

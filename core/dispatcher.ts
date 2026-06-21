@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Hono } from 'hono'
-import { Agent } from './agent'
+import { Agent } from './agent.js'
 
 export interface SubAgent {
   id: string

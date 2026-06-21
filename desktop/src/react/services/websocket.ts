@@ -40,6 +40,7 @@ export function getWebSocket(): WebSocket | null {
 
 /** 发起 WebSocket 连接 */
 export function connectWebSocket(port?: string, token?: string): void {
+  console.log('[ws-debug] connectWebSocket() called');
   // 如果没有传参，从 Zustand store 获取
   const storeState = useStore.getState();
   const connection = port !== undefined || token !== undefined
@@ -49,7 +50,10 @@ export function connectWebSocket(port?: string, token?: string): void {
       })
     : resolveServerConnection(storeState);
 
-  if (!connection) return;
+  if (!connection) {
+    console.log('[ws-debug] connectWebSocket: no connection, aborting');
+    return;
+  }
 
   if (_wsRetryTimer) { clearTimeout(_wsRetryTimer); _wsRetryTimer = null; }
   if (_ws) {
@@ -57,11 +61,13 @@ export function connectWebSocket(port?: string, token?: string): void {
   }
 
   const url = buildConnectionWsUrl(connection, '/ws');
+  console.log('[ws-debug] connecting to', url);
   _ws = new WebSocket(url);
 
   _ws.onopen = () => {
     _wsRetryDelay = 1000;
     _wsRetryCount = 0;
+    console.log('[ws-debug] WebSocket connected!');
     setStatus('status.connected', true);
     useStore.setState({ wsState: 'connected', wsReconnectAttempt: 0, compactingSessions: [] });
 
@@ -90,13 +96,19 @@ export function connectWebSocket(port?: string, token?: string): void {
   _ws.onmessage = (event: MessageEvent) => {
     try {
       const msg = JSON.parse(event.data);
+      console.log('[ws-debug] <-', msg.type, msg.sessionPath || '');
       handleServerMessage(msg);
     } catch (err) {
       console.error('[ws] message parse error:', err);
     }
   };
 
-  _ws.onclose = () => {
+  _ws.onerror = (evt: Event) => {
+    console.error('[ws-debug] WebSocket error event:', evt);
+    errorBus.report(new AppError('WS_DISCONNECTED'));
+  };
+  _ws.onclose = (evt: CloseEvent) => {
+    console.log('[ws-debug] WebSocket closed:', evt.code, evt.reason);
     setStatus('status.disconnected', false);
     _wsRetryCount++;
 
@@ -119,4 +131,8 @@ export function connectWebSocket(port?: string, token?: string): void {
 export function manualReconnect(): void {
   _wsRetryCount = 0;
   connectWebSocket();
+}
+
+if (typeof window !== 'undefined') {
+  (window as any).__getWebSocket = getWebSocket;
 }

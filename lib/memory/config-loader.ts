@@ -13,7 +13,7 @@
 
 import fs from "fs";
 import YAML from "js-yaml";
-import { atomicWriteSync } from '../../shared/safe-fs';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
 
 // 按路径缓存，防止跨 agent 污染
 const _cache = new Map(); // configPath → { cached, cachedRaw }

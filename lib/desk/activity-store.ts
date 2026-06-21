@@ -11,7 +11,7 @@
 
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../../shared/safe-fs';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
 
 const MAX_ENTRIES = 100;
 export const DEFAULT_ACTIVITY_EXECUTION_TIMEOUT_MS = 20 * 60 * 1000;

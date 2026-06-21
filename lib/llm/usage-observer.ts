@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { debugLog } from '../debug-log';
+import { debugLog } from '../debug-log.js';
 
 function numberOrNull(value) {
   const n = Number(value);

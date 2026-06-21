@@ -11,14 +11,14 @@
 
 import fs from "fs";
 import path from "path";
-import { scrubPII } from '../pii-guard';
-import { getLogicalDay, getLogicalDayForDate } from '../time-utils';
-import { callText } from '../../core/llm-client';
-import { getLocale } from '../i18n';
-import { generateSummary } from '../pi-sdk/index';
-import { listSessionFiles, readSessionMessages } from '../session-jsonl';
-import { createModuleLogger } from '../debug-log';
-import { resolveWorkspaceOutputDir } from '../../shared/workspace-output';
+import { scrubPII } from '../pii-guard.js';
+import { getLogicalDay, getLogicalDayForDate } from '../time-utils.js';
+import { callText } from '../../core/llm-client.js';
+import { getLocale } from '../i18n.js';
+import { generateSummary } from '../pi-sdk/index.js';
+import { listSessionFiles, readSessionMessages } from '../session-jsonl.js';
+import { createModuleLogger } from '../debug-log.js';
+import { resolveWorkspaceOutputDir } from '../../shared/workspace-output.js';
 
 const log = createModuleLogger("diary");
 
@@ -112,7 +112,7 @@ Write in your own style and personality, the way you normally speak.`;
 }
 
 // getLogicalDay 已提取到 lib/time-utils.js，re-export 保持兼容
-export { getLogicalDay } from '../time-utils';
+export { getLogicalDay } from '../time-utils.js';
 
 /**
  * 收集时间范围内的活动记录（巡检 + 定时任务）

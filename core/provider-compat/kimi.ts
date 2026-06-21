@@ -12,11 +12,11 @@
  * fields.
  */
 
-import { getReasoningProfile, getThinkingFormat } from '../../shared/model-capabilities';
+import { getReasoningProfile, getThinkingFormat } from '../../shared/model-capabilities.js';
 import {
   ensureReasoningContentForToolCalls as ensureReasoningContentForToolCallsBase,
   stripReasoningContent,
-} from './reasoning-content-replay';
+} from './reasoning-content-replay.js';
 
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 

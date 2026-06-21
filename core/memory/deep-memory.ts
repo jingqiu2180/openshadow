@@ -14,9 +14,9 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createModuleLogger } from '../debug-log';
-import { SessionSummaryManager } from './session-summary';
-import { addFact } from './store';
+import { createModuleLogger } from '../debug-log.js';
+import { SessionSummaryManager } from './session-summary.js';
+import { addFact } from './store.js';
 
 const log = createModuleLogger("deep-memory");
 

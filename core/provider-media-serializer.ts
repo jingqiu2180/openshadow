@@ -11,7 +11,7 @@
  * source; provider-compat still accepts older data URL envelopes produced by
  * the Pi SDK chat path.
  */
-import { openAIInputAudioFormatFromMimeType } from '../shared/audio-mime';
+import { openAIInputAudioFormatFromMimeType } from '../shared/audio-mime.js';
 
 const DEFAULT_MIME_BY_KIND = Object.freeze({
   image: "image/png",

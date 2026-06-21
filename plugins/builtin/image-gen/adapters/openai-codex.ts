@@ -2,13 +2,13 @@
 // plugins/image-gen/adapters/openai-codex.js
 import fs from "fs";
 import path from "path";
-import { saveImage } from '../lib/download';
+import { saveImage } from '../lib/download.js';
 import {
   CODEX_IMAGE_RESOLUTION_TIERS,
   OPENAI_FLEXIBLE_IMAGE_RATIOS,
   resolveOpenAiImageSize,
-} from '../lib/resolution-tiers';
-import { t } from '../../../../lib/i18n';
+} from '../lib/resolution-tiers.js';
+import { t } from '../../../../lib/i18n.js';
 
 const PROVIDER_ID = "openai-codex-oauth";
 const DEFAULT_CODEX_BASE_URL = "https://chatgpt.com/backend-api";

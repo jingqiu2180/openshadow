@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { getDb } from '../memory/store'
+import { getDb } from '../memory/store.js'
 
 export interface UsageRecord {
   id: string

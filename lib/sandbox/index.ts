@@ -6,18 +6,18 @@
  * 不持有 engine 级状态，天然支持多 agent 并发。
  */
 
-import { deriveSandboxPolicy } from './policy';
-import { PathGuard } from './path-guard';
-import { detectPlatform, checkAvailability } from './platform';
-import { createSeatbeltExec } from './seatbelt';
-import { createBwrapExec } from './bwrap';
-import { createWin32Exec } from './win32-exec';
-import { wrapPathTool, wrapBashTool } from './tool-wrapper';
-import { createEnhancedReadFile } from './read-enhanced';
-import { wrapReadImageWithVisionBridge } from './read-image-vision';
-import { wrapReadOfficeMedia } from './read-office-media';
-import { createManagedConfigWriteGuard } from './managed-config-guard';
-import { t } from '../i18n';
+import { deriveSandboxPolicy } from './policy.js';
+import { PathGuard } from './path-guard.js';
+import { detectPlatform, checkAvailability } from './platform.js';
+import { createSeatbeltExec } from './seatbelt.js';
+import { createBwrapExec } from './bwrap.js';
+import { createWin32Exec } from './win32-exec.js';
+import { wrapPathTool, wrapBashTool } from './tool-wrapper.js';
+import { createEnhancedReadFile } from './read-enhanced.js';
+import { wrapReadImageWithVisionBridge } from './read-image-vision.js';
+import { wrapReadOfficeMedia } from './read-office-media.js';
+import { createManagedConfigWriteGuard } from './managed-config-guard.js';
+import { t } from '../i18n.js';
 import fs, { constants } from "fs";
 import { access as fsAccess } from "fs/promises";
 import path, { extname } from "path";
@@ -29,9 +29,9 @@ import {
   createGrepTool,
   createFindTool,
   createLsTool,
-} from '../pi-sdk/index';
-import { normalizeWin32ShellPath } from './win32-path';
-import { serializeSessionFile } from '../session-files/session-file-response';
+} from '../pi-sdk/index.js';
+import { normalizeWin32ShellPath } from './win32-path.js';
+import { serializeSessionFile } from '../session-files/session-file-response.js';
 
 /**
  * 为一个 session 创建沙盒包装后的工具集

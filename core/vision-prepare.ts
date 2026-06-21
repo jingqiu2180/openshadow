@@ -1,8 +1,8 @@
 // @ts-nocheck
-import { getLocale } from '../lib/i18n';
-import { modelSupportsDirectImageInput } from '../shared/model-capabilities';
-import { prepareModelImageInputsForPrompt } from './model-image-preprocess';
-import { requireVisionAuxiliaryEnabled } from './vision-auxiliary-policy';
+import { getLocale } from '../lib/i18n.js';
+import { modelSupportsDirectImageInput } from '../shared/model-capabilities.js';
+import { prepareModelImageInputsForPrompt } from './model-image-preprocess.js';
+import { requireVisionAuxiliaryEnabled } from './vision-auxiliary-policy.js';
 
 export function isAbortLikeError(err) {
   return err?.name === "AbortError"

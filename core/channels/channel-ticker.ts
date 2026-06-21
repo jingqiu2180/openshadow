@@ -22,9 +22,9 @@ import {
   getRecentMessages,
   getChannelMembers,
   getChannelMeta,
-} from './channel-store';
-import { debugLog, createModuleLogger } from '../debug-log';
-import { readBoolean, resolveAgentPhoneGuardLimit } from '../conversations/agent-phone-prompt';
+} from './channel-store.js';
+import { debugLog, createModuleLogger } from '../debug-log.js';
+import { readBoolean, resolveAgentPhoneGuardLimit } from '../conversations/agent-phone-prompt.js';
 import fs from "fs";
 import path from "path";
 

@@ -6,56 +6,56 @@ import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import { Hono } from "hono";
-import { emitAppEvent } from '../app-events';
-import { safeJson } from '../hono-helpers';
-import { t } from '../../lib/i18n';
-import { debugLog } from '../../lib/debug-log';
-import { getRawConfig, clearConfigCache } from '../../lib/memory/config-loader';
-import { FactStore } from '../../lib/memory/fact-store';
+import { emitAppEvent } from '../app-events.js';
+import { safeJson } from '../hono-helpers.js';
+import { t } from '../../lib/i18n.js';
+import { debugLog } from '../../lib/debug-log.js';
+import { getRawConfig, clearConfigCache } from '../../lib/memory/config-loader.js';
+import { FactStore } from '../../lib/memory/fact-store.js';
 import {
   writeCompiledResetMarker,
   clearCompiledMemoryArtifacts,
   clearCompiledSummarySources,
-} from '../../lib/memory/compiled-memory-state';
+} from '../../lib/memory/compiled-memory-state.js';
 import {
   readPinnedMemoryItems,
   replacePinnedMemoryItems,
-} from '../../lib/memory/pinned-memory-store';
+} from '../../lib/memory/pinned-memory-store.js';
 import {
   ensureDefaultWorkspace,
   resolveDefaultWorkspacePath,
-} from '../../shared/default-workspace';
-import { splitByScope, injectGlobalFields } from '../../shared/config-scope';
+} from '../../shared/default-workspace.js';
+import { splitByScope, injectGlobalFields } from '../../shared/config-scope.js';
 import {
   clearWorkspaceHistory,
   mergeWorkspaceHistory,
   normalizeWorkspacePath,
   removeWorkspaceHistoryEntries,
-} from '../../shared/workspace-history';
-import { pruneMissingWorkspaceConfig } from '../../shared/workspace-persistence-gc';
+} from '../../shared/workspace-history.js';
+import { pruneMissingWorkspaceConfig } from '../../shared/workspace-persistence-gc.js';
 import {
   collectProviderHeaderSecretPatchPathsFromConfig,
   maskProviderHeaders,
   resolveProviderHeadersPatch,
-} from '../../shared/provider-auth';
-import { isSearchApiProvider, normalizeSearchApiKeys } from '../../shared/search-providers';
-import { resolveAgent, resolveAgentStrict, AgentNotFoundError } from '../utils/resolve-agent';
-import { formatSkillsForPrompt } from '../../lib/pi-sdk/index';
+} from '../../shared/provider-auth.js';
+import { isSearchApiProvider, normalizeSearchApiKeys } from '../../shared/search-providers.js';
+import { resolveAgent, resolveAgentStrict, AgentNotFoundError } from '../utils/resolve-agent.js';
+import { formatSkillsForPrompt } from '../../lib/pi-sdk/index.js';
 import {
   buildInlineProviderCredentialUpdate,
   clearInlineProviderCredentialFields,
   hasInlineProviderCredentialPatch,
-} from './provider-credentials';
+} from './provider-credentials.js';
 import {
   collectSecretPatchPaths,
   isMaskedSecretValue,
   maskObjectSecrets,
   maskSecretValue,
   resolveSecretPatch,
-} from '../../shared/secret-custody';
-import { denySecretMutationWithoutScope, denyWithoutScope } from '../http/capability-guard';
-import { recordSecurityAuditEvent } from '../http/security-audit';
-import { readUserProfile, writeUserProfile } from '../../lib/user-profile-store';
+} from '../../shared/secret-custody.js';
+import { denySecretMutationWithoutScope, denyWithoutScope } from '../http/capability-guard.js';
+import { recordSecurityAuditEvent } from '../http/security-audit.js';
+import { readUserProfile, writeUserProfile } from '../../lib/user-profile-store.js';
 
 function hasOwn(value: any, key: string) {
   return !!value && typeof value === "object" && Object.prototype.hasOwnProperty.call(value, key);

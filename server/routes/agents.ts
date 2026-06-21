@@ -26,46 +26,46 @@ import path from "path";
 import YAML from "js-yaml";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
-import { emitAppEvent } from '../app-events';
-import { safeJson } from '../hono-helpers';
-import { saveConfig, clearConfigCache } from '../../lib/memory/config-loader';
+import { emitAppEvent } from '../app-events.js';
+import { safeJson } from '../hono-helpers.js';
+import { saveConfig, clearConfigCache } from '../../lib/memory/config-loader.js';
 import {
   listExperienceDocuments,
   normalizeExperienceCategory,
   syncExperienceCategories,
-} from '../../lib/tools/experience';
+} from '../../lib/tools/experience.js';
 import {
   readPinnedMemoryItems,
   replacePinnedMemoryItems,
-} from '../../lib/memory/pinned-memory-store';
-import { splitByScope, injectGlobalFields } from '../../shared/config-scope';
-import { validateId, agentExists } from '../utils/validation';
+} from '../../lib/memory/pinned-memory-store.js';
+import { splitByScope, injectGlobalFields } from '../../shared/config-scope.js';
+import { validateId, agentExists } from '../utils/validation.js';
 import {
   OPTIONAL_TOOL_NAMES,
   computeSettingsAvailableToolNames,
-} from '../../shared/tool-categories';
+} from '../../shared/tool-categories.js';
 import {
   buildInlineProviderCredentialUpdate,
   clearInlineProviderCredentialFields,
   hasInlineProviderCredentialPatch,
-} from './provider-credentials';
-import { mergeWorkspaceHistory } from '../../shared/workspace-history';
+} from './provider-credentials.js';
+import { mergeWorkspaceHistory } from '../../shared/workspace-history.js';
 import {
   collectSecretPatchPaths,
   maskObjectSecrets,
   maskSecretValue,
   resolveSecretPatch,
-} from '../../shared/secret-custody';
-import { denySecretMutationWithoutScope, denyWithoutScope } from '../http/capability-guard';
-import { recordSecurityAuditEvent } from '../http/security-audit';
+} from '../../shared/secret-custody.js';
+import { denySecretMutationWithoutScope, denyWithoutScope } from '../http/capability-guard.js';
+import { recordSecurityAuditEvent } from '../http/security-audit.js';
 
 function hideDisabledGlobalToolsForSettings(toolNames, engine) {
   const computerUseEnabled = engine?.getComputerUseSettings?.()?.enabled === true;
   if (computerUseEnabled) return toolNames;
   return (toolNames || []).filter((name) => name !== "computer");
 }
-import { assertAgentConfigPatchYuan } from '../../core/yuan-registry';
-import { createModuleLogger } from '../../lib/debug-log';
+import { assertAgentConfigPatchYuan } from '../../core/yuan-registry.js';
+import { createModuleLogger } from '../../lib/debug-log.js';
 
 const log = createModuleLogger("agents");
 

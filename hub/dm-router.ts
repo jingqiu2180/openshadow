@@ -19,20 +19,20 @@ import {
   appendMessage,
   getRecentMessages,
   formatMessagesForLLM,
-} from '../lib/channels/channel-store';
-import { runAgentPhoneSession } from './agent-executor';
-import { debugLog, createModuleLogger } from '../lib/debug-log';
-import { getLocale } from '../lib/i18n';
+} from '../lib/channels/channel-store.js';
+import { runAgentPhoneSession } from './agent-executor.js';
+import { debugLog, createModuleLogger } from '../lib/debug-log.js';
+import { getLocale } from '../lib/i18n.js';
 import {
   getAgentPhoneProjectionPath,
   readAgentPhoneProjection,
   recordAgentPhoneActivity,
-} from '../lib/conversations/agent-phone-projection';
+} from '../lib/conversations/agent-phone-projection.js';
 import {
   readAgentPhoneRuntime,
   resolveAgentPhoneRuntimeSessionPath,
-} from '../lib/conversations/agent-phone-runtime';
-import { normalizeAgentPhoneToolMode } from '../lib/conversations/agent-phone-session';
+} from '../lib/conversations/agent-phone-runtime.js';
+import { normalizeAgentPhoneToolMode } from '../lib/conversations/agent-phone-session.js';
 import {
   DEFAULT_AGENT_PHONE_SETTINGS,
   defaultAgentPhoneGuardLimit,
@@ -40,7 +40,7 @@ import {
   normalizeAgentPhoneModelOverride,
   positiveIntegerOrDefault,
   positiveIntegerOrNull,
-} from '../lib/conversations/agent-phone-prompt';
+} from '../lib/conversations/agent-phone-prompt.js';
 
 const log = createModuleLogger("dm-router");
 

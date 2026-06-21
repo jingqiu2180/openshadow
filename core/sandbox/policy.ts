@@ -7,7 +7,7 @@
  */
 
 import path from 'path'
-import { workspaceRootsForSandbox } from '../shared/workspace-scope'
+import { workspaceRootsForSandbox } from '../shared/workspace-scope.js'
 
 // ── 常量 ─────────────────────────────────────
 

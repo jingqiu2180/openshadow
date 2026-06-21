@@ -4,42 +4,43 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import crypto from "crypto";
-import { extractZip } from '../../lib/extract-zip';
-import { resolveAgent } from '../utils/resolve-agent';
-import { fromRoot } from '../../shared/hana-root';
-import { DEFAULT_THEME } from "../../desktop/src/shared/theme-registry.cjs";
-import { registerSessionFileFromRequest } from '../../lib/session-files/session-file-response';
+import { extractZip } from '../../lib/extract-zip.js';
+import { resolveAgent } from '../utils/resolve-agent.js';
+import { fromRoot } from '../../shared/hana-root.js';
+// import { DEFAULT_THEME } from '../../desktop/src/shared/theme-registry.cjs.js'; // File doesn't exist, define inline
+const DEFAULT_THEME = "warm-paper"; // Default theme name
+import { registerSessionFileFromRequest } from '../../lib/session-files/session-file-response.js';
 import {
   createDefaultPluginMarketplace,
   getMarketplacePluginVersionState,
-} from '../../lib/plugin-marketplace';
-import { comparePluginVersions } from '../../lib/plugin-versioning';
+} from '../../lib/plugin-marketplace.js';
+import { comparePluginVersions } from '../../lib/plugin-versioning.js';
 import {
   createPluginInstallBackup,
   restorePluginInstallBackup,
-} from '../../lib/plugin-install-backups';
-import { detectIncompatiblePluginFormat } from '../../lib/plugin-format-guard';
-import { createModuleLogger } from '../../lib/debug-log';
+} from '../../lib/plugin-install-backups.js';
+import { detectIncompatiblePluginFormat } from '../../lib/plugin-format-guard.js';
+import { createModuleLogger } from '../../lib/debug-log.js';
 import {
   PluginIframeTicketError,
   issuePluginIframeTicket,
   verifyPluginIframeTicket,
-} from '../../core/plugin-iframe-ticket-service';
+} from '../../core/plugin-iframe-ticket-service.js';
 import {
   DEFAULT_PLUGIN_ASSET_SESSION_TTL_MS,
   createPluginAssetSessionCookie,
   issuePluginAssetSession,
-} from '../../core/plugin-asset-session-service';
-import { issuePluginSurfaceSession } from '../../core/plugin-surface-session-service';
-import { servePluginAsset } from '../http/plugin-assets';
+} from '../../core/plugin-asset-session-service.js';
+import { issuePluginSurfaceSession } from '../../core/plugin-surface-session-service.js';
+import { servePluginAsset } from '../http/plugin-assets.js';
 import {
   PLUGIN_SURFACE_SESSION_HEADER,
   PLUGIN_SURFACE_SESSION_QUERY,
-} from '../http/plugin-surface-session';
+} from '../http/plugin-surface-session.js';
 import {
   PLUGIN_HOST_ROUTE_PLUGIN_IDS,
   isLocalOwnerPrincipal,
-} from '../http/route-security';
+} from '../http/route-security.js';
 
 const log = createModuleLogger("plugin-install");
 

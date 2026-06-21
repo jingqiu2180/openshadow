@@ -2,7 +2,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 
 export const PLUGIN_ASSET_SESSION_KEY_FILE = "plugin-asset-session-key";
 export const PLUGIN_ASSET_SESSION_ACTION = "plugins.assets";

@@ -8,7 +8,7 @@
 
 import fs from "fs";
 import path from "path";
-import { t } from '../../i18n';
+import { t } from '../../i18n.js';
 
 export function checkConfigYaml({ agentDir, hanakoHome }) {
   const configPath = path.join(agentDir, "config.yaml");

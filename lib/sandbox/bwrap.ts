@@ -9,8 +9,8 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { spawnAndStream } from './exec-helper';
-import { writeScript, cleanup } from './script';
+import { spawnAndStream } from './exec-helper.js';
+import { writeScript, cleanup } from './script.js';
 
 /**
  * 创建 Linux 沙盒化的 exec 函数

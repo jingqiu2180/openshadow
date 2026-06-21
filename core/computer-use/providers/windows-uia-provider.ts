@@ -3,9 +3,9 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import crypto from "crypto";
-import { COMPUTER_USE_ERRORS, computerUseError } from '../errors';
-import { createCommandRunner } from './command-runner';
-import { WINDOWS_UIA_HELPER_SCRIPT } from './windows-uia-script';
+import { COMPUTER_USE_ERRORS, computerUseError } from '../errors.js';
+import { createCommandRunner } from './command-runner.js';
+import { WINDOWS_UIA_HELPER_SCRIPT } from './windows-uia-script.js';
 
 function defaultPowerShellCommand(env = process.env) {
   if (process.platform !== "win32") return "powershell.exe";

@@ -7,14 +7,14 @@
  */
 
 import TelegramBot from "node-telegram-bot-api";
-import { debugLog } from '../debug-log';
-import { telegramBotOptions } from '../net/outbound-proxy';
-import { createMediaCapabilities } from './media-capabilities';
-import { createStreamingCapabilities } from './streaming-capabilities';
-import { createReceiptCapabilities } from './receipt-capabilities';
-import { renderTelegramRichMessage } from './bridge-presentation';
-import { formatTelegramMessageChunks } from './telegram-format';
-import { createModuleLogger } from '../debug-log';
+import { debugLog } from '../debug-log.js';
+import { telegramBotOptions } from '../net/outbound-proxy.js';
+import { createMediaCapabilities } from './media-capabilities.js';
+import { createStreamingCapabilities } from './streaming-capabilities.js';
+import { createReceiptCapabilities } from './receipt-capabilities.js';
+import { renderTelegramRichMessage } from './bridge-presentation.js';
+import { formatTelegramMessageChunks } from './telegram-format.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("telegram");
 

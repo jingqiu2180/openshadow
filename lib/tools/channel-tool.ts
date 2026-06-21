@@ -9,8 +9,8 @@
  * - list：查看加入的频道列表
  */
 
-import { Type, StringEnum } from '../pi-sdk/index';
-import { t } from '../i18n';
+import { Type, StringEnum } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
 import {
   appendMessage,
   createChannel,
@@ -20,7 +20,7 @@ import {
   formatMessagesForLLM,
   normalizeChannelMembers,
   readBookmarks,
-} from '../channels/channel-store';
+} from '../channels/channel-store.js';
 import fs from "fs";
 import path from "path";
 

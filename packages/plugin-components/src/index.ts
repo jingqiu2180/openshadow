@@ -1,4 +1,4 @@
 // @ts-nocheck
-export * from './theme';
-export * from './controls';
-export * from './layout';
+export * from './theme.js';
+export * from './controls.js';
+export * from './layout.js';

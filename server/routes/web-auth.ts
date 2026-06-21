@@ -1,13 +1,13 @@
 // @ts-nocheck
 import { Hono } from "hono";
-import { safeJson } from '../hono-helpers';
-import { verifyLocalAccountPassword } from '../../core/local-user-account';
+import { safeJson } from '../hono-helpers.js';
+import { verifyLocalAccountPassword } from '../../core/local-user-account.js';
 import {
   WEB_SESSION_COOKIE_NAME,
   createWebSession,
   revokeWebSession,
-} from '../../core/web-session-store';
-import { normalizeAccessProfile, scopesForAccessProfile } from '../../shared/access-scope-profiles';
+} from '../../core/web-session-store.js';
+import { normalizeAccessProfile, scopesForAccessProfile } from '../../shared/access-scope-profiles.js';
 
 const DEFAULT_SESSION_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 

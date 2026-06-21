@@ -1,0 +1,18 @@
+agent:
+  name: ""
+  yuan: hanako
+  avatar: null
+  desk:
+    home_folder: D:/src/aicoding/remu
+
+memory:
+  enabled: true
+
+desk:
+  heartbeat_enabled: false
+  heartbeat_interval: 30
+
+user:
+  name: ""
+
+preferences: {}

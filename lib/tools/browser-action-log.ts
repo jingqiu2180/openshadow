@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { redactLogText, redactLogValue } from '../log-redactor';
+import { redactLogText, redactLogValue } from '../log-redactor.js';
 
 export function summarizeBrowserActionParams(action: any, params: any = {}) {
   if (!params || typeof params !== "object") return {};

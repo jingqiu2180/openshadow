@@ -3,7 +3,7 @@
 // 参考 openhanako 的 core/computer-use/provider-registry.ts
 // 简化版
 
-import { ComputerUseProvider } from './provider-contract';
+import { ComputerUseProvider } from './provider-contract.js';
 
 export class ComputerUseProviderRegistry {
   private providers: Map<string, ComputerUseProvider> = new Map();

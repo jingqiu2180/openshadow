@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { normalizeMediaItems } from '../bridge/media-item-normalizer';
+import { normalizeMediaItems } from '../bridge/media-item-normalizer.js';
 
 export function collectMediaItems(media) {
   if (!media || typeof media !== "object") return [];

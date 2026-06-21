@@ -1,7 +1,7 @@
 // @ts-nocheck
 import os from "node:os";
-import { envValue, baseNameForShellPath } from '../lib/shell/shell-utils';
-import { SANDBOX_MODE_LABEL } from '../lib/sandbox/policy';
+import { envValue, baseNameForShellPath } from '../lib/shell/shell-utils.js';
+import { SANDBOX_MODE_LABEL } from '../lib/sandbox/policy.js';
 
 function shellNameFromPath(shellPath) {
   return baseNameForShellPath(shellPath, { stripExe: true });

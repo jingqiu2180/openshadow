@@ -4,7 +4,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 
 export const LOCAL_USER_AUTH_FILE = "local-user-auth.json";
 

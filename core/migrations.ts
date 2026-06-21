@@ -11,39 +11,39 @@
 import fs from "fs";
 import path from "path";
 import YAML from "js-yaml";
-import { atomicWriteSync, safeReadYAMLSync } from '../shared/safe-fs';
+import { atomicWriteSync, safeReadYAMLSync } from '../shared/safe-fs.js';
 import {
   ensureLocalIdentityRegistries,
   ensureRemoteAccessFoundationRegistries,
-} from './server-identity';
-import { saveConfig } from '../lib/memory/config-loader';
+} from './server-identity.js';
+import { saveConfig } from '../lib/memory/config-loader.js';
 import {
   getSubagentSessionMetaPath,
   mergeExecutorMetadata,
   normalizeExecutorMetadata,
   readSubagentSessionMetaSync,
-} from '../lib/subagent-executor-metadata';
-import { SessionFileRegistry } from '../lib/session-files/session-file-registry';
-import { SubagentRunStore } from '../lib/subagent-run-store';
-import { SubagentThreadStore } from '../lib/subagent-thread-store';
-import { persistBrowserScreenshotFileSync } from '../lib/session-files/browser-screenshot-file';
-import { getInvalidProviderModelIds } from '../shared/provider-model-validation';
-import { normalizeThinkingLevelForModel } from './session-thinking-level';
+} from '../lib/subagent-executor-metadata.js';
+import { SessionFileRegistry } from '../lib/session-files/session-file-registry.js';
+import { SubagentRunStore } from '../lib/subagent-run-store.js';
+import { SubagentThreadStore } from '../lib/subagent-thread-store.js';
+import { persistBrowserScreenshotFileSync } from '../lib/session-files/browser-screenshot-file.js';
+import { getInvalidProviderModelIds } from '../shared/provider-model-validation.js';
+import { normalizeThinkingLevelForModel } from './session-thinking-level.js';
 import {
   legacyAccessModeFromPermissionMode,
   normalizeBridgePermissionMode,
   normalizeSessionPermissionMode,
   SESSION_PERMISSION_MODES,
-} from './session-permission-mode';
-import { lookupKnown } from '../shared/known-models';
-import { SESSION_PREFIX_MAP } from '../lib/bridge/session-key';
-import { migrateLegacyApiKeyAuthToProviders } from './provider-auth-migration';
-import { createModuleLogger } from '../lib/debug-log';
-import { patchAutomationJobForMigration } from '../lib/desk/automation-normalizer';
-import { parseSkillMetadata } from '../lib/skills/skill-metadata';
-import { safeConversationStem } from '../lib/conversations/agent-phone-projection';
-import { DEFAULT_DISABLED_TOOL_NAMES } from '../shared/tool-categories';
-import { ProviderCatalogStore } from './provider-catalog';
+} from './session-permission-mode.js';
+import { lookupKnown } from '../shared/known-models.js';
+import { SESSION_PREFIX_MAP } from '../lib/bridge/session-key.js';
+import { migrateLegacyApiKeyAuthToProviders } from './provider-auth-migration.js';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { patchAutomationJobForMigration } from '../lib/desk/automation-normalizer.js';
+import { parseSkillMetadata } from '../lib/skills/skill-metadata.js';
+import { safeConversationStem } from '../lib/conversations/agent-phone-projection.js';
+import { DEFAULT_DISABLED_TOOL_NAMES } from '../shared/tool-categories.js';
+import { ProviderCatalogStore } from './provider-catalog.js';
 
 const moduleLog = createModuleLogger("migrations");
 

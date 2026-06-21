@@ -1,13 +1,13 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../../shared/safe-fs';
-import { normalizeLlmUsage } from './usage-observer';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
+import { normalizeLlmUsage } from './usage-observer.js';
 import {
   attributionSessionPath,
   isUnknownUsageContext as isUnknownUsageContextValue,
   normalizeUsageContext,
-} from './usage-context';
+} from './usage-context.js';
 
 const DEFAULT_MAX_ENTRIES = 5_000;
 const STORAGE_VERSION = 1;

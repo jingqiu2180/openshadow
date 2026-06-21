@@ -9,7 +9,7 @@
  * 调度器和 Agent Runtime 分开，定时逻辑不跟 LLM 调用耦合。
  */
 
-import { debugLog, createModuleLogger } from '../debug-log';
+import { debugLog, createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("cron");
 export const DEFAULT_CRON_EXECUTION_TIMEOUT_MS = 20 * 60 * 1000;

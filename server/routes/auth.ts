@@ -13,9 +13,9 @@
  */
 import crypto from "crypto";
 import { Hono } from "hono";
-import { safeJson } from '../hono-helpers';
-import { createModuleLogger } from '../../lib/debug-log';
-import { t } from '../../lib/i18n';
+import { safeJson } from '../hono-helpers.js';
+import { createModuleLogger } from '../../lib/debug-log.js';
+import { t } from '../../lib/i18n.js';
 
 const log = createModuleLogger("auth");
 

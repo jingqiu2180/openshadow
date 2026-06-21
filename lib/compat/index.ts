@@ -14,10 +14,10 @@
  * 返回值无要求，抛异常会被捕获并记录（不影响启动）。
  */
 
-import { checkDirs } from './checks/dirs';
-import { checkFactsDb } from './checks/facts-db';
-import { checkConfigYaml } from './checks/config-yaml';
-import { createModuleLogger } from '../debug-log';
+import { checkDirs } from './checks/dirs.js';
+import { checkFactsDb } from './checks/facts-db.js';
+import { checkConfigYaml } from './checks/config-yaml.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const moduleLog = createModuleLogger("compat");
 

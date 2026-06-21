@@ -10,7 +10,7 @@
  *
  * Re-exports the Provider type from config.ts so downstream code only needs one import.
  */
-export { Provider } from '../config'
+export { Provider } from '../config.js'
 
 export type ProviderType = 'openai' | 'gemini' | 'ollama' | 'custom' | 'anthropic'
 

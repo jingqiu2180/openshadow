@@ -16,30 +16,30 @@
 
 import fs from "fs";
 import path from "path";
-import { createChannelTicker } from '../lib/channels/channel-ticker';
-import { Type } from '../lib/pi-sdk/index';
-import { appendMessage, formatMessagesForLLM, getChannelMembers, getChannelMeta, getRecentMessages } from '../lib/channels/channel-store';
-import { extractMentionedAgentIds } from '../lib/channels/channel-mentions';
-import { loadConfig } from '../lib/memory/config-loader';
-import { callText } from '../core/llm-client';
-import { runAgentPhoneSession } from './agent-executor';
-import { debugLog, createModuleLogger } from '../lib/debug-log';
-import { getLocale } from '../lib/i18n';
+import { createChannelTicker } from '../lib/channels/channel-ticker.js';
+import { Type } from '../lib/pi-sdk/index.js';
+import { appendMessage, formatMessagesForLLM, getChannelMembers, getChannelMeta, getRecentMessages } from '../lib/channels/channel-store.js';
+import { extractMentionedAgentIds } from '../lib/channels/channel-mentions.js';
+import { loadConfig } from '../lib/memory/config-loader.js';
+import { callText } from '../core/llm-client.js';
+import { runAgentPhoneSession } from './agent-executor.js';
+import { debugLog, createModuleLogger } from '../lib/debug-log.js';
+import { getLocale } from '../lib/i18n.js';
 import {
   recordAgentPhoneActivity,
-} from '../lib/conversations/agent-phone-projection';
+} from '../lib/conversations/agent-phone-projection.js';
 import {
   readAgentPhoneRuntime,
   resolveAgentPhoneRuntimeSessionPath,
-} from '../lib/conversations/agent-phone-runtime';
-import { normalizeAgentPhoneToolMode } from '../lib/conversations/agent-phone-session';
+} from '../lib/conversations/agent-phone-runtime.js';
+import { normalizeAgentPhoneToolMode } from '../lib/conversations/agent-phone-session.js';
 import {
   DEFAULT_AGENT_PHONE_SETTINGS,
   formatAgentPhonePromptGuidance,
   normalizeAgentPhoneModelOverride,
   positiveIntegerOrDefault,
   positiveIntegerOrNull,
-} from '../lib/conversations/agent-phone-prompt';
+} from '../lib/conversations/agent-phone-prompt.js';
 
 const log = createModuleLogger("channel");
 const MAX_CHANNEL_DECISION_REPAIR_ATTEMPTS = 1;

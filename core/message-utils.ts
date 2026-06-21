@@ -6,10 +6,10 @@
  */
 import fs from "fs/promises";
 import path from "path";
-import { isToolCallBlock, getToolArgs } from './llm-utils';
-import { SessionManager } from '../lib/pi-sdk/index';
-import { DEFERRED_RESULT_RECORD_TYPE } from '../lib/deferred-result-notification';
-import { repairOversizedSessionEntriesInFile } from './session-jsonl-file';
+import { isToolCallBlock, getToolArgs } from './llm-utils.js';
+import { SessionManager } from '../lib/pi-sdk/index.js';
+import { DEFERRED_RESULT_RECORD_TYPE } from '../lib/deferred-result-notification.js';
+import { repairOversizedSessionEntriesInFile } from './session-jsonl-file.js';
 
 /**
  * 工具调用参数摘要键列表

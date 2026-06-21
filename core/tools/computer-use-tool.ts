@@ -4,8 +4,8 @@
  * 移植自 openhanako/lib/tools/computer-use-tool.ts
  * 复用 remu 已有的 browser 工具实现真实功能
  */
-import type { ToolRegistry } from '../tool-registry'
-import { createToolSpec } from '../tool-registry'
+import type { ToolRegistry } from '../tool-registry.js'
+import { createToolSpec } from '../tool-registry.js'
 import {
   browserNew,
   browserNavigate,
@@ -13,7 +13,7 @@ import {
   browserClick,
   browserType,
   browserGetText,
-} from './index'
+} from './index.js'
 
 let _currentBrowserId: string = 'default'
 

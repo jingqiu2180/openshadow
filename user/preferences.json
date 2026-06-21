@@ -10,17 +10,30 @@
     "version": 2,
     "workspaces": {
       "D:/src/aicoding/remu": {
-        "updatedAt": 1781941845064,
+        "updatedAt": 1782052457687,
         "surfaces": {
           "electron": {
-            "updatedAt": 1781941845064,
+            "updatedAt": 1781960663363,
             "deskCurrentPath": "",
             "deskExpandedPaths": [
               "desktop",
               "shared",
               "security"
             ],
-            "deskSelectedPath": "security",
+            "deskSelectedPath": "",
+            "rightWorkspaceTab": "workspace",
+            "jianView": "desk",
+            "jianDrawerOpen": false,
+            "previewOpen": false,
+            "openTabs": [],
+            "activeTabId": null,
+            "previewTabs": []
+          },
+          "pwa": {
+            "updatedAt": 1782052457687,
+            "deskCurrentPath": "",
+            "deskExpandedPaths": [],
+            "deskSelectedPath": "",
             "rightWorkspaceTab": "workspace",
             "jianView": "desk",
             "jianDrawerOpen": false,

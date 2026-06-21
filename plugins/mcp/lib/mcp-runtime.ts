@@ -1,7 +1,7 @@
 // @ts-nocheck
 import fs from "node:fs";
 import path from "node:path";
-import { McpStdioClient } from './mcp-stdio-client';
+import { McpStdioClient } from './mcp-stdio-client.js';
 import {
   McpAutoHttpClient,
   McpHttpError,
@@ -9,13 +9,13 @@ import {
   McpStreamableHttpClient,
   isAuthTerminalError,
   resolveMcpHttpProxyDiagnostics,
-} from './mcp-http-client';
+} from './mcp-http-client.js';
 import {
   createMcpOAuthAuthorization,
   exchangeMcpOAuthCode,
   refreshMcpOAuthToken,
-} from './mcp-oauth';
-import { createSettingsUpdate } from '../../../lib/tools/settings-update-result';
+} from './mcp-oauth.js';
+import { createSettingsUpdate } from '../../../lib/tools/settings-update-result.js';
 
 const DEFAULT_CONFIG = {
   enabled: false,

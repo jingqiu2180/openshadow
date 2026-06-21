@@ -9,16 +9,16 @@
  * 这条链路替代 v1 的 extractMemoryEvents → findNewEvents → 三区间 → score/decay。
  */
 
-import { callText } from '../../core/llm-client';
-import { getLocale } from '../i18n';
-import { attachPromptLayoutMetadata, buildUtilityPromptLayout } from '../llm/prompt-layout';
-import { buildFactExtractionPrompt as buildFactExtractionPromptSpec } from './prompts/fact-extraction';
+import { callText } from '../../core/llm-client.js';
+import { getLocale } from '../i18n.js';
+import { attachPromptLayoutMetadata, buildUtilityPromptLayout } from '../llm/prompt-layout.js';
+import { buildFactExtractionPrompt as buildFactExtractionPromptSpec } from './prompts/fact-extraction.js';
 import {
   buildFactTimeContext,
   normalizeFactTime,
   resolveMemoryTimeZone,
-} from './time-context';
-import { createModuleLogger } from '../debug-log';
+} from './time-context.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("deep-memory");
 

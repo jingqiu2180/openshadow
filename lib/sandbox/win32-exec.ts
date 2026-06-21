@@ -23,17 +23,17 @@
 import { existsSync, mkdirSync } from "fs";
 import path, { dirname, join, resolve } from "path";
 import { spawnSync } from "child_process";
-import { spawnAndStream } from './exec-helper';
-import { classifyWin32Command } from './win32-command-router';
-import { assertSafeWin32BashCommand } from './win32-bash-guard';
-import { buildWin32SandboxGrants } from './win32-policy';
+import { spawnAndStream } from './exec-helper.js';
+import { classifyWin32Command } from './win32-command-router.js';
+import { assertSafeWin32BashCommand } from './win32-bash-guard.js';
+import { buildWin32SandboxGrants } from './win32-policy.js';
 import {
   buildWin32SandboxHelperArgs,
   resolveWin32SandboxHelper,
   resourceSiblingDir,
-} from './win32-sandbox-helper';
-import { prepareSandboxRuntime } from './win32-runtime-cache';
-import { createModuleLogger } from '../debug-log';
+} from './win32-sandbox-helper.js';
+import { prepareSandboxRuntime } from './win32-runtime-cache.js';
+import { createModuleLogger } from '../debug-log.js';
 import {
   isWin32PathLike,
   normalizeBackslashEscapedDoubleQuotes,
@@ -41,8 +41,8 @@ import {
   resolveWin32CmdExecutable,
   resolveWin32PowerShellExecutable,
   splitShellLikeArgs as splitShellLikeArgsBase,
-} from '../shell/shell-utils';
-import { assertExecutionCwd } from '../shell/execution-cwd';
+} from '../shell/shell-utils.js';
+import { assertExecutionCwd } from '../shell/execution-cwd.js';
 
 const log = createModuleLogger("win32-exec");
 

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 import crypto from "crypto";
 
 const DEFAULT_LOG_LIMIT = 200;

@@ -22,19 +22,19 @@
 
 import fs from "fs";
 import path from "path";
-import { Type } from '../pi-sdk/index';
-import { t } from '../i18n';
-import { callText } from '../../core/llm-client';
-import { getLocale } from '../i18n';
-import { getToolSessionPath } from './tool-session';
-import { serializeSessionFile } from '../session-files/session-file-response';
+import { Type } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
+import { callText } from '../../core/llm-client.js';
+import { getLocale } from '../i18n.js';
+import { getToolSessionPath } from './tool-session.js';
+import { serializeSessionFile } from '../session-files/session-file-response.js';
 import {
   installSkillPackageFromDirectory,
   prepareGithubSkillPackage,
   prepareLocalSkillPackage,
   sanitizeSkillName,
-} from '../skills/skill-package-installer';
-import { statFileRef } from '../file-ref/resource-io';
+} from '../skills/skill-package-installer.js';
+import { statFileRef } from '../file-ref/resource-io.js';
 
 const GITHUB_API_TIMEOUT = 15_000;
 const SAFETY_REVIEW_TIMEOUT = 20_000;

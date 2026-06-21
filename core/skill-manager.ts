@@ -8,9 +8,9 @@
 import fs from "fs";
 import path from "path";
 import chokidar from "chokidar";
-import { parseSkillMetadata } from '../lib/skills/skill-metadata';
-import { sourceIdentityForSkill } from '../lib/skills/skill-file-identity';
-import { createModuleLogger } from '../lib/debug-log';
+import { parseSkillMetadata } from '../lib/skills/skill-metadata.js';
+import { sourceIdentityForSkill } from '../lib/skills/skill-file-identity.js';
+import { createModuleLogger } from '../lib/debug-log.js';
 
 const log = createModuleLogger("skill-manager");
 

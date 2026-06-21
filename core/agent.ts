@@ -7,56 +7,56 @@
  */
 import fs from "fs";
 import path from "path";
-import { loadConfig, saveConfig } from '../lib/memory/config-loader';
-import { safeReadFile, safeReadJSON } from '../shared/safe-fs';
-import { FactStore } from '../lib/memory/fact-store';
-import { SessionSummaryManager } from '../lib/memory/session-summary';
-import { createMemoryTicker } from '../lib/memory/memory-ticker';
-import { createMemorySearchTool } from '../lib/memory/memory-search';
-import { createWebSearchTool } from '../lib/tools/web-search';
-import { createTodoTool } from '../lib/tools/todo';
-import { createDeskManager } from '../lib/desk/desk-manager';
-import { CronStore } from '../lib/desk/cron-store';
-import { createAutomationTool } from '../lib/tools/automation-tool';
-import { createWebFetchTool } from '../lib/tools/web-fetch';
-import { createStageFilesTool } from '../lib/tools/output-file-tool';
-import { createFileTool } from '../lib/tools/file-tool';
-import { createChannelTool } from '../lib/tools/channel-tool';
-import { createDmTool } from '../lib/tools/dm-tool';
-import { createBrowserTool } from '../lib/tools/browser-tool';
-import { createComputerUseTool } from '../lib/tools/computer-use-tool';
-import { createPinnedMemoryTools } from '../lib/tools/pinned-memory';
-import { createExperienceTools } from '../lib/tools/experience';
-import { createInstallSkillTool } from '../lib/tools/install-skill';
-import { createNotifyTool } from '../lib/tools/notify-tool';
-import { createUpdateSettingsTool } from '../lib/tools/update-settings-tool';
-import { createSessionFoldersTool } from '../lib/tools/session-folders-tool';
+import { loadConfig, saveConfig } from '../lib/memory/config-loader.js';
+import { safeReadFile, safeReadJSON } from '../shared/safe-fs.js';
+import { FactStore } from '../lib/memory/fact-store.js';
+import { SessionSummaryManager } from '../lib/memory/session-summary.js';
+import { createMemoryTicker } from '../lib/memory/memory-ticker.js';
+import { createMemorySearchTool } from '../lib/memory/memory-search.js';
+import { createWebSearchTool } from '../lib/tools/web-search.js';
+import { createTodoTool } from '../lib/tools/todo.js';
+import { createDeskManager } from '../lib/desk/desk-manager.js';
+import { CronStore } from '../lib/desk/cron-store.js';
+import { createAutomationTool } from '../lib/tools/automation-tool.js';
+import { createWebFetchTool } from '../lib/tools/web-fetch.js';
+import { createStageFilesTool } from '../lib/tools/output-file-tool.js';
+import { createFileTool } from '../lib/tools/file-tool.js';
+import { createChannelTool } from '../lib/tools/channel-tool.js';
+import { createDmTool } from '../lib/tools/dm-tool.js';
+import { createBrowserTool } from '../lib/tools/browser-tool.js';
+import { createComputerUseTool } from '../lib/tools/computer-use-tool.js';
+import { createPinnedMemoryTools } from '../lib/tools/pinned-memory.js';
+import { createExperienceTools } from '../lib/tools/experience.js';
+import { createInstallSkillTool } from '../lib/tools/install-skill.js';
+import { createNotifyTool } from '../lib/tools/notify-tool.js';
+import { createUpdateSettingsTool } from '../lib/tools/update-settings-tool.js';
+import { createSessionFoldersTool } from '../lib/tools/session-folders-tool.js';
 import {
   createSubagentCloseTool,
   createSubagentReplyTool,
   createSubagentTool,
-} from '../lib/tools/subagent-tool';
-import { writeSubagentSessionMeta } from '../lib/subagent-executor-metadata';
-import { createCheckDeferredTool } from '../lib/tools/check-deferred-tool';
-import { createStopTaskTool } from '../lib/tools/stop-task-tool';
-import { createCurrentStatusTool } from '../lib/tools/current-status-tool';
-import { createTerminalTool } from '../lib/tools/terminal-tool';
-import { createWorkflowTool } from '../lib/tools/workflow-tool';
-import { runCompatChecks } from '../lib/compat/index';
-import { getPlatformPromptNote } from './platform-prompt';
-import { assertAgentConfigPatchYuan, getAgentConfigRepairState } from './yuan-registry';
+} from '../lib/tools/subagent-tool.js';
+import { writeSubagentSessionMeta } from '../lib/subagent-executor-metadata.js';
+import { createCheckDeferredTool } from '../lib/tools/check-deferred-tool.js';
+import { createStopTaskTool } from '../lib/tools/stop-task-tool.js';
+import { createCurrentStatusTool } from '../lib/tools/current-status-tool.js';
+import { createTerminalTool } from '../lib/tools/terminal-tool.js';
+import { createWorkflowTool } from '../lib/tools/workflow-tool.js';
+import { runCompatChecks } from '../lib/compat/index.js';
+import { getPlatformPromptNote } from './platform-prompt.js';
+import { assertAgentConfigPatchYuan, getAgentConfigRepairState } from './yuan-registry.js';
 import {
   collectWorkspaceInstructionFiles,
   formatWorkspaceInstructionFiles,
-} from './workspace-instruction-files';
-import { callText } from './llm-client';
-import { createModuleLogger } from '../lib/debug-log';
+} from './workspace-instruction-files.js';
+import { callText } from './llm-client.js';
+import { createModuleLogger } from '../lib/debug-log.js';
 import {
   CACHE_SNAPSHOT_EXPERIMENT_ID,
   PROACTIVE_SUBAGENT_EXPERIMENT_ID,
   getResolvedExperimentValue,
-} from '../lib/experiments/registry';
-import { userProfilePath } from '../lib/user-profile-store';
+} from '../lib/experiments/registry.js';
+import { userProfilePath } from '../lib/user-profile-store.js';
 import {
   type AgentAppearanceModel,
   formatAgentAppearancePrompt,
@@ -64,7 +64,7 @@ import {
   readAgentAppearanceProfileResource,
   type ResolvedAgentAppearanceModelConfig,
   refreshAgentAppearanceProfileResource,
-} from '../lib/agent-appearance-summary';
+} from '../lib/agent-appearance-summary.js';
 
 const moduleLog = createModuleLogger("agent");
 

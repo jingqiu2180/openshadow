@@ -392,6 +392,8 @@
     align-items: center;
     padding: 0 var(--space-md);
     border-bottom: 1px solid var(--jian-note-border, rgba(200, 160, 110, 0.2));
+    min-width: 0;
+    overflow: hidden;
 }
 
 .jianRule {
@@ -405,6 +407,10 @@
     font-size: 0.94rem;
     font-weight: 600;
     letter-spacing: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-all;
+    min-width: 0;
 }
 
 .jianToggle {

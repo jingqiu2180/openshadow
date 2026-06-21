@@ -2,12 +2,12 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import { atomicWriteSync } from '../shared/safe-fs';
-import { ensureDeviceAccessRegistries } from './device-registry';
-import { ensureExecutionLeaseRegistry } from './execution-lease-registry';
-import { ensureGrantRegistry } from './grant-registry';
-import { ensureServerNetworkConfig } from './server-network-config';
-import { ensureStudioMountRegistry } from './studio-mounts';
+import { atomicWriteSync } from '../shared/safe-fs.js';
+import { ensureDeviceAccessRegistries } from './device-registry.js';
+import { ensureExecutionLeaseRegistry } from './execution-lease-registry.js';
+import { ensureGrantRegistry } from './grant-registry.js';
+import { ensureServerNetworkConfig } from './server-network-config.js';
+import { ensureStudioMountRegistry } from './studio-mounts.js';
 
 const SERVER_NODE_FILE = "server-node.json";
 const USERS_FILE = "users.json";

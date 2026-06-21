@@ -3,7 +3,7 @@ import { spawnSync } from "child_process";
 import {
   normalizeBackslashEscapedDoubleQuotes,
   splitShellLikeArgs,
-} from '../shell/shell-utils';
+} from '../shell/shell-utils.js';
 
 const EXPLICIT_CMD_SHELLS = new Set([
   "cmd",

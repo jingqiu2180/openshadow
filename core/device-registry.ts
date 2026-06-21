@@ -2,8 +2,8 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
-import { normalizePrincipal } from './security-principal';
+import { atomicWriteSync } from '../shared/safe-fs.js';
+import { normalizePrincipal } from './security-principal.js';
 
 export const DEVICES_FILE = "devices.json";
 export const DEVICE_CREDENTIALS_FILE = "device-credentials.json";

@@ -1,11 +1,11 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../../shared/safe-fs';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
 import {
   CACHE_STRATEGIES,
   normalizeCacheStrategy,
-} from '../llm/cache-strategy-contract';
+} from '../llm/cache-strategy-contract.js';
 
 export const CACHE_SNAPSHOT_OBSERVATION_RELATIVE_PATH = path.join(
   "experiments",

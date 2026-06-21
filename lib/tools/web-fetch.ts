@@ -8,11 +8,11 @@
  * 支持：HTML 页面、JSON API、纯文本
  */
 
-import { Type } from '../pi-sdk/index';
+import { Type } from '../pi-sdk/index.js';
 import { lookup } from "dns/promises";
 import { isIP } from "net";
-import { t } from '../i18n';
-import { htmlToMarkdownDocument } from './web-reader';
+import { t } from '../i18n.js';
+import { htmlToMarkdownDocument } from './web-reader.js';
 
 const MAX_CONTENT_LENGTH = 12000;  // 返回最大字符数
 const FETCH_TIMEOUT = 15000;       // 15 秒超时

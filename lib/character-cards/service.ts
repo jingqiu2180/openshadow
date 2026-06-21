@@ -4,22 +4,22 @@ import fs from "fs";
 import fsp from "fs/promises";
 import path from "path";
 import YAML from "js-yaml";
-import { extractZip } from '../extract-zip';
-import { FactStore } from '../memory/fact-store';
+import { extractZip } from '../extract-zip.js';
+import { FactStore } from '../memory/fact-store.js';
 import {
   compactCompiledMemory,
   emptyCompiledMemory,
   hasCompiledMemory,
   normalizeCompiledMemory,
   readCompiledMemorySnapshot,
-} from '../memory/compiled-memory-snapshot';
-import { normalizePlainDescription } from '../text/internal-narration';
-import { sanitizeSkillName } from '../tools/install-skill';
-import { writeZipFromDirectory } from '../zip-writer';
-import { safeCopyDir } from '../../shared/safe-fs';
-import { relativePathInsideBase } from '../../core/message-utils';
-import { fromRoot } from '../../shared/hana-root';
-import { loadSkillBundleStore, recordSkillBundle } from '../skill-bundles/store';
+} from '../memory/compiled-memory-snapshot.js';
+import { normalizePlainDescription } from '../text/internal-narration.js';
+import { sanitizeSkillName } from '../tools/install-skill.js';
+import { writeZipFromDirectory } from '../zip-writer.js';
+import { safeCopyDir } from '../../shared/safe-fs.js';
+import { relativePathInsideBase } from '../../core/message-utils.js';
+import { fromRoot } from '../../shared/hana-root.js';
+import { loadSkillBundleStore, recordSkillBundle } from '../skill-bundles/store.js';
 
 const VALID_YUAN = new Set(["hanako", "butter", "ming", "kong"]);
 const CARD_FILE_NAMES = [

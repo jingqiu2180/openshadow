@@ -7,8 +7,8 @@
  */
 
 import fs from "fs";
-import { spawnAndStream } from './exec-helper';
-import { writeScript, writeProfile, cleanup } from './script';
+import { spawnAndStream } from './exec-helper.js';
+import { writeScript, writeProfile, cleanup } from './script.js';
 
 /**
  * 创建 macOS 沙盒化的 exec 函数

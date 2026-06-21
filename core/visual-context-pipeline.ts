@@ -5,8 +5,8 @@ import path from "path";
 import {
   VISION_CONTEXT_END,
   VISION_CONTEXT_START,
-} from './vision-bridge';
-import { modelSupportsDirectImageInput } from '../shared/model-capabilities';
+} from './vision-bridge.js';
+import { modelSupportsDirectImageInput } from '../shared/model-capabilities.js';
 
 function isExplicitTextOnlyModel(model) {
   return Array.isArray(model?.input) && !modelSupportsDirectImageInput(model);

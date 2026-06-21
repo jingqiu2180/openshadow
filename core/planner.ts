@@ -10,7 +10,7 @@
  * - Step history for context across turns
  */
 
-import { Agent, ChatMessage } from './agent'
+import { Agent, ChatMessage } from './agent.js'
 
 export interface PlanStep {
   id: number

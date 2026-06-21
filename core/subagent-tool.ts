@@ -3,8 +3,8 @@
  * Subagent 工具（对齐 openhanako）
  * 支持 agent/access/model 参数，集成 SubagentThreadStore/SubagentRunStore
  */
-import { SubagentThreadStore } from './subagent-thread-store'
-import { SubagentRunStore } from './subagent-run-store'
+import { SubagentThreadStore } from './subagent-thread-store.js'
+import { SubagentRunStore } from './subagent-run-store.js'
 
 export function createSubagentTool(deps) {
   const threadStore = new SubagentThreadStore()

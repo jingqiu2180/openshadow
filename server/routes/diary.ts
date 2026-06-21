@@ -8,8 +8,8 @@
 
 import fs from "fs";
 import { Hono } from "hono";
-import { resolveDiaryDir } from '../../lib/diary/diary-writer';
-import { createModuleLogger } from '../../lib/debug-log';
+import { resolveDiaryDir } from '../../lib/diary/diary-writer.js';
+import { createModuleLogger } from '../../lib/debug-log.js';
 
 const log = createModuleLogger("diary");
 

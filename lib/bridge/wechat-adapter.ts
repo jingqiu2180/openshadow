@@ -9,16 +9,16 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { atomicWriteSync } from '../../shared/safe-fs';
-import { debugLog } from '../debug-log';
-import { createMediaCapabilities } from './media-capabilities';
-import { createReceiptCapabilities } from './receipt-capabilities';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
+import { debugLog } from '../debug-log.js';
+import { createMediaCapabilities } from './media-capabilities.js';
+import { createReceiptCapabilities } from './receipt-capabilities.js';
 import {
   createIlinkMediaAesKey,
   decodeIlinkMediaAesKey,
   encodeIlinkMediaAesKey,
-} from './wechat-ilink-media-crypto';
-import { createModuleLogger } from '../debug-log';
+} from './wechat-ilink-media-crypto.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("wechat");
 

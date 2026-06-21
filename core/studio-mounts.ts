@@ -1,7 +1,7 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 
 export const STUDIO_MOUNTS_FILE = "studio-mounts.json";
 

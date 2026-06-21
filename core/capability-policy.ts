@@ -3,7 +3,7 @@ import crypto from "crypto";
 import {
   normalizePrincipal,
   principalOwnsLocalConnection,
-} from './security-principal';
+} from './security-principal.js';
 
 export function authorizeCapability({
   principal,

@@ -11,9 +11,9 @@ import {
   assertAdapterReferenceImageLimit,
   resolveImageTarget,
   runSubmitInBackground,
-} from './image-task-runner';
-import { resolveMediaParameters } from '../../../../core/media/media-parameters';
-import { t } from '../../../../lib/i18n';
+} from './image-task-runner.js';
+import { resolveMediaParameters } from '../../../../core/media/media-parameters.js';
+import { t } from '../../../../lib/i18n.js';
 
 function assertMediaRuntime(ctx) {
   const { registry, store, poller } = ctx?._mediaGen || {};

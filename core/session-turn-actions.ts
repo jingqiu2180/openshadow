@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { submitDesktopSessionMessage } from './desktop-session-submit';
+import { submitDesktopSessionMessage } from './desktop-session-submit.js';
 import fsp from "fs/promises";
-import { detectMime } from '../lib/file-metadata';
+import { detectMime } from '../lib/file-metadata.js';
 
 const ATTACHMENT_MARKER_RE = /^\[(attached_(?:image|video):[^\]]+)\]\s*$/;
 const ATTACHED_IMAGE_MARKER_RE = /\[attached_image:\s*([^\]]+)\]/g;

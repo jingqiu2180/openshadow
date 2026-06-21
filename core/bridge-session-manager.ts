@@ -7,55 +7,55 @@
  */
 import fs from "fs";
 import path from "path";
-import { createAgentSession, SessionManager } from '../lib/pi-sdk/index';
-import { createDefaultSettings } from './session-defaults';
-import { compactSessionWithCachePreservation } from './session-compactor';
-import { repairOrphanToolResultEntriesInFile } from './session-health';
-import { debugLog, createModuleLogger } from '../lib/debug-log';
-import { t, getLocale } from '../lib/i18n';
-import { atomicWriteSync, safeReadJSON } from '../shared/safe-fs';
-import { findModel } from '../shared/model-ref';
-import { teardownSessionResources } from './session-teardown';
+import { createAgentSession, SessionManager } from '../lib/pi-sdk/index.js';
+import { createDefaultSettings } from './session-defaults.js';
+import { compactSessionWithCachePreservation } from './session-compactor.js';
+import { repairOrphanToolResultEntriesInFile } from './session-health.js';
+import { debugLog, createModuleLogger } from '../lib/debug-log.js';
+import { t, getLocale } from '../lib/i18n.js';
+import { atomicWriteSync, safeReadJSON } from '../shared/safe-fs.js';
+import { findModel } from '../shared/model-ref.js';
+import { teardownSessionResources } from './session-teardown.js';
 import {
   pruneSessionInlineMediaHistory,
   repairSessionInlineMediaEntriesInFile,
-} from './session-inline-media-prune';
-import { isAbortLikeError, prepareVisionInputForTextOnlyModel } from './vision-prepare';
-import { prepareModelImageInputsForPrompt } from './model-image-preprocess';
-import { withVisionContextInjectionExtension } from './vision-context-injector';
-import { normalizeBridgePermissionMode, SESSION_PERMISSION_MODES } from './session-permission-mode';
-import { uniqueToolNames } from '../shared/tool-categories';
-import { collectMediaItems } from '../lib/tools/media-details';
-import { formatSettingsUpdateText } from '../lib/tools/settings-update-result';
-import { materializeBridgeInboundFiles } from '../lib/session-files/bridge-inbound-files';
+} from './session-inline-media-prune.js';
+import { isAbortLikeError, prepareVisionInputForTextOnlyModel } from './vision-prepare.js';
+import { prepareModelImageInputsForPrompt } from './model-image-preprocess.js';
+import { withVisionContextInjectionExtension } from './vision-context-injector.js';
+import { normalizeBridgePermissionMode, SESSION_PERMISSION_MODES } from './session-permission-mode.js';
+import { uniqueToolNames } from '../shared/tool-categories.js';
+import { collectMediaItems } from '../lib/tools/media-details.js';
+import { formatSettingsUpdateText } from '../lib/tools/settings-update-result.js';
+import { materializeBridgeInboundFiles } from '../lib/session-files/bridge-inbound-files.js';
 import {
   modelSupportsDirectAudioInput,
   modelSupportsAudioInput,
   modelSupportsDirectVideoInput,
   modelSupportsVideoInput,
-} from '../shared/model-capabilities';
+} from '../shared/model-capabilities.js';
 import {
   appendBridgePromptLine,
   bridgeContextIndexMeta,
   buildBridgeContext,
-} from '../lib/bridge/bridge-context';
+} from '../lib/bridge/bridge-context.js';
 import {
   buildFreshCompactMetaPatch,
   buildFreshCompactSnapshot,
   getFreshCompactNoopReason,
   normalizeFreshCompactNoopReason,
   shouldRunFreshCompact,
-} from '../lib/fresh-compact/policy';
+} from '../lib/fresh-compact/policy.js';
 import {
   buildSessionPromptSnapshot,
   createPromptSnapshotResourceLoader,
   normalizeSessionPromptSnapshot,
-} from './session-prompt-snapshot';
+} from './session-prompt-snapshot.js';
 import {
   normalizeSessionThinkingLevel,
   resolveModelDefaultThinkingLevel,
-} from './session-thinking-level';
-import { repairRestoredToolSnapshot, sameToolNames } from './tool-snapshot-repair';
+} from './session-thinking-level.js';
+import { repairRestoredToolSnapshot, sameToolNames } from './tool-snapshot-repair.js';
 
 const log = createModuleLogger("bridge-session");
 

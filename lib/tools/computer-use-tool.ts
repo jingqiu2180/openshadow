@@ -1,14 +1,14 @@
 // @ts-nocheck
-import { Type, StringEnum } from '../pi-sdk/index';
-import { toolOk } from './tool-result';
-import { getToolSessionPath } from './tool-session';
-import { t } from '../i18n';
+import { Type, StringEnum } from '../pi-sdk/index.js';
+import { toolOk } from './tool-result.js';
+import { getToolSessionPath } from './tool-session.js';
+import { t } from '../i18n.js';
 import {
   COMPUTER_USE_ERRORS,
   computerUseError,
   serializeComputerUseError,
-} from '../../core/computer-use/errors';
-import { SESSION_PERMISSION_MODES, normalizeSessionPermissionMode } from '../../core/session-permission-mode';
+} from '../../core/computer-use/errors.js';
+import { SESSION_PERMISSION_MODES, normalizeSessionPermissionMode } from '../../core/session-permission-mode.js';
 
 const MODEL_VISIBLE_COMPUTER_ACTIONS = Object.freeze([
   "status",

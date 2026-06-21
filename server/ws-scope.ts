@@ -4,7 +4,7 @@ import {
   normalizePrincipal,
   principalHasScope,
   principalOwnsLocalConnection,
-} from '../core/security-principal';
+} from '../core/security-principal.js';
 
 const SAFE_GLOBAL_EVENTS = new Set([
   "session_created",

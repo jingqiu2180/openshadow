@@ -3,7 +3,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { Hono } from "hono";
-import { guessMime } from '../http/file-content';
+import { guessMime } from '../http/file-content.js';
 
 const DEFAULT_TTL_MS = 10 * 60 * 1000;
 const DEFAULT_MAX_CONTENT_BYTES = 2 * 1024 * 1024;

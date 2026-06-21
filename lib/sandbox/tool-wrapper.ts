@@ -11,8 +11,8 @@
 
 import fs from "fs";
 import path from "path";
-import { t } from '../i18n';
-import { normalizeWin32ShellPath } from './win32-path';
+import { t } from '../i18n.js';
+import { normalizeWin32ShellPath } from './win32-path.js';
 
 interface SandboxOpts {
   getSandboxEnabled?: () => boolean;

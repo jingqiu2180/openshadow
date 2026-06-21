@@ -4,7 +4,7 @@ import redactor, {
   redactLogValue,
   redactLogLabel,
   formatLogArgs,
-} from '../shared/log-redactor';
+} from '../shared/log-redactor.js';
 
 export {
   redactLogText,

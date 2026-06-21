@@ -19,7 +19,7 @@ import fs from "fs";
 import {
   readSessionEntriesFile,
   writeSessionEntriesFile,
-} from './session-jsonl-file';
+} from './session-jsonl-file.js';
 
 const DEFAULT_LOOKBACK = 10;
 const DEFAULT_ERROR_THRESHOLD = 3;

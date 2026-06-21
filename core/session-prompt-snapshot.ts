@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { resolveSessionSkillsForRuntime } from '../lib/skills/session-skill-snapshot';
+import { resolveSessionSkillsForRuntime } from '../lib/skills/session-skill-snapshot.js';
 
 export const SESSION_PROMPT_SNAPSHOT_VERSION = 1;
 

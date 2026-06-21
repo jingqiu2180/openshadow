@@ -1,7 +1,7 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../../shared/safe-fs';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
 
 const COMPILED_FILES = ["memory.md", "facts.md", "today.md", "week.md", "longterm.md"];
 

@@ -1,9 +1,9 @@
 // @ts-nocheck
-import { authorizeCapability } from '../../core/capability-policy';
-import { findActiveGrantsForPrincipal } from '../../core/grant-registry';
-import { normalizePrincipal } from '../../core/security-principal';
-import { assertRouteErrorStatus, jsonRouteError } from './route-errors';
-export { HttpRouteError, jsonRouteError } from './route-errors';
+import { authorizeCapability } from '../../core/capability-policy.js';
+import { findActiveGrantsForPrincipal } from '../../core/grant-registry.js';
+import { normalizePrincipal } from '../../core/security-principal.js';
+import { assertRouteErrorStatus, jsonRouteError } from './route-errors.js';
+export { HttpRouteError, jsonRouteError } from './route-errors.js';
 
 export function createRequestContext(c, engine) {
   const runtimeContext = readRuntimeContext(engine);

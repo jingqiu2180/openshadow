@@ -3,7 +3,7 @@ import crypto from "crypto";
 import {
   CACHE_STRATEGIES,
   buildCacheStrategyMetadata,
-} from './cache-strategy-contract';
+} from './cache-strategy-contract.js';
 
 function hashStablePrefix(parts) {
   return crypto

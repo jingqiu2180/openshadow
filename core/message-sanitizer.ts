@@ -19,7 +19,7 @@ import {
   modelSupportsAudioInput,
   modelSupportsImageInput,
   modelSupportsVideoInput,
-} from '../shared/model-capabilities';
+} from '../shared/model-capabilities.js';
 
 const IMAGE_PLACEHOLDER_TEXT = "[图片已省略：当前模型不支持图像输入]";
 const VIDEO_PLACEHOLDER_TEXT = "[视频已省略：当前模型不支持视频输入]";

@@ -1,8 +1,8 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
-import { validateExecutionLease } from './remote-execution-boundary';
+import { atomicWriteSync } from '../shared/safe-fs.js';
+import { validateExecutionLease } from './remote-execution-boundary.js';
 
 export const EXECUTION_LEASES_FILE = "execution-leases.json";
 

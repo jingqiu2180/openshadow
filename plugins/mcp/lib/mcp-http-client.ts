@@ -1,16 +1,16 @@
 // @ts-nocheck
-import { MCP_PROTOCOL_VERSION } from './mcp-stdio-client';
-import { getOutboundProxyConfig } from '../../../lib/net/outbound-proxy';
+import { MCP_PROTOCOL_VERSION } from './mcp-stdio-client.js';
+import { getOutboundProxyConfig } from '../../../lib/net/outbound-proxy.js';
 import {
   normalizeNetworkProxyConfig,
   proxyConfigFromEnvironment,
   resolveProxyForUrl,
-} from '../../../shared/network-proxy';
+} from '../../../shared/network-proxy.js';
 import {
   MCP_PROTOCOL_VERSION_HEADER,
   headersWithoutMcpProtocolVersion,
   resolveInitialMcpProtocolVersion,
-} from './mcp-protocol-version';
+} from './mcp-protocol-version.js';
 
 const STREAMABLE_ACCEPT = "application/json, text/event-stream";
 const SSE_ACCEPT = "text/event-stream";

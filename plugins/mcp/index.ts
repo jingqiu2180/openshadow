@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { McpRuntime } from './lib/mcp-runtime';
+import { McpRuntime } from './lib/mcp-runtime.js';
 
 export default class McpPlugin {
   declare ctx: any;

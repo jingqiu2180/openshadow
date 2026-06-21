@@ -15,7 +15,7 @@ import {
   mediaMode,
   noReferenceImages,
   referenceImages,
-} from './media-schema-helpers';
+} from './media-schema-helpers.js';
 
 function geminiImageProperties(ratios, resolutions = null) {
   return {

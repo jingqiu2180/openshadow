@@ -7,6 +7,9 @@
  *
  * 路由对齐 openhanako：挂载 37 个业务路由。
  */
+import * as dotenv from 'dotenv';
+dotenv.config({ path: path.join(process.cwd(), '.env') });
+console.log('[env] AGENT_API_KEY:', process.env.AGENT_API_KEY ? 'present' : 'missing', 'AGENT_BASE_URL:', process.env.AGENT_BASE_URL);
 import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { cors } from 'hono/cors'
@@ -40,7 +43,7 @@ import { createMediaRoute } from './routes/media.js'
 import { createMobileStaticRoute } from './routes/mobile-static.js'
 import { createMobileWorkbenchRoute } from './routes/mobile-workbench.js'
 import { createModelsRoute } from './routes/models.js'
-import { createPluginProxyRoute } from './routes/plugins.js'
+import { createPluginProxyRoute, createPluginsRoute } from './routes/plugins.js'
 import { createPreferencesRoute } from './routes/preferences.js'
 import { createProvidersRoute } from './routes/providers.js'
 import { createResourcesRoute } from './routes/resources.js'
@@ -225,7 +228,8 @@ async function start() {
   app.route('/api', createMobileStaticRoute({ distDir: path.join(process.cwd(), 'dist', 'mobile-static') }))
   app.route('/api', createMobileWorkbenchRoute(engine))
   app.route('/api', createModelsRoute(engine))
-  app.route('/api', createPluginProxyRoute({ getPages: () => [], getWidgets: () => [] }))
+  app.route('/api', createPluginsRoute(engine))
+  app.route('/api', createPluginProxyRoute({ get: () => null, getPages: () => [], getWidgets: () => [] }))
   app.route('/api', createPreferencesRoute(engine, {}))
   app.route('/api', createProvidersRoute(engine))
   app.route('/api', createResourcesRoute(engine))
@@ -248,6 +252,24 @@ async function start() {
   }))
 
   app.get('/api/agent/status', (c) => c.json({ connected: false }))
+
+  // locales 静态文件（Electron 前端 i18n 需要）
+  const localesDir = path.join(process.cwd(), 'locales')
+  app.get('/locales/:file', (c) => {
+    const file = c.req.param('file')
+    // 安全防护：防止路径穿越
+    if (file.includes('..') || file.includes('/') || file.includes('\\')) {
+      return c.text('Forbidden', 403)
+    }
+    const filePath = path.join(localesDir, file)
+    try {
+      const content = fsSync.readFileSync(filePath, 'utf-8')
+      const data = JSON.parse(content)
+      return c.json(data)
+    } catch {
+      return c.text('Not Found', 404)
+    }
+  })
 
   // ═══ 启动 HTTP 服务 ═══
   const port = Number(process.env.PORT || 3000)

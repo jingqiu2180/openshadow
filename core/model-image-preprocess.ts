@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Buffer } from "node:buffer";
-import * as piSdk from '../lib/pi-sdk/index';
+import * as piSdk from '../lib/pi-sdk/index.js';
 
 export const MODEL_IMAGE_INPUT_POLICY = Object.freeze({
   maxWidth: 2000,

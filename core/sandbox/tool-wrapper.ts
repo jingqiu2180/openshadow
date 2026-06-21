@@ -10,7 +10,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { normalizeWin32ShellPath } from './win32-path'
+import { normalizeWin32ShellPath } from './win32-path.js'
 
 interface SandboxOpts {
   getSandboxEnabled?: () => boolean

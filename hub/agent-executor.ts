@@ -10,12 +10,12 @@
 
 import fs from "fs";
 import path from "path";
-import { createAgentSession, SessionManager } from '../lib/pi-sdk/index';
-import { debugLog } from '../lib/debug-log';
-import { t } from '../lib/i18n';
-import { createDefaultSettings } from '../core/session-defaults';
-import { SESSION_PERMISSION_MODES } from '../core/session-permission-mode';
-import { teardownSessionResources } from '../core/session-teardown';
+import { createAgentSession, SessionManager } from '../lib/pi-sdk/index.js';
+import { debugLog } from '../lib/debug-log.js';
+import { t } from '../lib/i18n.js';
+import { createDefaultSettings } from '../core/session-defaults.js';
+import { SESSION_PERMISSION_MODES } from '../core/session-permission-mode.js';
+import { teardownSessionResources } from '../core/session-teardown.js';
 import {
   applyConversationScopedMemorySearch,
   filterAgentPhoneTools,
@@ -23,23 +23,23 @@ import {
   getAgentPhonePermissionMode,
   getAgentPhoneSessionDir,
   shouldReuseAgentPhoneSession,
-} from '../lib/conversations/agent-phone-session';
+} from '../lib/conversations/agent-phone-session.js';
 import {
   ensureAgentPhoneProjection,
   updateAgentPhoneProjectionMeta,
-} from '../lib/conversations/agent-phone-projection';
+} from '../lib/conversations/agent-phone-projection.js';
 import {
   readAgentPhoneRuntime,
   resolveAgentPhoneRuntimeSessionPath,
   updateAgentPhoneRuntime,
-} from '../lib/conversations/agent-phone-runtime';
-import { findModel, requireModelRef } from '../shared/model-ref';
+} from '../lib/conversations/agent-phone-runtime.js';
+import { findModel, requireModelRef } from '../shared/model-ref.js';
 import {
   buildSessionPromptSnapshot,
   createPromptSnapshotResourceLoader,
   normalizeSessionPromptSnapshot,
-} from '../core/session-prompt-snapshot';
-import { stripClosedInternalNarrationBlocks } from '../lib/text/internal-narration';
+} from '../core/session-prompt-snapshot.js';
+import { stripClosedInternalNarrationBlocks } from '../lib/text/internal-narration.js';
 
 function resolveAgentPhoneModel(engine, ctx, agentConfig, modelOverride) {
   if (!modelOverride) return ctx.resolveModel(agentConfig);

@@ -17,7 +17,7 @@
  *     field with the same semantics.
  */
 
-import { getReasoningProfile } from '../../shared/model-capabilities';
+import { getReasoningProfile } from '../../shared/model-capabilities.js';
 
 const ADAPTIVE_THINKING_DISABLED_ERROR =
   "Claude Fable/Mythos 5 does not support disabling adaptive thinking.";

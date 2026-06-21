@@ -6,16 +6,16 @@
  * description 不列举设置，由 search 按需返回匹配结果。
  */
 
-import { Type, StringEnum } from '../pi-sdk/index';
-import { t } from '../i18n';
-import themeRegistry from "../../desktop/src/shared/theme-registry.cjs";
-import { parseModelRef } from '../../shared/model-ref';
-import { emitAppEvent } from '../../server/app-events';
+import { Type, StringEnum } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
+import themeRegistry from '../../desktop/src/shared/theme-registry.cjs';
+import { parseModelRef } from '../../shared/model-ref.js';
+import { emitAppEvent } from '../../server/app-events.js';
 import {
   createSettingsToolResult,
   createSettingsUpdate,
   formatSettingsValue,
-} from './settings-update-result';
+} from './settings-update-result.js';
 
 /**
  * i18n key → 本地化标签 批量转换

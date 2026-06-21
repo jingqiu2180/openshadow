@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { createToolSpec } from '../tool-registry'
+import { createToolSpec } from '../tool-registry.js'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
 

@@ -2,9 +2,9 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { capabilityDecisionSummary } from './capability-policy';
-import { principalSummary } from './security-principal';
-import { MASKED_SECRET } from '../shared/secret-custody';
+import { capabilityDecisionSummary } from './capability-policy.js';
+import { principalSummary } from './security-principal.js';
+import { MASKED_SECRET } from '../shared/secret-custody.js';
 
 export const SECURITY_AUDIT_LOG_FILE = "security-audit.jsonl";
 

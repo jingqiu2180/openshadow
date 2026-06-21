@@ -14,26 +14,26 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import { getLogicalDay } from '../time-utils';
-import { callText } from '../../core/llm-client';
-import { getLocale } from '../i18n';
-import { atomicWriteSync, safeReadFile } from '../../shared/safe-fs';
-import { normalizeCompiledLLMResult, normalizeCompiledSectionBody } from './compiled-memory-state';
-import { attachPromptLayoutMetadata, buildUtilityPromptLayout } from '../llm/prompt-layout';
+import { getLogicalDay } from '../time-utils.js';
+import { callText } from '../../core/llm-client.js';
+import { getLocale } from '../i18n.js';
+import { atomicWriteSync, safeReadFile } from '../../shared/safe-fs.js';
+import { normalizeCompiledLLMResult, normalizeCompiledSectionBody } from './compiled-memory-state.js';
+import { attachPromptLayoutMetadata, buildUtilityPromptLayout } from '../llm/prompt-layout.js';
 import {
   buildCompileFactsPrompt,
   buildCompileLongtermPrompt,
   buildCompileTodayPrompt,
   buildCompileWeekPrompt,
-} from './prompts/compile';
-import { withMemoryReasoningBuffer } from './llm-budget';
+} from './prompts/compile.js';
+import { withMemoryReasoningBuffer } from './llm-budget.js';
 import {
   FACT_SECTION_TITLES,
   extractFactSection,
   hasFactSectionHeading,
   isEmptyFactSection,
-} from './rolling-summary-format';
-import { createModuleLogger } from '../debug-log';
+} from './rolling-summary-format.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("memory-compile");
 

@@ -1,8 +1,8 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { assemble } from './compile';
-import { normalizeCompiledSectionBody } from './compiled-memory-state';
+import { assemble } from './compile.js';
+import { normalizeCompiledSectionBody } from './compiled-memory-state.js';
 
 export const COMPILED_MEMORY_BLOCKS = [
   { key: "facts", fileName: "facts.md", label: "重要事实" },

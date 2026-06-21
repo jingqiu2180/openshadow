@@ -6,7 +6,7 @@
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
-import { redactLogLabel, redactLogText } from './log-redactor'
+import { redactLogLabel, redactLogText } from './log-redactor.js'
 
 class DebugLog {
   private _dedup: any

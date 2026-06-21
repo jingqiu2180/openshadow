@@ -4,8 +4,8 @@
  */
 
 import OpenAI from 'openai'
-import { captureScreenshot } from './screenshot'
-import { getAgentConfig } from '../memory/store'
+import { captureScreenshot } from './screenshot.js'
+import { getAgentConfig } from '../memory/store.js'
 
 export interface VisionResult {
   success: true
@@ -109,5 +109,5 @@ export async function analyzeScreenshot(options: AnalyzeOptions = {}): Promise<V
   }
 }
 
-export { captureScreenshot } from './screenshot'
-export type { ScreenshotResult, ScreenshotError, ScreenshotOutput } from './screenshot'
+export { captureScreenshot } from './screenshot.js'
+export type { ScreenshotResult, ScreenshotError, ScreenshotOutput } from './screenshot.js'

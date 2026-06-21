@@ -28,8 +28,8 @@
  *
  * 接口契约：见 ./README.md
  */
-import { modelSupportsVideoInput } from '../../shared/model-capabilities';
-import { normalizeOpenAIVideoUrlPayload } from './openai-video-url';
+import { modelSupportsVideoInput } from '../../shared/model-capabilities.js';
+import { normalizeOpenAIVideoUrlPayload } from './openai-video-url.js';
 
 export function matches(model) {
   if (!model || typeof model !== "object") return false;

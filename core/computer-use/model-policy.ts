@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { COMPUTER_USE_ERRORS, computerUseError } from './errors';
-import { modelSupportsDirectImageInput } from '../../shared/model-capabilities';
+import { COMPUTER_USE_ERRORS, computerUseError } from './errors.js';
+import { modelSupportsDirectImageInput } from '../../shared/model-capabilities.js';
 
 export function modelSupportsComputerUse(model) {
   return modelSupportsDirectImageInput(model);

@@ -9,7 +9,7 @@
  * - MessageBus: agents communicate via messages
  */
 
-import { Agent, ChatMessage } from './agent'
+import { Agent, ChatMessage } from './agent.js'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

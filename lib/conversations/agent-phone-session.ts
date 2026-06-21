@@ -7,9 +7,9 @@
  */
 
 import path from "path";
-import { SESSION_PERMISSION_MODES } from '../../core/session-permission-mode';
-import { safeConversationStem } from './agent-phone-projection';
-import { uniqueToolNames } from '../../shared/tool-categories';
+import { SESSION_PERMISSION_MODES } from '../../core/session-permission-mode.js';
+import { safeConversationStem } from './agent-phone-projection.js';
+import { uniqueToolNames } from '../../shared/tool-categories.js';
 
 export const AGENT_PHONE_TOOL_MODES = Object.freeze({
   READ_ONLY: "read_only",

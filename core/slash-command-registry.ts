@@ -16,7 +16,7 @@
  * @property {string} [usage]
  */
 
-import { createModuleLogger } from '../lib/debug-log';
+import { createModuleLogger } from '../lib/debug-log.js';
 
 const log = createModuleLogger("slash");
 const MAX_COMMAND_NAME_LENGTH = 32;

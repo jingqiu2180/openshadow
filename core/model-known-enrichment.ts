@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { getPiModel } from '../lib/pi-sdk/index';
-import { lookupKnown } from '../shared/known-models';
-import { normalizeVisionCapabilities, withThinkingFormatCompat } from '../shared/model-capabilities';
+import { getPiModel } from '../lib/pi-sdk/index.js';
+import { lookupKnown } from '../shared/known-models.js';
+import { normalizeVisionCapabilities, withThinkingFormatCompat } from '../shared/model-capabilities.js';
 
 const RUNTIME_ENRICHED_PROVIDERS = new Set(["kimi-coding"]);
 const KIMI_CODING_MODEL_ID = "kimi-for-coding";

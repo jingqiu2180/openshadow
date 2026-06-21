@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { DAY_BOUNDARY_HOUR } from '../time-utils';
-import { createModuleLogger } from '../debug-log';
+import { DAY_BOUNDARY_HOUR } from '../time-utils.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("fresh-compact");
 

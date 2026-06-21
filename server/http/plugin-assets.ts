@@ -1,13 +1,13 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { parseCookie } from '../../core/web-session-store';
+import { parseCookie } from '../../core/web-session-store.js';
 import {
   PluginAssetSessionError,
   pluginAssetSessionCookieName,
   verifyPluginAssetSession,
-} from '../../core/plugin-asset-session-service';
-import { serveFileContent } from './file-content';
+} from '../../core/plugin-asset-session-service.js';
+import { serveFileContent } from './file-content.js';
 
 const ALLOWED_PLUGIN_ASSET_EXTENSIONS = new Set([
   ".js",

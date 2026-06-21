@@ -15,10 +15,10 @@
 
 import fs from "fs";
 import path from "path";
-import { normalizeAutomationJob, normalizeAutomationJobs } from './automation-normalizer';
-import { parseModelRef } from '../../shared/model-ref';
-import { atomicWriteSync } from '../../shared/safe-fs';
-import { createModuleLogger } from '../debug-log';
+import { normalizeAutomationJob, normalizeAutomationJobs } from './automation-normalizer.js';
+import { parseModelRef } from '../../shared/model-ref.js';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("cron-store");
 

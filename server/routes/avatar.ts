@@ -13,8 +13,8 @@ import fsSync from "node:fs";
 import path from "path";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
-import { safeJson } from '../hono-helpers';
-import { resolveAgent } from '../utils/resolve-agent';
+import { safeJson } from '../hono-helpers.js';
+import { resolveAgent } from '../utils/resolve-agent.js';
 
 const VALID_ROLES = new Set(["agent", "user"]);
 

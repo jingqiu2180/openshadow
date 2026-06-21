@@ -16,8 +16,8 @@
 import fs from "fs";
 import path from "path";
 import YAML from "js-yaml";
-import { safeReadYAMLSync } from '../shared/safe-fs';
-import { fromRoot } from '../shared/hana-root';
+import { safeReadYAMLSync } from '../shared/safe-fs.js';
+import { fromRoot } from '../shared/hana-root.js';
 
 const _defaultModels = JSON.parse(
   fs.readFileSync(fromRoot("lib", "default-models.json"), "utf-8"),

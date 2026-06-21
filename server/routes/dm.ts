@@ -13,14 +13,14 @@
 import fs from "fs";
 import path from "path";
 import { Hono } from "hono";
-import { parseChannel } from '../../lib/channels/channel-store';
-import { resolveAgent } from '../utils/resolve-agent';
+import { parseChannel } from '../../lib/channels/channel-store.js';
+import { resolveAgent } from '../utils/resolve-agent.js';
 import {
   getAgentPhoneProjectionPath,
   readAgentPhoneProjection,
   resetAgentPhoneProjection,
-} from '../../lib/conversations/agent-phone-projection';
-import { resetAgentPhoneRuntime } from '../../lib/conversations/agent-phone-runtime';
+} from '../../lib/conversations/agent-phone-projection.js';
+import { resetAgentPhoneRuntime } from '../../lib/conversations/agent-phone-runtime.js';
 
 function requestedAgentId(c) {
   const value = c.req.query("agentId");

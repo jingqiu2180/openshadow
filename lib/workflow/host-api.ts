@@ -1,7 +1,7 @@
 // @ts-nocheck
 
-import { createStructuredOutputTool } from './structured-output';
-import { WorkflowJournal } from './journal';
+import { createStructuredOutputTool } from './structured-output.js';
+import { WorkflowJournal } from './journal.js';
 
 /**
  * 组装注入沙箱的宿主 API。引擎层不认识 agent 名字，agentType→agentId 的解析由调用方注入 resolveAgentId。

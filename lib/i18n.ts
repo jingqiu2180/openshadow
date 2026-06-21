@@ -4,8 +4,8 @@
  */
 import fs from "fs";
 import path from "path";
-import { fromRoot } from '../shared/hana-root';
-import { createModuleLogger } from './debug-log';
+import { fromRoot } from '../shared/hana-root.js';
+import { createModuleLogger } from './debug-log.js';
 
 const log = createModuleLogger("i18n");
 

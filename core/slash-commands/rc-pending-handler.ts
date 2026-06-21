@@ -12,8 +12,8 @@
  * 现在只支持 'rc-select'（数字 1..N）。
  */
 import fs from "fs/promises";
-import { summarizeSessionForRc } from './rc-summary';
-import { createModuleLogger } from '../../lib/debug-log';
+import { summarizeSessionForRc } from './rc-summary.js';
+import { createModuleLogger } from '../../lib/debug-log.js';
 
 const log = createModuleLogger("rc");
 

@@ -3,7 +3,7 @@
 import {
   jimengImageAdapter,
   jimengVideoAdapter,
-} from './adapters/dreamina';
+} from './adapters/dreamina.js';
 
 export default class JimengCliPlugin {
   declare ctx: any;

@@ -23,36 +23,36 @@
  */
 
 import { Hono } from "hono";
-import { emitAppEvent } from '../app-events';
-import { safeJson } from '../hono-helpers';
-import { debugLog } from '../../lib/debug-log';
-import { normalizeWorkspacePath } from '../../shared/workspace-history';
+import { emitAppEvent } from '../app-events.js';
+import { safeJson } from '../hono-helpers.js';
+import { debugLog } from '../../lib/debug-log.js';
+import { normalizeWorkspacePath } from '../../shared/workspace-history.js';
 import {
   normalizeWorkspaceUiEntry,
   normalizeWorkspaceUiSurface,
-} from '../../shared/workspace-ui-state';
-import { normalizeSidebarUiPrefs } from '../../shared/sidebar-ui-state';
-import { normalizeNotificationPreferences } from '../../shared/notification-preferences';
-import { normalizeQuickChatPreferences } from '../../shared/quick-chat-preferences';
-import { normalizeBrowserPreferences } from '../../shared/browser-preferences';
+} from '../../shared/workspace-ui-state.js';
+import { normalizeSidebarUiPrefs } from '../../shared/sidebar-ui-state.js';
+import { normalizeNotificationPreferences } from '../../shared/notification-preferences.js';
+import { normalizeQuickChatPreferences } from '../../shared/quick-chat-preferences.js';
+import { normalizeBrowserPreferences } from '../../shared/browser-preferences.js';
 import {
   SEARCH_API_PROVIDER_IDS,
   normalizeSearchApiKeys,
-} from '../../shared/search-providers';
+} from '../../shared/search-providers.js';
 import {
   normalizeSharedModelsPatch,
   sharedModelsPatchRequiresModelSync,
-} from '../../core/config-coordinator';
-import { modelSupportsImage } from '../../core/message-sanitizer';
+} from '../../core/config-coordinator.js';
+import { modelSupportsImage } from '../../core/message-sanitizer.js';
 import {
   effectiveComputerUseSettings,
   isComputerUsePlatformSupported,
   selectedComputerProviderId,
-} from '../../core/computer-use/platform-support';
-import { collectSecretPatchPaths, isMaskedSecretValue, maskSecretValue, resolveSecretPatch } from '../../shared/secret-custody';
-import { denySecretMutationWithoutScope, denyWithoutScope } from '../http/capability-guard';
-import { recordSecurityAuditEvent } from '../http/security-audit';
-import { BrowserManager } from '../../lib/browser/browser-manager';
+} from '../../core/computer-use/platform-support.js';
+import { collectSecretPatchPaths, isMaskedSecretValue, maskSecretValue, resolveSecretPatch } from '../../shared/secret-custody.js';
+import { denySecretMutationWithoutScope, denyWithoutScope } from '../http/capability-guard.js';
+import { recordSecurityAuditEvent } from '../http/security-audit.js';
+import { BrowserManager } from '../../lib/browser/browser-manager.js';
 
 export function selectedComputerProviderIdFromSettings(settings: any, platform = process.platform) {
   return selectedComputerProviderId(settings, { platform });

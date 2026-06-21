@@ -20,10 +20,10 @@
  */
 
 import fs from "fs/promises";
-import { parseSessionEntries, buildSessionContext } from '../pi-sdk/index';
-import { TODO_STATE_CUSTOM_TYPE, TODO_TOOL_NAMES } from './todo-constants';
-import { createModuleLogger } from '../debug-log';
-import { redactLogValue } from '../log-redactor';
+import { parseSessionEntries, buildSessionContext } from '../pi-sdk/index.js';
+import { TODO_STATE_CUSTOM_TYPE, TODO_TOOL_NAMES } from './todo-constants.js';
+import { createModuleLogger } from '../debug-log.js';
+import { redactLogValue } from '../log-redactor.js';
 
 const log = createModuleLogger("todo-compat");
 

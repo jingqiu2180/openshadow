@@ -1,14 +1,14 @@
 // @ts-nocheck
-import { runSessionSnapshotSideTask } from '../llm/session-snapshot-side-task-runner';
-import { scrubPII } from '../pii-guard';
-import { getLocale } from '../i18n';
+import { runSessionSnapshotSideTask } from '../llm/session-snapshot-side-task-runner.js';
+import { scrubPII } from '../pii-guard.js';
+import { getLocale } from '../i18n.js';
 import {
   MAX_ROLLING_SUMMARY_FORMAT_REPAIRS,
   buildRollingSummaryFormatRequirements,
   buildRollingSummaryRepairInput,
   buildRollingSummaryRepairPrompt,
   validateRollingSummaryFormat,
-} from './rolling-summary-format';
+} from './rolling-summary-format.js';
 
 // suffix 内容变更（补上输出格式契约）时 bump，便于在用量账本里区分模板代际
 export const MEMORY_REFLECTION_TEMPLATE_VERSION = "memory-reflection.v2";

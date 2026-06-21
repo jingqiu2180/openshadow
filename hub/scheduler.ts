@@ -11,14 +11,14 @@
 
 import fs from "fs";
 import path from "path";
-import { createHeartbeat } from '../lib/desk/heartbeat';
-import { createCronScheduler } from '../lib/desk/cron-scheduler';
-import { getAutomationExecutor } from '../lib/desk/automation-executors';
-import { getLocale } from '../lib/i18n';
-import { createFreshCompactDailyScheduler } from '../lib/fresh-compact/daily-scheduler';
-import { FreshCompactMaintainer } from './fresh-compact-maintainer';
-import { createModuleLogger } from '../lib/debug-log';
-import { WORKSPACE_OUTPUT_ROOT_DIRNAME } from '../shared/workspace-output';
+import { createHeartbeat } from '../lib/desk/heartbeat.js';
+import { createCronScheduler } from '../lib/desk/cron-scheduler.js';
+import { getAutomationExecutor } from '../lib/desk/automation-executors.js';
+import { getLocale } from '../lib/i18n.js';
+import { createFreshCompactDailyScheduler } from '../lib/fresh-compact/daily-scheduler.js';
+import { FreshCompactMaintainer } from './fresh-compact-maintainer.js';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { WORKSPACE_OUTPUT_ROOT_DIRNAME } from '../shared/workspace-output.js';
 
 const log = createModuleLogger("scheduler");
 const freshCompactLog = createModuleLogger("fresh-compact");

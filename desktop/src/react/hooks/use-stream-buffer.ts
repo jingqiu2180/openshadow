@@ -284,6 +284,7 @@ class StreamBufferManager {
 
     switch (msg.type) {
       case 'text_delta':
+        console.log('[stream-debug] text_delta received, sessionPath=', sessionPath, 'delta length=', (msg.delta || '').length);
         this.ensureMessage(buf);
         buf.textAcc += msg.delta || '';
         this.scheduleFlush(buf);

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { CORE_TOOL_NAMES, uniqueToolNames } from '../shared/tool-categories';
+import { CORE_TOOL_NAMES, uniqueToolNames } from '../shared/tool-categories.js';
 
 /**
  * Same repair as repairRestoredToolSnapshot, but also reports which snapshot

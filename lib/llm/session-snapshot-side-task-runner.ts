@@ -1,14 +1,14 @@
 // @ts-nocheck
-import { completeSimple } from '../pi-sdk/index';
+import { completeSimple } from '../pi-sdk/index.js';
 import {
   assertSessionSnapshotRequest,
   buildSessionSnapshotRequestContract,
-} from '../../core/session-cache-snapshot';
+} from '../../core/session-cache-snapshot.js';
 import {
   CACHE_STRATEGIES,
   buildCacheStrategyMetadata,
-} from './cache-strategy-contract';
-import { normalizeRequestThinkingLevel } from '../../core/session-thinking-level';
+} from './cache-strategy-contract.js';
+import { normalizeRequestThinkingLevel } from '../../core/session-thinking-level.js';
 
 function extractText(response) {
   return response?.content

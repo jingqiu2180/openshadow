@@ -2,8 +2,8 @@
 import { readdir, readFile, stat, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
-import { ToolRegistry } from './tool-registry'
-import { eventBus } from './event-bus'
+import { ToolRegistry } from './tool-registry.js'
+import { eventBus } from './event-bus.js'
 
 export interface SkillTool {
   name: string

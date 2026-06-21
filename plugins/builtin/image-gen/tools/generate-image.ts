@@ -6,8 +6,8 @@
  * submits to the provider in the background. Completion is delivered through
  * Poller + DeferredResultStore.
  */
-import { submitImageGeneration } from '../lib/submit-image';
-import { t } from '../../../../lib/i18n';
+import { submitImageGeneration } from '../lib/submit-image.js';
+import { t } from '../../../../lib/i18n.js';
 
 export const name = "generate-image";
 export const description = t("toolDef.generateImage.description");

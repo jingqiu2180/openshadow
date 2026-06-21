@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { inferMediaMode } from '../../../core/media/media-parameters';
+import { inferMediaMode } from '../../../core/media/media-parameters.js';
 
 export const name = "describe-media-options";
 export const description = "Describe installed image/video generation providers, models, modes, and provider-specific optional parameters before choosing advanced options.";

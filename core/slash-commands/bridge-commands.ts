@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { listRecentAgentSessions } from './list-agent-sessions';
+import { listRecentAgentSessions } from './list-agent-sessions.js';
 
 /** @type {import('../slash-command-registry.js').CommandDef[]} */
 // 注意：reply 文案暂硬编码中文，和 session-ops.js 的 "[上下文已压缩]" 一致，

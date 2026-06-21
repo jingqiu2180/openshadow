@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { createSessionFileResourceEnvelope } from '../resources/resource-envelope';
+import { createSessionFileResourceEnvelope } from '../resources/resource-envelope.js';
 
 export function serializeSessionFile(file, options = {}) {
   if (!file) return null;

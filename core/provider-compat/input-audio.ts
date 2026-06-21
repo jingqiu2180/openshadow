@@ -7,7 +7,7 @@
  * Audio-capable OpenAI-compatible providers such as MiMo expect input_audio
  * parts with raw base64 data plus a `wav` or `mp3` format string.
  */
-import { openAIInputAudioFormatFromMimeType } from '../../shared/audio-mime';
+import { openAIInputAudioFormatFromMimeType } from '../../shared/audio-mime.js';
 
 export function normalizeOpenAIInputAudioPayload(payload) {
   if (!Array.isArray(payload?.messages)) return payload;

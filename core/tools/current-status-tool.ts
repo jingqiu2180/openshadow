@@ -8,7 +8,7 @@
  * 后续补全：appearance、ui_context、session_files、bridge_context、subagents。
  */
 
-import { Type, StringEnum } from '../../lib/pi-sdk/index'
+import { Type, StringEnum } from '../../lib/pi-sdk/index.js'
 
 const DAY_BOUNDARY_HOUR = 4
 

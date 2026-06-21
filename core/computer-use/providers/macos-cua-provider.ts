@@ -2,8 +2,8 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { COMPUTER_USE_ERRORS, computerUseError } from '../errors';
-import { createCommandRunner } from './command-runner';
+import { COMPUTER_USE_ERRORS, computerUseError } from '../errors.js';
+import { createCommandRunner } from './command-runner.js';
 
 const HANA_CURSOR_BLOOM_COLOR = "#537D96";
 const HANA_CURSOR_GRADIENT_COLORS = Object.freeze(["#FFFDF8", "#8FAABD", "#2F4A56"]);

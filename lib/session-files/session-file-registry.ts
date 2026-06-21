@@ -2,7 +2,7 @@
 import fs from "fs";
 import path from "path";
 import { createHash } from "crypto";
-import { detectMime, extOfName, inferFileKind } from '../file-metadata';
+import { detectMime, extOfName, inferFileKind } from '../file-metadata.js';
 
 export const SESSION_FILE_SIDECAR_VERSION = 1;
 export const SESSION_FILE_CACHE_INACTIVE_TTL_MS = 72 * 60 * 60 * 1000;

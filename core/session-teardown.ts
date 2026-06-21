@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { emitSessionShutdown } from '../lib/pi-sdk/index';
+import { emitSessionShutdown } from '../lib/pi-sdk/index.js';
 
 /**
  * 统一释放 session 相关资源。

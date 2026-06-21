@@ -2,7 +2,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 import {
   SESSION_PROJECTS_FILENAME,
   normalizeProjectName,
@@ -10,7 +10,7 @@ import {
   normalizeSessionProjectId,
   isAutoProjectId,
   serializeSessionProjectCatalog,
-} from '../shared/session-projects';
+} from '../shared/session-projects.js';
 
 export class SessionProjectCatalogStore {
   declare _userDir: string;

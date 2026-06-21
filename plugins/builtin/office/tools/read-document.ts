@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { readOfficeDocument } from '../lib/read-document';
+import { readOfficeDocument } from '../lib/read-document.js';
 
-export { isOfficeEnabledForAgentConfig as isEnabledForAgentConfig } from '../lib/availability';
+export { isOfficeEnabledForAgentConfig as isEnabledForAgentConfig } from '../lib/availability.js';
 
 export const name = "read-document";
 

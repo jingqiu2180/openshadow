@@ -8,23 +8,23 @@
 import fs from "fs";
 import path from "path";
 import { Hono } from "hono";
-import { safeJson } from '../hono-helpers';
-import { debugLog } from '../../lib/debug-log';
-import { parseSessionKey, collectKnownUsers, KNOWN_PLATFORMS } from '../../lib/bridge/session-key';
-import { isBridgeOwner, resolveBridgeOwnerUserId } from '../../lib/bridge/owner-policy';
-import { collectBridgeMediaAllowedRoots, isInsideBridgeMediaRoot } from '../../lib/bridge/media-roots';
-import { t } from '../../lib/i18n';
-import { resolveAgent, resolveAgentStrict } from '../utils/resolve-agent';
-import { telegramBotOptions } from '../../lib/net/outbound-proxy';
+import { safeJson } from '../hono-helpers.js';
+import { debugLog } from '../../lib/debug-log.js';
+import { parseSessionKey, collectKnownUsers, KNOWN_PLATFORMS } from '../../lib/bridge/session-key.js';
+import { isBridgeOwner, resolveBridgeOwnerUserId } from '../../lib/bridge/owner-policy.js';
+import { collectBridgeMediaAllowedRoots, isInsideBridgeMediaRoot } from '../../lib/bridge/media-roots.js';
+import { t } from '../../lib/i18n.js';
+import { resolveAgent, resolveAgentStrict } from '../utils/resolve-agent.js';
+import { telegramBotOptions } from '../../lib/net/outbound-proxy.js';
 import {
   collectSecretPatchPaths,
   isMaskedSecretValue,
   maskSecretValue,
   resolveSecretPatch,
-} from '../../shared/secret-custody';
-import { denySecretMutationWithoutScope, denyWithoutScope } from '../http/capability-guard';
-import { recordSecurityAuditEvent } from '../http/security-audit';
-import { normalizeBridgePermissionMode, SESSION_PERMISSION_MODES } from '../../core/session-permission-mode';
+} from '../../shared/secret-custody.js';
+import { denySecretMutationWithoutScope, denyWithoutScope } from '../http/capability-guard.js';
+import { recordSecurityAuditEvent } from '../http/security-audit.js';
+import { normalizeBridgePermissionMode, SESSION_PERMISSION_MODES } from '../../core/session-permission-mode.js';
 
 const MAX_BRIDGE_MEDIA_SIZE = 50 * 1024 * 1024;
 const FEISHU_TENANT_TOKEN_URL = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal";

@@ -24,18 +24,18 @@
  * - show     将浏览器窗口置前
  */
 
-import { Type, StringEnum } from '../pi-sdk/index';
-import { BrowserManager } from '../browser/browser-manager';
-import { t } from '../i18n';
-import { toolOk } from './tool-result';
-import { getToolSessionPath } from './tool-session';
+import { Type, StringEnum } from '../pi-sdk/index.js';
+import { BrowserManager } from '../browser/browser-manager.js';
+import { t } from '../i18n.js';
+import { toolOk } from './tool-result.js';
+import { getToolSessionPath } from './tool-session.js';
 import {
   browserScreenshotMediaItem,
   persistBrowserScreenshotFile,
-} from '../session-files/browser-screenshot-file';
-import { redactLogText } from '../log-redactor';
-import { summarizeBrowserActionParams } from './browser-action-log';
-import { modelSupportsDirectImageInput } from '../../shared/model-capabilities';
+} from '../session-files/browser-screenshot-file.js';
+import { redactLogText } from '../log-redactor.js';
+import { summarizeBrowserActionParams } from './browser-action-log.js';
+import { modelSupportsDirectImageInput } from '../../shared/model-capabilities.js';
 
 const BROWSER_ACTIONS = [
   "start", "stop", "navigate", "snapshot", "screenshot", "click", "type",

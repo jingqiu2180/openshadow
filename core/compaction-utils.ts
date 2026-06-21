@@ -12,7 +12,7 @@
  *   - 调用方自行负责 appendCompaction + replaceMessages
  */
 
-import { findCutPoint, estimateTokens } from '../lib/pi-sdk/index';
+import { findCutPoint, estimateTokens } from '../lib/pi-sdk/index.js';
 
 /**
  * 计算硬截断结果（不调 LLM，无外部依赖）。

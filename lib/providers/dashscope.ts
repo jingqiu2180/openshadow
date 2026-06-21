@@ -17,7 +17,7 @@ import {
   noReferenceImages,
   referenceImages,
   stringParam,
-} from './media-schema-helpers';
+} from './media-schema-helpers.js';
 
 const WAN_DEFAULT_RATIO = "3:2";
 const QWEN_IMAGE_RATIOS = ["16:9", "4:3", "1:1", "3:4", "9:16"];

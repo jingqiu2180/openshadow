@@ -2,7 +2,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 
 export const RESOURCE_TICKET_KEY_FILE = "resource-ticket-key";
 export const RESOURCE_TICKET_ACTION = "resources.content";

@@ -14,8 +14,8 @@
  * session cache snapshot hashes) — do not introduce a second hash
  * implementation.
  */
-import { hashCacheContractValue } from '../lib/llm/cache-prefix-contract';
-import { uniqueToolNames } from '../shared/tool-categories';
+import { hashCacheContractValue } from '../lib/llm/cache-prefix-contract.js';
+import { uniqueToolNames } from '../shared/tool-categories.js';
 
 export const SESSION_CAPABILITY_FINGERPRINT_VERSION = 1;
 

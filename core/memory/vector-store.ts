@@ -12,10 +12,10 @@
  * - 批处理：searchByVector 一次性 embed 多个候选 fact 的内容。
  */
 import type { Database } from 'better-sqlite3'
-import { getDb } from './store'
-import { config } from '../config'
-import { createClient, pickModel } from '../providers/index'
-import { createModuleLogger } from '../debug-log'
+import { getDb } from './store.js'
+import { config } from '../config.js'
+import { createClient, pickModel } from '../providers/index.js'
+import { createModuleLogger } from '../debug-log.js'
 
 const log = createModuleLogger('vector-store')
 

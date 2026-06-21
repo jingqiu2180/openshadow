@@ -9,10 +9,10 @@
  * session_coordinator / sessions.js route 从 session entries 里读取。
  */
 
-import { Type, StringEnum } from '../pi-sdk/index';
-import { t } from '../i18n';
-import { TODO_WRITE_TOOL_NAME } from './todo-constants';
-import { createModuleLogger } from '../debug-log';
+import { Type, StringEnum } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
+import { TODO_WRITE_TOOL_NAME } from './todo-constants.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("todo_write");
 

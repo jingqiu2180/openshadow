@@ -6,15 +6,15 @@
  * 指导 agent 手动 read→append→write pinned.md 的方式。
  */
 
-import { Type } from '../pi-sdk/index';
-import { t } from '../i18n';
-import { scrubPII } from '../pii-guard';
-import { createModuleLogger } from '../debug-log';
+import { Type } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
+import { scrubPII } from '../pii-guard.js';
+import { createModuleLogger } from '../debug-log.js';
 import {
   addPinnedMemoryItem,
   readPinnedMemoryItems,
   removePinnedMemoryItems,
-} from '../memory/pinned-memory-store';
+} from '../memory/pinned-memory-store.js';
 
 const log = createModuleLogger("pin_memory");
 

@@ -1,9 +1,9 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { getInvalidProviderModelIds } from '../shared/provider-model-validation';
-import { providerCredentialAllowsMissingApiKey } from '../shared/provider-auth';
-import { ProviderCatalogStore } from './provider-catalog';
+import { getInvalidProviderModelIds } from '../shared/provider-model-validation.js';
+import { providerCredentialAllowsMissingApiKey } from '../shared/provider-auth.js';
+import { ProviderCatalogStore } from './provider-catalog.js';
 
 function isPlainObject(value) {
   return value && typeof value === "object" && !Array.isArray(value);

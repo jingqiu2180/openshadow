@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { authenticateDeviceCredential } from './device-registry';
-import { normalizePrincipal } from './security-principal';
-import { authenticateWebSession } from './web-session-store';
+import { authenticateDeviceCredential } from './device-registry.js';
+import { normalizePrincipal } from './security-principal.js';
+import { authenticateWebSession } from './web-session-store.js';
 
 export function createServerAuthService({
   hanakoHome,

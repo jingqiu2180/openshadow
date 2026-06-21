@@ -7,8 +7,8 @@ import {
   normalizeBaseUrl,
   normalizeImageInput,
   saveBase64Images,
-} from './common';
-import { t } from '../../../../lib/i18n';
+} from './common.js';
+import { t } from '../../../../lib/i18n.js';
 
 const DEFAULT_BASE_URL = "https://apihub.agnes-ai.com/v1";
 const DEFAULT_IMAGE_MODEL = "agnes-image-2.1-flash";

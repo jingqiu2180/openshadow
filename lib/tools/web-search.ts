@@ -7,11 +7,11 @@
  * 统一返回格式：[{ title, url, snippet }]
  */
 
-import { Type } from '../pi-sdk/index';
-import { loadConfig } from '../memory/config-loader';
-import { getLocale, t } from '../i18n';
-import { safeParseResponse } from '../../shared/safe-parse';
-import { BrowserManager } from '../browser/browser-manager';
+import { Type } from '../pi-sdk/index.js';
+import { loadConfig } from '../memory/config-loader.js';
+import { getLocale, t } from '../i18n.js';
+import { safeParseResponse } from '../../shared/safe-parse.js';
+import { BrowserManager } from '../browser/browser-manager.js';
 import {
   AUTO_SEARCH_PROVIDER,
   BROWSER_SEARCH_PROVIDER_IDS,
@@ -20,12 +20,12 @@ import {
   mergeSearchApiKeys,
   normalizeSearchApiKeys,
   normalizeSearchProvider,
-} from '../../shared/search-providers';
+} from '../../shared/search-providers.js';
 import {
   SearchRateLimitError,
   createSearchRateLimiter,
   retryAfterMsFromHeaders,
-} from './search-rate-limiter';
+} from './search-rate-limiter.js';
 
 export const DEFAULT_SEARCH_PROVIDER = AUTO_SEARCH_PROVIDER;
 const ANYSEARCH_FREE_PROVIDER = "anysearch_free";

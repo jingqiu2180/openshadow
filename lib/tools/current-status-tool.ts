@@ -6,10 +6,10 @@
  * list/get 协议；每个状态项由独立 provider 负责，后续扩展只加 provider。
  */
 
-import { StringEnum, Type } from '../pi-sdk/index';
-import { getAppearanceStatus } from './appearance-status';
-import { getToolSessionPath } from './tool-session';
-import { toolError, toolOk } from './tool-result';
+import { StringEnum, Type } from '../pi-sdk/index.js';
+import { getAppearanceStatus } from './appearance-status.js';
+import { getToolSessionPath } from './tool-session.js';
+import { toolError, toolOk } from './tool-result.js';
 
 const DAY_BOUNDARY_HOUR = 4;
 

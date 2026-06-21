@@ -24,13 +24,13 @@
  * 接口契约：见 ./README.md
  */
 
-import { getReasoningProfile, getThinkingFormat } from '../../shared/model-capabilities';
+import { getReasoningProfile, getThinkingFormat } from '../../shared/model-capabilities.js';
 import {
   ensureAssistantContentForToolCalls,
   ensureReasoningContentForToolCalls as ensureReasoningContentForToolCallsBase,
   extractReasoningFromContent,
   stripReasoningContent,
-} from './reasoning-content-replay';
+} from './reasoning-content-replay.js';
 
 export { ensureAssistantContentForToolCalls, extractReasoningFromContent };
 

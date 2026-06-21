@@ -26,7 +26,7 @@
  */
 
 import { fetch as undiciFetch } from "undici";
-import { fetchDispatcherForUrl } from '../net/outbound-proxy';
+import { fetchDispatcherForUrl } from '../net/outbound-proxy.js';
 
 /** 单次尝试的超时（连接 + 响应头）。 */
 export const BRIDGE_HTTP_TIMEOUT_MS = 30_000;

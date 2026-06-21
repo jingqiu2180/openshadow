@@ -11,8 +11,8 @@
 import fs from "fs";
 import path from "path";
 import { Hono } from "hono";
-import { safeReadFile } from '../../shared/safe-fs';
-import { resolveAgent } from '../utils/resolve-agent';
+import { safeReadFile } from '../../shared/safe-fs.js';
+import { resolveAgent } from '../utils/resolve-agent.js';
 
 function isInsideRoot(candidatePath, rootPath) {
   return candidatePath === rootPath || candidatePath.startsWith(rootPath + path.sep);

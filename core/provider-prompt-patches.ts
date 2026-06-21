@@ -7,7 +7,7 @@
  * answers in final assistant content across official and third-party providers.
  */
 
-import { isDeepSeekFamilyModel, isDeepSeekReasoningModel } from '../shared/model-capabilities';
+import { isDeepSeekFamilyModel, isDeepSeekReasoningModel } from '../shared/model-capabilities.js';
 
 function isThinkingOff(level) {
   return level === "off" || level === "none" || level === "disabled";

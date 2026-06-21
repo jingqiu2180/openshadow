@@ -3,7 +3,7 @@ import {
   buildRollingSummaryFormatRequirements,
   getFactSectionTitle,
   getTimelineSectionTitle,
-} from '../rolling-summary-format';
+} from '../rolling-summary-format.js';
 
 export function buildRollingSummaryPrompt({
   locale = "zh-CN",

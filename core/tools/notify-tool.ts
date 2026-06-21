@@ -4,10 +4,10 @@
  * 移植自 openhanako/lib/tools/notify-tool.ts
  * 让 agent 能主动向用户发送提醒
  */
-import type { ToolRegistry } from '../tool-registry'
-import { createToolSpec } from '../tool-registry'
-import { onNotify } from '../notify-delivery'
-import { t } from '../i18n'
+import type { ToolRegistry } from '../tool-registry.js'
+import { createToolSpec } from '../tool-registry.js'
+import { onNotify } from '../notify-delivery.js'
+import { t } from '../i18n.js'
 
 export function registerNotifyTool(registry: ToolRegistry): void {
   registry.register(

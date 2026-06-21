@@ -7,9 +7,9 @@
  */
 
 import fs from "fs";
-import { getPiModel } from '../lib/pi-sdk/index';
-import { lookupKnown } from '../shared/known-models';
-import { atomicWriteSync } from '../shared/safe-fs';
+import { getPiModel } from '../lib/pi-sdk/index.js';
+import { lookupKnown } from '../shared/known-models.js';
+import { atomicWriteSync } from '../shared/safe-fs.js';
 import {
   normalizeModelProtocolCompat,
   normalizeToolUseContract,
@@ -17,12 +17,12 @@ import {
   withHanaAudioInputCompat,
   withHanaVideoInputCompat,
   withThinkingFormatCompat,
-} from '../shared/model-capabilities';
-import { normalizeProviderHeaders, providerCredentialAllowsMissingApiKey } from '../shared/provider-auth';
-import { validateProviderModels } from '../shared/provider-model-validation';
-import { buildRuntimeApiKeyRef } from '../shared/runtime-api-key-ref';
-import { normalizeProviderBaseUrlForApi } from '../lib/llm/provider-client';
-import { normalizeThinkingLevelForModel } from './session-thinking-level';
+} from '../shared/model-capabilities.js';
+import { normalizeProviderHeaders, providerCredentialAllowsMissingApiKey } from '../shared/provider-auth.js';
+import { validateProviderModels } from '../shared/provider-model-validation.js';
+import { buildRuntimeApiKeyRef } from '../shared/runtime-api-key-ref.js';
+import { normalizeProviderBaseUrlForApi } from '../lib/llm/provider-client.js';
+import { normalizeThinkingLevelForModel } from './session-thinking-level.js';
 
 const DEFAULT_CONTEXT_WINDOW = 128_000;
 const PI_BUILTIN_PROVIDER_REUSE = new Set(["kimi-coding"]);

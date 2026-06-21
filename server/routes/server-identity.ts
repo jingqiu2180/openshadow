@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { Hono } from "hono";
-import { createServerRuntimeContext, toServerIdentityResponse } from '../../core/server-runtime-context';
-import { readAuthPrincipal } from '../http/capability-guard';
+import { createServerRuntimeContext, toServerIdentityResponse } from '../../core/server-runtime-context.js';
+import { readAuthPrincipal } from '../http/capability-guard.js';
 
 export function createServerIdentityRoute({ hanakoHome, appVersion = "?", getRuntimeContext }: { hanakoHome?: string; appVersion?: string; getRuntimeContext?: () => any } = {}) {
   const route = new Hono();

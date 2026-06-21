@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { hasStudioOwnerScope } from '../../shared/access-scope-profiles';
+import { hasStudioOwnerScope } from '../../shared/access-scope-profiles.js';
 
 const AUTHENTICATED_ONLY = Object.freeze({ kind: "authenticated" });
 const LOCAL_ONLY = Object.freeze({ kind: "local_only" });

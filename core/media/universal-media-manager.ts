@@ -1,30 +1,30 @@
 // @ts-nocheck
 import fs from "node:fs";
 import path from "node:path";
-import { createModuleLogger } from '../../lib/debug-log';
-import { t } from '../../lib/i18n';
-import { MediaAdapterRegistry } from '../media-adapter-registry';
-import { createPluginConfigStore, normalizePluginConfigSchema } from '../plugin-config';
+import { createModuleLogger } from '../../lib/debug-log.js';
+import { t } from '../../lib/i18n.js';
+import { MediaAdapterRegistry } from '../media-adapter-registry.js';
+import { createPluginConfigStore, normalizePluginConfigSchema } from '../plugin-config.js';
 import {
   normalizeImageGenerationConfig,
   normalizeVideoGenerationConfig,
-} from '../preferences-manager';
-import { TaskStore } from '../../plugins/image-gen/lib/task-store';
-import { Poller } from '../../plugins/image-gen/lib/poller';
-import { submitImageGeneration } from '../../plugins/image-gen/lib/submit-image';
+} from '../preferences-manager.js';
+import { TaskStore } from '../../plugins/image-gen/lib/task-store.js';
+import { Poller } from '../../plugins/image-gen/lib/poller.js';
+import { submitImageGeneration } from '../../plugins/image-gen/lib/submit-image.js';
 import {
   isResponseDelivery,
   normalizeMediaDelivery,
   retryImageTask,
-} from '../../plugins/image-gen/lib/image-task-runner';
-import { resolveMediaParameters } from './media-parameters';
-import { volcengineImageAdapter } from '../../plugins/image-gen/adapters/volcengine';
-import { openaiImageAdapter } from '../../plugins/image-gen/adapters/openai';
-import { openaiCodexImageAdapter } from '../../plugins/image-gen/adapters/openai-codex';
-import { minimaxImageAdapter } from '../../plugins/image-gen/adapters/minimax';
-import { dashscopeImageAdapter } from '../../plugins/image-gen/adapters/dashscope';
-import { geminiImageAdapter } from '../../plugins/image-gen/adapters/gemini';
-import { agnesImageAdapter, agnesVideoAdapter } from '../../plugins/image-gen/adapters/agnes';
+} from '../../plugins/image-gen/lib/image-task-runner.js';
+import { resolveMediaParameters } from './media-parameters.js';
+import { volcengineImageAdapter } from '../../plugins/image-gen/adapters/volcengine.js';
+import { openaiImageAdapter } from '../../plugins/image-gen/adapters/openai.js';
+import { openaiCodexImageAdapter } from '../../plugins/image-gen/adapters/openai-codex.js';
+import { minimaxImageAdapter } from '../../plugins/image-gen/adapters/minimax.js';
+import { dashscopeImageAdapter } from '../../plugins/image-gen/adapters/dashscope.js';
+import { geminiImageAdapter } from '../../plugins/image-gen/adapters/gemini.js';
+import { agnesImageAdapter, agnesVideoAdapter } from '../../plugins/image-gen/adapters/agnes.js';
 
 const log = createModuleLogger("media");
 const IMAGE_CAPABILITY = "image_generation";

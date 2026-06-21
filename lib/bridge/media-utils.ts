@@ -8,7 +8,7 @@
 
 import fs from "fs";
 import path from "path";
-import { detectMime, formatSize } from '../file-metadata';
+import { detectMime, formatSize } from '../file-metadata.js';
 
 // ── 本地路径安全白名单（对标 OpenClaw mediaLocalRoots）────
 

@@ -10,16 +10,16 @@
  * agent="?" 时列出所有可用 agent（同步返回）。
  */
 
-import { Type } from '../pi-sdk/index';
+import { Type } from '../pi-sdk/index.js';
 import path from "node:path";
-import { t } from '../i18n';
-import { getToolSessionCwd, getToolSessionPath } from './tool-session';
-import { resolveAgentParam } from './agent-id-resolver';
-import { resolveSubagentToolAccess, SubagentAccessDeniedError } from './subagent-tool-policy';
+import { t } from '../i18n.js';
+import { getToolSessionCwd, getToolSessionPath } from './tool-session.js';
+import { resolveAgentParam } from './agent-id-resolver.js';
+import { resolveSubagentToolAccess, SubagentAccessDeniedError } from './subagent-tool-policy.js';
 import {
   mergeExecutorMetadata,
   normalizeExecutorMetadata,
-} from '../subagent-executor-metadata';
+} from '../subagent-executor-metadata.js';
 
 // subagent 工具访问（剥离 vs 拦截、只读档位）收口在 ./subagent-tool-policy.js（resolveSubagentToolAccess）。
 // 默认甲（Codex 式）：给全集工具 + 拦截层限制（防自递归在 classifySessionPermission 的 subagent 上下文）。

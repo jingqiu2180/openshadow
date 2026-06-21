@@ -6,8 +6,8 @@
  * 仅在用户明确要求提醒/通知时使用，普通任务完成不调用。
  */
 
-import { Type, StringEnum } from '../pi-sdk/index';
-import { t } from '../i18n';
+import { Type, StringEnum } from '../pi-sdk/index.js';
+import { t } from '../i18n.js';
 
 /**
  * @param {{ onNotify: (payload: object) => Promise<object|void> | object | void }} opts

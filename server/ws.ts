@@ -1,8 +1,8 @@
 // @ts-nocheck
 import * as WS from 'ws'
-import type { Agent } from '../core/agent'
-import type { SessionManager } from '../core/session-manager'
-import { eventBus } from '../core/event-bus'
+import type { Agent } from '../core/agent.js'
+import type { SessionManager } from '../core/session-manager.js'
+import { eventBus } from '../core/event-bus.js'
 
 export interface WsMessage {
   type: 'chat' | 'typing' | 'session:create' | 'session:switch' | 'session:list'

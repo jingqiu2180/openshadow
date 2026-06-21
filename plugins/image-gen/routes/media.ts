@@ -3,7 +3,7 @@
 import fs from "fs";
 import path from "path";
 import { execFile } from "child_process";
-import { createSubmitContext, validateImageModelRef } from '../lib/image-task-runner';
+import { createSubmitContext, validateImageModelRef } from '../lib/image-task-runner.js';
 
 const MIME = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", mp4: "video/mp4", mov: "video/quicktime" };
 

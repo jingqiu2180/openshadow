@@ -1,8 +1,8 @@
 // @ts-nocheck
 import fs from "fs";
 import path from "path";
-import { atomicWriteSync } from '../shared/safe-fs';
-import { normalizeProviderAuthType } from '../shared/provider-auth';
+import { atomicWriteSync } from '../shared/safe-fs.js';
+import { normalizeProviderAuthType } from '../shared/provider-auth.js';
 
 export const LOCAL_PROVIDER_PLUGINS_DIR = "provider-plugins";
 export const LOCAL_PROVIDER_PLUGIN_SOURCE_KIND = "local-provider-plugin";

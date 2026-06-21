@@ -2,16 +2,16 @@
 // plugins/image-gen/adapters/openai.js
 import fs from "fs";
 import path from "path";
-import { saveImage } from '../lib/download';
-import { resolveModelId } from '../lib/model-catalog';
+import { saveImage } from '../lib/download.js';
+import { resolveModelId } from '../lib/model-catalog.js';
 import {
   OPENAI_FLEXIBLE_IMAGE_RATIOS,
   OPENAI_FLEXIBLE_RESOLUTION_TIERS,
   OPENAI_STANDARD_IMAGE_RATIOS,
   OPENAI_STANDARD_RESOLUTION_TIERS,
   resolveOpenAiImageSize,
-} from '../lib/resolution-tiers';
-import { t } from '../../../../lib/i18n';
+} from '../lib/resolution-tiers.js';
+import { t } from '../../../../lib/i18n.js';
 
 const FORMAT_TO_MIME = {
   png: "image/png",

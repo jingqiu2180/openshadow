@@ -4,12 +4,12 @@ import {
   convertAgentMessagesToLlm,
   estimateTokens,
   prepareCompaction,
-} from "../lib/pi-sdk/index";
-import { computeHardTruncation } from "./compaction-utils";
-import { stripAllInlineMediaForHistory } from "./message-sanitizer";
-import { buildSessionCacheSnapshot } from "./session-cache-snapshot";
-import { runSessionSnapshotSideTask } from "../lib/llm/session-snapshot-side-task-runner";
-import { buildCacheStrategyMetadata } from "../lib/llm/cache-strategy-contract";
+} from '../lib/pi-sdk/index.js';
+import { computeHardTruncation } from './compaction-utils.js';
+import { stripAllInlineMediaForHistory } from './message-sanitizer.js';
+import { buildSessionCacheSnapshot } from './session-cache-snapshot.js';
+import { runSessionSnapshotSideTask } from '../lib/llm/session-snapshot-side-task-runner.js';
+import { buildCacheStrategyMetadata } from '../lib/llm/cache-strategy-contract.js';
 
 const DEFAULT_HARD_TRUNCATE_THRESHOLD = 0.85;
 const COMPACTION_REQUEST_BUFFER_TOKENS = 1024;

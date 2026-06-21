@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { ResourceError } from './resource-service';
+import { ResourceError } from './resource-service.js';
 
 const PATH_FIELD_NAMES = new Set(["filePath", "realPath"]);
 const CONTENT_COMPATIBILITY_CAPABILITIES = ["resources.content", "resources.read"];

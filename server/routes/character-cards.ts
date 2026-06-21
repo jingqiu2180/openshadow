@@ -3,10 +3,10 @@ import fsp from "fs/promises";
 import path from "path";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
-import { emitAppEvent } from '../app-events';
-import { safeJson } from '../hono-helpers';
-import { createCharacterCardService, CharacterCardError } from '../../lib/character-cards/service';
-import { createModuleLogger } from '../../lib/debug-log';
+import { emitAppEvent } from '../app-events.js';
+import { safeJson } from '../hono-helpers.js';
+import { createCharacterCardService, CharacterCardError } from '../../lib/character-cards/service.js';
+import { createModuleLogger } from '../../lib/debug-log.js';
 
 const log = createModuleLogger("character-cards");
 

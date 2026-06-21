@@ -26,7 +26,7 @@ import type {
   McpResourceReadResult,
   McpPromptResult,
   McpConnection,
-} from './types'
+} from './types.js'
 
 // ─── Transport Layer ────────────────────────────────────────────────────
 

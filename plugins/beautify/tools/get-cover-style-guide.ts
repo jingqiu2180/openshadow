@@ -2,9 +2,9 @@
 import {
   COVER_STYLE_GUIDE_VERSION,
   buildCoverStyleGuideForAgent,
-} from '../lib/cover-style-guide';
-import { isBeautifyEnabledForAgentConfig } from '../lib/availability';
-import { t } from '../../../lib/i18n';
+} from '../lib/cover-style-guide.js';
+import { isBeautifyEnabledForAgentConfig } from '../lib/availability.js';
+import { t } from '../../../lib/i18n.js';
 
 export const name = "get-cover-style-guide";
 export const description = t("toolDef.getCoverStyleGuide.description");

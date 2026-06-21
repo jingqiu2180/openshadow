@@ -27,14 +27,14 @@ import crypto from "crypto";
 import os from "os";
 import path from "path";
 import fs from "fs";
-import { atomicWriteSync } from '../../shared/safe-fs';
-import { t } from '../i18n';
-import { IpcTransport, WsTransport } from './browser-transport';
-import { createModuleLogger } from '../debug-log';
+import { atomicWriteSync } from '../../shared/safe-fs.js';
+import { t } from '../i18n.js';
+import { IpcTransport, WsTransport } from './browser-transport.js';
+import { createModuleLogger } from '../debug-log.js';
 import {
   mergeBrowserPreferences,
   normalizeBrowserPreferences,
-} from '../../shared/browser-preferences';
+} from '../../shared/browser-preferences.js';
 
 const log = createModuleLogger("browser");
 

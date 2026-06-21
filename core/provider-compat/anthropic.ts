@@ -7,8 +7,8 @@
  * contract available through normalizeProviderPayload.
  */
 
-import { modelSupportsAnthropicMaxEffort } from '../session-thinking-level';
-import { getReasoningProfile, getThinkingFormat } from '../../shared/model-capabilities';
+import { modelSupportsAnthropicMaxEffort } from '../session-thinking-level.js';
+import { getReasoningProfile, getThinkingFormat } from '../../shared/model-capabilities.js';
 
 const CACHE_CONTROL = { type: "ephemeral" };
 const MAX_EFFORT_MIN_OUTPUT_TOKENS = 64000;

@@ -6,38 +6,38 @@
  * 支持多 session 并发：所有 session 事件平等广播，前端按 sessionPath 路由
  */
 import { Hono } from "hono";
-import { MoodParser, ThinkTagParser, CardParser } from '../../core/events';
-import { extractBlocks } from '../block-extractors';
-import { toAppEventWsMessage } from '../app-events';
+import { MoodParser, ThinkTagParser, CardParser } from '../../core/events.js';
+import { extractBlocks } from '../block-extractors.js';
+import { toAppEventWsMessage } from '../app-events.js';
 import {
   createSessionStreamEventWsMessage,
   createStreamResumeWsMessage,
   wsSend,
   wsParse,
   wsSendSerialized,
-} from '../ws-protocol';
-import { debugLog, createModuleLogger } from '../../lib/debug-log';
-import { t } from '../../lib/i18n';
-import { getLastAssistantUsage } from '../../lib/pi-sdk/index';
-import { compactSessionWithCachePreservation, isStaleExtensionContextError } from '../../core/session-compactor';
-import { submitDesktopSessionInterjection } from '../../core/desktop-session-submit';
-import { logLlmUsage } from '../../lib/llm/usage-observer';
-import { BrowserManager } from '../../lib/browser/browser-manager';
+} from '../ws-protocol.js';
+import { debugLog, createModuleLogger } from '../../lib/debug-log.js';
+import { t } from '../../lib/i18n.js';
+import { getLastAssistantUsage } from '../../lib/pi-sdk/index.js';
+import { compactSessionWithCachePreservation, isStaleExtensionContextError } from '../../core/session-compactor.js';
+import { submitDesktopSessionInterjection } from '../../core/desktop-session-submit.js';
+import { logLlmUsage } from '../../lib/llm/usage-observer.js';
+import { BrowserManager } from '../../lib/browser/browser-manager.js';
 import {
   createSessionStreamState,
   beginSessionStream,
   finishSessionStream,
   appendSessionStreamEvent,
   resumeSessionStream,
-} from '../session-stream-store';
-import { AppError } from '../../shared/errors';
-import { errorBus } from '../../shared/error-bus';
-import { createRequestContext } from '../http/boundary';
-import { buildDeferredResultInterludeBlock, resolveDeferredReceiverName } from '../deferred-result-interlude';
-import { buildAutomationSuggestionBlock } from '../suggestion-blocks';
-import { isAllowedChatImageMime, isChatImageBase64WithinLimit } from '../../shared/image-mime';
-import { isAllowedChatVideoMime, isChatVideoBase64WithinLimit } from '../../shared/video-mime';
-import { isAllowedChatAudioMime, isChatAudioBase64WithinLimit } from '../../shared/audio-mime';
+} from '../session-stream-store.js';
+import { AppError } from '../../shared/errors.js';
+import { errorBus } from '../../shared/error-bus.js';
+import { createRequestContext } from '../http/boundary.js';
+import { buildDeferredResultInterludeBlock, resolveDeferredReceiverName } from '../deferred-result-interlude.js';
+import { buildAutomationSuggestionBlock } from '../suggestion-blocks.js';
+import { isAllowedChatImageMime, isChatImageBase64WithinLimit } from '../../shared/image-mime.js';
+import { isAllowedChatVideoMime, isChatVideoBase64WithinLimit } from '../../shared/video-mime.js';
+import { isAllowedChatAudioMime, isChatAudioBase64WithinLimit } from '../../shared/audio-mime.js';
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
@@ -46,7 +46,7 @@ import {
   subscribeWsClientToSession,
   wsClientCanReceiveEvent,
   wsClientCanSendMessage,
-} from '../ws-scope';
+} from '../ws-scope.js';
 
 const log = createModuleLogger("chat");
 const wsLog = createModuleLogger("ws");

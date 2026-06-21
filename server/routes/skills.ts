@@ -12,17 +12,17 @@
 import path from "path";
 import fs from "fs";
 import { Hono } from "hono";
-import { emitAppEvent } from '../app-events';
-import { safeJson } from '../hono-helpers';
-import { saveConfig } from '../../lib/memory/config-loader';
+import { emitAppEvent } from '../app-events.js';
+import { safeJson } from '../hono-helpers.js';
+import { saveConfig } from '../../lib/memory/config-loader.js';
 import {
   installSkillPackageFromPath,
   sanitizeSkillName,
-} from '../../lib/skills/skill-package-installer';
-import { t } from '../../lib/i18n';
-import { resolveAgent } from '../utils/resolve-agent';
-import { validateId, agentExists } from '../utils/validation';
-import { registerSessionFileFromRequest } from '../../lib/session-files/session-file-response';
+} from '../../lib/skills/skill-package-installer.js';
+import { t } from '../../lib/i18n.js';
+import { resolveAgent } from '../utils/resolve-agent.js';
+import { validateId, agentExists } from '../utils/validation.js';
+import { registerSessionFileFromRequest } from '../../lib/session-files/session-file-response.js';
 import {
   createSkillBundle,
   deleteSkillBundle,
@@ -30,10 +30,10 @@ import {
   removeSkillsFromBundles,
   reorderSkillBundles,
   updateSkillBundle,
-} from '../../lib/skill-bundles/store';
-import { exportSkillBundlePackage } from '../../lib/skill-bundles/package-service';
-import { createModuleLogger } from '../../lib/debug-log';
-import { materializeUploadedSkillPackage } from '../utils/uploaded-skill-package';
+} from '../../lib/skill-bundles/store.js';
+import { exportSkillBundlePackage } from '../../lib/skill-bundles/package-service.js';
+import { createModuleLogger } from '../../lib/debug-log.js';
+import { materializeUploadedSkillPackage } from '../utils/uploaded-skill-package.js';
 
 const log = createModuleLogger("skills");
 

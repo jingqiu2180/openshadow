@@ -14,8 +14,8 @@ import {
   buildDeferredResultMessage,
   isUiOnlyDeferredResultTask,
   shouldNotifyAgentOnFailure,
-} from '../deferred-result-notification';
-import { createModuleLogger } from '../debug-log';
+} from '../deferred-result-notification.js';
+import { createModuleLogger } from '../debug-log.js';
 
 const log = createModuleLogger("deferred-result-ext");
 

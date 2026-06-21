@@ -1,15 +1,15 @@
 // @ts-nocheck
-import { AppError } from '../shared/errors';
-import { errorBus } from '../shared/error-bus';
-import { normalizeProviderPayload } from './provider-compat';
-import { buildProviderCompatOptions } from './llm-request-policy';
-import { logLlmUsage, normalizeLlmUsage } from '../lib/llm/usage-observer';
-import { appendProviderApiPath, withDefaultProviderHeaders } from '../lib/llm/provider-client';
-import { normalizeProviderHeaders } from '../shared/provider-auth';
+import { AppError } from '../shared/errors.js';
+import { errorBus } from '../shared/error-bus.js';
+import { normalizeProviderPayload } from './provider-compat.js';
+import { buildProviderCompatOptions } from './llm-request-policy.js';
+import { logLlmUsage, normalizeLlmUsage } from '../lib/llm/usage-observer.js';
+import { appendProviderApiPath, withDefaultProviderHeaders } from '../lib/llm/provider-client.js';
+import { normalizeProviderHeaders } from '../shared/provider-auth.js';
 import {
   serializeOpenAICompatibleContentBlock,
   serializeResponsesContentBlock,
-} from './provider-media-serializer';
+} from './provider-media-serializer.js';
 
 const EMPTY_AFTER_THINKING_MESSAGE = "模型未回复正文，请检查思考内容或稍后重试。";
 const DEFAULT_CODEX_BASE_URL = "https://chatgpt.com/backend-api";

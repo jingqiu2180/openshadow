@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { AssistantMessageEventStream } from "@mariozechner/pi-ai";
 import { createAssistantMessageEventStream } from "@mariozechner/pi-ai";
-import { isToolProtocolFragment } from '../tool-protocol-sanitizer';
+import { isToolProtocolFragment } from '../tool-protocol-sanitizer.js';
 
 const STREAM_GUARD_FLAG = Symbol.for("hana.piSdk.streamGuardInstalled");
 

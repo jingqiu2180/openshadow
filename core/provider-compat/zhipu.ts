@@ -24,7 +24,7 @@ import {
   ensureAssistantContentForToolCalls,
   ensureReasoningContentForToolCalls,
   stripReasoningContent,
-} from './reasoning-content-replay';
+} from './reasoning-content-replay.js';
 
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 

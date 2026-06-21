@@ -17,7 +17,7 @@ import {
   noReferenceImages,
   numberParam,
   referenceImages,
-} from './media-schema-helpers';
+} from './media-schema-helpers.js';
 
 const SEEDREAM_DEFAULT_RATIO = "3:2";
 

@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { Type } from '../pi-sdk/index';
-import { getToolSessionPath } from './tool-session';
+import { Type } from '../pi-sdk/index.js';
+import { getToolSessionPath } from './tool-session.js';
 
 const READ_ACTIONS = new Set(["read", "list"]);
 

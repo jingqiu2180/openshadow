@@ -13,7 +13,7 @@
 import {
   MODEL_VIDEO_TRANSPORTS,
   resolveModelVideoInputTransport,
-} from '../../shared/model-capabilities';
+} from '../../shared/model-capabilities.js';
 
 export function matches(model) {
   return resolveModelVideoInputTransport(model) === MODEL_VIDEO_TRANSPORTS.OPENAI_VIDEO_URL;

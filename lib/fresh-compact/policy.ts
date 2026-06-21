@@ -1,6 +1,6 @@
 // @ts-nocheck
 import crypto from "crypto";
-import { getLogicalDay } from '../time-utils';
+import { getLogicalDay } from '../time-utils.js';
 
 export function getFreshCompactDate(now = new Date()) {
   return getLogicalDay(now).logicalDate;
