@@ -36,8 +36,8 @@ import {
 } from '../stores/session-project-actions';
 import { ContextMenu, type ContextMenuItem } from '../ui/ContextMenu';
 import { renderMarkdown } from '../utils/markdown';
-import { cwdFromAutoProjectId } from "@shared/session-projects";
-import { FolderIcon } from "@shared/FolderIcon";
+import { cwdFromAutoProjectId } from '../../../../shared/session-projects.ts';
+import { FolderIcon } from './shared/FolderIcon';
 import styles from './SessionList.module.css';
 
 const SESSION_VIEW_MODE_KEY = 'hana-session-sidebar-view-mode';

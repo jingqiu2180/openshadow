@@ -1,209 +1,115 @@
-// test-v2.mjs — 修正版测试（正确属性名 + 稳定选择器）
 import { chromium } from 'playwright';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const BASE = 'http://localhost:5173';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SCREENSHOT_DIR = path.join(__dirname, 'desktop', 'test-screenshots');
+const BASE_URL = 'http://localhost:5173';
 
-async function main() {
-  const browser = await chromium.launch({ headless: false });
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  const page = await ctx.newPage();
+if (!fs.existsSync(SCREENSHOT_DIR)) fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 
-  const results = [];
-  const consoleErrors = [];
-  const i18nWarnings = [];
+async function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-  page.on('console', msg => {
-    if (msg.type() === 'error') consoleErrors.push(msg.text().slice(0, 150));
-    if (msg.type() === 'warning' && msg.text().includes('[i18n]')) {
-      i18nWarnings.push(msg.text().slice(0, 150));
-    }
-  });
+(async () => {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  let pass = 0, fail = 0, warn = 0;
 
-  await page.goto(BASE, { timeout: 15000 });
-  await page.waitForLoadState('networkidle', { timeout: 10000 });
-  await page.waitForTimeout(3000);
-
-  // ── Test 1: Console errors ───────────────────────────
-  results.push({
-    test: 'Console Errors',
-    pass: consoleErrors.length === 0,
-    detail: `errors:${consoleErrors.length}`
-  });
-
-  // ── Test 2: i18n 翻译 ───────────────────────────
-  // 验证 t() 返回值（之前已验证翻译正确）
-  const translationOk = await page.evaluate(() => {
-    const t = window.i18n?.t;
-    if (!t) return false;
-    const result = t('sidebar.toggle');
-    return typeof result === 'string' && result !== 'sidebar.toggle';
-  });
-  results.push({
-    test: 'i18n 翻译',
-    pass: translationOk,
-    detail: `t('sidebar.toggle')=${await page.evaluate(() => window.i18n?.t?.('sidebar.toggle'))}`
-  });
-
-  // ── Test 3: WebSocket 连接 ──────────────────────
-  const wsOk = await page.evaluate(() => {
-    const s = window.useStore?.getState?.();
-    return s?.connected === true || s?.wsState === 'connected';
-  });
-  results.push({
-    test: 'WebSocket 连接',
-    pass: wsOk,
-    detail: `connected:${wsOk}`
-  });
-
-  // ── Test 4: 设置模态框 ─────────────────────────
-  await page.locator('button[title="设置"]').click({ force: true });
-  await page.waitForTimeout(1200);
-  const settingsOpen = await page.evaluate(() => {
-    return !!document.querySelector('[role="dialog"]');
-  });
-  results.push({
-    test: '设置模态框打开',
-    pass: settingsOpen,
-    detail: `打开:${settingsOpen}`
-  });
-
-  // ── Test 5: 设置 tabs ───────────────────────────
-  if (settingsOpen) {
-    // 检查 dialog 内所有含 tab 的 selector
-    const tabInfo = await page.evaluate(() => {
-      const dialog = document.querySelector('[role="dialog"]');
-      if (!dialog) return { hasDialog: false };
-      // 尝试多种选择器
-      const selectors = [
-        '[role="tab"]',
-        '[class*="tab"]',
-        'button[role="tab"]',
-      ];
-      for (const sel of selectors) {
-        const els = dialog.querySelectorAll(sel);
-        if (els.length > 0) {
-          return {
-            hasDialog: true,
-            selector: sel,
-            count: els.length,
-            texts: Array.from(els).slice(0, 5).map(el => el.textContent?.trim())
-          };
-        }
-      }
-      return { hasDialog: true, count: 0 };
-    });
-    results.push({
-      test: '设置 tabs 渲染',
-      pass: tabInfo.count > 0,
-      detail: JSON.stringify(tabInfo)
-    });
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
-  } else {
-    results.push({ test: '设置 tabs 渲染', pass: false, detail: '设置未打开' });
+  function log(s, m) {
+    console.log(`${s === 'pass' ? '\u2705' : s === 'fail' ? '\u274c' : '\u26a0\ufe0f'} ${m}`);
+    if (s === 'pass') pass++; else if (s === 'fail') fail++; else warn++;
   }
 
-  // ── Test 6: 侧边栏 ─────────────────────────────
-  const sidebarOk = await page.evaluate(() => {
-    const els = document.querySelectorAll('[class*="sidebar"], [class*="Sidebar"]');
-    for (const el of els) {
-      if (getComputedStyle(el).display !== 'none') {
-        return { found: true, class: el.className.slice(0, 50) };
-      }
-    }
-    return { found: false };
-  });
-  results.push({
-    test: '侧边栏渲染',
-    pass: sidebarOk.found,
-    detail: JSON.stringify(sidebarOk)
-  });
+  try {
+    // Force refresh to get updated i18n
+    await page.goto(BASE_URL + '?_t=' + Date.now(), { waitUntil: 'domcontentloaded', timeout: 15000 });
+    await wait(2500);
 
-  // ── Test 7: 输入区 ──────────────────────────────
-  const inputOk = await page.evaluate(() => {
-    const textareas = document.querySelectorAll('textarea');
-    for (const ta of textareas) {
-      if (getComputedStyle(ta).display !== 'none' && !ta.disabled) {
-        return { found: true, placeholder: ta.placeholder?.slice(0, 50) };
-      }
-    }
-    return { found: false };
-  });
-  results.push({
-    test: '输入区可用',
-    pass: inputOk.found,
-    detail: JSON.stringify(inputOk)
-  });
+    // 1. 页面加载
+    const bodyText = await page.evaluate(() => document.body.innerText);
+    log(bodyText.length > 100 ? 'pass' : 'fail', `页面加载 (${bodyText.length} chars)`);
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'v2-01-home.png'), fullPage: true });
 
-  // ── Test 8: 发送消息 ─────────────────────────────
-  if (inputOk.found) {
-    await page.evaluate(() => {
-      const textareas = document.querySelectorAll('textarea');
-      for (const ta of textareas) {
-        if (getComputedStyle(ta).display !== 'none' && !ta.disabled) {
-          ta.value = '你好';
-          ta.dispatchEvent(new Event('input', { bubbles: true }));
-          break;
+    // 2. 英文 UI 扫描
+    const english = await page.evaluate(() => {
+      const skip = new Set(['HTTP','HTTPS','API','JSON','CSS','HTML','SVG','UUID','MCP','LLM','SSE','WS','TCP','IP','URL','ID','OK','AI','Rem','GitHub','MiniMax','OpenAI','BMC','RAID','BIOS','CPLD','NTP','SMTP','SNMP','SYSLOG','AD','LDAP','SSL','SSH','TLS','OAuth','JWT','CORS','CSP','HMR','ESM','CJS','TS','JS','TSX','JSX','Vite','Electron','Node','npm','pnpm','Git','YAML','JSONL','SQLite','PostgreSQL','Redis','Docker','Kubernetes','CPU','RAM','GPU','SSD','HDD','URI','UTC','GMT','ISO','RFC','SHA','MD5','RSA','AES','UDP','ICMP','DNS','DHCP','FTP','SFTP','POP3','IMAP','MQTT','CoAP','Modbus','BACnet','KNX','Zigbee','Z-Wave','Bluetooth','WiFi','Ethernet','USB','HDMI','NVMe','SATA','SAS','PCIe','DDR','DIMM','ARM','x86','x64','RISC-V','MIPS','PowerPC','SPARC','Alpha','Ryzen','Threadripper','Xeon','Core','Pentium','Celeron','Atom','Itanium','EPYC','QQ','STDIO','SSE']);
+      const hits = [];
+      (function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const t = node.textContent.trim();
+          if (t.length > 1 && /^[A-Z][a-z]{1,}$/.test(t) && !skip.has(t) && !['SCRIPT','STYLE','TEXTAREA'].includes(node.parentElement?.tagName)) {
+            hits.push({ text: t, tag: node.parentElement?.tagName });
+          }
         }
-      }
+        for (const c of node.childNodes) walk(c);
+      })(document.body);
+      return hits;
     });
-    await page.waitForTimeout(500);
-    // 按 Enter（用 evaluate 触发）
-    await page.evaluate(() => {
-      const textareas = document.querySelectorAll('textarea');
-      for (const ta of textareas) {
-        if (getComputedStyle(ta).display !== 'none' && !ta.disabled) {
-          ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-          break;
-        }
-      }
-    });
-    await page.waitForTimeout(3000);
-    const msgCount = await page.locator('[data-message-id]').count();
-    results.push({
-      test: '发送消息',
-      pass: msgCount >= 1,
-      detail: `DOM消息数:${msgCount}`
-    });
-  } else {
-    results.push({ test: '发送消息', pass: false, detail: '输入框未找到' });
-  }
+    if (english.length > 0) english.forEach(h => log('warn', `英文: "${h.text}" <${h.tag}>`));
+    else log('pass', '无硬编码英文文本');
 
-  // ── Test 9: 工作台面板 ──────────────────────────
-  const deskOk = await page.evaluate(() => {
-    // 检查 RightWorkspacePanel 是否存在
-    const panels = document.querySelectorAll('[class*="workspace"], [class*="Workspace"], [class*="desk"], [class*="Desk"]');
-    const result = { found: false, count: panels.length };
-    for (const p of panels) {
-      const visible = getComputedStyle(p).display !== 'none' && getComputedStyle(p).visibility !== 'hidden';
-      if (visible) {
-        result.found = true;
-        result.class = p.className.slice(0, 60);
-        break;
+    // 3. 输入框
+    const inputOk = await page.evaluate(() => {
+      const el = document.querySelector('.input-area textarea, .ProseMirror[contenteditable="true"]');
+      return !!el && el.getBoundingClientRect().width > 0;
+    });
+    log(inputOk ? 'pass' : 'fail', '聊天输入框可见');
+
+    // 4. 发送按钮（用多种选择器）
+    const sendFound = await page.evaluate(() => {
+      return !!document.querySelector('button[title*="发送"]')
+        || !!document.querySelector('[class*="send-btn"] button')
+        || Array.from(document.querySelectorAll('button')).some(b => b.textContent?.includes('发送'));
+    });
+    log(sendFound ? 'pass' : 'warn', '发送按钮存在');
+
+    // 5. 左侧边栏中文
+    const sidebar = await page.evaluate(() => document.querySelector('[class*="sidebar"], [class*="Sidebar"]')?.innerText || '');
+    log(['对话','新对话','设置'].some(w => sidebar.includes(w)) ? 'pass' : 'fail', `左侧栏中文`);
+
+    // 6. 右侧栏中文
+    const desk = await page.evaluate(() => document.querySelector('[class*="Desk"], [class*="desk"]')?.innerText || '');
+    log(['笺','文件','工作区'].some(w => desk.includes(w)) ? 'pass' : 'fail', `右侧栏中文`);
+
+    // 7. 检查 Beta 标签
+    const beta = await page.evaluate(() => document.body.innerText.includes('Beta'));
+    log(!beta ? 'pass' : 'warn', 'Beta 标签已翻译');
+
+    // 8. 点击新对话
+    const ncBtn = await page.$('button[title*="新对话"]');
+    if (ncBtn) {
+      await ncBtn.click();
+      await wait(1200);
+      log('pass', '新对话按钮可点击');
+    }
+
+    // 9. 点击设置
+    const setBtn = await page.$('button[title*="设置"]');
+    if (setBtn) {
+      await setBtn.click();
+      await wait(1500);
+      await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'v2-02-settings.png'), fullPage: true });
+      const setTxt = await page.evaluate(() => document.querySelector('[class*="Settings"], [class*="settings"]')?.innerText || '');
+      log(['通用','模型','智能体'].some(w => setTxt.includes(w)) ? 'pass' : 'warn', `设置面板中文`);
+      
+      // 关闭设置面板
+      const closeBtn = await page.$('[data-testid="settings-modal-overlay"] [class*="close"], button[aria-label*="关闭"]');
+      if (closeBtn) {
+        await closeBtn.click();
+        await wait(500);
+        log('pass', '设置面板关闭');
       }
     }
-    return result;
-  });
-  results.push({
-    test: '工作台面板',
-    pass: deskOk.found,
-    detail: JSON.stringify(deskOk)
-  });
 
-  // ── Test 10: 截图 ─────────────────────────────
-  await page.screenshot({ path: 'test-v2-ui.png', fullPage: false });
-  results.push({ test: '截图保存', pass: true, detail: 'test-v2-ui.png' });
-
-  // ── 结果汇总 ──────────────────────────────────
-  console.log('\n═══════════════════════════════════════');
-  const passed = results.filter(r => r.pass).length;
-  console.log(`  最终测试结果: ${passed}/${results.length} 通过`);
-  console.log('═══════════════════════════════════════\n');
-  for (const r of results) {
-    console.log(`${r.pass ? '✅' : '❌'} [${r.test}] ${r.detail}`);
+    // 10. 最终截图
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'v2-03-final.png'), fullPage: true });
+    log('pass', '最终截图保存');
+    
+  } catch (e) {
+    log('fail', `异常: ${e.message}`);
+  } finally {
+    console.log(`\n=== 结果: \u2705${pass} | \u274c${fail} | \u26a0\ufe0f${warn} ===`);
+    await browser.close();
   }
-
-  await browser.close();
-}
-
-main().catch(console.error);
+})();

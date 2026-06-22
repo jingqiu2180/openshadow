@@ -18,6 +18,9 @@ if (process.platform === 'win32') {
   app.setAppUserModelId('com.remu.app')
 }
 
+// High-DPI 支持（frame: false 时防止文字模糊）
+app.commandLine.appendSwitch('high-dpi-support', '1')
+
 // ─── Self-contained config reader (no core/* dependency) ────────────
 // desktop tsconfig is CommonJS scope, so we read config.json directly
 // to avoid cross-project TS compilation.
@@ -378,6 +381,32 @@ function registerIpcHandlers() {
     sendBrowserCommand({ type: 'waitForSelector', selector, timeout: timeout ?? 10000 }))
   ipcMain.handle('browser:close', async () =>
     sendBrowserCommand({ type: 'close' }))
+
+  // ─── 窗口控制（Electron 原生标题栏已移除，由 React WindowControls 接管）───
+  ipcMain.on('window:minimize', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    win?.minimize()
+  })
+
+  ipcMain.on('window:maximize', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (!win) return
+    if (win.isMaximized()) {
+      win.unmaximize()
+    } else {
+      win.maximize()
+    }
+  })
+
+  ipcMain.on('window:close', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    win?.close()
+  })
+
+  ipcMain.handle('window:is-maximized', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    return win?.isMaximized() ?? false
+  })
 }
 
 // ─── Main window ─────────────────────────────────────────────────────
@@ -397,7 +426,8 @@ function createMainWindow() {
       webSecurity: false,
       webviewTag: true,
     },
-    frame: true,
+    // frame: false -> 完全去掉原生标题栏，由 React WindowControls 绘制（对齐 hanako）
+    frame: false,
     backgroundColor: '#faf8f5',
     show: false,
   })
@@ -420,6 +450,15 @@ function createMainWindow() {
     mainWindow = null
     if (process.platform !== 'darwin') app.quit()
   })
+
+  // 广播最大化状态变化到 renderer（让 WindowControls 更新图标）
+  const broadcastMaximizeChange = () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('window:maximize-change', mainWindow.isMaximized())
+    }
+  }
+  mainWindow.on('maximize', broadcastMaximizeChange)
+  mainWindow.on('unmaximize', broadcastMaximizeChange)
 
   console.log('Main window created (dev=%s)', isDev)
 }

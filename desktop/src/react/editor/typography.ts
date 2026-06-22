@@ -1,4 +1,4 @@
-import * as sharedEditorTypography from "@shared/editor-typography";
+import * as sharedEditorTypography from '../../../../shared/editor-typography.ts';
 import {
   FOLLOW_READING_FONT_ID,
   getCssVariableFontFamilyForPreset,

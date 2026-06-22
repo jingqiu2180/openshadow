@@ -8,7 +8,7 @@ import { loadChannels } from '../stores/channel-actions';
 import { applyEditorTypography } from '../editor/typography';
 import { refreshPreviewItemsFromFile } from '../utils/preview-file-refresh';
 import { isRemoteWorkbenchContentRef, refreshPreviewItemsFromRemoteWorkbenchTarget } from '../utils/remote-file-preview';
-import { mergeWorkspaceHistory } from "@shared/workspace-history";
+import { mergeWorkspaceHistory } from '../../../../shared/workspace-history.ts';
 
 declare const i18n: {
   locale: string;

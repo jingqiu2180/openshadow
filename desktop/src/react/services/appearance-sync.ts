@@ -1,5 +1,5 @@
-import registry from "@shared/theme-registry";
-import { isPaperTextureEnabled } from "@shared/appearance-preferences";
+import registry from '../../shared/theme-registry';
+import { isPaperTextureEnabled } from '../../shared/appearance-preferences';
 import { hanaFetch } from '../hooks/use-hana-fetch';
 
 export interface SyncedAppearancePreferences {

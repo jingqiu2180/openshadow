@@ -48,6 +48,12 @@ const platformApi = {
   windowMinimize: () => ipcRenderer.send('window:minimize'),
   windowMaximize: () => ipcRenderer.send('window:maximize'),
   windowClose: () => ipcRenderer.send('window:close'),
+  windowIsMaximized: () => ipcRenderer.invoke('window:is-maximized'),
+  onMaximizeChange: (callback) => {
+    const handler = (_event, isMax) => callback(isMax)
+    ipcRenderer.on('window:maximize-change', handler)
+    return () => { ipcRenderer.removeListener('window:maximize-change', handler) }
+  },
   getPlatform: async () => process.platform,
 }
 

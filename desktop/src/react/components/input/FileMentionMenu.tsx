@@ -1,8 +1,8 @@
 import { memo, useEffect, useRef, type RefObject } from 'react';
 import type { FileMentionItem } from '../../utils/file-mention-items';
 import { kindOfFileName } from '../../utils/file-kind';
-import { FileKindIcon } from "@shared/FileKindIcon";
-import { FolderIcon } from "@shared/FolderIcon";
+import { FileKindIcon } from '../shared/FileKindIcon';
+import { FolderIcon } from '../shared/FolderIcon';
 import styles from './InputArea.module.css';
 
 export const FileMentionMenu = memo(function FileMentionMenu({

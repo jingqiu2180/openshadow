@@ -8,7 +8,7 @@ import styles from './Chat.module.css';
 import { extractToolDetail } from '../../utils/message-parser';
 import type { ToolDetail } from '../../utils/message-parser';
 import { openInternalLink } from '../../utils/link-open';
-import { LinkContextMenu, type LinkContextMenuState } from "@shared/LinkContextMenu";
+import { LinkContextMenu, type LinkContextMenuState } from '../shared/LinkContextMenu';
 
 import type { ToolCall } from '../../stores/chat-types';
 

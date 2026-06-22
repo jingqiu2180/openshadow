@@ -1,7 +1,7 @@
 import { memo } from 'react';
-import { AttachmentChip } from "@shared/AttachmentChip";
-import { AudioAttachmentChip } from "@shared/AudioAttachmentChip";
-import { FolderIcon } from "@shared/FolderIcon";
+import { AttachmentChip } from '../shared/AttachmentChip';
+import { AudioAttachmentChip } from '../shared/AudioAttachmentChip';
+import { FolderIcon } from '../shared/FolderIcon';
 import { kindOfFileName } from '../../utils/file-kind';
 import styles from './InputArea.module.css';
 

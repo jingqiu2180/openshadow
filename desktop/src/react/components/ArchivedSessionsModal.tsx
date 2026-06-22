@@ -102,7 +102,7 @@ export function ArchivedSessionsModal({ open, onClose, zIndex = 1000 }: Props) {
     >
         <div className={styles.header}>
           <h2 className={styles.title}>{t('session.archived.title')}</h2>
-          <button className={styles.closeBtn} onClick={onClose} aria-label={t('common.close')}>
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
             ×
           </button>
         </div>

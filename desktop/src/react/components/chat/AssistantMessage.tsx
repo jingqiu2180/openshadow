@@ -813,7 +813,7 @@ const SkillBlock = memo(function SkillBlock({ block }: { block: any }) {
     <ChatResourceCard
       icon={<SkillResourceIcon />}
       title={block.skillName}
-      subtitle={t('skill.label')}
+      subtitle="Skill"
       onClick={() => openSkillPreview(block.skillName, skillFilePath, block.installedSkillSource)}
       ariaLabel={block.skillName}
     />

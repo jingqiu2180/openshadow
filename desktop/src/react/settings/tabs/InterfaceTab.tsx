@@ -15,7 +15,7 @@ import {
 import {
   isPaperTextureBlockedTheme,
   isPaperTextureEnabled,
-} from "@shared/appearance-preferences";
+} from '../../../shared/appearance-preferences';
 import { persistAppearancePreferences } from '../../services/appearance-sync';
 import {
   FOLLOW_READING_FONT_ID,
@@ -26,7 +26,7 @@ import {
 } from '../../utils/font-presets';
 import { readConfigBoolean } from '../resource-state';
 import styles from '../Settings.module.css';
-import registry from "@shared/theme-registry";
+import registry from '../../../shared/theme-registry';
 
 const platform = window.platform;
 const i18n = window.i18n;

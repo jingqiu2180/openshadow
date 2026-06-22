@@ -4,16 +4,16 @@
   "_imageGenerationLegacyConfigMigrated": true,
   "_configScopeMigrated": true,
   "_dataVersion": 42,
-  "channels_enabled": false,
+  "channels_enabled": true,
   "primaryAgent": "agent-mqk7riqg",
   "workspace_ui_state": {
     "version": 2,
     "workspaces": {
       "D:/src/aicoding/remu": {
-        "updatedAt": 1782052457687,
+        "updatedAt": 1782136162615,
         "surfaces": {
           "electron": {
-            "updatedAt": 1781960663363,
+            "updatedAt": 1782136162615,
             "deskCurrentPath": "",
             "deskExpandedPaths": [
               "desktop",
@@ -21,7 +21,7 @@
               "security"
             ],
             "deskSelectedPath": "",
-            "rightWorkspaceTab": "workspace",
+            "rightWorkspaceTab": "session-files",
             "jianView": "desk",
             "jianDrawerOpen": false,
             "previewOpen": false,
@@ -30,7 +30,7 @@
             "previewTabs": []
           },
           "pwa": {
-            "updatedAt": 1782052457687,
+            "updatedAt": 1782121923018,
             "deskCurrentPath": "",
             "deskExpandedPaths": [],
             "deskSelectedPath": "",

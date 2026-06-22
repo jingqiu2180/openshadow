@@ -76,10 +76,6 @@ export const useStore = create<StoreState>()((set, _get, _api) => ({
   ...createScreenshotSlice(set),
 }));
 
-if (typeof window !== 'undefined') {
-  (window as any).__STORE__ = useStore;
-}
-
 // Re-export slice types
 export type {
   ConnectionSlice,

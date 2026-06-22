@@ -5,10 +5,10 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MarkdownContent } from './MarkdownContent';
 import { MessageFooterActions, formatMessageTime, type MessageFooterAction } from './MessageFooterActions';
-import { AttachmentChip } from "@shared/AttachmentChip";
-import { AudioAttachmentChip } from "@shared/AudioAttachmentChip";
-import { FileKindIcon } from "@shared/FileKindIcon";
-import { FolderIcon } from "@shared/FolderIcon";
+import { AttachmentChip } from '../shared/AttachmentChip';
+import { AudioAttachmentChip } from '../shared/AudioAttachmentChip';
+import { FileKindIcon } from '../shared/FileKindIcon';
+import { FolderIcon } from '../shared/FolderIcon';
 import type { ChatMessage, UserAttachment, DeskContext } from '../../stores/chat-types';
 import { useStore } from '../../stores';
 import { selectIsStreamingSession, selectSelectedIdsBySession } from '../../stores/session-selectors';

@@ -521,7 +521,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
       focusFrameRef.current = null;
       if (!editor || editor.isDestroyed) return;
       if (!shouldAllowInputFocus({ inputRoot: inputSurfaceRef.current })) return;
-      editor?.commands.focus();
+      editor.commands.focus();
     };
 
     if (typeof window.requestAnimationFrame === 'function') {
@@ -1144,7 +1144,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
         setDraft(currentSessionPath, text);
       }
       // 内容超出可见区域时，自动滚动到光标位置
-      requestAnimationFrame(() => editor?.commands.scrollIntoView());
+      requestAnimationFrame(() => editor.commands.scrollIntoView());
     };
     editor.on('update', handler);
     return () => { editor.off('update', handler); };
@@ -1157,7 +1157,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
     const current = editor.getText();
     if (draft !== current) {
       if (!draft) {
-        editor?.commands.setContent('', { emitUpdate: false });
+        editor.commands.setContent('', { emitUpdate: false });
       } else {
         const doc = {
           type: 'doc' as const,
@@ -1166,7 +1166,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
             content: line ? [{ type: 'text' as const, text: line }] : [],
           })),
         };
-        editor?.commands.setContent(doc, { emitUpdate: false });
+        editor.commands.setContent(doc, { emitUpdate: false });
       }
     }
   }, [editor, currentSessionPath]);
@@ -1201,22 +1201,6 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
   // runtime，此窗口内发 prompt 会冷建第二个 runtime 与 reload 竞争（#1624 I2）。
   const canSend = hasContent && connected && !isStreaming && !modelSwitching && !pendingSessionSwitchPath && !inputLocked
     && !capabilityRefreshing && !compacting;
-
-  // Expose key state to window for E2E/diagnostic scripts
-  useEffect(() => {
-    (window as any).__remuDiag = {
-      canSend,
-      hasContent,
-      inputTextLen: inputText.trim().length,
-      connected,
-      isStreaming,
-      modelSwitching,
-      inputLocked,
-      compacting,
-      capabilityRefreshing,
-      currentSessionPath: useStore.getState().currentSessionPath,
-    };
-  }, [canSend, hasContent, inputText, connected, isStreaming, modelSwitching, inputLocked]);
 
   const loadVisionAuxiliaryConfig = useCallback(async () => {
     if (surface === 'mobile') {
@@ -1316,7 +1300,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
     const plainUrlPaste = extractPlainUrlPaste(e.clipboardData);
     if (plainUrlPaste && editor) {
       e.preventDefault();
-      editor?.commands.insertContent(plainUrlPaste);
+      editor.commands.insertContent(plainUrlPaste);
       return true;
     }
     return false;
@@ -1386,16 +1370,8 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
   // ── Send / interject message ──
   const submitEditorMessage = useCallback(async (type: 'prompt' | 'interject') => {
     if (inputLocked) return;
-    if (!editor || editor.isDestroyed) return;
-
-    // Defensive: wrap entire send to catch Tiptap internal errors (e.g., destroyed editor mid-send)
-    let editorJson: Record<string, unknown> | undefined;
-    try {
-      editorJson = editor.getJSON();
-    } catch (e) {
-      console.warn('[InputArea] getJSON failed:', e);
-      return;
-    }
+    if (!editor) return;
+    const editorJson = editor.getJSON();
     const { text: rawText, skills, fileRefs } = serializeEditor(editorJson);
     const text = rawText.trim();
 
@@ -1415,13 +1391,16 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
 
     const inputFiles = mergeEditorFileRefs(attachedFiles, fileRefs);
     const hasFiles = inputFiles.length > 0;
-    if ((!text && !hasFiles && !docContextAttached && (useStore.getState().quotedSelections?.length ?? 0) === 0) || !connected) return;
+    if ((!text && !hasFiles && !docContextAttached && useStore.getState().quotedSelections.length === 0) || !connected) return;
     if (type === 'prompt' && isStreaming) return;
     if (type === 'interject' && !isStreaming) return;
     if (sending) return;
     if (modelSwitching) return;
     if (useStore.getState().pendingSessionSwitchPath) return;
     if (type === 'prompt') {
+      // 压缩 / 能力刷新（fresh compact）期间禁发 prompt：此窗口内 session 没有
+      // 可用 runtime，发消息会冷建第二个 runtime 与压缩后的 reload 竞争（#1624 I2）。
+      // Enter 发送不走 canSend，必须在提交路径同样拦截；按 keyed 状态现读现查。
       const guardState = useStore.getState();
       const guardPath = guardState.currentSessionPath;
       if (guardPath && (
@@ -1430,6 +1409,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
       )) return;
     }
     setSending(true);
+
     try {
       if (pendingNewSession) {
         const ok = await ensureSession();
@@ -1462,7 +1442,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
         attachments: inputFiles,
         model: currentModelInfo,
       });
-      if (!videoPreflight.ok && videoFiles.length > 0) {
+      if (!videoPreflight.ok) {
         notifyTextModelVideoBlocked({
           t,
           addToast: useStore.getState().addToast,
@@ -1484,21 +1464,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
       ) : [];
 
       const sessionPathForSend = useStore.getState().currentSessionPath;
-      if (!sessionPathForSend) {
-        // 先调用 createNewSession() 确保 pendingNewSession=true 且 session 被创建
-        try {
-          await createNewSession();
-          console.log('[DIAG] createNewSession() done, pendingNewSession=', useStore.getState().pendingNewSession);
-        } catch (err) {
-          console.error('[session] createNewSession() failed:', err);
-          return;
-        }
-        // 现在 ensureSession() 会真正创建 session
-        useStore.setState({ welcomeVisible: false });
-        const ok = await ensureSession();
-        if (!ok) return;
-        loadSessions();
-      }
+      if (!sessionPathForSend) return;
       const sessionFileRefs = otherFiles
         .filter(f => f.fileId)
         .map(f => ({
@@ -1615,7 +1581,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
       const allFiles = [...(hasFiles ? inputFiles : [])];
       if (docForRender) allFiles.push({ path: docForRender.path, name: docForRender.name });
 
-      try { editor?.commands.clearContent(); } catch (e) { console.warn('[InputArea] clearContent failed:', e); }
+      editor.commands.clearContent();
       if (currentSessionPath) clearDraft(currentSessionPath);
       clearAttachedFiles();
       if (useStore.getState().quotedSelections.length > 0) useStore.getState().clearQuotedSelections();
@@ -1677,7 +1643,6 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
         return;
       }
       try {
-        console.log('[DIAG] ws.send() ABOUT TO SEND, ws.readyState=', ws?.readyState, 'type=', wsMsg.type);
         ws.send(JSON.stringify(wsMsg));
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);

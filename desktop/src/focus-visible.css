@@ -1,0 +1,19 @@
+/* ========================================
+   focus-visible.css — 全局键盘焦点规范
+   ======================================== */
+
+/* 所有可聚焦元素：键盘导航时的焦点环 */
+:focus-visible {
+    outline: 2px solid var(--accent, #537D96);
+    outline-offset: 2px;
+}
+
+/* 某些元素用 box-shadow 替代 outline（避免圆角处方形环） */
+.send-btn:focus-visible,
+.model-selector:focus-visible,
+.attach-btn:focus-visible,
+.settings-btn:focus-visible,
+.new-chat-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent, #537D96);
+}

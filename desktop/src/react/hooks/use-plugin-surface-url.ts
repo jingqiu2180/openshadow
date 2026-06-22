@@ -7,7 +7,7 @@ import {
   isLocalOwnerConnection,
   type ServerConnection,
 } from '../services/server-connection';
-import { DEFAULT_THEME } from "@shared/theme-registry";
+import { DEFAULT_THEME } from '../../shared/theme-registry';
 
 type SurfaceUrlStatus = 'loading' | 'ready' | 'error';
 

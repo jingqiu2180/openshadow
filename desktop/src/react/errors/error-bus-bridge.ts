@@ -5,7 +5,7 @@
  * ErrorBus subscriber to the toast slice.
  */
 
-import { errorBus } from "@shared/error-bus";
+import { errorBus } from '../../../../shared/error-bus.ts';
 import { useStore } from '../stores';
 import type { ErrorRoute } from './types';
 

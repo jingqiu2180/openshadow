@@ -3,7 +3,7 @@ import { hasServerConnection } from '../services/server-connection';
 import type { PreviewItem, RightWorkspaceTab } from '../types';
 import { readFileForPreviewType } from '../utils/preview-file-content';
 import { useStore } from './index';
-import { normalizeWorkspacePath } from "@shared/workspace-history";
+import { normalizeWorkspacePath } from '../../../../shared/workspace-history.ts';
 
 interface PersistedPreviewTab {
   id: string;

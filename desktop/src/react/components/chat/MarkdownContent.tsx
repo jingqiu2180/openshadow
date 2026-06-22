@@ -10,7 +10,7 @@ import { renderCodeBlockToolbarHtml, type CodeBlockToolbarLabels } from '../../u
 import { useMermaidDiagrams } from '../../hooks/use-mermaid-diagrams';
 import { splitGraphemes } from '../../utils/grapheme';
 import { openInternalLink, resolveLinkTarget, type LinkOpenContext } from '../../utils/link-open';
-import { LinkContextMenu, type LinkContextMenuState } from "@shared/LinkContextMenu";
+import { LinkContextMenu, type LinkContextMenuState } from '../shared/LinkContextMenu';
 import styles from './Chat.module.css';
 
 interface Props {

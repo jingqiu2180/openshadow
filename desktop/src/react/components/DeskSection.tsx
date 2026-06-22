@@ -19,7 +19,7 @@ import { DeskDropZone } from './desk/DeskDropZone';
 import { DeskEmptyOverlay } from './desk/DeskEmptyOverlay';
 import { DeskCwdSkillsButton, DeskCwdSkillsPanel } from './desk/DeskCwdSkills';
 import s from './desk/Desk.module.css';
-import { workspaceDisplayName } from '@shared/workspace-history';
+import { workspaceDisplayName } from '../../../../shared/workspace-history.ts';
 
 const DESK_FILTER_KEY = 'hana-desk-type-filters';
 const VALID_TYPE_FILTERS = new Set<FileTypeFilter>(['image', 'text', 'video']);
@@ -106,13 +106,6 @@ export function DeskSection({
   const [typeFilters, setTypeFilters] = useState<FileTypeFilter[]>(getInitialTypeFilters);
   const [inlineEdit, setInlineEdit] = useState<InlineTreeEdit>(null);
   const t = window.t ?? ((p: string) => p);
-
-  // 初始化：deskBasePath 变化时自动加载根目录文件
-  useEffect(() => {
-    if (deskBasePath) {
-      void loadDeskTreeFiles('');
-    }
-  }, [deskBasePath]);
 
   useEffect(() => {
     if (!deskBasePath || deskDirtyTreePaths.length === 0) return;

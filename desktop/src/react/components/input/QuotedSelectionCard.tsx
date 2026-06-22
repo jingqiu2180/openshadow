@@ -1,5 +1,5 @@
 import { useStore } from '../../stores';
-import { AttachmentChip } from "@shared/AttachmentChip";
+import { AttachmentChip } from '../shared/AttachmentChip';
 
 export function QuotedSelectionCard() {
   const quotedSelections = useStore(s => s.quotedSelections);

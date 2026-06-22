@@ -12,7 +12,7 @@ import {
   COMPACTION_MODE_EXPERIMENT_ID,
   COMPACTION_MODES,
   normalizeCompactionMode,
-} from "@shared/compaction-mode";
+} from '../../../../../shared/compaction-mode.ts';
 import styles from '../Settings.module.css';
 
 const CACHE_SNAPSHOT_EXPERIMENT_ID = 'memory.cache_snapshot_reflection';

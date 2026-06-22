@@ -1,5 +1,5 @@
 import { hanaFetch } from '../hooks/use-hana-fetch';
-import registry from "@shared/theme-registry";
+import registry from '../../shared/theme-registry';
 import { refreshPreviewItemsFromFile } from './preview-file-refresh';
 import {
   normalizeWorkbenchContentRef,

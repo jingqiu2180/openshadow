@@ -10,7 +10,7 @@ import { selectAgentActivities } from '../../stores/agent-activity-slice';
 import { formatElapsed } from '../../utils/format-duration';
 import { ChatResourceCard } from './ChatResourceCard';
 import { WorkflowResourceIcon } from './ChatResourceIcons';
-import { WorkflowProgressDots } from "@shared/WorkflowProgressDots";
+import { WorkflowProgressDots } from '../shared/WorkflowProgressDots';
 
 interface WorkflowInlineCardProps {
   block: {

@@ -5,7 +5,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { InterfaceTab } from '../InterfaceTab';
 import { useSettingsStore } from '../../store';
-import registry from "@shared/theme-registry";
+import registry from '../../../../shared/theme-registry';
 
 vi.mock('../../../services/appearance-sync', () => ({
   persistAppearancePreferences: vi.fn().mockResolvedValue(undefined),

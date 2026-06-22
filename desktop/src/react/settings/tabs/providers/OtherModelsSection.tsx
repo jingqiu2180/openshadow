@@ -16,7 +16,7 @@ import {
   isBrowserSearchProvider,
   isSearchApiProvider,
   normalizeSearchApiKeys,
-} from "@shared/search-providers";
+} from '../../../../../../shared/search-providers.ts';
 
 type ModelRef = { id: string; provider: string };
 

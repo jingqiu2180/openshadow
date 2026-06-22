@@ -38,7 +38,7 @@ import { useStore } from '../../stores';
 import { upsertPreviewItem } from '../../stores/preview-actions';
 import { isRemoteWorkbenchContentRef, normalizeWorkbenchContentRef, saveRemoteWorkbenchContent } from '../../utils/remote-file-preview';
 import { useMermaidDiagrams } from '../../hooks/use-mermaid-diagrams';
-import { LinkContextMenu, type LinkContextMenuState } from "@shared/LinkContextMenu";
+import { LinkContextMenu, type LinkContextMenuState } from '../shared/LinkContextMenu';
 import type { PreviewItem } from '../../types';
 
 declare function t(key: string, vars?: Record<string, string | number>): string;

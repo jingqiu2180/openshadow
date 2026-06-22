@@ -24,7 +24,7 @@ import { InputContextMenu } from './components/InputContextMenu';
 import { StatusBar } from './components/StatusBar';
 import { LeavesOverlay } from './components/LeavesOverlay';
 import { SelectionQuoteActionSurface } from './components/selection/SelectionQuoteActionSurface';
-import { MediaViewer } from "@shared/MediaViewer/MediaViewer";
+import { MediaViewer } from './components/shared/MediaViewer/MediaViewer';
 import { SettingsModalShell } from './components/SettingsModalShell';
 import { initTheme, initDragPrevention } from './bootstrap';
 import { initApp } from './app-init';

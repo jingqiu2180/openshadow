@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePluginSurfaceUrl } from '../../hooks/use-plugin-surface-url';
 import { useStore } from '../../stores';
 import { createLocalServerConnection } from '../../services/server-connection';
-import { DEFAULT_THEME } from "@shared/theme-registry";
+import { DEFAULT_THEME } from '../../../shared/theme-registry';
 
 const localConnection = createLocalServerConnection({
   serverPort: '3210',

@@ -7,7 +7,7 @@ import { SelectWidget } from '@/ui';
 import { KeyInput } from '../../widgets/KeyInput';
 import { getApiKeySavePlan } from './api-key-save-plan';
 import { parseProviderHeaderLines, ProviderHeadersField, serializeProviderHeaders } from './ProviderHeadersField';
-import { isMaskedSecretValue } from "@shared/secret-custody";
+import { isMaskedSecretValue } from '../../../../../../shared/secret-custody.ts';
 import styles from '../../Settings.module.css';
 
 interface DiscoveredProviderModel {

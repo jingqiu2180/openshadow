@@ -11,7 +11,7 @@ import {
   normalizeBrowserPreferences,
   type BrowserAgentOpenBehavior,
   type BrowserPreferences,
-} from "@shared/browser-preferences";
+} from '../../../../../shared/browser-preferences.ts';
 import styles from '../Settings.module.css';
 
 function browserBehaviorForControl(value: BrowserAgentOpenBehavior): 'current_tab' | 'new_tab' {

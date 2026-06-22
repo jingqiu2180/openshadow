@@ -6,7 +6,7 @@ import {
   buildSessionSections,
   type SessionProjectCatalog,
 } from '../../components/session-sections';
-import { UNCATEGORIZED_PROJECT_ID } from "@shared/session-projects";
+import { UNCATEGORIZED_PROJECT_ID } from '../../../../../shared/session-projects.ts';
 
 function makeSession(overrides: Partial<Session>): Session {
   return {

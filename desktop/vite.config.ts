@@ -81,7 +81,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': 'http://localhost:3000',
-      '/locales': 'http://localhost:3000',
+      // '/locales' 不再代理 — 由 Vite 直接从 public/locales/ 提供静态文件
       '/ws': { target: 'ws://localhost:3000', ws: true },
     },
   },

@@ -1,0 +1,67 @@
+{
+  "pass": 9,
+  "fail": 3,
+  "skip": 0,
+  "details": [
+    {
+      "name": "M1.1",
+      "status": "FAIL",
+      "note": "Session exists: false"
+    },
+    {
+      "name": "M1.2",
+      "status": "PASS",
+      "note": "Text entered"
+    },
+    {
+      "name": "M1.3",
+      "status": "PASS",
+      "note": "Messages in DOM: 12"
+    },
+    {
+      "name": "M1.4",
+      "status": "PASS",
+      "note": "Code blocks: 0"
+    },
+    {
+      "name": "M2.1",
+      "status": "FAIL",
+      "note": "Session items: 0"
+    },
+    {
+      "name": "M3.1",
+      "status": "PASS",
+      "note": "Sidebar width: 260px"
+    },
+    {
+      "name": "M4.1",
+      "status": "PASS",
+      "note": "Settings opened"
+    },
+    {
+      "name": "M4.2",
+      "status": "PASS",
+      "note": "Settings tabs: 2"
+    },
+    {
+      "name": "M5.1",
+      "status": "PASS",
+      "note": "Desk tab clicked"
+    },
+    {
+      "name": "M6.1",
+      "status": "PASS",
+      "note": "Channels tab clicked"
+    },
+    {
+      "name": "M7.1",
+      "status": "PASS",
+      "note": "Main content width: 964px"
+    },
+    {
+      "name": "M8.1",
+      "status": "FAIL",
+      "note": "WS connected: undefined"
+    }
+  ]
+}

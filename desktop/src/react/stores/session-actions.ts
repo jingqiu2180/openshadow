@@ -691,14 +691,10 @@ export async function createNewSession(options: CreateNewSessionOptions = {}): P
     docContextAttached: false,
   });
 
-  try {
-    await activateWorkspaceDesk(defaultFolder, {
-      mountId: defaultWorkspaceMountId,
-      label: defaultWorkspaceLabel,
-    });
-  } catch (err) {
-    console.warn('[session] createNewSession: activateWorkspaceDesk failed (non-fatal), continuing...', err);
-  }
+  await activateWorkspaceDesk(defaultFolder, {
+    mountId: defaultWorkspaceMountId,
+    label: defaultWorkspaceLabel,
+  });
 
   // 重置 context ring
   useStore.setState({ contextTokens: null, contextWindow: null, contextPercent: null });

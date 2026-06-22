@@ -5,7 +5,7 @@ import { useSettingsStore } from '../store';
 import {
   DESKTOP_REMOTE_ACCESS_SCOPES,
   MOBILE_REMOTE_ACCESS_SCOPES,
-} from "@shared/access-scope-profiles";
+} from '../../../../../shared/access-scope-profiles.ts';
 import {
   LOCAL_CONNECTION_ID,
   connectDeviceServerConnection,

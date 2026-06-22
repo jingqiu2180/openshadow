@@ -224,7 +224,6 @@
     box-sizing: border-box;
     width: calc(100% - 4px);
     display: grid;
-    overflow: hidden;
     grid-template-columns:
         calc(var(--tree-leading-inset) + (var(--tree-depth, 0) * var(--tree-indent-step)))
         14px
@@ -557,17 +556,18 @@
     top: 0;
     left: 0;
     right: 0;
-    background: var(--bg-card);
-    border: 1px solid var(--overlay-light);
-    border-radius: var(--radius-sm);
+    background: var(--bg-card, #fcfaf5);
+    border: 1px solid var(--overlay-light, rgba(0,0,0,0.08));
+    border-radius: var(--radius-sm, 6px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     padding: 0.5rem 0.75rem 0.6rem;
     min-height: 260px;
     max-height: 400px;
     overflow-y: auto;
-    animation: hana-slide-in-top var(--duration-fast) ease-out;
+    animation: hana-slide-in-top var(--duration-fast, 0.15s) ease-out;
     transform-origin: top right;
-    transition: border-color var(--duration-fast);
+    transition: border-color var(--duration-fast, 0.15s);
+    isolation: isolate;
 }
 
 .cwdPanel.dragOver {
@@ -770,10 +770,6 @@
     display: flex;
     flex-direction: column;
     height: 300px;
-    min-width: 0;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-all;
 }
 
 .editorHeader {

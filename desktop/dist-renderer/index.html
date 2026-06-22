@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rem Agent</title>
-  <!-- Vite 会自动注入 HMR 脚本，不需要手动写 script 标签 -->
-  <script type="module" crossorigin src="./assets/index-BnSeBch8.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CvJnczeO.css">
+  <script src="modules/connection-csp.js"></script>
+  <!-- 强制指定 dev server 端口为 server(3000) 而非 Vite(5173) -->
+  <script>window.__HANA_DEV_WEB__ = { serverPort: 3000 };</script>
+  <title>Rem Agent</title>
+  <script type="module" crossorigin src="./assets/index-D1NIESQs.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DhS6yt6I.css">
 </head>
 <body>
   <div id="react-root"></div>
-  <!-- i18n 必须在 main.tsx 之前加载，否则 window.i18n 为 undefined -->
-  <script src="/lib/i18n.js"></script>
-  <!-- Vite 会把这个文件编译成 JS 并注入 -->
+  <script src="lib/i18n.js"></script>
+  <script src="lib/theme.js"></script>
+  <script src="modules/platform.js"></script>
 </body>
 </html>

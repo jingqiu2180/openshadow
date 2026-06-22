@@ -43,10 +43,19 @@
       // OS 集成
       openExternal: (url) => { try { window.open(url, "_blank"); } catch {} },
 
-      // 窗口控制
-      windowMinimize: () => {},
-      windowMaximize: () => {},
-      windowClose: () => {},
+      // 窗口控制 — 转发到 window.hana（preload 注入的 IPC 桥接）
+      windowMinimize: () => { try { window.hana?.windowMinimize?.(); } catch {} },
+      windowMaximize: () => { try { window.hana?.windowMaximize?.(); } catch {} },
+      windowClose: () => { try { window.hana?.windowClose?.(); } catch {} },
+      windowIsMaximized: async () => {
+        try { return await window.hana?.windowIsMaximized?.() ?? false; } catch (e) { return false; }
+      },
+      onMaximizeChange: (callback) => {
+        try {
+          const unsub = window.hana?.onMaximizeChange?.(callback);
+          return unsub ?? (() => {});
+        } catch (e) { return () => {}; }
+      },
       getPlatform: async () => platform,
     };
     return;

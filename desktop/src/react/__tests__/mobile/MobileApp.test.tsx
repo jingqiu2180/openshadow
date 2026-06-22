@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useStore } from '../../stores';
 import { MobileApp } from '../../mobile/MobileApp';
 import { installMobilePlatform } from '../../mobile/mobile-platform';
-import registry from "@shared/theme-registry";
+import registry from '../../../shared/theme-registry';
 
 vi.mock('../../components/InputArea', async () => {
   const ReactModule = await import('react');

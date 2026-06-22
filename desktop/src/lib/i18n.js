@@ -34,14 +34,14 @@ const i18n = {
     const key = this._resolveKey(locale);
     this.locale = key;
     try {
-      const res = await fetch(`/locales/${key}.json`);
+      const res = await fetch(`./locales/${key}.json`);
       if (!res.ok) throw new Error(res.statusText);
       this._data = await res.json();
     } catch (err) {
       console.error(`[i18n] Failed to load locale "${key}":`, err);
       if (key !== "en") {
         try {
-          const fb = await fetch(`/locales/en.json`);
+          const fb = await fetch("./locales/en.json");
           this._data = await fb.json();
         } catch { this._data = {}; }
       } else {
@@ -92,13 +92,7 @@ const i18n = {
    */
   t(path, vars) {
     let val = this._get(path);
-    if (val === undefined || val === null) {
-      // 加详细日志：翻译未找到
-      if (path.startsWith('desk.') || path.startsWith('sidebar.')) {
-        console.warn(`[i18n] Missing translation: ${path} (locale: ${this.locale})`);
-      }
-      return path; // fallback: 返回 key 本身
-    }
+    if (val === undefined || val === null) return path; // fallback: 返回 key 本身
     if (typeof val !== "string") return val;
 
     // 替换占位符

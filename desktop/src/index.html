@@ -1,22 +1,69 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="modules/connection-csp.js"></script>
-  <!-- 强制指定 dev server 端口为 server(3000) 而非 Vite(5173) -->
-  <script>window.__HANA_DEV_WEB__ = { serverPort: 3000 };</script>
-  <title>Rem Agent</title>
-  <link rel="stylesheet" href="styles/themes/cool-night.css">
-  <link rel="stylesheet" href="styles/themes/auto.css">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="themes/warm-paper.css" id="themeSheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="modules/connection-csp.js"></script>
+    <title>Rem Agent</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="themes/warm-paper.css" id="themeSheet">
+    <script>
+      // 在 React 挂载前初始化主题和纸质纹理（避免 FOUC）
+      (function() {
+        var themeKey = 'hana.theme';
+        var textureKey = 'hana-paper-texture';
+
+        // 主题（立即生效，在 <head> 里设置不影响渲染）
+        var savedTheme = localStorage.getItem(themeKey) || 'warm-paper';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // 纸质纹理（需要等 body 解析完成）
+        function applyPaperTexture() {
+          var val = localStorage.getItem(textureKey);
+          if (val === null) val = '1'; // 默认开启（和 hanako 一致）
+          if (val === '1') {
+            document.body.classList.add('paper-texture');
+          } else {
+            document.body.classList.remove('paper-texture');
+          }
+        }
+        if (document.body) {
+          applyPaperTexture();
+        } else {
+          document.addEventListener('DOMContentLoaded', applyPaperTexture);
+        }
+
+        // 暴露全局函数（供 appearance-sync.ts 调用）
+        window.setTheme = function(name) {
+          if (!name) name = 'warm-paper';
+          document.documentElement.setAttribute('data-theme', name);
+          try { localStorage.setItem(themeKey, name); } catch(e) {}
+        };
+        window.setPaperTexture = function(enabled) {
+          if (enabled) {
+            document.body.classList.add('paper-texture');
+            try { localStorage.setItem(textureKey, '1'); } catch(e) {}
+          } else {
+            document.body.classList.remove('paper-texture');
+            try { localStorage.setItem(textureKey, '0'); } catch(e) {}
+          }
+        };
+        window.setSerifFont = function(enabled) {
+          if (enabled) {
+            document.body.classList.add('serif-font');
+          } else {
+            document.body.classList.remove('serif-font');
+          }
+          try { localStorage.setItem('hana-font-serif', enabled ? '1' : '0'); } catch(e) {}
+        };
+      })();
+    </script>
 </head>
 <body>
-  <div id="react-root"></div>
-  <script src="lib/i18n.js"></script>
-  <script src="lib/theme.js"></script>
-  <script src="modules/platform.js"></script>
-  <script type="module" src="/main.tsx"></script>
+    <div id="react-root"></div>
+
+    <script src="lib/i18n.js"></script>
+    <script src="modules/platform.js"></script>
+    <script type="module" src="./main.tsx"></script>
 </body>
 </html>

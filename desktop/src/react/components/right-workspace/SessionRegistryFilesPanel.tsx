@@ -7,7 +7,7 @@ import { ContextMenu, type ContextMenuItem } from '../../ui';
 import { isMediaKind } from '../../utils/file-kind';
 import { fileRefDownloadUrl, isWebRuntime, openFileRefPreview } from '../../utils/remote-file-preview';
 import { hanaFetch } from '../../hooks/use-hana-fetch';
-import { FileKindIcon } from "@shared/FileKindIcon";
+import { FileKindIcon } from '../shared/FileKindIcon';
 import {
   clearAppFileDragPayload,
   writeAppFileDragPayload,

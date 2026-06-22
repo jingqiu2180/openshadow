@@ -1,7 +1,6 @@
 import { useStore } from '../../stores';
 import { selectPreviewItems, selectOpenTabs, selectActiveTabId } from '../../stores/preview-slice';
 import { closeTab, closePreview, setActiveTab } from '../../stores/preview-actions';
-import { useI18n } from '../../hooks/use-i18n';
 import type { PreviewItem } from '../../types';
 import styles from './TabBar.module.css';
 
@@ -13,7 +12,6 @@ function wheelDeltaToPixels(event: React.WheelEvent<HTMLElement>): number {
 }
 
 export function TabBar() {
-  const { t } = useI18n();
   const openTabs = useStore(selectOpenTabs);
   const activeTabId = useStore(selectActiveTabId);
   const previewItems = useStore(selectPreviewItems);
@@ -79,7 +77,7 @@ export function TabBar() {
           </div>
         ))}
       </div>
-      <button className={styles.closePanel} title={t('preview.collapse')} onClick={closePreview}>
+      <button className={styles.closePanel} title="Collapse" onClick={closePreview}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="9 18 15 12 9 6" />
         </svg>

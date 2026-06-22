@@ -9,7 +9,7 @@ import { Collapse } from '@/ui';
 import { useStore } from '../../stores';
 import { hanaFetch } from '../../hooks/use-hana-fetch';
 import styles from './SessionStatusCard.module.css';
-import { workspaceDisplayName } from "@shared/workspace-history";
+import { workspaceDisplayName } from '../../../../../shared/workspace-history.ts';
 
 const EMPTY_AUTHORIZED_FOLDERS: string[] = [];
 
