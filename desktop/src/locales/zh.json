@@ -110,13 +110,13 @@
     "collapse": "收起侧边栏",
     "expand": "展开对话列表",
     "empty": "还没有对话哦 ✿",
-    "activity": "助手活动",
+    "activity": "活动",
     "jian": "书桌",
     "bridge": "接入社交平台",
     "toggle": "侧边栏",
     "bridgeShort": "接入社交平台",
     "pinned": "置顶",
-    "searchPlaceholder": "搜索聊天记录",
+    "searchPlaceholder": "搜索对话...",
     "searchClear": "清空搜索",
     "searchTitleMatches": "标题",
     "searchContentMatches": "正文",
@@ -150,7 +150,14 @@
       "showMore": "展开显示",
       "loading": "正在载入项目…",
       "empty": "还没有项目"
-    }
+    },
+    "deleteSession": "删除对话",
+    "renameSession": "重命名",
+    "noSessions": "没有对话",
+    "confirmDelete": "确定要删除此对话吗？",
+    "settings": "设置",
+    "channels": "频道",
+    "tasks": "任务"
   },
   "titlebar": {
     "currentChatTitle": "当前对话标题"
@@ -216,7 +223,12 @@
       "cancelButton": "取消",
       "refreshing": "正在压缩对话并刷新工具…",
       "refreshFailed": "刷新失败"
-    }
+    },
+    "title": "对话",
+    "new": "新对话",
+    "delete": "删除",
+    "confirmDelete": "确定要删除此对话吗？",
+    "search": "搜索对话"
   },
   "common": {
     "on": "开",
@@ -234,7 +246,7 @@
     "changeRejected": "{label} 修改已取消",
     "changeTimeout": "{label} 确认超时",
     "noChats": "暂无对话",
-    "noFiles": "暂无文件",
+    "noFiles": "没有文件",
     "executing": "执行中...",
     "user": "用户",
     "me": "我",
@@ -252,7 +264,23 @@
     "screenshotFailed": "截图保存失败",
     "selectedCount": "已选 {count} 条",
     "allDone": "全部完成",
-    "markAllComplete": "全部标记为已完成"
+    "markAllComplete": "全部标记为已完成",
+    "delete": "删除",
+    "rename": "重命名",
+    "save": "保存",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "noSessions": "没有对话",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "refresh": "刷新",
+    "close": "关闭",
+    "open": "打开",
+    "paste": "粘贴",
+    "upload": "上传",
+    "download": "下载"
   },
   "chat": {
     "send": "发送",
@@ -292,7 +320,11 @@
       "fallbackAssistant": "助手消息"
     },
     "modelSwitching": "正在切换模型，请稍候",
-    "unknownCommand": "[未知命令] {text}"
+    "unknownCommand": "[未知命令] {text}",
+    "placeholder": "输入消息...",
+    "thinking": "思考中...",
+    "emptyTitle": "开始新对话",
+    "emptyHint": "在下方输入消息开始对话。"
   },
   "time": {
     "justNow": "刚刚",
@@ -428,7 +460,10 @@
       "和助手相处一段时间后，试试日记功能吧！",
       "日记和截图都保存在主助手的工作目录",
       "不同助手可以设置不同工作台，开启巡检后会在那里自主行动"
-    ]
+    ],
+    "title": "欢迎使用 Rem",
+    "hint": "输入消息或上传文件开始对话。",
+    "newChat": "新对话"
   },
   "yuan": {
     "types": {
@@ -845,7 +880,13 @@
     "adaptation": {
       "compacted": "已压缩对话历史以适配新模型",
       "truncated": "早期对话已被截断以适配新模型"
-    }
+    },
+    "title": "模型",
+    "select": "选择模型",
+    "provider": "供应商",
+    "chat": "对话",
+    "think": "思考",
+    "noModels": "没有可用模型"
   },
   "splash": {
     "lines": [
@@ -1084,149 +1125,9 @@
       "requestPermissionsFailed": "请求系统权限失败",
       "refresh": "刷新"
     },
-    "agent": {
-      "title": "助手",
-      "changeAvatar": "更换",
-      "removeAvatar": "移除头像",
-      "avatarRemoved": "已恢复默认头像",
-      "agentNameHint": "Ta 叫什么",
-      "identity": "身份简介",
-      "identityHint": "简短描述助手是谁、擅长什么。其他助手通过这段文字认识 Ta",
-      "ishiki": "意识",
-      "ishikiHint": "定义助手的性格、语气和行为方式。跟「元」是分开的，互不影响。",
-      "publicIshiki": "对外意识",
-      "publicIshikiHint": "出于隐私考虑，助手与访客对话时无法访问记忆、你的个人信息，以及电脑上的任何文件与工具。\n你可以在这里设定助手对访客说话时的回复风格以及注意事项。",
-      "chatModel": "Ta 的模型",
-      "chatModelHint": "Ta 在对话与工作中使用的模型",
-      "modelUnavailable": "当前不可用：{model}",
-      "modelUnavailableHint": "当前模型已不在可用列表中，请重新选择模型，或去供应商页面重新保存配置并读取模型。",
-      "imageModel": "图片模型",
-      "imageModelHint": "Ta 在图片生成时使用的模型",
-      "addAgent": "新建助手",
-      "createTitle": "新建助手",
-      "namePlaceholder": "起个名字",
-      "cancel": "取消",
-      "confirm": "创建",
-      "creating": "正在创建…",
-      "nameRequired": "请输入助手名字",
-      "created": "{name} 已创建 ✿",
-      "createFailed": "创建失败",
-      "switched": "已切换到 {name} ✿",
-      "switchFailed": "切换失败",
-      "deleteBtn": "删除助手",
-      "deleteTitle1": "删除 {name}？",
-      "deleteDesc1": "这会永久删除 Ta 的所有配置、记忆和对话记录，无法恢复。",
-      "deleteNext": "继续",
-      "deleteTitle2": "输入「{name}」确认删除",
-      "deletePlaceholder": "输入助手名字",
-      "deleteConfirm": "永久删除",
-      "deleteCancel": "取消",
-      "deleted": "{name} 已删除",
-      "deleteFailed": "删除失败",
-      "setPrimary": "设为主助手",
-      "setPrimaryFailed": "设置主助手失败",
-      "lastAgent": "至少保留一个助手",
-      "yuan": "元",
-      "yuanHint": "「元」是助手的潜意识，以此为基础搭建你独一无二的伙伴",
-      "tools": {
-        "title": "工具",
-        "description": "这些工具开关会在重启对话或新建对话后生效。当前进行中的会话继续使用创建时的工具集。",
-        "items": {
-          "automation": {
-            "label": "自动化",
-            "summary": "让 Agent 创建通知和插件定时动作"
-          },
-          "beautify": {
-            "label": "小花美术",
-            "summary": "让 Agent 为文档生成封面和审美增强内容"
-          },
-          "browser": {
-            "label": "浏览器",
-            "summary": "控制无头浏览器浏览网页"
-          },
-          "cron": {
-            "label": "定时任务",
-            "summary": "在指定时间自动执行任务"
-          },
-          "dm": {
-            "label": "私信",
-            "summary": "向其他 Agent 发送一对一消息"
-          },
-          "install_skill": {
-            "label": "安装技能",
-            "summary": "从 GitHub 或技能库安装新技能"
-          },
-          "office": {
-            "label": "Office",
-            "summary": "让 Agent 读取文档、转换 HTML 到 PDF"
-          },
-          "update_settings": {
-            "label": "修改设置",
-            "summary": "让 Agent 修改应用配置项"
-          },
-          "workflow": {
-            "label": "Workflow",
-            "summary": "让 Agent 把多 Agent 编排脚本作为后台任务运行"
-          }
-        }
-      },
-      "generatingPreview": "正在生成预览",
-      "exportAgent": "导出助手",
-      "generatingCardPreview": "正在生成角色卡预览",
-      "exportedTo": "已导出到 {path}"
-    },
-    "general": {
-      "title": "通用",
-      "startup": {
-        "title": "启动与后台"
-      },
-      "launchAtLogin": "开机自启",
-      "keepAwake": "锁屏时保持运行",
-      "quickChat": {
-        "title": "快速聊天",
-        "shortcut": "呼出快捷键",
-        "shortcutHint": "点击后按下新的组合键，Esc 取消录制",
-        "reuseTimeout": "保留旧输入框",
-        "reuseTimeoutHint": "小窗隐藏超过这个时间后，再按快捷键会打开新的输入框",
-        "minutes": "分钟",
-        "recording": "按下快捷键...",
-        "restoreDefault": "恢复默认",
-        "registrationFailed": "快捷键已被占用"
-      },
-      "notifications": {
-        "title": "通知",
-        "turnCompletion": "轮次完成通知",
-        "turnCompletionNever": "从不",
-        "turnCompletionWhenUnfocused": "焦点不在 HanaAgent 时",
-        "turnCompletionWhenSessionUnfocused": "焦点不在完成任务的 Session 时"
-      }
-    },
-    "about": {
-      "title": "关于 Ta",
-      "tagline": "一个住在你电脑里的助手，记性很好。",
-      "license": "许可证",
-      "copyright": "版权",
-      "licenseToggle": "许可证全文",
-      "updateAvailable": "有新版本可用：v{version}",
-      "updateDownload": "下载",
-      "updateChecking": "正在检查更新…",
-      "updateDownloading": "{agentName}正在准备新家 {percent}%",
-      "updateReadyInstall": "v{version} 已就绪",
-      "updateInstalling": "正在安装更新，HanaAgent 会自动重启…",
-      "updateInstallManualHint": "点「重启更新」后安装，直接退出不会自动安装",
-      "updateInstall": "重启更新",
-      "updateInstallNow": "重启立即更新",
-      "updateProgress": "{percent}%",
-      "updateError": "检查更新失败",
-      "updateLatest": "已是最新版本",
-      "updateCheckBtn": "检查更新",
-      "updateNeedInstall": "请先将 HanaAgent 移动到应用程序文件夹",
-      "updateDiskSpace": "磁盘空间不足，无法下载更新",
-      "launchAtLogin": "开机自启",
-      "keepAwake": "锁屏时保持运行",
-      "betaUpdates": "接收测试版更新",
-      "autoCheckUpdates": "自动检查更新"
-    },
+    "agent": "智能体",
+    "general": "通用",
+    "about": "关于",
     "access": {
       "networkAccess": "局域网访问",
       "mobileAccess": "手机访问",
@@ -1913,7 +1814,8 @@
       "removeConfirm": "确定移除此连接器？已保存的 per-agent 开关会保留但不再生效。",
       "agentTitle": "助手配置",
       "agentConnectorDesc": "像技能一样，只对选中的助手启用。",
-      "saveError": "保存失败"
+      "saveError": "保存失败",
+      "bearerToken": "Bearer 令牌"
     },
     "screenshot": {
       "title": "截图分享",
@@ -2044,7 +1946,12 @@
       "dropOrClick": "拖入角色卡或点击打开",
       "readFailed": "角色卡读取失败",
       "importFailed": "角色卡导入失败"
-    }
+    },
+    "model": "模型",
+    "permission": "权限",
+    "workspace": "工作区",
+    "cancel": "取消",
+    "reset": "重置"
   },
   "onboarding": {
     "welcome": {
@@ -2270,36 +2177,36 @@
   },
   "rightWorkspace": {
     "activity": {
-      "title": "后台动态"
+      "title": "活动"
     },
     "todo": {
-      "title": "进程",
-      "waitForOutput": "输出完成后再标记"
+      "title": "进度",
+      "waitForOutput": "等待输出完成"
     },
     "subagent": {
-      "title": "子助手"
+      "title": "子智能体"
     },
     "workflow": {
-      "title": "Workflow",
-      "running": "已运行 {text}",
-      "agents": "{n} 个 agent"
+      "title": "工作流",
+      "running": "运行中 {text}",
+      "agents": "{n} 个智能体"
     },
     "session": {
-      "title": "本次对话",
-      "cwd": "工作目录",
+      "title": "当前对话",
+      "cwd": "工作区",
       "model": "模型",
       "files": "文件",
-      "authorizedFolders": "授权目录",
-      "addAuthorizedFolder": "添加授权目录"
+      "authorizedFolders": "已授权文件夹",
+      "addAuthorizedFolder": "添加授权文件夹"
     },
     "tabs": {
-      "label": "右侧工作台",
+      "label": "右侧工作区",
       "sessionFiles": "对话文件",
-      "workspace": "工作台"
+      "workspace": "工作区"
     },
     "sessionFiles": {
       "title": "对话文件",
-      "empty": "本对话还没有产生或上传文件",
+      "empty": "当前对话尚未创建或上传任何文件。",
       "actions": {
         "preview": "预览",
         "open": "打开",
@@ -2308,20 +2215,23 @@
         "copyPath": "复制路径",
         "copySelectedPaths": "复制 {n} 个路径",
         "sendToBridge": "发送到...",
-        "sendToBridgeLoading": "正在加载 Bridge 会话...",
-        "sendToBridgeEmpty": "没有可发送的 Bridge 会话",
-        "sendToBridgeLoadFailed": "Bridge 会话加载失败"
+        "sendToBridgeLoading": "正在加载 Bridge 对话...",
+        "sendToBridgeEmpty": "没有可用的 Bridge 对话",
+        "sendToBridgeLoadFailed": "加载 Bridge 对话失败",
+        "bridgeLoadFailed": "加载 Bridge 对话失败：{error}",
+        "sendSuccess": "已发送到 {target}",
+        "sendFailed": "发送到 {target} 失败：{error}"
       },
       "bridgeLoadFailed": "加载 Bridge 会话失败：{error}",
       "sendSuccess": "已发送到 {target}",
       "sendFailed": "发送到 {target} 失败：{error}",
       "list": "对话文件列表",
       "sort": {
-        "label": "对话文件排序",
-        "timeDesc": "时间↓",
-        "nameAsc": "名称↑",
-        "nameDesc": "名称↓",
-        "typeAsc": "类型↑"
+        "label": "排序对话文件",
+        "timeDesc": "时间 ↓",
+        "nameAsc": "名称 ↑",
+        "nameDesc": "名称 ↓",
+        "typeAsc": "类型 ↑"
       },
       "status": {
         "available": "可用",
@@ -2329,27 +2239,27 @@
       }
     },
     "jian": {
-      "collapse": "收起笺",
-      "expand": "展开笺"
+      "collapse": "收起 Jian",
+      "expand": "展开 Jian"
     }
   },
   "desk": {
-    "title": "书桌",
-    "workspaceTitle": "工作台",
+    "title": "笺",
+    "workspaceTitle": "工作区",
     "skills": "技能",
     "cwdSkills": "项目技能",
-    "cwdSkillsEmpty": "当前文件夹没有项目技能",
-    "cwdSkillsHint": "在文件夹下创建 .agents/skills/ 目录即可",
-    "cwdSkillsDesc": "技能跟随工作台",
-    "cwdSkillsDrop": "拖入文件夹或 .zip 安装技能",
+    "cwdSkillsEmpty": "此文件夹中没有项目技能",
+    "cwdSkillsHint": "创建 .agents/skills/ 目录以开始使用",
+    "cwdSkillsDesc": "技能跟随工作区",
+    "cwdSkillsDrop": "拖入文件夹或 .zip 以安装技能",
     "deleteSkill": "删除技能",
     "openInFinder": "打开文件夹",
     "jianLabel": "笺",
-    "jianPlaceholder": "写点什么，告诉助手这个文件夹里面的文件该如何处理...",
-    "execLogLabel": "执行记录",
-    "execLogDelete": "删除此条记录",
-    "emptyTitle": "书桌还空空的呢",
-    "emptyHint": "书桌是助手日常巡检的工作台，也是每次对话的默认目录\n去设置里指定一个文件夹吧",
+    "jianPlaceholder": "写点什么来告诉助手如何处理此文件夹中的文件...",
+    "execLogLabel": "执行日志",
+    "execLogDelete": "删除此条目",
+    "emptyTitle": "笺是空的",
+    "emptyHint": "笺是助手的工作区和每次聊天的默认目录。\n在设置中指定一个文件夹。",
     "goToSettings": "前往设置",
     "fileLabel": "文件",
     "openWithDefault": "用默认应用打开",
@@ -2367,9 +2277,9 @@
       "newMdFile": "新建 Markdown 文档",
       "newFolder": "新建文件夹"
     },
-    "deleteConfirm": "要把「{name}」移到系统废纸篓吗？",
-    "deleteSelectedConfirm": "要把选中的 {count} 项移到系统废纸篓吗？",
-    "trashFailed": "移到系统废纸篓失败",
+    "deleteConfirm": "确定要将{name}移动到系统废纸篓吗？",
+    "deleteSelectedConfirm": "确定要将选中的 {count} 项移动到系统废纸篓吗？",
+    "trashFailed": "移动到系统废纸篓失败",
     "createFailed": "创建失败",
     "renameInvalid": "文件名不能包含路径分隔符",
     "renameFailed": "重命名失败",
@@ -2387,18 +2297,18 @@
       "typeShort": "类型"
     },
     "filter": {
-      "label": "过滤",
+      "label": "筛选",
       "images": "图片",
       "text": "文本",
       "videos": "视频",
-      "clear": "清除过滤",
+      "clear": "清除筛选",
       "activeShort": "{count} 类"
     },
     "search": {
-      "placeholder": "搜索工作台",
-      "label": "搜索工作台文件",
+      "placeholder": "搜索工作区",
+      "label": "搜索工作区文件",
       "results": "搜索结果",
-      "empty": "没有找到匹配文件",
+      "empty": "没有匹配的文件",
       "root": "根目录"
     }
   },
@@ -2957,7 +2867,8 @@
       "saveImage": "保存图片",
       "regenerateWithPrompt": "自定义提示词生成图片",
       "deleteCover": "删除封面"
-    }
+    },
+    "collapse": "收起预览"
   },
   "mediaViewer": {
     "ariaLabel": "媒体预览",
@@ -3118,5 +3029,21 @@
       "description": "列出 Beautify 工具目前支持的审美增强能力。",
       "text": "Beautify 当前支持两类能力。1) Markdown cover 工作流：先读取封面风格说明，再准备一张图片，可以来自生图工具、未来的内置头图库或用户本地图片，最后把图片复制到附件文件夹并写入 cover frontmatter。2) 整页 HTML 美学规范：生成网页 / 排版页 / 报告页前，先用 beautify_get-html-style-guide 获取 Hana 默认美术方向（无参拿路由器，再按 section 逐节取规范）。"
     }
+  },
+  "agent": {
+    "title": "智能体",
+    "select": "选择智能体",
+    "default": "默认",
+    "none": "无"
+  },
+  "permission": {
+    "title": "权限",
+    "auto": "自动",
+    "ask": "操作前询问",
+    "read_only": "只读",
+    "operate": "全权"
+  },
+  "skill": {
+    "label": "技能"
   }
 }

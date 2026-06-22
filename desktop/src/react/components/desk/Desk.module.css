@@ -224,6 +224,7 @@
     box-sizing: border-box;
     width: calc(100% - 4px);
     display: grid;
+    overflow: hidden;
     grid-template-columns:
         calc(var(--tree-leading-inset) + (var(--tree-depth, 0) * var(--tree-indent-step)))
         14px

@@ -64,7 +64,7 @@ export function AgentSelect({ value, onChange }: AgentSelectProps) {
         options={options}
         value={value || ''}
         onChange={onChange}
-        placeholder="Select Agent"
+        placeholder={t('settings.agent.select')}
         renderTrigger={renderTrigger}
         renderOption={renderOption}
       />

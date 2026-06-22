@@ -1,7 +1,9 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
-import ChatArea from './components/ChatArea'
+// ChatArea moved to ./react/components/chat/ChatArea
+// Use ChatPage (includes InputArea) instead of raw ChatArea
+import { ChatPage } from './react/components/app/chatPage';
 import { DeskSection } from './react/components/DeskSection'
 import SettingsModal from './components/SettingsModal'
 import { SessionConfirmationPrompt } from './components/SessionConfirmationPrompt'
@@ -121,7 +123,7 @@ export default function App() {
           <Sidebar onNavigate={setTab} activeView={tab} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          {tab === 'chat' && <ChatArea />}
+          {tab === 'chat' && <ChatPage />}
           {tab === 'channels' && <ChannelsPlaceholder />}
           {tab === 'activity' && <ActivityPlaceholder />}
           {tab === 'tasks' && <TasksPlaceholder />}

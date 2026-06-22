@@ -17,7 +17,7 @@ export function SendButton({ isStreaming, hasInput, disabled, onSend, onSteer, o
   return (
     <button
       className={`${styles['send-btn']}${mode === 'steer' ? ` ${styles['is-steer']}` : mode === 'stop' ? ` ${styles['is-streaming']}` : ''}`}
-      disabled={disabled}
+      disabled={disabled ? true : undefined}
       onClick={mode === 'steer' ? onSteer : mode === 'stop' ? onStop : onSend}
     >
       {mode === 'send' && (

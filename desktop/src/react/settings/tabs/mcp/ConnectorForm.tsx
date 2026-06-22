@@ -198,7 +198,7 @@ export function ConnectorForm({
                   type="password"
                   value={form.authorizationToken}
                   onChange={(e) => setForm({ ...form, authorizationToken: e.target.value })}
-                  placeholder="Bearer token"
+                  placeholder={t('settings.mcp.bearerToken')}
                 />
               </div>
             )}

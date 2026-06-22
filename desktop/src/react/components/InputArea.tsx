@@ -1202,6 +1202,22 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
   const canSend = hasContent && connected && !isStreaming && !modelSwitching && !pendingSessionSwitchPath && !inputLocked
     && !capabilityRefreshing && !compacting;
 
+  // Expose key state to window for E2E/diagnostic scripts
+  useEffect(() => {
+    (window as any).__remuDiag = {
+      canSend,
+      hasContent,
+      inputTextLen: inputText.trim().length,
+      connected,
+      isStreaming,
+      modelSwitching,
+      inputLocked,
+      compacting,
+      capabilityRefreshing,
+      currentSessionPath: useStore.getState().currentSessionPath,
+    };
+  }, [canSend, hasContent, inputText, connected, isStreaming, modelSwitching, inputLocked]);
+
   const loadVisionAuxiliaryConfig = useCallback(async () => {
     if (surface === 'mobile') {
       const res = await hanaFetch('/api/models/auxiliary-vision');
@@ -1399,16 +1415,13 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
 
     const inputFiles = mergeEditorFileRefs(attachedFiles, fileRefs);
     const hasFiles = inputFiles.length > 0;
-    if ((!text && !hasFiles && !docContextAttached && useStore.getState().quotedSelections.length === 0) || !connected) return;
+    if ((!text && !hasFiles && !docContextAttached && (useStore.getState().quotedSelections?.length ?? 0) === 0) || !connected) return;
     if (type === 'prompt' && isStreaming) return;
     if (type === 'interject' && !isStreaming) return;
     if (sending) return;
     if (modelSwitching) return;
     if (useStore.getState().pendingSessionSwitchPath) return;
     if (type === 'prompt') {
-      // 压缩 / 能力刷新（fresh compact）期间禁发 prompt：此窗口内 session 没有
-      // 可用 runtime，发消息会冷建第二个 runtime 与压缩后的 reload 竞争（#1624 I2）。
-      // Enter 发送不走 canSend，必须在提交路径同样拦截；按 keyed 状态现读现查。
       const guardState = useStore.getState();
       const guardPath = guardState.currentSessionPath;
       if (guardPath && (
@@ -1417,7 +1430,6 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
       )) return;
     }
     setSending(true);
-
     try {
       if (pendingNewSession) {
         const ok = await ensureSession();
@@ -1450,7 +1462,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
         attachments: inputFiles,
         model: currentModelInfo,
       });
-      if (!videoPreflight.ok) {
+      if (!videoPreflight.ok && videoFiles.length > 0) {
         notifyTextModelVideoBlocked({
           t,
           addToast: useStore.getState().addToast,
@@ -1472,7 +1484,21 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
       ) : [];
 
       const sessionPathForSend = useStore.getState().currentSessionPath;
-      if (!sessionPathForSend) return;
+      if (!sessionPathForSend) {
+        // 先调用 createNewSession() 确保 pendingNewSession=true 且 session 被创建
+        try {
+          await createNewSession();
+          console.log('[DIAG] createNewSession() done, pendingNewSession=', useStore.getState().pendingNewSession);
+        } catch (err) {
+          console.error('[session] createNewSession() failed:', err);
+          return;
+        }
+        // 现在 ensureSession() 会真正创建 session
+        useStore.setState({ welcomeVisible: false });
+        const ok = await ensureSession();
+        if (!ok) return;
+        loadSessions();
+      }
       const sessionFileRefs = otherFiles
         .filter(f => f.fileId)
         .map(f => ({
@@ -1651,6 +1677,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
         return;
       }
       try {
+        console.log('[DIAG] ws.send() ABOUT TO SEND, ws.readyState=', ws?.readyState, 'type=', wsMsg.type);
         ws.send(JSON.stringify(wsMsg));
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
