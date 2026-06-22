@@ -1,16 +1,15 @@
-agent:
-  name: "agent-mqk7riqg"
-  yuan: hanako
-  avatar: null
+# HanaAgent 系统配置
+# 由设置页面管理，手动编辑也可以
 
+agent:
+  name: agent-mqk7riqg
+  yuan: kong
+  avatar: null
 memory:
   enabled: true
-
 desk:
   heartbeat_enabled: false
   heartbeat_interval: 30
-
 user:
   name: ""
-
 preferences: {}

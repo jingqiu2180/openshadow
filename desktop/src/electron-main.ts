@@ -21,6 +21,35 @@ if (process.platform === 'win32') {
 // High-DPI 支持（frame: false 时防止文字模糊）
 app.commandLine.appendSwitch('high-dpi-support', '1')
 
+// ─── 窗口装饰选项（对齐 openhanako） ─────────────────────
+function windowIconOpts(): { icon?: string } {
+  // Windows: icon 影响任务栏和窗口左上角
+  // macOS/Linux: 忽略（用 .icns / .png 打包时设置）
+  if (process.platform === 'win32') {
+    return { icon: APP_ICON_PATH }
+  }
+  return {}
+}
+
+function framelessWindowOpts() {
+  return { frame: false, ...windowIconOpts() }
+}
+
+/**
+ * 平台特定的标题栏选项
+ * - macOS: titleBarStyle: hiddenInset + trafficLightPosition（保留系统红绿灯）
+ * - Windows/Linux: frame: false（完全自定义标题栏）
+ */
+function titleBarOpts(trafficLight = { x: 16, y: 16 }) {
+  if (process.platform === 'darwin') {
+    return {
+      titleBarStyle: 'hiddenInset' as const,
+      trafficLightPosition: trafficLight,
+    }
+  }
+  return framelessWindowOpts()
+}
+
 // ─── Self-contained config reader (no core/* dependency) ────────────
 // desktop tsconfig is CommonJS scope, so we read config.json directly
 // to avoid cross-project TS compilation.
@@ -175,7 +204,6 @@ async function runWizardWindow(): Promise<void> {
     minWidth: 640,
     minHeight: 520,
     title: 'Rem 启动向导',
-    icon: APP_ICON_PATH,
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -188,6 +216,7 @@ async function runWizardWindow(): Promise<void> {
     },
     backgroundColor: '#faf8f5',
     show: false,
+    ...framelessWindowOpts(),
   })
 
   wizardWindow.once('ready-to-show', () => {
@@ -426,8 +455,10 @@ function createMainWindow() {
       webSecurity: false,
       webviewTag: true,
     },
-    // frame: false -> 完全去掉原生标题栏，由 React WindowControls 绘制（对齐 hanako）
-    frame: false,
+    // 平台特定标题栏（对齐 openhanako）
+    // - macOS: titleBarStyle: hiddenInset + trafficLightPosition（保留系统红绿灯）
+    // - Windows/Linux: frame: false（完全自定义标题栏）
+    ...titleBarOpts(),
     backgroundColor: '#faf8f5',
     show: false,
   })
