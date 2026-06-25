@@ -3,18 +3,29 @@
   "version": "0.1.0",
   "description": "一个有个性和记忆的 AI 助手 - 从零开始异世界生活·雷姆",
   "type": "module",
+  "main": "desktop/bootstrap.cjs",
   "scripts": {
     "dev": "set \"PATH=%USERPROFILE%\\.workbuddy\\binaries\\node\\versions\\22.22.2;%PATH%\" && tsx watch start.ts",
     "build": "tsc && node scripts/copy-desktop-assets.js",
     "start": "node dist/server/index.js",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "electron": "tsc -p desktop/tsconfig.json && node scripts/copy-desktop-assets.js && node -e \"const fs=require('fs'); fs.renameSync('dist/desktop/electron-main.js','dist/desktop/electron-main.cjs'); fs.renameSync('dist/desktop/preload.js','dist/desktop/preload.cjs')\" && node scripts/start-electron.mjs",
+    "electron:main": "vite build --config vite.config.main.js",
+    "electron:preload": "vite build --config vite.config.preload.js",
+    "electron": "npm run electron:main && npm run electron:preload && node scripts/copy-desktop-assets.js && node scripts/start-electron.mjs",
     "desktop:vite": "vite --config desktop/vite.config.ts",
     "desktop:build": "vite build --config desktop/vite.config.ts && node -e \"const fs=require('fs'); fs.cpSync('desktop/src/lib','desktop/dist-renderer/lib',{recursive:true}); fs.cpSync('desktop/src/modules','desktop/dist-renderer/modules',{recursive:true}); fs.cpSync('desktop/src/locales','desktop/dist-renderer/locales',{recursive:true}); console.log('Static assets copied.')\"",
     "electron:dev": "concurrently -k -n server,vite,electron -c blue,magenta,green \"npm run dev\" \"npm run desktop:vite\" \"wait-on tcp:3000 tcp:5173 && node scripts/start-electron.mjs\"",
-    "electron:build": "npm run build && npm run desktop:build && tsc -p desktop/tsconfig.json && electron-builder --dir",
-    "electron:dist": "npm run build && npm run desktop:build && tsc -p desktop/tsconfig.json && electron-builder"
+    "electron:build": "npm run build && npm run desktop:build && npm run electron && electron-builder --dir",
+    "electron:dist": "npm run build && npm run desktop:build && npm run electron && electron-builder",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:workspace": "playwright test tests/e2e/workspace.web.spec.ts",
+    "test:e2e:chat": "playwright test tests/e2e/chat.web.spec.ts",
+    "test:e2e:settings": "playwright test tests/e2e/settings.web.spec.ts",
+    "test:e2e:jian": "playwright test tests/e2e/jian.web.spec.ts",
+    "test:all": "npm run test:unit && npm run test:e2e",
+    "test:ci": "npm run test:unit -- --reporter=default && npm run test:e2e -- --reporter=dot"
   },
   "build": {
     "appId": "com.remu.agent",
@@ -28,7 +39,7 @@
       "package.json"
     ],
     "extraMetadata": {
-      "main": "dist/desktop/electron-main.cjs"
+      "main": "desktop/bootstrap.cjs"
     },
     "mac": {
       "target": [

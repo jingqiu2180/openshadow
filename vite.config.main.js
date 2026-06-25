@@ -1,3 +1,6 @@
+// vite.config.main.js
+// Build desktop/main.cjs (Electron main process) with Vite lib mode.
+// Output: desktop/main.bundle.cjs (CJS)
 import { defineConfig } from "vite";
 import { builtinModules } from "module";
 
@@ -10,32 +13,22 @@ export default defineConfig({
       formats: ["cjs"],
       fileName: () => "main.bundle.cjs",
     },
-    // Output to the same directory as source — preserves __dirname semantics
-    // (main.cjs uses __dirname extensively for preload, assets, locales, etc.)
     outDir: "desktop",
     emptyOutDir: false,
     rollupOptions: {
       external: [
         "electron",
         ...nodeBuiltins,
-
-        // ws: CJS native addon (bufferutil/utf-8-validate) breaks when bundled.
-        // Keep external — Electron runtime resolves from node_modules.
+        // CJS native addons / large deps: keep external
         "ws",
-
-        // mammoth / exceljs: large CJS deps with deep dependency trees.
-        // Kept external — electron-builder includes them from node_modules.
         "mammoth",
         "exceljs",
       ],
     },
-    target: "node24",
-    minify: "esbuild",
+    target: "node22",
+    minify: false,
     sourcemap: false,
   },
-
-  // Force Node.js resolution: include "node" condition and exclude "browser"
-  // to prevent ws and similar packages from resolving to browser stubs.
   resolve: {
     conditions: ["node", "import", "module", "require", "default"],
     mainFields: ["main", "module"],

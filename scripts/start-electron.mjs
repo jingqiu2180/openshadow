@@ -23,7 +23,7 @@ const electronBin = process.platform === 'win32'
 
 const args = process.argv.slice(2).length
   ? process.argv.slice(2)
-  : ['dist/desktop/electron-main.cjs'];
+  : ['.'];  // . = use package.json "main" field → desktop/bootstrap.cjs
 
 console.error(`[start-electron] spawn: ${electronBin} ${args.join(' ')}`);
 console.error(`[start-electron] ELECTRON_RUN_AS_NODE=${process.env.ELECTRON_RUN_AS_NODE ?? '(unset)'}`);

@@ -1,10 +1,15 @@
-const fs = require("fs");
-const os = require("os");
-const path = require("path");
-const { app, dialog } = require("electron");
+// desktop/bootstrap.cjs
+// Rem Agent Desktop — Electron 启动入口
+// 任务：
+// 1. 捕获并记录启动错误（写到 tmpdir 诊断文件）
+// 2. require 真正的 main 逻辑
 
-let diagnosticsDir = path.join(os.tmpdir(), "hanako-desktop-launch");
-let launchIntegrity = null;
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
+
+let diagnosticsDir = path.join(os.tmpdir(), 'remu-desktop-launch')
+let launchIntegrity = null
 
 function serializeError(err) {
   if (err instanceof Error) {
@@ -13,216 +18,46 @@ function serializeError(err) {
       message: err.message,
       stack: err.stack,
       code: err.code,
-    };
+    }
   }
-  return { message: String(err) };
+  return { message: String(err) }
 }
 
 function fallbackWriteDiagnostic(fileName, event, payload) {
   try {
-    fs.mkdirSync(diagnosticsDir, { recursive: true });
-    const filePath = path.join(diagnosticsDir, fileName);
+    fs.mkdirSync(diagnosticsDir, { recursive: true })
+    const filePath = path.join(diagnosticsDir, fileName)
     fs.writeFileSync(filePath, JSON.stringify({
-      event,
+      event: event,
       time: new Date().toISOString(),
-      payload,
-    }, null, 2) + "\n", "utf-8");
-    return filePath;
+      payload: payload,
+    }, null, 2) + '\n', 'utf-8')
+    return filePath
   } catch {
-    return null;
+    return null
   }
 }
 
-function writeDiagnostic(fileName, event, payload) {
-  try {
-    if (launchIntegrity?.writeLaunchDiagnostic) {
-      return launchIntegrity.writeLaunchDiagnostic({
-        diagnosticsDir,
-        fileName,
-        event,
-        payload,
-      });
-    }
-  } catch {}
-  return fallbackWriteDiagnostic(fileName, event, payload);
+function recordDiagnostic(event, payload) {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+  return fallbackWriteDiagnostic('launch-' + stamp + '.json', event, payload)
 }
 
-function appendLaunchLog(event, payload) {
-  try {
-    if (launchIntegrity?.appendLaunchLog) {
-      return launchIntegrity.appendLaunchLog({ diagnosticsDir, event, payload });
-    }
-  } catch {}
-
-  try {
-    fs.mkdirSync(diagnosticsDir, { recursive: true });
-    const filePath = path.join(diagnosticsDir, "launch.log");
-    fs.appendFileSync(filePath, JSON.stringify({
-      event,
-      time: new Date().toISOString(),
-      payload,
-    }) + "\n", "utf-8");
-    return filePath;
-  } catch {
-    return null;
-  }
-}
-
-function writeLaunchMarker(status, payload = {}) {
-  return writeDiagnostic("launch-marker.json", "launch-marker", {
-    status,
-    pid: process.pid,
-    platform: process.platform,
-    arch: process.arch,
-    execPath: process.execPath,
-    resourcesPath: process.resourcesPath || null,
-    hanakoHome,
-    ...payload,
-  });
-}
-
-function showBootstrapError(title, detail) {
-  try {
-    dialog.showErrorBox(title, detail);
-  } catch {}
-}
-
-function exitAfterBootstrapFailure() {
-  try {
-    app.exit(1);
-  } catch {}
-  process.exit(1);
-}
-
-function recordProcessError(kind, err) {
-  const payload = {
-    kind,
-    error: serializeError(err),
-    phase: "desktop-bootstrap",
-  };
-  const fileName = `${kind}.json`;
-  writeDiagnostic(fileName, kind, payload);
-  appendLaunchLog(kind, payload);
-}
-
-process.on("uncaughtException", (err) => {
-  if (err?.code === "EPIPE" || err?.code === "ERR_IPC_CHANNEL_CLOSED") return;
-  recordProcessError("uncaughtException", err);
-});
-
-process.on("unhandledRejection", (reason) => {
-  const err = reason instanceof Error ? reason : new Error(String(reason));
-  recordProcessError("unhandledRejection", err);
-});
-
-let hanakoHome = null;
+// Try to load main
 try {
-  const { resolveHanakoHome } = require("../shared/hana-runtime-paths.cjs");
-  hanakoHome = resolveHanakoHome(process.env.HANA_HOME);
-  process.env.HANA_HOME = hanakoHome;
-  diagnosticsDir = path.join(hanakoHome, "diagnostics", "desktop-launch");
+  require('./main.bundle.cjs')
+  launchIntegrity = { status: 'ok', loaded: 'main.bundle.cjs' }
 } catch (err) {
-  const diagnosticPath = writeDiagnostic("hana-home-resolve-failed.json", "hana-home-resolve-failed", {
-    phase: "desktop-bootstrap",
-    error: serializeError(err),
-  });
-  showBootstrapError(
-    "HanaAgent Launch Failed",
-    `HanaAgent failed before HANA_HOME could be resolved.\n\n${err?.message || err}\n\nDiagnostic file:\n${diagnosticPath || diagnosticsDir}`,
-  );
-  exitAfterBootstrapFailure();
-}
-
-writeLaunchMarker("bootstrap-started", {
-  argv: process.argv,
-  versions: {
-    electron: process.versions.electron || null,
-    node: process.versions.node || null,
-    chrome: process.versions.chrome || null,
-  },
-});
-
-function verifyWindowsInstallSurfaceBeforeMain() {
-  if (process.platform !== "win32" || !app.isPackaged) {
-    return true;
-  }
-  const result = launchIntegrity.checkWindowsInstallSurface({
-    execPath: process.execPath,
-    resourcesPath: process.resourcesPath,
-  });
-  if (result.ok) {
-    appendLaunchLog("install-surface-check-ok", result);
-    return true;
-  }
-
-  const diagnosticPath = writeDiagnostic(
-    "install-surface-check.json",
-    "install-surface-check-failed",
-    result,
-  );
-  writeLaunchMarker("install-surface-check-failed", {
-    missing: result.missing,
-    diagnosticPath,
-  });
-  const detail = launchIntegrity.formatInstallSurfaceError(result, diagnosticPath);
-  showBootstrapError("HanaAgent Launch Failed", detail);
-  exitAfterBootstrapFailure();
-  return false;
-}
-
-function loadDesktopMain() {
+  // Try the source CJS as fallback (e.g., in dev mode where vite hasn't built yet)
   try {
-    launchIntegrity = require("./src/shared/launch-integrity.cjs");
-    appendLaunchLog("bootstrap-loaded", {
-      packaged: app.isPackaged,
-      main: app.isPackaged ? "main.bundle.cjs" : "main.cjs",
-    });
-
-    if (!verifyWindowsInstallSurfaceBeforeMain()) return;
-
-    writeLaunchMarker("main-load-started", {
-      main: app.isPackaged ? "main.bundle.cjs" : "main.cjs",
-    });
-    require(app.isPackaged ? "./main.bundle.cjs" : "./main.cjs");
-    writeLaunchMarker("main-loaded");
-  } catch (err) {
-    const payload = {
-      phase: "desktop-main-load",
-      error: serializeError(err),
-    };
-    const diagnosticPath = writeDiagnostic("desktop-main-load-failed.json", "desktop-main-load-failed", payload);
-    appendLaunchLog("desktop-main-load-failed", { ...payload, diagnosticPath });
-    writeLaunchMarker("desktop-main-load-failed", { diagnosticPath });
-    showBootstrapError(
-      "HanaAgent Launch Failed",
-      `HanaAgent failed before the desktop main process finished loading.\n\n${err?.message || err}\n\nDiagnostic file:\n${diagnosticPath || diagnosticsDir}`,
-    );
-    exitAfterBootstrapFailure();
+    require('./main.cjs')
+    launchIntegrity = { status: 'ok', loaded: 'main.cjs' }
+  } catch (innerErr) {
+    const errSerialized = serializeError(err)
+    const innerSerialized = serializeError(innerErr)
+    recordDiagnostic('launch-failed', { primary: errSerialized, fallback: innerSerialized })
+    console.error('[remu-bootstrap] Failed to load main:', err)
+    console.error('[remu-bootstrap] Fallback to main.cjs also failed:', innerErr)
+    process.exit(1)
   }
-}
-
-function tryStartOfficePdfHelper() {
-  let helper;
-  try {
-    helper = require("./src/office-pdf-helper.cjs");
-  } catch (err) {
-    if (process.argv.some((arg) => arg === "--hana-office-html-to-pdf" || arg.startsWith("--hana-office-html-to-pdf="))) {
-      console.error("[office-pdf-helper] failed to load helper:", err?.stack || err?.message || err);
-      process.exitCode = 1;
-      try { app.exit(1); } catch {}
-      return true;
-    }
-    return false;
-  }
-  if (!helper.isOfficePdfHelperInvocation(process.argv)) return false;
-  helper.runOfficePdfHelperFromArgv(process.argv).catch((err) => {
-    console.error("[office-pdf-helper]", err?.stack || err?.message || err);
-    process.exitCode = 1;
-    try { app.exit(1); } catch {}
-  });
-  return true;
-}
-
-if (!tryStartOfficePdfHelper()) {
-  loadDesktopMain();
 }
