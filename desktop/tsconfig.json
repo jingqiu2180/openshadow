@@ -9,7 +9,7 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": false,
-    "outDir": "../dist/desktop/src",
+    "outDir": "../dist/desktop",
     "jsx": "react-jsx",
     "strict": true,
     "noUnusedLocals": false,

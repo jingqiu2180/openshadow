@@ -19,6 +19,6 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["core/**/*", "server/**/*", "channels/**/*", "db/**/*", "hub/**/*", "plugins/**/*", "lib/**/*", "shared/**/*", "desktop/src/electron-main.ts", "desktop/src/preload.ts", "desktop/src/store.ts", "desktop/src/model-manager.ts", "packages/plugin-protocol/**/*", "packages/plugin-sdk/**/*", "packages/plugin-runtime/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "desktop/src/react", "desktop/vite-test.config.ts"]
+  "include": ["core/**/*", "server/**/*", "channels/**/*", "db/**/*", "hub/**/*", "plugins/**/*", "lib/**/*", "shared/**/*", "packages/plugin-protocol/**/*", "packages/plugin-sdk/**/*", "packages/plugin-runtime/**/*"],
+  "exclude": ["node_modules", "dist", "tests", "desktop", "desktop/vite-test.config.ts"]
 }
