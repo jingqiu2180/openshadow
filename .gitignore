@@ -24,3 +24,10 @@ e2e-*.ts
 # Transient shared/ directory (if not part of core)
 shared/
 nul
+desktop/dist-renderer/
+playwright-report/
+test-results/
+agents/*/sessions/
+checkpoints/
+node_modules/
+dist/
