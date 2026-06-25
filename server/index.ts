@@ -104,9 +104,9 @@ async function start() {
       get() { return defaultAgentDir },
       configurable: true,
     })
-    console.log('[rem] Patched agentDir getter')
+    console.log('[shadow] Patched agentDir getter')
   } catch (e) {
-    console.error('[rem] Failed to override agentDir getter:', (e as any).message)
+    console.error('[shadow] Failed to override agentDir getter:', (e as any).message)
   }
 
   // 设置 userDir
@@ -114,19 +114,19 @@ async function start() {
     const defaultUserDir = path.join(process.cwd(), 'user')
     fsSync.mkdirSync(defaultUserDir, { recursive: true })
     ;(engine as any).userDir = defaultUserDir
-    console.log('[rem] Set userDir to', defaultUserDir)
+    console.log('[shadow] Set userDir to', defaultUserDir)
   } catch (e) {
-    console.error('[rem] Failed to set userDir:', (e as any).message)
+    console.error('[shadow] Failed to set userDir:', (e as any).message)
   }
 
-  console.log('[rem] engine.userDir =', engine.userDir)
-  console.log('[rem] engine.agentDir =', engine.agentDir)
+  console.log('[shadow] engine.userDir =', engine.userDir)
+  console.log('[shadow] engine.agentDir =', engine.agentDir)
 
   // ═══ 关键：初始化引擎（加载 config、agents、plugins 等）═══
-  console.log('[rem] Initializing engine...')
+  console.log('[shadow] Initializing engine...')
   try {
     await engine.init((msg: any) => console.log('[engine]', msg))
-    console.log('[rem] Engine initialized')
+    console.log('[shadow] Engine initialized')
 
     // ── 注入 MiniMax Token Plan 模型（占位 ModelRegistry 不持久化）──
     const mmModels = [
@@ -147,7 +147,7 @@ async function start() {
       const models = (engine as any)._models
       if (models?._availableModels) {
         models._availableModels = [...models._availableModels, ...allModels]
-        console.log('[rem] Injected', allModels.length, 'model(s):', allModels.map(m => m.id).join(', '))
+        console.log('[shadow] Injected', allModels.length, 'model(s):', allModels.map(m => m.id).join(', '))
       }
       // 注入 API key + 注册 provider
       if (models?.providerRegistry) {
@@ -184,24 +184,24 @@ async function start() {
       // 注入到 pi-sdk session 创建层
       // 用 config.json 里的 minimax provider 配置（OpenAI 兼容端点）
       setMiniMaxConfig('<你的 MiniMax API Key>', 'https://api.minimax.chat/v1')
-      console.log('[rem] MiniMax API config injected to pi-sdk')
+      console.log('[shadow] MiniMax API config injected to pi-sdk')
       // 手动设置默认模型（因为 _modelRegistry 是占位实现，syncAndRefresh() 没法自动初始化）
       if (models && mmModels.length > 0) {
         models._defaultModel = mmModels[0];
         // 强制设置（绕过所有检查，确保 engine.currentModel 非 null）
         (engine as any).forceSetCurrentModel?.(mmModels[0]);
-        console.log('[rem] Default model set:', models._defaultModel?.id);
-        console.log('[rem] _availableModels:', models._availableModels?.length || 0);
+        console.log('[shadow] Default model set:', models._defaultModel?.id);
+        console.log('[shadow] _availableModels:', models._availableModels?.length || 0);
         // 不调 syncAndRefresh()（保护逻辑可能有漏洞，直接跳过）
         // models.syncAndRefresh().catch((err: any) => {
-        //   console.warn('[rem] syncAndRefresh() after injection failed:', err?.message);
+        //   console.warn('[shadow] syncAndRefresh() after injection failed:', err?.message);
         // });
       }
     } catch (e) {
-      console.warn('[rem] MiniMax injection failed:', (e as any).message)
+      console.warn('[shadow] MiniMax injection failed:', (e as any).message)
     }
   } catch (err) {
-    console.error('[rem] engine.init() failed:', (err as any).message)
+    console.error('[shadow] engine.init() failed:', (err as any).message)
     // 继续启动，部分功能可能不可用
   }
 
@@ -209,9 +209,9 @@ async function start() {
   let hub: any
   try {
     hub = new Hub({ engine })
-    console.log('[rem] Hub created')
+    console.log('[shadow] Hub created')
   } catch (err) {
-    console.warn('[rem] Hub creation failed, using dummy:', (err as any).message)
+    console.warn('[shadow] Hub creation failed, using dummy:', (err as any).message)
     hub = {
       subscribe(_h: any) { return () => {} },
       publish(_e: any) {},
@@ -314,7 +314,7 @@ async function start() {
     injectWebSocket(server)
     console.log('🔌 WebSocket support enabled')
   } catch {
-    console.warn('[rem] WebSocket support not available')
+    console.warn('[shadow] WebSocket support not available')
   }
 
   console.log(`🚀 Server running on http://localhost:${port}`)
@@ -322,7 +322,7 @@ async function start() {
 }
 
 start().catch((err: any) => {
-  console.error('[rem] Failed to start server:', err)
+  console.error('[shadow] Failed to start server:', err)
   process.exit(1)
 })
 

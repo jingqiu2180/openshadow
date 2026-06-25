@@ -1,5 +1,5 @@
 // desktop/preload.cjs
-// Preload script for the Rem main window (CJS).
+// Preload script for the OpenShadow main window (CJS).
 // Exposes safe IPC bridges to the renderer via contextBridge.
 //
 // Bridges exposed on window.hana and window.__REM_API__:

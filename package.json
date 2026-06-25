@@ -1,7 +1,7 @@
 {
-  "name": "remu",
+  "name": "openshadow",
   "version": "0.1.0",
-  "description": "一个有个性和记忆的 AI 助手 - 从零开始异世界生活·雷姆",
+  "description": "OpenShadow — Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.",
   "type": "module",
   "main": "desktop/bootstrap.cjs",
   "scripts": {
@@ -28,8 +28,8 @@
     "test:ci": "npm run test:unit -- --reporter=default && npm run test:e2e -- --reporter=dot"
   },
   "build": {
-    "appId": "com.remu.agent",
-    "productName": "Rem Agent",
+    "appId": "com.openshadow.app",
+    "productName": "OpenShadow",
     "directories": {
       "output": "release"
     },

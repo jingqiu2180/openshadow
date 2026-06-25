@@ -18,7 +18,7 @@ function requireMain() {
   const WIZ_DEV_HTML = join(__dirname, "wizard", "index.html");
   const APP_ICON_PATH = join(__dirname, "assets", "rem-avatar.png");
   if (process.platform === "win32") {
-    app.setAppUserModelId("com.remu.app");
+    app.setAppUserModelId("com.openshadow.app");
   }
   app.commandLine.appendSwitch("high-dpi-support", "1");
   function windowIconOpts() {
@@ -143,7 +143,7 @@ function requireMain() {
       height: 640,
       minWidth: 640,
       minHeight: 520,
-      title: "Rem 启动向导",
+      title: "OpenShadow 启动向导",
       resizable: false,
       minimizable: false,
       maximizable: false,
@@ -170,8 +170,8 @@ function requireMain() {
           buttons: ["继续设置", "退出"],
           defaultId: 0,
           cancelId: 1,
-          title: "Rem 还没配置完",
-          message: "Rem 还没配置完,现在退出将无法使用。确定要退出吗?"
+          title: "OpenShadow 还没配置完",
+          message: "OpenShadow 还没配置完,现在退出将无法使用。确定要退出吗?"
         });
         if (choice === 1) {
           app.quit();
@@ -217,8 +217,8 @@ function requireMain() {
     });
     ipcMain.handle("wizard:pick-folder", async () => {
       const { canceled, filePaths } = await dialog.showOpenDialog({
-        title: "选择 Rem 的工作区目录",
-        message: "请选择 Rem 可以读写的目录(可多选)。这些目录拥有完整权限(读/写/删)。",
+        title: "选择 OpenShadow 的工作区目录",
+        message: "请选择 OpenShadow 可以读写的目录(可多选)。这些目录拥有完整权限(读/写/删)。",
         properties: ["openDirectory", "multiSelections", "createDirectory"]
       });
       return canceled ? [] : filePaths;
@@ -362,7 +362,7 @@ function requireMain() {
       height: 760,
       minWidth: 900,
       minHeight: 600,
-      title: "Rem Agent",
+      title: "OpenShadow Agent",
       icon: APP_ICON_PATH,
       webPreferences: {
         preload: join(__dirname, "preload.bundle.cjs"),

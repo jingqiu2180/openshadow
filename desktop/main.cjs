@@ -1,5 +1,5 @@
 // desktop/main.cjs
-// Rem Agent Desktop — Electron 主进程（CJS）
+// OpenShadow Desktop — Electron 主进程（CJS）
 // 跟随 openhanako 模式：用 CJS 写，Vite 编译为 main.bundle.cjs
 // 任务：
 // 1. 创建启动窗口（splash / wizard）
@@ -19,7 +19,7 @@ const APP_ICON_PATH = join(__dirname, 'assets', 'rem-avatar.png')
 
 // Windows 任务栏需要 AppUserModelID
 if (process.platform === 'win32') {
-  app.setAppUserModelId('com.remu.app')
+  app.setAppUserModelId('com.openshadow.app')
 }
 
 // High-DPI 支持
@@ -161,7 +161,7 @@ async function runWizardWindow() {
     height: 640,
     minWidth: 640,
     minHeight: 520,
-    title: 'Rem 启动向导',
+    title: 'OpenShadow 启动向导',
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -191,8 +191,8 @@ async function runWizardWindow() {
         buttons: ['继续设置', '退出'],
         defaultId: 0,
         cancelId: 1,
-        title: 'Rem 还没配置完',
-        message: 'Rem 还没配置完,现在退出将无法使用。确定要退出吗?',
+        title: 'OpenShadow 还没配置完',
+        message: 'OpenShadow 还没配置完,现在退出将无法使用。确定要退出吗?',
       })
       if (choice === 1) {
         app.quit()
@@ -243,8 +243,8 @@ function registerIpcHandlers() {
 
   ipcMain.handle('wizard:pick-folder', async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
-      title: '选择 Rem 的工作区目录',
-      message: '请选择 Rem 可以读写的目录(可多选)。这些目录拥有完整权限(读/写/删)。',
+      title: '选择 OpenShadow 的工作区目录',
+      message: '请选择 OpenShadow 可以读写的目录(可多选)。这些目录拥有完整权限(读/写/删)。',
       properties: ['openDirectory', 'multiSelections', 'createDirectory'],
     })
     return canceled ? [] : filePaths
@@ -407,7 +407,7 @@ function createMainWindow() {
     height: 760,
     minWidth: 900,
     minHeight: 600,
-    title: 'Rem Agent',
+    title: 'OpenShadow Agent',
     icon: APP_ICON_PATH,
     webPreferences: {
       preload: join(__dirname, 'preload.bundle.cjs'),

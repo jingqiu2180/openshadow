@@ -1,5 +1,5 @@
 // desktop/bootstrap.cjs
-// Rem Agent Desktop — Electron 启动入口
+// OpenShadow Desktop — Electron 启动入口
 // 任务：
 // 1. 捕获并记录启动错误（写到 tmpdir 诊断文件）
 // 2. require 真正的 main 逻辑
@@ -8,7 +8,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 
-let diagnosticsDir = path.join(os.tmpdir(), 'remu-desktop-launch')
+let diagnosticsDir = path.join(os.tmpdir(), 'openshadow-desktop-launch')
 let launchIntegrity = null
 
 function serializeError(err) {
@@ -56,8 +56,8 @@ try {
     const errSerialized = serializeError(err)
     const innerSerialized = serializeError(innerErr)
     recordDiagnostic('launch-failed', { primary: errSerialized, fallback: innerSerialized })
-    console.error('[remu-bootstrap] Failed to load main:', err)
-    console.error('[remu-bootstrap] Fallback to main.cjs also failed:', innerErr)
+    console.error('[openshadow-bootstrap] Failed to load main:', err)
+    console.error('[openshadow-bootstrap] Fallback to main.cjs also failed:', innerErr)
     process.exit(1)
   }
 }
