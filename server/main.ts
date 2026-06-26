@@ -45,7 +45,7 @@ export async function startServer(options: MainOptions) {
 
   saveAgentConfig({
     id: agentId,
-    name: 'Rem Agent',
+    name: 'OpenShadow',
     personality: 'default',
     model: process.env.AGENT_MODEL ?? 'abab6.5s-chat',
     apiKey: process.env.AGENT_API_KEY ?? '',
@@ -452,7 +452,7 @@ export async function startServer(options: MainOptions) {
 
   httpApp.get('/health', (c) => c.json({ ok: true }))
   httpApp.get('/', (c) => c.json({
-    name: 'Rem Agent',
+    name: 'OpenShadow',
     version: '0.2.0',
     status: 'running',
   }))
@@ -519,7 +519,7 @@ export async function startServer(options: MainOptions) {
 
   console.log(`
 ╔══════════════════════════════════════╗
-║  🚀 Rem Agent v0.2.0              ║
+║  🚀 OpenShadow v0.2.0              ║
 ╠══════════════════════════════════════╣
 ║  HTTP:  http://localhost:${port}            ║
 ║  WS:    ws://localhost:${wsPort}           ║

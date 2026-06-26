@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * Rem Agent Server — HTTP + WebSocket API
+ * OpenShadow Server — HTTP + WebSocket API
  *
  * 启动方式：
  *   node server/index.js   （独立运行）
@@ -69,7 +69,7 @@ app.use('*', cors())
 
 // Health check
 app.get('/', (c) => c.json({
-  name: 'Rem Agent',
+  name: 'OpenShadow',
   version: '0.1.0',
   status: 'running',
 }))
