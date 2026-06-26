@@ -40,3 +40,29 @@ console.log('Copied desktop/src/assets/ -> dist/desktop/assets/')
 // Electron main + preload: handled by `npm run electron` (which calls tsc -p desktop/tsconfig.json
 // then renames .js → .cjs). This script intentionally does NOT copy them — `npm run build` is
 // for the server bundle, not the Electron shell.
+
+// Copy .cjs and .json resource files from all source dirs to dist/
+// (tsc only processes .ts files, these are required at runtime)
+import { existsSync, readdirSync } from 'fs'
+const resourceSourceDirs = [
+  { src: resolve(root, 'shared'), dest: resolve(root, 'dist', 'shared') },
+  { src: resolve(root, 'lib'), dest: resolve(root, 'dist', 'lib') },
+  { src: resolve(root, 'desktop', 'src', 'shared'), dest: resolve(root, 'dist', 'desktop', 'src', 'shared') },
+  { src: resolve(root, 'desktop', 'src', 'locales'), dest: resolve(root, 'dist', 'desktop', 'src', 'locales') },
+]
+for (const { src, dest } of resourceSourceDirs) {
+  if (!existsSync(src)) continue
+  mkdirSync(dest, { recursive: true })
+  try {
+    let count = 0
+    for (const f of readdirSync(src)) {
+      if (f.endsWith('.cjs') || f.endsWith('.json')) {
+        cpSync(resolve(src, f), resolve(dest, f))
+        count++
+      }
+    }
+    if (count > 0) console.log('Copied ' + count + ' resource file(s): ' + src + ' -> ' + dest)
+  } catch (e) {
+    console.warn('[copy-assets] Failed: ' + src + ' — ' + e.message)
+  }
+}

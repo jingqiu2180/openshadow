@@ -199,34 +199,8 @@ return {
   }
 }
 
-export class SessionManager {
-  store: any
-  _agentDir: string
-  _sessionFile: string
-
-  static create(cwd: string, agentDir: string): SessionManager {
-    return new SessionManager(cwd, agentDir)
-  }
-
-  constructor(cwd: string, agentDir: string) {
-    this._agentDir = agentDir
-    // agentDir 已经是 agents/{id}/sessions，直接使用
-    const sessionDir = agentDir
-    if (!fs.existsSync(sessionDir)) {
-      fs.mkdirSync(sessionDir, { recursive: true })
-    }
-    this._sessionFile = path.join(sessionDir, `${Date.now()}.jsonl`)
-    // 创建空 session 文件
-    fs.writeFileSync(this._sessionFile, '')
-    this.store = {
-      create(_model: any, _title?: string): any {
-        return {}
-      },
-    }
-  }
-
-  getSessionFile(): string { return this._sessionFile }
-}
+// Re-export real SessionManager from @mariozechner/pi-coding-agent
+export { SessionManager } from '@mariozechner/pi-coding-agent'
 
 export const SettingsManager = {
   inMemory(): any {
