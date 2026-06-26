@@ -133,6 +133,13 @@
     // 服务器连接
     getServerPort: async () => serverPort,
     getServerToken: async () => token,
+    onServerRestarted: (callback) => {
+      // Web 环境不支持服务器重启事件，返回 no-op unsubscribe
+      return () => {};
+    },
+    onMenuAction: (callback) => {
+      return () => {}; // Web 无原生菜单
+    },
     appReady: async () => {},
     syncWindowTheme: () => {},
     runEditCommand: async () => false,
