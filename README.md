@@ -1,95 +1,72 @@
-# remu
+# OpenShadow
 
-> 一个有个性和记忆的 AI 助手 —— 从零开始异世界生活·雷姆 🌸
+> Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.
 
-remu 是一个基于 TypeScript + Hono 构建的 AI Agent，支持多渠道接入（飞书、QQ、微信）、长期记忆、人格模板、系统级沙箱安全隔离。
+OpenShadow is a desktop AI agent based on [openhanako](https://github.com/liliMozi/openhanako), re-architected for stability and Chinese LLM ecosystem. It watches your workspace, executes tasks autonomously, and supports multiple AI providers.
 
-## 功能特性
+## Features
 
-### 核心能力
-- 💬 **多渠道 Bot** — 飞书、QQ、微信同时接入
-- 🧠 **长期记忆** — SQLite 本地存储 + LLM 自动摘要压缩
-- 🎭 **人格模板** — 可切换的 Agent 性格系统
-- 🔧 **工具集** — bash / 文件操作 / 网页截图 / 网络搜索
-- 📟 **桌面端** — Electron 跨平台桌面应用
-- 🔒 **系统级沙箱** — 进程隔离 + 熔断器 + 审计日志
-- ⏰ **调度器** — Cron 定时任务 + 心跳主动上报
+- 🖥️ **Desktop App** — Electron + React 19, cross-platform (Windows / macOS / Linux)
+- 🤖 **Multi-Provider** — MiniMax, DeepSeek, Qwen (DashScope), GLM (Zhipu)
+- 🔍 **Autonomous Patrol** — Heartbeat scans workspace, executes jian tasks without user input
+- 💬 **Chat + Tools** — LLM-powered conversations with file/bash/grep tools
+- 📝 **Task Files** — `jian.md` per directory: write instructions, agent reads and executes
+- 🧪 **E2E Tested** — 18 Playwright tests covering workspace, chat, settings, jian, flows
+- 🔌 **OpenAI Compatible** — Any OpenAI-compatible API endpoint auto-detected
+- 🌙 **Dark Theme** — Built-in warm-paper and cool-night themes
 
-### 技术栈
-- **运行时：** Node.js 18+
-- **后端框架：** Hono（轻量、极速）
-- **数据库：** better-sqlite3（本地持久化）
-- **Agent：** OpenAI SDK（兼容千帆、OpenAI 等）
-- **桌面端：** Electron
-- **构建工具：** TypeScript + esbuild/vite
+## Quick Start
 
-## 快速开始
-
-### 安装依赖
 ```bash
+# Install
 npm install
-```
 
-### 启动开发模式
-```bash
-# 后端 API 服务
-npm run dev
-
-# 桌面端（另一个终端）
+# Start dev mode (server + Vite + Electron)
 npm run electron:dev
+
+# Run tests
+npm test:e2e
 ```
 
-### 构建
-```bash
-# 编译 TypeScript
-npm run build
-
-# 打包桌面应用
-npm run electron:dist
-```
-
-### 测试
-```bash
-npm test
-```
-
-## 项目结构
+## Architecture
 
 ```
-remu/
-├── channels/          # 渠道接入（飞书、QQ、微信）
-├── core/
-│   ├── agent.ts      # Agent 核心
-│   ├── config.ts     # 配置管理
-│   ├── desk.ts       # 文件管理
-│   ├── dispatcher.ts  # 任务调度
-│   ├── i18n.ts       # 多语言
-│   ├── logger.ts     # 日志
-│   ├── metrics.ts    # 指标收集
-│   ├── sandbox/      # 系统级沙箱
-│   ├── scheduler.ts  # 定时调度
-│   ├── skills.ts     # 技能系统
-│   ├── stt.ts        # 语音识别
-│   └── tts.ts        # 语音合成
-├── core/memory/      # 记忆存储 + 摘要
-├── core/personality/  # 人格模板
-├── core/tools/       # 工具集（bash/file/path-guard/screenshot/web）
-├── db/               # SQLite 数据库 schema
-├── desktop/          # Electron 桌面端
-├── server/           # Hono 服务端 + WebSocket
-├── tests/            # 单元测试
-└── scripts/          # 构建脚本
+desktop/          Electron + React 19 UI (forked from openhanako)
+core/             Agent engine, session management, provider routing
+server/           Hono HTTP + WebSocket API server (37 routes)
+plugins/          Built-in tools (read/write/bash/edit/grep/ls)
+lib/              pi-sdk compatibility, shared utilities
+tests/            E2E Playwright tests
 ```
 
-## 配置说明
+## LLM Providers
 
-运行前需要配置渠道凭证，创建 `.env` 文件：
+Edit `config.json`:
+
+```json
+{
+  "providers": [
+    { "id": "minimax", "type": "openai", "baseUrl": "https://api.minimax.chat/v1", "models": ["MiniMax-M3"], "isDefault": true },
+    { "id": "deepseek", "type": "openai", "baseUrl": "https://api.deepseek.com/v1", "models": ["deepseek-chat", "deepseek-reasoner"] },
+    { "id": "qwen", "type": "openai", "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1", "models": ["qwen-plus", "qwen-max", "qwen-turbo"] },
+    { "id": "glm", "type": "openai", "baseUrl": "https://open.bigmodel.cn/api/paas/v4", "models": ["glm-4-plus", "glm-4-flash"] }
+  ],
+  "models": { "main": "minimax::MiniMax-M3" }
+}
+```
+
+## Testing
 
 ```bash
-cp .env.example .env
+npm run test:e2e          # All E2E tests (Playwright)
+npm run test:e2e:chat     # Chat tests only
+npm run test:e2e:jian     # Jian / task tests
+npm run test:unit         # Unit tests (vitest)
 ```
 
-然后填入对应的 API Key 和凭证。
+## Credits
+
+This project is forked from [openhanako](https://github.com/liliMozi/openhanako), a solo vibe-coded AI agent. OpenShadow diverged at commit `5d390121`, re-architecting the Electron startup, adding Chinese LLM providers, and building an E2E test suite from scratch.
 
 ## License
 
