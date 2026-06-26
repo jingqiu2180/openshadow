@@ -3,7 +3,7 @@ agent:
   yuan: hanako
   avatar: null
   desk:
-    home_folder: D:/src/aicoding/remu
+    home_folder: D:/src/aicoding/openshadow
 
 memory:
   enabled: true

@@ -7,8 +7,8 @@ import { existsSync } from 'node:fs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const PROJECT_ROOT = __dirname                // D:\src\aicoding\remu\desktop\
-const ROOT = resolve(PROJECT_ROOT, 'src')   // D:\src\aicoding\remu\desktop\src\  (dev server root)
+const PROJECT_ROOT = __dirname                // D:\src\aicoding\openshadow\desktop\
+const ROOT = resolve(PROJECT_ROOT, 'src')   // D:\src\aicoding\openshadow\desktop\src\  (dev server root)
 const OUT_DIR = resolve(PROJECT_ROOT, 'dist-renderer')
 
 // Directories to search for @shared/* modules (in order)
@@ -16,7 +16,7 @@ const OUT_DIR = resolve(PROJECT_ROOT, 'dist-renderer')
 const SHARED_DIRS = [
   resolve(PROJECT_ROOT, 'src', 'react', 'components', 'shared'),
   resolve(PROJECT_ROOT, 'src', 'shared'),
-  resolve(PROJECT_ROOT, '..', 'shared'),   // remu/shared/
+  resolve(PROJECT_ROOT, '..', 'shared'),   // openshadow/shared/
 ]
 
 function tryResolve(subpath: string): string | undefined {
@@ -34,13 +34,13 @@ function tryResolve(subpath: string): string | undefined {
 // Vite plugin: resolveId hook handles @shared/* and @/ui/*
 function sharedResolverPlugin() {
   return {
-    name: 'remu-shared-resolver',
+    name: 'openshadow-shared-resolver',
     resolveId(id: string) {
       if (id.startsWith('@shared/')) {
         const subpath = id.slice('@shared/'.length)
         const resolved = tryResolve(subpath)
         if (resolved) {
-          console.error('[remu-resolver]', id, '->', resolved)
+          console.error('[openshadow-resolver]', id, '->', resolved)
           return resolved
         }
       }
@@ -49,7 +49,7 @@ function sharedResolverPlugin() {
         const full = resolve(PROJECT_ROOT, 'src', 'react', 'ui', sub)
         for (const ext of ['.tsx', '.ts', '.js', '.jsx', '/index.tsx', '/index.ts']) {
           if (existsSync(full + ext)) {
-            console.error('[remu-resolver]', id, '->', full + ext)
+            console.error('[openshadow-resolver]', id, '->', full + ext)
             return full + ext
           }
         }

@@ -2,7 +2,7 @@
 // 验证 jian 内容是否被注入到 LLM prompt
 //
 // 状态：SKIPPED — 行为记录测试，不是回归测试
-// 决策：remu 故意不注入 jian 内容到 LLM prompt（与上游 hanako 一致）
+// 决策：openshadow 故意不注入 jian 内容到 LLM prompt（与上游 hanako 一致）
 // 理由：
 //   1. 上游 hanako 没做，跟着上游走避免 rebase 冲突
 //   2. 自动注入 jian 有 token 爆炸 / 隐私 / 一致性 / 多会话冲突 4 个反模式风险

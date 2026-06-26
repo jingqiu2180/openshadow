@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * compile.ts — 记忆编译器（remu 版）
+ * compile.ts — 记忆编译器（openshadow 版）
  *
  * 将 session 摘要编译成长期记忆（daily/weekly/longterm）
  *

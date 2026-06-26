@@ -24,8 +24,8 @@ export type AccessLevel = 'BLOCKED' | 'READ_ONLY' | 'READ_WRITE' | 'FULL'
 export interface PathGuardPolicy {
   /** If true, skip all checks (dev mode) */
   mode: 'full-access' | 'restricted'
-  /** HanaAgent home dir (~/.hanako or remu data dir) */
-  remuHome: string
+  /** HanaAgent home dir (~/.hanako or openshadow data dir) */
+  openshadowHome: string
   /** Agent data dir */
   agentDir: string
   /** FULL access: workspace roots (user-configurable) */
@@ -79,7 +79,7 @@ export class PathGuard {
       // Backward compatible: string[] → READ_ONLY policy
       this.policy = {
         mode: 'restricted',
-        remuHome: '',
+        openshadowHome: '',
         agentDir: '',
         workspaceRoots: [],
         writablePaths: input.map(norm),

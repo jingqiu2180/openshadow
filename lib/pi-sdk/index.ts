@@ -1,9 +1,9 @@
 // @ts-nocheck
 /**
- * pi-sdk 兼容层 — 让 openhanako 工具代码能直接在 remu 里用
+ * pi-sdk 兼容层 — 让 openhanako 工具代码能直接在 openshadow 里用
  *
  * openhanako 的 lib/pi-sdk/index.ts 是 @mariozechner/pi-coding-agent 的适配层。
- * remu 不需要那个 SDK，只需要提供工具代码里用到的导出占位符。
+ * openshadow 不需要那个 SDK，只需要提供工具代码里用到的导出占位符。
  */
 
 // ── Type — 直接 re-export typebox ────────────────────────
@@ -36,7 +36,7 @@ export function StringEnum(values: string[], opts: { description?: string; fallb
   return schema
 }
 
-// ── 占位导出（工具代码里 import 了但 remu 不需要实际实现）─────
+// ── 占位导出（工具代码里 import 了但 openshadow 不需要实际实现）─────
 // ── 工具 ───────────────────────────────────────
 const TOOLS: any[] = [
   { type: "function", function: { name: "bash", description: "Execute a shell command. Returns stdout/stderr.", parameters: { type: "object", properties: { command: { type: "string", description: "The shell command to execute" } }, required: ["command"] } } },

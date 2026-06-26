@@ -9,7 +9,7 @@ describe('ConfigManager', () => {
   let configPath: string
 
   beforeEach(() => {
-    configPath = join(tmpdir(), `remu-test-config-${Date.now()}.json`)
+    configPath = join(tmpdir(), `openshadow-test-config-${Date.now()}.json`)
     if (existsSync(configPath)) unlinkSync(configPath)
   })
 
@@ -181,10 +181,10 @@ describe('ConfigManager', () => {
 
   it('should get path guard policy', () => {
     const mgr = new ConfigManager(configPath)
-    const policy = mgr.getPathGuardPolicy('/home/remu', '/home/remu/agents/test')
+    const policy = mgr.getPathGuardPolicy('/home/openshadow', '/home/openshadow/agents/test')
     expect(policy.mode).toBe('restricted')
-    expect(policy.remuHome).toBe('/home/remu')
-    expect(policy.agentDir).toBe('/home/remu/agents/test')
+    expect(policy.openshadowHome).toBe('/home/openshadow')
+    expect(policy.agentDir).toBe('/home/openshadow/agents/test')
     expect(Array.isArray(policy.workspaceRoots)).toBe(true)
   })
 

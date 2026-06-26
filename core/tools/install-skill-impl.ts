@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * install-skill.ts — install_skill 工具（remu 原生实现，完整对齐 openhanako）
+ * install-skill.ts — install_skill 工具（openshadow 原生实现，完整对齐 openhanako）
  *
  * 入口：
  *   A. github_url — 从 GitHub 仓库拉取（有 star 数门槛）

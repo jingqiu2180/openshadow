@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * memory-manager.ts — remu 记忆系统管理器
+ * memory-manager.ts — openshadow 记忆系统管理器
  *
  * 集成 SessionSummaryManager + MemoryCompiler + DeepMemoryManager
  * 参考 openhanako 的 MemoryTicker，但简化实现

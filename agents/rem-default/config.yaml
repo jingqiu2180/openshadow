@@ -10,10 +10,11 @@ memory:
 desk:
   heartbeat_enabled: false
   heartbeat_interval: 30
-  home_folder: D:/src/aicoding/remu
+  home_folder: D:/src/aicoding/openshadow
 user:
   name: ""
 preferences: {}
-last_cwd: D:/src/aicoding/remu
+last_cwd: D:\test\workspace-fixture
 cwd_history:
-  - D:/src/aicoding/remu
+  - D:/test/workspace-fixture
+  - D:/src/aicoding/openshadow

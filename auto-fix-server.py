@@ -6,7 +6,7 @@ import subprocess
 import shutil
 import sys
 
-DST_ROOT = 'D:/src/aicoding/remu'
+DST_ROOT = 'D:/src/aicoding/openshadow'
 SRC_ROOT = 'D:/src/aicoding/openhanako'
 
 def log(msg):
@@ -88,8 +88,8 @@ for i in range(1, 200):
     # Extract relative path from /dist/
     if '/dist/' in module_path:
         rel = module_path.split('/dist/', 1)[1]
-    elif '/remu/' in module_path:
-        rel = module_path.split('/remu/', 1)[1]
+    elif '/openshadow/' in module_path:
+        rel = module_path.split('/openshadow/', 1)[1]
     else:
         log(f'  Cannot parse path: {module_path}')
         break

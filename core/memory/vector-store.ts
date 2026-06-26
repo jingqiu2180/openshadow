@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * vector-store.ts — 基于 embedding 的向量记忆检索（remu 版）
+ * vector-store.ts — 基于 embedding 的向量记忆检索（openshadow 版）
  *
  * 用 MiniMax embedding API（OpenAI 兼容）把 fact 文本编码为 float 向量，
  * 存到 SQLite 的 `fact_embeddings` 表；检索时算余弦相似度。

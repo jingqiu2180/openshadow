@@ -5,7 +5,7 @@
  * 在工具 execute 外面套一层路径校验。
  * 被拦截时返回 LLM 可读的文本错误，不抛异常。
  *
- * remu 适配版：包装 ToolRegistry 注册的工具（execute(args) 签名）
+ * openshadow 适配版：包装 ToolRegistry 注册的工具（execute(args) 签名）
  */
 
 import fs from 'fs'

@@ -10,7 +10,7 @@ import type { Page } from '@playwright/test'
 export function getTestFolder(): string {
   if (process.env.TEST_FOLDER) return process.env.TEST_FOLDER
   if (process.platform === 'win32') return 'D:\\test\\workspace-fixture'
-  return '/tmp/remu-test-workspace'
+  return '/tmp/openshadow-test-workspace'
 }
 
 /**

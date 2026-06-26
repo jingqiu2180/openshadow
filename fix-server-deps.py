@@ -10,7 +10,7 @@ import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-DST_ROOT = 'D:/src/aicoding/remu'
+DST_ROOT = 'D:/src/aicoding/openshadow'
 SRC_ROOT = 'D:/src/aicoding/openhanako'
 
 def find_source(module_path):
@@ -85,7 +85,7 @@ for i in range(1, 100):
         print(f'  ✅ Server started! Output: {output[:200]}')
         break
     module = m.group(1)
-    # module is full path like 'D:/src/aicoding/remu/dist/lib/foo.js'
+    # module is full path like 'D:/src/aicoding/openshadow/dist/lib/foo.js'
     # Convert to relative: 'lib/foo.ts'
     rel = re.sub(r'^.*?/dist/', '', module.replace('\\', '/'))
     rel = rel.replace('.js', '.ts')

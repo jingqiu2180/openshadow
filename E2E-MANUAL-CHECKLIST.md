@@ -7,7 +7,7 @@
 ## 启动命令
 
 ```bash
-cd D:\src\aicoding\remu
+cd D:\src\aicoding\openshadow
 npm run electron:dev
 ```
 
@@ -15,11 +15,11 @@ npm run electron:dev
 
 ```bash
 # 终端 1
-cd D:\src\aicoding\remu && npm run dev
+cd D:\src\aicoding\openshadow && npm run dev
 # 终端 2
-cd D:\src\aicoding\remu && npm run desktop:vite
+cd D:\src\aicoding\openshadow && npm run desktop:vite
 # 终端 3
-cd D:\src\aicoding\remu && npm run electron
+cd D:\src\aicoding\openshadow && npm run electron
 ```
 
 ## #1 启动向导 7 步

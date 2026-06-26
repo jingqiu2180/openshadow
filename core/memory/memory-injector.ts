@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * memory-injector.ts — Memory 注入器（remu 版）
+ * memory-injector.ts — Memory 注入器（openshadow 版）
  *
  * 把历史记忆（hot facts + 动态检索的相关 fact）拼到 system prompt 末尾，
  * 让 LLM 在回答当前问题时能利用历史上下文。

@@ -10,7 +10,7 @@ describe('UsageTracker', () => {
 
   beforeEach(async () => {
     vi.resetModules()
-    dataDir = join(tmpdir(), `remu-test-usage-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
+    dataDir = join(tmpdir(), `openshadow-test-usage-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
     mkdirSync(dataDir, { recursive: true })
     process.env.REMO_DATA_DIR = dataDir
     const mod = await import('../../core/providers/usage-tracker.js')

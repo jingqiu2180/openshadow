@@ -1340,7 +1340,7 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
               return;
             }
 
-            // ── remu 兼容：前端 ChatArea 发 type='chat'，映射为 prompt ──
+            // ── openshadow 兼容：前端 ChatArea 发 type='chat'，映射为 prompt ──
             if (msg.type === "chat" && msg.content) {
               msg.type = "prompt";
               msg.text = msg.content;

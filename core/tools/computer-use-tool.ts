@@ -2,7 +2,7 @@
 /**
  * computer-use-tool.ts — 浏览器自动化工具
  * 移植自 openhanako/lib/tools/computer-use-tool.ts
- * 复用 remu 已有的 browser 工具实现真实功能
+ * 复用 openshadow 已有的 browser 工具实现真实功能
  */
 import type { ToolRegistry } from '../tool-registry.js'
 import { createToolSpec } from '../tool-registry.js'

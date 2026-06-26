@@ -62,7 +62,7 @@
 
 ### 1. 启动服务器
 ```bash
-cd D:/src/aicoding/remu
+cd D:/src/aicoding/openshadow
 npm run dev
 ```
 

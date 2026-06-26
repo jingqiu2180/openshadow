@@ -1,4 +1,4 @@
-// verify-render.mjs — 快速验证 remu UI 是否渲染正常
+// verify-render.mjs — 快速验证 openshadow UI 是否渲染正常
 import { chromium } from 'playwright';
 
 async function main() {
@@ -10,7 +10,7 @@ async function main() {
     await page.waitForTimeout(3000);
 
     // 截图全页
-    await page.screenshot({ path: 'D:/screenshots/remu-ui-audit/verify-render.png', fullPage: true });
+    await page.screenshot({ path: 'D:/screenshots/openshadow-ui-audit/verify-render.png', fullPage: true });
     console.log('[verify] 截图已保存到 verify-render.png');
 
     // 检查关键元素是否存在

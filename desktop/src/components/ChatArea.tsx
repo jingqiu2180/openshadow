@@ -639,7 +639,7 @@ function WelcomePanel({
   onToggleMemory: () => void
   onRefresh: () => void
 }) {
-  const primaryWorkspace = workspaceRoots[0] || 'D:\\src\\aicoding\\remu'
+  const primaryWorkspace = workspaceRoots[0] || 'D:\\src\\aicoding\\openshadow'
 
   return (
     <div style={{

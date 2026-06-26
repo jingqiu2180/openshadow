@@ -269,7 +269,7 @@ export class McpClient extends EventEmitter {
           prompts: {},
         },
         clientInfo: {
-          name: 'remu-agent',
+          name: 'openshadow-agent',
           version: '0.1.0',
         },
       })

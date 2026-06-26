@@ -2,8 +2,8 @@
 import { chromium } from 'playwright';
 import { writeFileSync } from 'fs';
 
-const STORAGE = 'D:/screenshots/remu-ui-audit/storage.json';
-const OUT = 'D:/screenshots/remu-ui-audit/fine-audit.json';
+const STORAGE = 'D:/screenshots/openshadow-ui-audit/storage.json';
+const OUT = 'D:/screenshots/openshadow-ui-audit/fine-audit.json';
 
 async function main() {
   const browser = await chromium.launch({ headless: false });

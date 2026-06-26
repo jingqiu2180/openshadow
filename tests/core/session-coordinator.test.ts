@@ -26,8 +26,8 @@ describe('SessionCoordinator', () => {
   let jsonlDir: string
 
   beforeEach(() => {
-    testDir = join(tmpdir(), `remu-test-sessions-${randomUUID()}`)
-    jsonlDir = join(tmpdir(), `remu-test-jsonl-${randomUUID()}`)
+    testDir = join(tmpdir(), `openshadow-test-sessions-${randomUUID()}`)
+    jsonlDir = join(tmpdir(), `openshadow-test-jsonl-${randomUUID()}`)
     mkdirSync(testDir, { recursive: true })
     mkdirSync(jsonlDir, { recursive: true })
 

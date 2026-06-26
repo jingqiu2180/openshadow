@@ -1,7 +1,7 @@
 import os
 import re
 
-desktop_src = 'D:/src/aicoding/remu/desktop/src'
+desktop_src = 'D:/src/aicoding/openshadow/desktop/src'
 
 for root, dirs, files in os.walk(desktop_src):
     dirs[:] = [d for d in dirs if d not in ('node_modules', 'dist', 'dist-renderer')]

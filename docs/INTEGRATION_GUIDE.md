@@ -187,10 +187,10 @@ constructor(engine: ChatEngine, store?: SessionStore) {
 
 ### 步骤 3：测试
 
-**3.1 启动 remu**
+**3.1 启动 openshadow**
 
 ```bash
-cd D:/src/aicoding/remu
+cd D:/src/aicoding/openshadow
 npm run dev
 ```
 
@@ -257,7 +257,7 @@ core/
 
 ## 与 openhanako 的对比
 
-| 步骤 | openhanako | remu（本实现） |
+| 步骤 | openhanako | openshadow（本实现） |
 |------|-------------|-----------------|
 | 初始化 | 在 `Agent` 类中创建 `MemoryTicker` | 在 `SessionManager` 中创建 `MemoryManager` |
 | 触发时机 | 每 10 轮 / session 结束 / 每天一次 | session 压缩后 / session 结束（可配置） |

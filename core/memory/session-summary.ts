@@ -1,13 +1,13 @@
 // @ts-nocheck
 /**
- * session-summary.ts — Session 摘要管理（remu 版）
+ * session-summary.ts — Session 摘要管理（openshadow 版）
  *
  * 每个 session 一个 JSON 文件（存在 memory/summaries/ 下）
  * 摘要通过 LLM 生成，格式为 facts + timeline 两节
  *
  * 与 openhanako 的区别：
- * - 简化缓存机制（remu 规模较小）
- * - 使用 remu 的 OpenAI SDK 调用方式
+ * - 简化缓存机制（openshadow 规模较小）
+ * - 使用 openshadow 的 OpenAI SDK 调用方式
  * - 去掉复杂的 i18n 和 timezone 处理
  */
 

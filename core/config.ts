@@ -359,11 +359,11 @@ export class ConfigManager {
   }
 
   /** Get PathGuard policy from current config */
-  getPathGuardPolicy(remuHome: string, agentDir: string) {
+  getPathGuardPolicy(openshadowHome: string, agentDir: string) {
     const sec = this.config.security
     return {
       mode: sec.sandbox ? 'restricted' as const : 'full-access' as const,
-      remuHome,
+      openshadowHome,
       agentDir,
       workspaceRoots: sec.workspaceRoots,
       writablePaths: sec.writablePaths,

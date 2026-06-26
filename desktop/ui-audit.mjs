@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 
-const SS_DIR = 'D:/screenshots/remu-ui-audit';
+const SS_DIR = 'D:/screenshots/openshadow-ui-audit';
 if (!fs.existsSync(SS_DIR)) fs.mkdirSync(SS_DIR, { recursive: true });
 
 const log = (...a) => console.log(`[${new Date().toISOString()}]`, ...a);

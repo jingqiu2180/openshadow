@@ -66,7 +66,7 @@
 - 安全沙盒（lib/sandbox/）
 - 多平台接入（Telegram/飞书/QQ/微信）
 
-## remu 当前状态
+## openshadow 当前状态
 
 ### ✅ 已完成
 - 阶段1：核心 Agent 功能增强（31个工具）
@@ -85,7 +85,7 @@
 9. **视觉桥接缺失** — 图片处理能力弱
 10. **安全沙盒不完整** — 隔离级别不够
 
-## 执行计划（确保 remu ≥ openhanako）
+## 执行计划（确保 openshadow ≥ openhanako）
 
 ### 阶段3：Memory 系统完整化（当前正在执行）
 1. 实现 compile.ts（编译快照）
@@ -122,7 +122,7 @@
 
 第一个任务：实现 `compile.ts`（编译快照）
 - openhanako 原版：21746 行
-- remu 目标：实现核心功能，简洁可靠
+- openshadow 目标：实现核心功能，简洁可靠
 - 核心功能：
   - compileToday() — 编译当天的会话摘要
   - compileWeek() — 编译过去7天滑动窗口

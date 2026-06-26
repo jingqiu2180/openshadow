@@ -1,13 +1,13 @@
 // @ts-nocheck
 /**
- * deep-memory.ts — 深度记忆系统（remu 版）
+ * deep-memory.ts — 深度记忆系统（openshadow 版）
  *
  * 从 session 摘要中提取结构化事实（元事实）
  * 这些事实存储在 memory/facts/ 下，供长期检索使用
  *
  * 与 openhanako 的区别：
  * - 简化事实提取逻辑
- * - 使用 remu 的 LLM 调用方式
+ * - 使用 openshadow 的 LLM 调用方式
  * - 去掉复杂的快照对比逻辑
  */
 

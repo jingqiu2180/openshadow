@@ -31,7 +31,7 @@ import { name as beautifyCreateCoverName, description as beautifyCreateCoverDesc
 import { name as beautifyGetCoverStyleName, description as beautifyGetCoverStyleDesc, parameters as beautifyGetCoverStyleParams, execute as beautifyGetCoverStyleExec } from '../plugins/builtin/beautify/tools/beautify-get-cover-style.js'
 import { name as beautifyGetHtmlStyleName, description as beautifyGetHtmlStyleDesc, parameters as beautifyGetHtmlStyleParams, execute as beautifyGetHtmlStyleExec } from '../plugins/builtin/beautify/tools/beautify-get-html-style.js'
 import { name as beautifyListCapsName, description as beautifyListCapsDesc, parameters as beautifyListCapsParams, execute as beautifyListCapsExec } from '../plugins/builtin/beautify/tools/beautify-list-capabilities.js'
-// install_skill 工具（remu 原生实现，完整功能）
+// install_skill 工具（openshadow 原生实现，完整功能）
 import { createInstallSkillTool } from './tools/install-skill-impl.js'
 // office 插件工具（openhanako plugins/office/，// @ts-nocheck）
 import { name as officeReadName, description as officeReadDesc, parameters as officeReadParams, execute as officeReadExec } from '../plugins/builtin/office/tools/read-document.js'
@@ -527,8 +527,8 @@ export class ChatEngine {
     // ─── openhanako 对齐工具（轻量实现）─────────────
     // Channel 工具（频道聊天）
     try {
-      const _channelsDir = path.join(process.cwd(), '.remu', 'channels')
-      const _agentsDir = path.join(process.cwd(), '.remu', 'agents')
+      const _channelsDir = path.join(process.cwd(), '.openshadow', 'channels')
+      const _agentsDir = path.join(process.cwd(), '.openshadow', 'agents')
       const _agentId = (this as any).agentId || 'main'
       const _channelDeps = {
         agentId: _agentId,
@@ -556,12 +556,12 @@ export class ChatEngine {
         params: _channelToolDef.parameters,
       }), _channelHandler)
     } catch (e) {
-      console.error('[remu] Failed to register channel tool:', e)
+      console.error('[openshadow] Failed to register channel tool:', e)
     }
 
     // DM 工具（私信）
     try {
-      const _agentsDir = path.join(process.cwd(), '.remu', 'agents')
+      const _agentsDir = path.join(process.cwd(), '.openshadow', 'agents')
       const _agentId = (this as any).agentId || 'main'
       const _dmDeps = {
         agentId: _agentId,
@@ -587,7 +587,7 @@ export class ChatEngine {
         params: _dmToolDef.parameters,
       }), _dmHandler)
     } catch (e) {
-      console.error('[remu] Failed to register dm tool:', e)
+      console.error('[openshadow] Failed to register dm tool:', e)
     }
 
     // ─── Workflow 工具（编排脚本）─────────────
@@ -617,7 +617,7 @@ export class ChatEngine {
         params: _workflowToolDef.parameters,
       }), _workflowHandler)
     } catch (e) {
-      console.error('[remu] Failed to register workflow tool:', e)
+      console.error('[openshadow] Failed to register workflow tool:', e)
     }
 
     // ─── Beautify 插件工具（openhanako 对齐）─────────────
@@ -669,7 +669,7 @@ export class ChatEngine {
         _beautifyDeps
       ))
     } catch (e) {
-      console.error('[remu] Failed to register beautify tools:', e)
+      console.error('[openshadow] Failed to register beautify tools:', e)
     }
 
     // ─── office 工具（openhanako plugins/office/）─────────────
@@ -690,7 +690,7 @@ export class ChatEngine {
         params: officeHtmlToPdfParams,
       }), (args: any) => officeHtmlToPdfExec(args, {}))
     } catch (e) {
-      console.error('[remu] Failed to register office tools:', e)
+      console.error('[openshadow] Failed to register office tools:', e)
     }
 
     // ─── image-gen 工具（openhanako plugins/image-gen/）─────────────
@@ -708,10 +708,10 @@ export class ChatEngine {
         params: mediaOptsParams,
       }), (args: any) => mediaOptsExec(args, {}))
     } catch (e) {
-      console.error('[remu] Failed to register image-gen tools:', e)
+      console.error('[openshadow] Failed to register image-gen tools:', e)
     }
 
-    // ─── install_skill 工具（remu 原生完整实现）─────────────
+    // ─── install_skill 工具（openshadow 原生完整实现）─────────────
     try {
       const { spec, executor } = createInstallSkillTool(
         _globalSkillStore,
@@ -730,7 +730,7 @@ export class ChatEngine {
       )
       registry.register('install_skill', spec, executor)
     } catch (e) {
-      console.error('[remu] Failed to register install_skill tool:', e)
+      console.error('[openshadow] Failed to register install_skill tool:', e)
     }
 
     // ─── update_settings 工具（openhanako lib/tools/update-settings-tool.ts）──
@@ -747,7 +747,7 @@ export class ChatEngine {
         params: updateSettingsTool.parameters,
       }), wrappedExecute)
     } catch (e) {
-      console.error('[remu] Failed to register update_settings tool:', e)
+      console.error('[openshadow] Failed to register update_settings tool:', e)
     }
 
     return registry

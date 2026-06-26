@@ -2,7 +2,7 @@
 set -e
 
 SRC="D:/src/aicoding/openhanako"
-DST="D:/src/aicoding/remu"
+DST="D:/src/aicoding/openshadow"
 
 fix_file() {
     local f="$1"

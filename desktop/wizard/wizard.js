@@ -114,7 +114,7 @@ if (!window.wizard) {
       await new Promise(r => setTimeout(r, 800))
       return { ok: provider.apiKey.length > 0, latencyMs: 800, error: provider.apiKey.length === 0 ? 'No API key' : null }
     },
-    pickFolder: async () => ['D:\\src\\aicoding\\remu'],
+    pickFolder: async () => ['D:\\src\\aicoding\\openshadow'],
     done: () => {},
   }
 }

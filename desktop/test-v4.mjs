@@ -8,7 +8,7 @@ async function main() {
   const page = await browser.newPage();
   await page.setViewportSize({ width: 1440, height: 900 });
 
-  console.log('=== remu UI Test v4 ===\n');
+  console.log('=== openshadow UI Test v4 ===\n');
 
   // 1. 首页加载
   await page.goto(BASE, { waitUntil: 'networkidle' });

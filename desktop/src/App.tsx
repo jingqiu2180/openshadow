@@ -26,7 +26,7 @@ export default function App() {
 
   // Bridge: sync workspace from old store to new store for DeskSection
   useEffect(() => {
-    const root = settings.workspaceRoots[0] || 'D:/src/aicoding/remu'
+    const root = settings.workspaceRoots[0] || 'D:/src/aicoding/openshadow'
     if (root) {
       useNewStore.getState().setDeskBasePath(root)
       useNewStore.getState().markDeskTreeDirty('')

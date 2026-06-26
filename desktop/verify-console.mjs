@@ -1,4 +1,4 @@
-// verify-console.mjs — 检查 remu 页面的 console 错误
+// verify-console.mjs — 检查 openshadow 页面的 console 错误
 import { chromium } from 'playwright';
 
 async function main() {
@@ -21,7 +21,7 @@ async function main() {
     errors.push(`PAGE ERROR: ${err.message}`);
   });
 
-  console.log('[verify] 打开 remu...');
+  console.log('[verify] 打开 openshadow...');
   try {
     await page.goto('http://localhost:5173/', { waitUntil: 'domcontentloaded', timeout: 20000 });
     await page.waitForTimeout(5000);
@@ -44,7 +44,7 @@ async function main() {
   }
 
   // 截图保存（即使不能看，也保存）
-  await page.screenshot({ path: 'D:/screenshots/remu-ui-audit/verify-console.png', fullPage: true }).catch(() => {});
+  await page.screenshot({ path: 'D:/screenshots/openshadow-ui-audit/verify-console.png', fullPage: true }).catch(() => {});
   console.log('\n[verify] 截图已保存（但模型不支持查看）');
 
   console.log('\n[verify] 浏览器保持打开，请手动检查...');

@@ -1,10 +1,10 @@
 import os, re
 
 dirs = [
-    'D:/src/aicoding/remu/server',
-    'D:/src/aicoding/remu/core',
-    'D:/src/aicoding/remu/lib',
-    'D:/src/aicoding/remu/channels',
+    'D:/src/aicoding/openshadow/server',
+    'D:/src/aicoding/openshadow/core',
+    'D:/src/aicoding/openshadow/lib',
+    'D:/src/aicoding/openshadow/channels',
 ]
 
 fixed = 0
@@ -25,7 +25,7 @@ for d in dirs:
                 with open(fp, 'w', encoding='utf-8') as fh:
                     fh.write(new_content)
                 fixed += 1
-                rel = fp.replace('D:/src/aicoding/remu/', 'remu/')
+                rel = fp.replace('D:/src/aicoding/openshadow/', 'remu/')
                 print(f'Fixed: {rel}')
 
 print(f'Total fixed: {fixed} files')

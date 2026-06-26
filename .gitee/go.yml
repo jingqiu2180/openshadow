@@ -35,10 +35,10 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps
       - run: |
-          mkdir -p /tmp/remu-test-workspace
-          echo "# Test" > /tmp/remu-test-workspace/jian.md
+          mkdir -p /tmp/openshadow-test-workspace
+          echo "# Test" > /tmp/openshadow-test-workspace/jian.md
       - run: npm run build
       - run: npm run test:e2e
         env:
           CI: 'true'
-          TEST_FOLDER: /tmp/remu-test-workspace
+          TEST_FOLDER: /tmp/openshadow-test-workspace

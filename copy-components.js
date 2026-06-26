@@ -1,9 +1,9 @@
-// 从 openhanako 复制组件到 remu，并修复导入
+// 从 openhanako 复制组件到 openshadow，并修复导入
 const fs = require('fs');
 const path = require('path');
 
 const sourceBase = 'D:/src/aicoding/openhanako';
-const targetBase = 'D:/src/aicoding/remu';
+const targetBase = 'D:/src/aicoding/openshadow';
 
 // 需要复制的组件列表
 const components = [

@@ -487,7 +487,7 @@ export const useStore = create<AppState>((set, get) => ({
             ? sec.workspaceRoots
             : ((config.workspaceRoots && config.workspaceRoots.length > 0)
               ? config.workspaceRoots
-              : (state.settings.workspaceRoots.length > 0 ? state.settings.workspaceRoots : ['D:/src/aicoding/remu']))
+              : (state.settings.workspaceRoots.length > 0 ? state.settings.workspaceRoots : ['D:/src/aicoding/openshadow']))
         return {
           settings: {
             ...state.settings,
@@ -506,7 +506,7 @@ export const useStore = create<AppState>((set, get) => ({
           ...state.settings,
           workspaceRoots: state.settings.workspaceRoots.length > 0
             ? state.settings.workspaceRoots
-            : ['D:/src/aicoding/remu'],
+            : ['D:/src/aicoding/openshadow'],
           loaded: true,
         }
       }))

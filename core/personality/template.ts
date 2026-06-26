@@ -30,8 +30,8 @@ export function buildSystemPrompt(template: PersonalityTemplate, userName?: stri
 
   // 平台信息
   const platformInfo = isZh
-    ? '你运行在 remu 平台上，由王帅开发。'
-    : 'You are running on the remu platform, developed by wangshuaibj.'
+    ? '你运行在 openshadow 平台上，由王帅开发。'
+    : 'You are running on the openshadow platform, developed by wangshuaibj.'
 
   // 工具使用纪律
   const toolDiscipline = isZh

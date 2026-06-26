@@ -4,7 +4,7 @@ import re
 import subprocess
 import shutil
 
-DST_ROOT = 'D:/src/aicoding/remu'
+DST_ROOT = 'D:/src/aicoding/openshadow'
 SRC_ROOT = 'D:/src/aicoding/openhanako'
 
 def fix_file(path):
@@ -66,7 +66,7 @@ for i in range(1, 100):
     if '/dist/' in module_path:
         rel = module_path.split('/dist/', 1)[1]
     else:
-        rel = module_path.split('/remu/', 1)[1] if '/remu/' in module_path else module_path
+        rel = module_path.split('/openshadow/', 1)[1] if '/openshadow/' in module_path else module_path
     
     # Convert .js to .ts
     rel = rel.replace('.js', '.ts')

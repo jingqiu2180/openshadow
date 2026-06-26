@@ -6,9 +6,9 @@
 
 ## 测试步骤
 
-### 1. 启动 remu（开发模式）
+### 1. 启动 openshadow（开发模式）
 ```bash
-cd D:/src/aicoding/remu
+cd D:/src/aicoding/openshadow
 npm run dev
 ```
 
@@ -22,11 +22,11 @@ npm run dev
   ```
 
 ### 3. 测试摘要生成
-用 curl 或浏览器访问 remu 的 API，发送 10+ 条消息，触发 `runCompaction()`。
+用 curl 或浏览器访问 openshadow 的 API，发送 10+ 条消息，触发 `runCompaction()`。
 
 或者用以下脚本（需要手动创建 session）：
 ```bash
-cd D:/src/aicoding/remu
+cd D:/src/aicoding/openshadow
 npx tsx e2e-test-memory.ts
 ```
 
@@ -59,7 +59,7 @@ ls -la data/memory/longterm/
 
 | 测试项 | 预期结果 |
 |--------|------------|
-| 启动 remu | 无 SQLite 错误，Memory Ticker 启动成功 |
+| 启动 openshadow | 无 SQLite 错误，Memory Ticker 启动成功 |
 | 发送 10+ 条消息 | `data/memory/summaries/` 下生成摘要文件 |
 | 删除 session | `data/memory/longterm/` 下生成 `latest.md` |
 | 新 session 引用旧内容 | LLM 能引用之前的对话 |

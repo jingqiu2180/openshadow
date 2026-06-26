@@ -9,11 +9,11 @@
   "workspace_ui_state": {
     "version": 2,
     "workspaces": {
-      "D:/src/aicoding/remu": {
-        "updatedAt": 1782136162615,
+      "D:/src/aicoding/openshadow": {
+        "updatedAt": 1782433782855,
         "surfaces": {
           "electron": {
-            "updatedAt": 1782136162615,
+            "updatedAt": 1782184909022,
             "deskCurrentPath": "",
             "deskExpandedPaths": [
               "desktop",
@@ -30,7 +30,7 @@
             "previewTabs": []
           },
           "pwa": {
-            "updatedAt": 1782121923018,
+            "updatedAt": 1782433782855,
             "deskCurrentPath": "",
             "deskExpandedPaths": [],
             "deskSelectedPath": "",

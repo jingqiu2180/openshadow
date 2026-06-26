@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const SS_DIR = 'D:/screenshots/remu-phase4';
+const SS_DIR = 'D:/screenshots/openshadow-phase4';
 if (!fs.existsSync(SS_DIR)) fs.mkdirSync(SS_DIR, { recursive: true });
 
 const log = (...a) => console.log(`[${new Date().toISOString()}]`, ...a);
@@ -457,7 +457,7 @@ const ss = async (page, name) => {
   // ===== TEST 36: 拖拽上传 =====
   log('\n--- [TEST-36] 拖拽上传 ---');
   // 创建一个测试文件
-  const testFilePath = 'D:/src/aicoding/remu/desktop/test-upload.txt';
+  const testFilePath = 'D:/src/aicoding/openshadow/desktop/test-upload.txt';
   fs.writeFileSync(testFilePath, 'This is a test file for drag-and-drop upload.');
   
   const dropZone = await page.evaluate(() => {

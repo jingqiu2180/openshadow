@@ -1,4 +1,4 @@
-# remu 全功能深度测试报告
+# openshadow 全功能深度测试报告
 生成时间: 2026-06-22 10:11
 
 ## 测试概览
@@ -31,7 +31,7 @@
 ## UI 精细化对齐进度
 
 ### 已完成的对齐工作
-1. ✅ **styles.css 合并** — 将 openhanako 的完整设计系统（4024 行）合并到 remu
+1. ✅ **styles.css 合并** — 将 openhanako 的完整设计系统（4024 行）合并到 openshadow
    - 设计系统结构 Token（间距、圆角、动效、字体）
    - 纸质纹理系统
    - 基础重置（box-sizing、scrollbar、user-select 等）
@@ -123,7 +123,7 @@
 3. 优化性能（减少资源数量）
 
 ### 方案 B：继续对齐其他 UI 组件
-1. 逐一对比 `settings/tabs/*.tsx` 在 openhanako 和 remu 中的差异
+1. 逐一对比 `settings/tabs/*.tsx` 在 openhanako 和 openshadow 中的差异
 2. 根据差异进行精细化对齐
 3. 运行回归测试，确保对齐后没有引入新的 Bug
 
@@ -151,7 +151,7 @@
 
 ## 附录：合并的样式定义
 
-从 openhanako 的 `styles.css`（4024 行）合并到 remu 的 `styles.css`：
+从 openhanako 的 `styles.css`（4024 行）合并到 openshadow 的 `styles.css`：
 1. 设计系统结构 Token（`:root` 块，第 7-91 行）
 2. 纸质纹理系统（第 93-153 行）
 3. 基础重置（第 155-237 行）
@@ -161,7 +161,7 @@
 7. App 布局样式（第 451-500+ 行）
 8. 侧边栏样式（第 481-500+ 行）
 
-保留的 remu 特有变量：
+保留的 openshadow 特有变量：
 - `--chat-scrollbar-bottom-inset: 80px;`（在 `:root` 块中）
 
 ---

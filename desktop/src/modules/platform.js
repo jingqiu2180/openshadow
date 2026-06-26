@@ -37,8 +37,42 @@
       // 文件 I/O
       readFile: (p) => fetch(`/api/fs/read?path=${encodeURIComponent(p)}`).then(r => r.ok ? r.text() : null),
       writeFile: async () => false,
-      selectFolder: async () => null,
-      selectFiles: async () => [],
+      // openshadow 修复：转发到 preload 注入的 IPC（之前硬编码返回 null 导致选择文件夹按钮不可用）
+      selectFolder: async () => {
+        try {
+          if (typeof window.__REM_API__?.selectFolder === 'function') {
+            return await window.__REM_API__.selectFolder();
+          }
+          if (typeof window.hana?.selectFolder === 'function') {
+            return await window.hana.selectFolder();
+          }
+          // 兼容旧版 hana.platform
+          if (typeof window.hana?.platform?.selectFolder === 'function') {
+            return await window.hana.platform.selectFolder();
+          }
+          return null;
+        } catch (e) {
+          console.warn('[platform] selectFolder failed:', e);
+          return null;
+        }
+      },
+      selectFiles: async () => {
+        try {
+          if (typeof window.__REM_API__?.selectFiles === 'function') {
+            return await window.__REM_API__.selectFiles();
+          }
+          if (typeof window.hana?.selectFiles === 'function') {
+            return await window.hana.selectFiles();
+          }
+          if (typeof window.hana?.platform?.selectFiles === 'function') {
+            return await window.hana.platform.selectFiles();
+          }
+          return [];
+        } catch (e) {
+          console.warn('[platform] selectFiles failed:', e);
+          return [];
+        }
+      },
 
       // OS 集成
       openExternal: (url) => { try { window.open(url, "_blank"); } catch {} },

@@ -1,6 +1,6 @@
 import os, re, sys
 
-core_dir = 'D:/src/aicoding/remu/core'
+core_dir = 'D:/src/aicoding/openshadow/core'
 count = 0
 for fname in os.listdir(core_dir):
     if fname.endswith('.ts'):

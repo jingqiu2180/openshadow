@@ -1,8 +1,8 @@
 # openhanako 功能对齐计划
 
-**目标**：将 openhanako 的所有核心功能对齐到 remu 项目
+**目标**：将 openhanako 的所有核心功能对齐到 openshadow 项目
 **参考项目**：D:\src\aicoding\openhanako
-**目标项目**：D:\src\aicoding\remu
+**目标项目**：D:\src\aicoding\openshadow
 **创建时间**：2026-06-17
 **预计工期**：4-6 周
 
@@ -12,7 +12,7 @@
 
 ### 1.1 对齐原则
 
-1. **保留 remu 优势**：MCP 支持、Team 系统、Planner、Coder 等 remu 独有功能全部保留并增强
+1. **保留 openshadow 优势**：MCP 支持、Team 系统、Planner、Coder 等 openshadow 独有功能全部保留并增强
 2. **模块化迁移**：按功能模块逐个对齐，不一次性大改
 3. **兼容性优先**：新功能不影响现有功能
 4. **测试驱动**：每个阶段完成后进行集成测试
@@ -39,11 +39,11 @@
 
 ### 阶段 1：核心 Agent 功能增强（P0）
 
-**目标**：让 remu 的 Agent 达到 openhanako 的完整度
+**目标**：让 openshadow 的 Agent 达到 openhanako 的完整度
 
 **现状对比**：
 - openhanako `agent.ts`：1000+ 行，完整身份/人格/记忆/工具
-- remu `agent.ts`：52 行，仅包装 ChatEngine
+- openshadow `agent.ts`：52 行，仅包装 ChatEngine
 
 **任务清单**：
 
@@ -767,12 +767,12 @@ core/workflow/
 ### 4.2 集成测试
 
 - 测试模块间的集成
-- 参考：`remu/tests/` 现有测试
+- 参考：`openshadow/tests/` 现有测试
 
 ### 4.3 E2E 测试
 
 - 测试完整工作流程
-- 参考：`remu/test-e2e-*.ts` 现有测试
+- 参考：`openshadow/test-e2e-*.ts` 现有测试
 
 ---
 
@@ -806,7 +806,7 @@ core/workflow/
 
 ### 6.2 最终交付物
 
-1. **完整功能的 remu 项目**
+1. **完整功能的 openshadow 项目**
 2. **完整的测试套件**
 3. **完整的文档**
 4. **部署脚本**
@@ -832,7 +832,7 @@ core/workflow/
 - `lib/sandbox/`：沙箱系统
 - `core/computer-use/`：Computer Use
 
-**remu 现有文件**：
+**openshadow 现有文件**：
 
 - `core/agent.ts`：需重写
 - `core/agent-manager.ts`：需增强
@@ -861,7 +861,7 @@ core/workflow/
 }
 ```
 
-**已有依赖**（remu 已安装）：
+**已有依赖**（openshadow 已安装）：
 
 - `@hono/node-server`：✓ 已安装
 - `better-sqlite3`：✓ 已安装
@@ -904,7 +904,7 @@ core/workflow/
 29. `skill` - 技能管理
 30. `team` - 团队协作
 
-**remu 当前支持的工具**（8）：
+**openshadow 当前支持的工具**（8）：
 
 1. `capture_screenshot` ✓
 2. `analyze_screenshot` ✓
@@ -943,13 +943,13 @@ core/workflow/
 
 ## 八、总结
 
-本计划将 openhanako 的所有核心功能对齐到 remu 项目，分为 9 个阶段，预计工期 4-6 周。
+本计划将 openhanako 的所有核心功能对齐到 openshadow 项目，分为 9 个阶段，预计工期 4-6 周。
 
 **关键成功因素**：
 
 1. 严格按照阶段顺序实施
 2. 每个阶段完成后进行完整测试
-3. 保留 remu 的独有功能（MCP、Team、Planner、Coder）
+3. 保留 openshadow 的独有功能（MCP、Team、Planner、Coder）
 4. 持续集成和部署
 
 **下一步**：

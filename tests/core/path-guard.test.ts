@@ -8,7 +8,7 @@ describe('PathGuard', () => {
   const tmpDir = tmpdir()
 
   it('should allow full access in full-access mode', () => {
-    const guard = new PathGuard({ mode: 'full-access', remuHome: '', agentDir: '', workspaceRoots: [], writablePaths: [], allowExternalReads: false })
+    const guard = new PathGuard({ mode: 'full-access', openshadowHome: '', agentDir: '', workspaceRoots: [], writablePaths: [], allowExternalReads: false })
     expect(guard.isFullAccess()).toBe(true)
     expect(guard.check('/etc/passwd', 'read').allowed).toBe(true)
     expect(guard.check('/etc/passwd', 'write').allowed).toBe(true)
@@ -18,7 +18,7 @@ describe('PathGuard', () => {
   it('should grant FULL access to workspace roots', () => {
     const guard = new PathGuard({
       mode: 'restricted',
-      remuHome: '',
+      openshadowHome: '',
       agentDir: '',
       workspaceRoots: [tmpDir],
       writablePaths: [],
@@ -36,7 +36,7 @@ describe('PathGuard', () => {
     const writableDir = join(tmpDir, 'writable-area')
     const guard = new PathGuard({
       mode: 'restricted',
-      remuHome: '',
+      openshadowHome: '',
       agentDir: '',
       workspaceRoots: [],
       writablePaths: [writableDir],
@@ -53,7 +53,7 @@ describe('PathGuard', () => {
   it('should grant READ_ONLY when allowExternalReads is true', () => {
     const guard = new PathGuard({
       mode: 'restricted',
-      remuHome: '',
+      openshadowHome: '',
       agentDir: '',
       workspaceRoots: [],
       writablePaths: [],
@@ -69,7 +69,7 @@ describe('PathGuard', () => {
   it('should BLOCK when allowExternalReads is false', () => {
     const guard = new PathGuard({
       mode: 'restricted',
-      remuHome: '',
+      openshadowHome: '',
       agentDir: '',
       workspaceRoots: [],
       writablePaths: [],
@@ -83,7 +83,7 @@ describe('PathGuard', () => {
   it('should assert allowed and throw on blocked', () => {
     const guard = new PathGuard({
       mode: 'restricted',
-      remuHome: '',
+      openshadowHome: '',
       agentDir: '',
       workspaceRoots: [],
       writablePaths: [],
@@ -96,7 +96,7 @@ describe('PathGuard', () => {
   it('should not throw when assertAllowed passes', () => {
     const guard = new PathGuard({
       mode: 'restricted',
-      remuHome: '',
+      openshadowHome: '',
       agentDir: '',
       workspaceRoots: [tmpDir],
       writablePaths: [],
@@ -119,7 +119,7 @@ describe('PathGuard', () => {
   it('should check isWorkspacePath', () => {
     const guard = new PathGuard({
       mode: 'restricted',
-      remuHome: '',
+      openshadowHome: '',
       agentDir: '',
       workspaceRoots: [tmpDir],
       writablePaths: [],
@@ -133,7 +133,7 @@ describe('PathGuard', () => {
   it('should check isAllowed', () => {
     const guard = new PathGuard({
       mode: 'restricted',
-      remuHome: '',
+      openshadowHome: '',
       agentDir: '',
       workspaceRoots: [tmpDir],
       writablePaths: [],
@@ -147,8 +147,8 @@ describe('PathGuard', () => {
   it('should return policy via getPolicy', () => {
     const policy = {
       mode: 'restricted' as const,
-      remuHome: '/home/remu',
-      agentDir: '/home/remu/agents',
+      openshadowHome: '/home/openshadow',
+      agentDir: '/home/openshadow/agents',
       workspaceRoots: [tmpDir],
       writablePaths: [],
       allowExternalReads: true,

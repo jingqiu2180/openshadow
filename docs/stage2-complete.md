@@ -86,7 +86,7 @@ plugins/community/my-plugin/
   "id": "my-plugin",
   "name": "My Plugin",
   "version": "1.0.0",
-  "description": "My first remu plugin"
+  "description": "My first openshadow plugin"
 }
 ```
 
@@ -150,7 +150,7 @@ export default MyPlugin;
 
 ## 六、与 openhanako 对比
 
-| 功能 | openhanako | remu（阶段2） |
+| 功能 | openhanako | openshadow（阶段2） |
 |------|-------------|---------------|
 | 插件发现 | ✅ 完整 | ✅ 基础实现 |
 | 插件加载 | ✅ 完整 | ✅ 基础实现 |
