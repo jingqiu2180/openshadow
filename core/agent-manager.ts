@@ -1130,3 +1130,21 @@ export class AgentManager {
     return _generateAgentId(utilConfig, name, this._d.agentsDir);
   }
 }
+
+export function createAgentManager(deps: any = {}) {
+  return new AgentManager({
+    agentsDir: deps.agentsDir || '',
+    productDir: deps.productDir || '',
+    userDir: deps.userDir || '',
+    channelsDir: deps.channelsDir || '',
+    getPrefs: deps.getPrefs || (() => ({ get: () => null })),
+    getModels: deps.getModels || (() => ({ getAvailableModels: () => [] })),
+    getHub: deps.getHub || (() => null),
+    getSkills: deps.getSkills || (() => null),
+    getSearchConfig: deps.getSearchConfig || (() => ({})),
+    resolveUtilityConfig: deps.resolveUtilityConfig || (() => ({})),
+    getSharedModels: deps.getSharedModels || (() => ({})),
+    getChannelManager: deps.getChannelManager || (() => null),
+    ...deps,
+  });
+}

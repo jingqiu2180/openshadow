@@ -1,0 +1,12 @@
+{
+  "id": "qwen",
+  "displayName": "qwen",
+  "authType": "api-key",
+  "defaultBaseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "defaultApi": "openai-completions",
+  "models": [
+    "qwen-plus",
+    "qwen-max",
+    "qwen-turbo"
+  ]
+}

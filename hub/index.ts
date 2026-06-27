@@ -241,7 +241,9 @@ export class Hub {
     const routes = [
       { // 桌面端 owner
         match: o => !o.sessionKey && !o.ephemeral && o.role === "owner",
-        handle: () => o.sessionPath
+        handle: () => {
+          console.log('[hub] routing to submitDesktopSessionMessage, sessionPath=', o.sessionPath?.split('/').pop());
+          return o.sessionPath
           ? submitDesktopSessionMessage(this._engine, {
             sessionPath: o.sessionPath,
             text,
@@ -258,7 +260,8 @@ export class Hub {
             displayMessage: o.displayMessage,
             sessionFileRefs: o.sessionFileRefs,
           })
-          : this._engine.prompt(text, { images: o.images, videos: o.videos, audios: o.audios }),
+          : this._engine.prompt(text, { images: o.images, videos: o.videos, audios: o.audios });
+        },
       },
       { // Bridge guest
         match: o => o.sessionKey && o.role === "guest",

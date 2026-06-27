@@ -1,0 +1,6 @@
+{
+  "id": "qwen",
+  "type": "provider-plugin",
+  "schemaVersion": 1,
+  "provider": "qwen"
+}

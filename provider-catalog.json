@@ -4,17 +4,14 @@
     "minimax-token-plan": {
       "api_key": "sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro",
       "models": [
-        {
-          "id": "MiniMax-M3",
-          "name": "MiniMax-M3",
-          "context": null,
-          "maxOutput": null
-        },
+        "MiniMax-M3",
         {
           "id": "MiniMax-M2.1",
           "name": "MiniMax-M2.1"
         }
-      ]
+      ],
+      "base_url": "https://api.minimaxi.com/v1",
+      "api": "openai-completions"
     },
     "minimax": {
       "api_key": "sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro",
@@ -33,6 +30,21 @@
     },
     "test-provider": {
       "api_key": "sk-test"
+    },
+    "deepseek": {
+      "base_url": "https://api.deepseek.com/v1",
+      "api": "openai-completions",
+      "api_key": "<你的 DeepSeek API Key>",
+      "models": [
+        "deepseek-chat",
+        "deepseek-reasoner"
+      ]
+    },
+    "qwen": {
+      "api_key": "<你的 DashScope API Key>"
+    },
+    "glm": {
+      "api_key": "<你的智谱 API Key>"
     }
   },
   "capabilities": {

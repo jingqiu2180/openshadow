@@ -5,7 +5,7 @@
   "type": "module",
   "main": "desktop/bootstrap.cjs",
   "scripts": {
-    "dev": "set \"PATH=%USERPROFILE%\\.workbuddy\\binaries\\node\\versions\\22.22.2;%PATH%\" && tsx watch start.ts",
+    "dev": "tsx watch start.ts",
     "build": "tsc && node scripts/copy-desktop-assets.js",
     "start": "node dist/server/index.js",
     "test": "vitest",

@@ -609,3 +609,7 @@ export class ModelManager {
     return all.filter(m => m.provider === name || m.provider === authKey);
   }
 }
+
+export function createModelManager(opts: any = {}) {
+  return new ModelManager({ hanakoHome: opts.hanakoHome || '' });
+}

@@ -2038,6 +2038,10 @@ export class SessionCoordinator {
       this._session = entry.session;
     }
     entry.lastTouchedAt = Date.now();
+    // 记录首条用户消息作为 session 预览（磁盘 jsonl 不持久化消息）
+    if (!entry._firstUserMessage && text) {
+      entry._firstUserMessage = text.slice(0, 100);
+    }
     if (entry.sessionVisibility !== "plugin_private" && entry.sessionVisibility !== "private") {
       entry.visibleInSessionList = true;
     }
@@ -2073,6 +2077,20 @@ export class SessionCoordinator {
     if (turnContext) this._turnContextBySession.set(sessionPath, turnContext);
     try {
       await entry.session.prompt(text, promptOpts);
+      // prompt 完成后立即 flush 到磁盘：agent.state.messages 需同步到 sessionManager.fileEntries
+      try {
+        const mgr = entry.session?.sessionManager;
+        const agMsgs = entry.session?.agent?.state?.messages || [];
+        if (mgr && agMsgs.length > 0 && mgr.sessionFile) {
+          for (const m of agMsgs) {
+            if (!mgr.fileEntries.some((e: any) => e.type === 'message' && e.message?.id === m.id)) {
+              mgr.fileEntries.push({ type: 'message', message: m });
+            }
+          }
+          mgr._rewriteFile?.();
+          log.log(`[session] flushed ${agMsgs.length} messages after prompt`);
+        }
+      } catch (flushErr) { log.warn(`[session] flush error: ${flushErr?.message || flushErr}`); }
     } finally {
       if (turnContext) this._turnContextBySession.delete(sessionPath);
       engine?.endCurrentTurnNativeMedia?.(nativeMediaTurn);
@@ -3190,6 +3208,32 @@ export class SessionCoordinator {
             s.modelId = metaEntry?.modelId || null;
             s.modelProvider = null;
           }
+          // 如果内存里有活跃 session，用真实消息数覆盖磁盘投影（磁盘 jsonl 可能没 flush）
+          if (runtimeEntry?.session) {
+            try {
+              // 优先用记录的 _firstUserMessage
+              if (runtimeEntry._firstUserMessage) {
+                s.firstMessage = runtimeEntry._firstUserMessage;
+              }
+              const msgs = runtimeEntry.session?.agent?.state?.messages
+                || runtimeEntry.session?.sessionManager?.buildSessionContext?.()?.messages
+                || [];
+              if (msgs.length > 0) {
+                s.messageCount = msgs.length;
+                if (!s.firstMessage || s.firstMessage === '(no messages)') {
+                  for (const m of msgs) {
+                    const c = m?.content;
+                    const text = typeof c === 'string' ? c
+                      : Array.isArray(c) ? c.filter(p => p?.type === 'text').map(p => p.text).join('')
+                      : '';
+                    if (text) { s.firstMessage = text; break; }
+                  }
+                }
+              } else if (runtimeEntry._firstUserMessage && s.messageCount === 0) {
+                s.messageCount = 1; // 至少有 1 条用户消息
+              }
+            } catch {}
+          }
           if (!sessionMatchesListOptions(s, options)) continue;
           visibleSessions.push(s);
         }
@@ -3220,12 +3264,33 @@ export class SessionCoordinator {
       const projected = {
         path: sessionPath,
         title: null,
-        firstMessage: "",
+        firstMessage: (() => {
+          try {
+            if (entry._firstUserMessage) return entry._firstUserMessage;
+            const msgs = entry.session?.agent?.state?.messages
+              || entry.session?.sessionManager?.buildSessionContext?.()?.messages
+              || [];
+            for (const m of msgs) {
+              const c = m?.content;
+              const text = typeof c === 'string' ? c
+                : Array.isArray(c) ? c.filter(p => p?.type === 'text').map(p => p.text).join('')
+                : '';
+              if (text) return text;
+            }
+          } catch {}
+          return "";
+        })(),
         modified: new Date(entry.lastTouchedAt || Date.now()),
         // 内存占位投影没有磁盘修订点；revision=null 表示「未知」，
         // 前端 reconcile 对 null 不做盲目重拉。
         revision: null,
-        messageCount: 0,
+        messageCount: (() => {
+          try {
+            return entry.session?.agent?.state?.messages?.length
+              ?? entry.session?.sessionManager?.buildSessionContext?.()?.messages?.length
+              ?? 0;
+          } catch { return 0; }
+        })(),
         cwd: entry.session?.sessionManager?.getCwd?.() || "",
         agentId: entry.agentId || this._d.getActiveAgentId(),
         agentName: agent?.agentName || agent?.name || entry.agentId || null,

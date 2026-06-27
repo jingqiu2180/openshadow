@@ -1462,6 +1462,7 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
                 return;
               }
               try {
+                console.log(`[chat] hub.send called, sessionPath=${promptSessionPath}, text=${promptText.substring(0, 30)}`);
                 await hub.send(promptText, {
                   sessionPath: promptSessionPath,
                   clientMessageId: msg.clientMessageId,
@@ -1482,6 +1483,21 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
                     : err.message;
                   wsSend(ws, { type: "error", message: errMessage, sessionPath: promptSessionPath });
                 }
+              } finally {
+                // 每轮对话后强制 flush session 到磁盘
+                try {
+                  const s = engine.getSessionByPath?.(promptSessionPath);
+                  const mgr = s?.sessionManager;
+                  // agent.state.messages 在 promptSession 后被清，消息在 sessionManager.fileEntries 里
+                  const entries = mgr?.fileEntries || [];
+                  const msgs = entries.filter((e: any) => e.type === 'message');
+                  console.log('[chat] flush: session=', !!s, 'mgr=', !!mgr, 'entriesLen=', entries.length, 'msgEntries=', msgs.length, 'sessionFile=', mgr?.sessionFile?.split('/').pop());
+                  if (mgr && entries.length > 0 && mgr.sessionFile) {
+                    const { writeFileSync } = await import('fs');
+                    writeFileSync(mgr.sessionFile, entries.map((e: any) => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
+                    console.log('[chat] flushed', msgs.length, 'messages to', mgr.sessionFile?.split('/').pop());
+                  }
+                } catch (flushErr) { console.error('[chat] flush error:', flushErr); }
               }
             }
           })().catch((err) => {

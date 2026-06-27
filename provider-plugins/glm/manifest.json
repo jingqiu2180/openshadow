@@ -1,0 +1,6 @@
+{
+  "id": "glm",
+  "type": "provider-plugin",
+  "schemaVersion": 1,
+  "provider": "glm"
+}

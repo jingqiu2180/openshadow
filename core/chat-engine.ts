@@ -151,6 +151,8 @@ export class ChatEngine {
         )
       }
       modelName = pickModel(provider)
+      const keyPreview = provider.apiKey ? provider.apiKey.substring(0, 10) + '...' + provider.apiKey.substring(provider.apiKey.length - 4) : 'EMPTY'
+      console.log(`[chat-engine] createFromConfig: provider=${provider.id}, model=${modelName}, baseUrl=${provider.baseUrl}, apiKey=${keyPreview}`)
       llmClient = createProviderClient(provider)
     } else {
       const agentConfig = getAgentConfig(agentId)

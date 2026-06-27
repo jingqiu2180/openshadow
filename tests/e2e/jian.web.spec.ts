@@ -95,6 +95,9 @@ test.describe('Jian: 笺记事板', () => {
   })
 
   test('笺编辑器内容可以保存到 jian.md', async ({ page }) => {
+    // 用默认工作区（mountId=default），后端肯定能写
+    const mountId = 'default'
+
     const editor = page.locator('#jianSidebar textarea').first()
     await expect(editor).toBeVisible({ timeout: 3000 })
 
@@ -105,28 +108,35 @@ test.describe('Jian: 笺记事板', () => {
     await expect(editor).toHaveValue(/E2E 测试保存内容 2026/, { timeout: 3000 })
 
     // 直接调用保存 API（E2E 测试不依赖 autosave 时序）
-    const saveResult = await page.evaluate(async () => {
+    const saveResult = await page.evaluate(async (mid) => {
       const res = await fetch('/api/workbench/actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'writeText',
-          mountId: 'local_fs_6b3cfc0869f9d5e2',
+          mountId: mid,
           subdir: '',
           name: 'jian.md',
           content: 'E2E 测试保存内容 2026',
         }),
       })
-      return { ok: res.ok, status: res.status }
-    })
+      console.log('[jian-debug] save response status:', res.status)
+      const text = await res.text()
+      console.log('[jian-debug] save response body:', text.slice(0, 200))
+      return { ok: res.ok, status: res.status, body: text }
+    }, mountId)
+    console.log('[jian-debug] saveResult:', JSON.stringify(saveResult))
+    if (!saveResult.ok) {
+      throw new Error(`Save failed: status=${saveResult.status}, body=${saveResult.body?.slice(0,200)}`)
+    }
     expect(saveResult.ok).toBe(true)
 
     // 验证保存成功：用 GET /workbench/content 读 jian.md 内容
-    const savedContent = await page.evaluate(async () => {
-      const res = await fetch('/api/workbench/content?mountId=local_fs_6b3cfc0869f9d5e2&name=jian.md')
+    const savedContent = await page.evaluate(async (mid) => {
+      const res = await fetch(`/api/workbench/content?mountId=${mid}&name=jian.md`)
       if (!res.ok) return null
       return await res.text()
-    })
+    }, mountId)
     expect(savedContent).toContain('E2E 测试保存内容 2026')
   })
 })

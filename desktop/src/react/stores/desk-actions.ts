@@ -157,6 +157,7 @@ export async function applyStudioWorkspace(workspace: Pick<StudioWorkspace, 'mou
     selectedWorkspaceLabel: label,
     selectedFolder: null,
     workspaceFolders: s.workspaceFolders || [],
+    welcomeVisible: false,
   }));
   void activateWorkspaceDesk(null, { mountId, label, nativeRootPath, reload: false });
   const s = useStore.getState();

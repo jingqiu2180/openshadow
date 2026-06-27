@@ -18,7 +18,13 @@ describe('UsageTracker', () => {
   })
 
   afterEach(() => {
-    if (existsSync(dataDir)) rmSync(dataDir, { recursive: true })
+    // Windows 文件锁：重试 + force 删除
+    if (existsSync(dataDir)) {
+      for (let i = 0; i < 3; i++) {
+        try { rmSync(dataDir, { recursive: true, force: true, maxRetries: 3 }); break; }
+        catch { /* retry */ }
+      }
+    }
   })
 
   it('should record usage', () => {

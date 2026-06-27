@@ -40,7 +40,7 @@ async function setupMockChatWs(page: any, mode: 'default' | 'abort' | 'streaming
         let seq = 1
 
         if (mode === 'abort') {
-          // abort 模式：只发 status:streaming start，不发 text_delta
+          // abort 模式：发 status:streaming start + text_delta，等待客户端 abort
           ws.send(JSON.stringify({
             type: 'status',
             isStreaming: true,
@@ -48,6 +48,16 @@ async function setupMockChatWs(page: any, mode: 'default' | 'abort' | 'streaming
             streamId,
             turnId: streamId,
           }))
+          ws.send(JSON.stringify({
+            type: 'text_delta',
+            delta: '正在生成中，可以点停止...',
+            sessionPath,
+            streamId,
+            seq: seq++,
+          }))
+          // 等待客户端发 abort（在 ws.onMessage 里处理）
+          // 设置一个标记，让后续消息处理能识别 abort 模式
+          ;(ws as any)._abortPending = true
         } else if (mode === 'streaming') {
           // streaming 模式：立即发 text_delta + 短暂 delay + turn_end
           ws.send(JSON.stringify({
@@ -195,9 +205,7 @@ test.describe('Mock Chat: 真实 AI 回复流式渲染', () => {
   })
 
   test.skip('abort flow：用户点击停止按钮', async ({ page }) => {
-    // abort 流程在 mock WS 环境下不可靠：mock 的 status:false 帧几乎同时到达，
-    // UI 来不及渲染停止按钮。需要在真实后端环境下测试。
-    await setupMockChatWs(page, 'streaming')
+    await setupMockChatWs(page, 'abort')
 
     const editor = page.locator('.tiptap').first()
     await editor.click()
@@ -211,8 +219,6 @@ test.describe('Mock Chat: 真实 AI 回复流式渲染', () => {
   })
 
   test.skip('streaming state：流式传输时显示文本', async ({ page }) => {
-    // streaming 模式需要 unroute + routeWebSocket，但会破坏已建立的 WS。
-    // 暂时跳过，等 Playwright 提供 unroute WebSocket 的方法。
     await setupMockChatWs(page, 'streaming')
 
     const editor = page.locator('.tiptap').first()

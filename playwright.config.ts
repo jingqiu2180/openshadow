@@ -3,7 +3,7 @@
 
 import { defineConfig, devices } from '@playwright/test'
 
-const PORT_STATIC = 4173
+const PORT_STATIC = 5280
 const PORT_SERVER = 3000
 
 export default defineConfig({
@@ -19,9 +19,11 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    // 使用工作区内的浏览器数据目录，避免沙箱拦截
+    userDataDir: '.playwright-data',
   },
 
-  // 自动启动 API server + 静态文件服务器（构建后的前端）
+  // 自动启动 API server + Vite dev server（前端）
   webServer: [
     {
       name: 'openshadow-api',
@@ -33,10 +35,10 @@ export default defineConfig({
       stderr: 'pipe',
     },
     {
-      name: 'static',
-      command: 'node tests/e2e/static-server.js',
+      name: 'vite',
+      command: 'node_modules/.bin/vite --config desktop/vite.config.ts',
       url: `http://127.0.0.1:${PORT_STATIC}`,
-      timeout: 10000,
+      timeout: 30000,
       reuseExistingServer: true,
       stdout: 'pipe',
       stderr: 'pipe',

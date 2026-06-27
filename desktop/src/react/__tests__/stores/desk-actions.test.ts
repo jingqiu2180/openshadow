@@ -1101,3 +1101,148 @@ describe('desk-actions workspace roots', () => {
     expect(useStore.getState().deskSelectedPath).toBe('');
   });
 });
+
+// ================================================================
+// Regression suite: applyStudioWorkspace
+// Root cause: 工作区添加后 WelcomeScreen 没隐藏 → 用户"没反应"
+// Fix: 在 applyStudioWorkspace 的 setState 里加 welcomeVisible: false
+// ================================================================
+
+describe('desk-actions: applyStudioWorkspace (regression)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    delete (globalThis as any).document;
+    mockHanaFetch.mockReset();
+    mockHanaFetch.mockImplementation(async (url: string) => {
+      if (url.startsWith('/api/preferences/workspace-ui-state')) return jsonResponse({ state: null });
+      if (url.startsWith('/api/desk/jian')) return jsonResponse({ content: null });
+      if (url.startsWith('/api/workbench/files')) {
+        return jsonResponse({
+          mountId: 'mount_workspace_1',
+          mount: { label: 'Test Workspace' },
+          files: [{ name: 'README.md', isDir: false }],
+        });
+      }
+      if (url.startsWith('/api/workbench/content')) {
+        return jsonResponse({ content: '# Test\n' });
+      }
+      return jsonResponse({});
+    });
+    (globalThis as any).window = {
+      t: (key: string) => key,
+      platform: {},
+    };
+    useStore.setState({
+      serverPort: 62950,
+      welcomeVisible: true,
+      selectedWorkspaceMountId: null,
+      selectedWorkspaceLabel: null,
+      selectedFolder: null,
+      workspaceFolders: [],
+      deskBasePath: '',
+      deskWorkspaceMountId: null,
+      deskFiles: [],
+      pendingNewSession: false,
+      currentSessionPath: '/old/session',
+    } as never);
+  });
+
+  it('hides WelcomeScreen when applying studio workspace (Rem fix #5)', async () => {
+    const { applyStudioWorkspace } = await import('../../stores/desk-actions');
+    await applyStudioWorkspace({
+      mountId: 'mount_workspace_1',
+      label: 'Test Workspace',
+      nativeRootPath: 'D:\\test\\workspace',
+    });
+
+    const state = useStore.getState();
+    expect(state.welcomeVisible).toBe(false);  // 关键回归点
+  });
+
+  it('sets selectedWorkspaceMountId', async () => {
+    const { applyStudioWorkspace } = await import('../../stores/desk-actions');
+    await applyStudioWorkspace({
+      mountId: 'mount_workspace_1',
+      label: 'Test Workspace',
+    });
+
+    expect(useStore.getState().selectedWorkspaceMountId).toBe('mount_workspace_1');
+  });
+
+  it('clears selectedFolder when switching to mount-based workspace', async () => {
+    useStore.setState({ selectedFolder: '/old/path' } as never);
+    const { applyStudioWorkspace } = await import('../../stores/desk-actions');
+    await applyStudioWorkspace({
+      mountId: 'mount_workspace_1',
+      label: 'Test',
+    });
+
+    expect(useStore.getState().selectedFolder).toBeNull();
+  });
+
+  it('preserves existing workspaceFolders', async () => {
+    useStore.setState({ workspaceFolders: ['/extra1', '/extra2'] } as never);
+    const { applyStudioWorkspace } = await import('../../stores/desk-actions');
+    await applyStudioWorkspace({
+      mountId: 'mount_ws',
+      label: 'Test',
+    });
+
+    expect(useStore.getState().workspaceFolders).toEqual(['/extra1', '/extra2']);
+  });
+
+  it('falls back to mountId when label is empty/whitespace', async () => {
+    const { applyStudioWorkspace } = await import('../../stores/desk-actions');
+    await applyStudioWorkspace({
+      mountId: 'mount_ws',
+      label: '   ',
+    });
+
+    expect(useStore.getState().selectedWorkspaceLabel).toBe('mount_ws');
+  });
+
+  it('trims whitespace around label', async () => {
+    const { applyStudioWorkspace } = await import('../../stores/desk-actions');
+    await applyStudioWorkspace({
+      mountId: 'mount_ws',
+      label: '  My Workspace  ',
+    });
+
+    expect(useStore.getState().selectedWorkspaceLabel).toBe('My Workspace');
+  });
+
+  it('does nothing when mountId is empty/null', async () => {
+    useStore.setState({ welcomeVisible: true } as never);
+    const { applyStudioWorkspace } = await import('../../stores/desk-actions');
+    await applyStudioWorkspace({ mountId: '', label: 'Empty' });
+
+    expect(useStore.getState().welcomeVisible).toBe(true);
+    expect(useStore.getState().selectedWorkspaceMountId).toBeNull();
+  });
+
+  it('creates new pending session after workspace switch', async () => {
+    const { applyStudioWorkspace } = await import('../../stores/desk-actions');
+    await applyStudioWorkspace({
+      mountId: 'mount_ws',
+      label: 'Test',
+    });
+
+    const state = useStore.getState();
+    expect(state.pendingNewSession).toBe(true);
+    expect(state.currentSessionPath).toBeNull();
+  });
+
+  it('loads workbench files via /api/workbench/files with mountId', async () => {
+    const { applyStudioWorkspace } = await import('../../stores/desk-actions');
+    await applyStudioWorkspace({
+      mountId: 'mount_workspace_1',
+      label: 'Test',
+    });
+
+    // wait microtasks
+    await new Promise(r => setTimeout(r, 50));
+
+    const calls = mockHanaFetch.mock.calls.map(c => c[0]);
+    expect(calls.some(url => url.startsWith('/api/workbench/files') && url.includes('mountId=mount_workspace_1'))).toBe(true);
+  });
+});

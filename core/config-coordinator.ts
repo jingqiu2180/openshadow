@@ -613,3 +613,7 @@ export class ConfigCoordinator {
   _prefs() { return this._d.getPrefs().getPreferences(); }
   _savePrefs(prefs) { return this._d.getPrefs().savePreferences(prefs); }
 }
+
+export function createConfigCoordinator(deps: any = {}) {
+  return new ConfigCoordinator({ ...deps });
+}

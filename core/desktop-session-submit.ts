@@ -247,6 +247,23 @@ export async function submitDesktopSessionMessage(engine: any, opts: {
       });
       await engine.promptSession(sessionPath, promptText, promptOpts);
     } finally {
+      // 每轮对话完成后强制 flush session 到磁盘（无论 promptSession 成功还是抛错）
+      try {
+        const mgr = session?.sessionManager;
+        const msgs = session?.agent?.state?.messages || [];
+        console.log('[desktop-session-submit] flush check: mgr=', !!mgr, 'msgsLen=', msgs.length, 'sessionFile=', mgr?.sessionFile, 'persist=', mgr?.persist);
+        if (mgr && msgs.length > 0 && mgr.sessionFile) {
+          const existingEntries = Array.isArray(mgr.fileEntries) ? [...mgr.fileEntries] : [];
+          for (const m of msgs) {
+            if (!existingEntries.some((e: any) => e.type === 'message' && e.message?.id === m.id)) {
+              existingEntries.push({ type: 'message', message: m });
+            }
+          }
+          const { writeFileSync } = await import('fs');
+          writeFileSync(mgr.sessionFile, existingEntries.map((e: any) => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
+          console.log('[desktop-session-submit] flushed', msgs.length, 'messages to', mgr.sessionFile);
+        }
+      } catch (e) { console.error('[desktop-session-submit] flush error:', e); }
       try { unsub?.(); } catch {}
       engine.emitEvent?.({ type: "session_status", isStreaming: false }, sessionPath);
     }

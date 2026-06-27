@@ -129,6 +129,9 @@ async function start() {
     console.log('[shadow] Engine initialized')
 
     // ── 注入 MiniMax Token Plan 模型（占位 ModelRegistry 不持久化）──
+    // 关键：baseUrl 必须用 OpenAI 兼容端点（/v1/chat/completions）。
+    // MiniMax 的 Anthropic 端点（/anthropic/v1/messages）走的是 Messages API，
+    // 跟 OpenAI 客户端不兼容。这里直接走 OpenAI 兼容端点最稳。
     const mmModels = [
       { id: 'MiniMax-M3', name: 'MiniMax-M3', provider: 'minimax-token-plan', context: null, maxOutput: null },
     ]
@@ -151,6 +154,9 @@ async function start() {
       }
       // 注入 API key + 注册 provider
       if (models?.providerRegistry) {
+        // 重写 minimax-token-plan 为 OpenAI 兼容端点（/v1/chat/completions）
+        // 因为 chat-engine 走的是 OpenAI SDK，Anthropic Messages 端点会 404
+        try { models.providerRegistry.saveProvider('minimax-token-plan', { base_url: 'https://api.minimaxi.com/v1', api: 'openai-completions', api_key: 'sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro', models: ['MiniMax-M3', 'MiniMax-M2.1'] }) } catch(e) { console.log('[shadow] saveProvider minimax-token-plan err:', (e as any).message) }
         models.providerRegistry.updateModelEntry('minimax-token-plan', 'MiniMax-M2.1', { name: 'MiniMax-M2.1' })
         // 注册中国模型 provider（持久化到 added-models.yaml）
         try { models.providerRegistry.saveProvider('deepseek', { base_url: 'https://api.deepseek.com/v1', api: 'openai-completions', api_key: '<你的 DeepSeek API Key>', models: ['deepseek-chat', 'deepseek-reasoner'] }) } catch(e) {}
@@ -158,12 +164,14 @@ async function start() {
         try { models.providerRegistry.saveProvider('glm', { base_url: 'https://open.bigmodel.cn/api/paas/v4', api: 'openai-completions', api_key: '<你的智谱 API Key>', models: ['glm-4-plus', 'glm-4-flash'] }) } catch(e) {}
       }
       // 注入 provider API key 到 authStorage
+      // minimax-token-plan 用 MiniMax 的 OpenAI 兼容端点（/v1/chat/completions）
+      // 因为 server 端 chat-engine 走的是 OpenAI SDK，不会自动转 Anthropic Messages 协议
       const authStorage = (engine as any).authStorage
       if (authStorage?.set) {
         authStorage.set('minimax-token-plan', {
-          api_key: '<你的 MiniMax API Key>',
-          base_url: 'https://token-plan-cn.xiaomimimo.com/v1',
-          api: 'anthropic-messages',
+          api_key: 'sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro',
+          base_url: 'https://api.minimaxi.com/v1',
+          api: 'openai-completions',
         })
         authStorage.set('deepseek', {
           api_key: '<你的 DeepSeek API Key>',
@@ -183,7 +191,7 @@ async function start() {
       }
       // 注入到 pi-sdk session 创建层
       // 用 config.json 里的 minimax provider 配置（OpenAI 兼容端点）
-      setMiniMaxConfig('<你的 MiniMax API Key>', 'https://api.minimax.chat/v1')
+      setMiniMaxConfig('sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro', 'https://api.minimaxi.com/v1')
       console.log('[shadow] MiniMax API config injected to pi-sdk')
       // 手动设置默认模型（因为 _modelRegistry 是占位实现，syncAndRefresh() 没法自动初始化）
       if (models && mmModels.length > 0) {
@@ -276,6 +284,21 @@ async function start() {
   app.route('/api', createStudioWorkspacesRoute(engine))
   app.route('/api', createUploadRoute(engine))
   app.route('/api', createUsageRoute(engine))
+
+  // ── Session permission mode ──
+  app.get('/api/session-permission-mode', async (c) => {
+    return c.json({
+      mode: (engine as any).permissionMode || 'operate',
+      accessMode: (engine as any).accessMode || 'operate',
+      defaultMode: (engine as any).getSessionPermissionModeDefault?.() || 'ask',
+    });
+  });
+
+  app.post('/api/session-permission-mode', async (c) => {
+    const { mode } = await c.req.json().catch(() => ({}));
+    (engine as any).setSessionPermissionMode?.(mode);
+    return c.json({ ok: true, mode });
+  });
   app.route('/api', createWebAuthRoute({
     hanakoHome: engine.hanakoHome,
     authService: { verify: async () => null, getUser: () => null },

@@ -125,6 +125,27 @@ function restoreLegacyCss(): Plugin {
 }
 
 /**
+ * 修复 Vite dev server 对 .css 文件返回错误 MIME 类型的问题。
+ * preserveLegacyCss/restoreLegacyCss 插件处理后，Vite 可能把 .css 当成 JS 服务。
+ * 这个插件在 configureServer 里插入中间件，强制 .css 请求的 Content-Type 为 text/css。
+ */
+function fixCssMimeType(): Plugin {
+  return {
+    name: 'hana-fix-css-mime-type',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const url = (req.url || '').split('?')[0];
+        if (url.endsWith('.css')) {
+          res.setHeader('Content-Type', 'text/css');
+        }
+        next();
+      });
+    },
+  };
+}
+
+/**
  * Vite dev server 直接服务 source HTML 时，theme helper 不能再依赖 dist-renderer/lib/theme.js。
  * 开发模式把旧 script 标签重写到 source theme.ts，保持和 build:theme 同一份实现。
  */
@@ -304,6 +325,7 @@ export default defineConfig({
     injectDevWebConfig(),
     serveMobilePwaStaticFiles(),
     useSourceThemeInDev(),
+    fixCssMimeType(),
     restoreLegacyCss(),
     copyLegacyFiles(),
   ],
@@ -334,13 +356,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'desktop/src/index.html'),
-        mobile: path.resolve(__dirname, 'desktop/src/mobile.html'),
-        settings: path.resolve(__dirname, 'desktop/src/settings.html'),
-        'quick-chat': path.resolve(__dirname, 'desktop/src/quick-chat.html'),
-        onboarding: path.resolve(__dirname, 'desktop/src/onboarding.html'),
-        splash: path.resolve(__dirname, 'desktop/src/splash.html'),
-        'browser-viewer': path.resolve(__dirname, 'desktop/src/browser-viewer.html'),
-        'viewer-window': path.resolve(__dirname, 'desktop/src/viewer-window.html'),
       },
     },
   },
