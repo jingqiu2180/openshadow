@@ -568,6 +568,7 @@ export function createSkillsRoute(engine) {
 
   // POST /skills/translate — 用工具模型翻译技能名
   route.post("/skills/translate", async (c) => {
+    try {
     const body = await safeJson(c);
     const { names, lang, agentId } = body;
     if (!Array.isArray(names) || !lang || lang === "en") {
@@ -581,6 +582,10 @@ export function createSkillsRoute(engine) {
     }
     const skills = engine.getAllSkills(agentId);
     return c.json(await engine.translateSkillNames(names, lang, { agentId, skills }));
+    } catch (err) {
+      log.error(`translate failed: ${err?.stack || err}`);
+      return c.json({ error: err?.message || "translate failed" }, 500);
+    }
   });
 
   return route;

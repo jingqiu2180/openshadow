@@ -432,7 +432,8 @@ function isSettingsWriteRoute(verb, routePath) {
 function isSkillSettingsReadRoute(verb, routePath) {
   if (verb !== "GET") return false;
   return routePath === "/api/skills"
-    || routePath === "/api/skills/bundles";
+    || routePath === "/api/skills/bundles"
+    || (verb === "POST" && routePath === "/api/skills/translate");
 }
 
 function isSkillSettingsWriteRoute(verb, routePath) {
