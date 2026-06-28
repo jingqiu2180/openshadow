@@ -62,7 +62,7 @@ async function setupWsPromptCapture(page: any): Promise<{
 
   return {
     getPrompts: () => [...captured],
-    sendMockReply: async (replyText: string) => {
+    sendMockReply: async (replyText: string, sessionPath: string = '') => {
       if (!mockWs) return
       const streamId = `mock-${Date.now()}`
       let seq = 1
@@ -71,18 +71,18 @@ async function setupWsPromptCapture(page: any): Promise<{
         mockWs.send(JSON.stringify({
           type: 'text_delta',
           delta: ch,
-          sessionPath: '',
+          sessionPath,
           streamId,
           seq: seq++,
         }))
       }
-      mockWs.send(JSON.stringify({ type: 'turn_end', sessionPath: '', streamId, seq: seq++ }))
+      mockWs.send(JSON.stringify({ type: 'turn_end', sessionPath, streamId, seq: seq++ }))
       mockWs.send(JSON.stringify({ type: 'status', isStreaming: false, streamId: null, turnId: null }))
     },
   }
 }
 
-test.describe.skip('Jian 注入验证：jian 内容是否进 LLM prompt', () => {
+test.describe('Jian 注入验证：jian 内容是否进 LLM prompt', () => {
   test('jian 写入特殊标记后，prompt 文本应该包含该标记', async ({ page }) => {
     const capture = await setupWsPromptCapture(page)
 
@@ -208,14 +208,24 @@ test.describe.skip('Jian 注入验证：jian 内容是否进 LLM prompt', () => 
     await page.keyboard.type('hi')
     await page.keyboard.press('Enter')
 
-    // 等 prompt 进来
-    await page.waitForTimeout(1500)
+    // 等 prompt 进来 + session 创建完成
+    await page.waitForTimeout(3000)
 
-    // 主动发 mock 回复（模拟 agent 已经"看到了" jian 内容的假想场景）
-    await capture.sendMockReply('你说的是 BLUE_FROG_SECRET_2026')
+    // 从 DOM 拿真实 sessionPath（避免 fetch 失败导致 session 没创建）
+    let sessionPath = await page.evaluate(() => {
+      const el = document.querySelector('[data-session-path]')
+      return el?.getAttribute('data-session-path') || ''
+    })
+    // 如果还是空，伪造一个固定值（前端 streamBufferManager 需要非空 sessionPath）
+    if (!sessionPath) sessionPath = 'mock-session-path'
+
+    console.log('[test] sendMockReply sessionPath =', sessionPath)
+
+    // 主动发 mock 回复（带 sessionPath 才能让 streamBufferManager 渲染）
+    await capture.sendMockReply('你说的是 BLUE_FROG_SECRET_2026', sessionPath)
 
     // 等 mock 流式渲染完成
-    await page.waitForTimeout(1500)
+    await page.waitForTimeout(2000)
 
     // 验证 UI 显示了 mock 回复
     await expect(page.locator('text=BLUE_FROG_SECRET_2026').first()).toBeVisible({ timeout: 5000 })

@@ -76,6 +76,11 @@ export const useStore = create<StoreState>()((set, _get, _api) => ({
   ...createScreenshotSlice(set),
 }));
 
+// 暴露到 window 方便 E2E 测试调试
+if (typeof window !== 'undefined') {
+  (window as any).useStore = useStore;
+}
+
 // Re-export slice types
 export type {
   ConnectionSlice,

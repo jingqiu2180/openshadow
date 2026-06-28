@@ -58,6 +58,8 @@ export function connectWebSocket(port?: string, token?: string): void {
 
   const url = buildConnectionWsUrl(connection, '/ws');
   _ws = new WebSocket(url);
+  // 暴露到 window 方便 E2E 测试
+  (window as any).__openshadowWS__ = _ws;
 
   _ws.onopen = () => {
     _wsRetryDelay = 1000;

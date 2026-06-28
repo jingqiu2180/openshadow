@@ -1125,9 +1125,123 @@
       "requestPermissionsFailed": "请求系统权限失败",
       "refresh": "刷新"
     },
-    "agent": "智能体",
-    "general": "通用",
-    "about": "关于",
+    "agent": {
+      "agentNameHint": "他们怎么称呼自己",
+      "cancel": "取消",
+      "changeAvatar": "更换",
+      "chatModel": "对话模型",
+      "chatModelHint": "用于对话和任务的模型",
+      "confirm": "确认",
+      "createFailed": "创建失败",
+      "createTitle": "新建助手",
+      "creating": "创建中…",
+      "deleteBtn": "删除助手",
+      "deleteCancel": "取消",
+      "deleteConfirm": "永久删除",
+      "deleteDesc1": "这将永久删除所有配置、记忆和对话。此操作不可撤销。",
+      "deleteFailed": "删除失败",
+      "deleteNext": "继续",
+      "deletePlaceholder": "输入助手名称",
+      "exportAgent": "导出助手",
+      "generatingCardPreview": "正在生成角色卡预览",
+      "generatingPreview": "正在生成预览",
+      "identity": "身份",
+      "identityHint": "简短描述这个助手是谁、擅长什么。其他助手用它来认识他们。",
+      "ishiki": "意志",
+      "ishikiHint": "定义助手的性格、语气和行为方式。与 Yuan 分开，不影响 Yuan。",
+      "lastAgent": "必须保留至少一个助手",
+      "modelUnavailableHint": "当前模型不再可用。请选择其他模型，或重新保存供应商配置并读取模型。",
+      "namePlaceholder": "给他们起个名字",
+      "nameRequired": "请输入名称",
+      "publicIshiki": "公开意志",
+      "publicIshikiHint": "出于隐私考虑，助手在与访客对话时无法访问记忆、你的个人信息或电脑上的任何文件和工具。\n你可以在这里设置助手对访客的回复风格和准则。",
+      "setPrimary": "设为主助手",
+      "setPrimaryFailed": "设置主助手失败",
+      "switchFailed": "切换失败",
+      "title": "助手",
+      "tools": {
+        "description": "工具开关在重启或开始对话后生效。已有对话保持使用它们开始时的工具集。",
+        "title": "工具",
+        "items": {
+          "automation": {
+            "label": "自动化",
+            "summary": "允许助手创建定时通知和插件动作"
+          },
+          "beautify": {
+            "label": "小花美术",
+            "summary": "允许助手生成文档封面和美化效果"
+          },
+          "browser": {
+            "label": "浏览器",
+            "summary": "控制无头浏览器浏览网页"
+          },
+          "dm": {
+            "label": "私信",
+            "summary": "向其他助手发送一对一消息"
+          },
+          "install_skill": {
+            "label": "安装技能",
+            "summary": "从 GitHub 或技能库安装新技能"
+          },
+          "office": {
+            "label": "Office",
+            "summary": "允许助手读取文档或将 HTML 转 PDF"
+          },
+          "update_settings": {
+            "label": "修改设置",
+            "summary": "允许助手修改应用配置"
+          },
+          "workflow": {
+            "label": "工作流",
+            "summary": "允许助手编排多 agent 工作流脚本作为后台任务"
+          }
+        }
+      },
+      "yuanHint": "\"元\" 是助手的潜意识。从这里开始，构建你独特的伙伴。"
+    },
+    "general": {
+      "keepAwake": "锁屏时保持运行",
+      "launchAtLogin": "登录时启动",
+      "notifications": {
+        "title": "通知",
+        "turnCompletion": "输入法完成通知",
+        "turnCompletionNever": "从不",
+        "turnCompletionWhenSessionUnfocused": "会话未聚焦时",
+        "turnCompletionWhenUnfocused": "应用未聚焦时"
+      },
+      "quickChat": {
+        "minutes": "分钟",
+        "recording": "按快捷键...",
+        "registrationFailed": "快捷键已被占用",
+        "restoreDefault": "恢复默认",
+        "reuseTimeout": "保留旧输入",
+        "reuseTimeoutHint": "迷你窗口隐藏此时间后，快捷键会打开一个新的输入框。",
+        "shortcut": "打开快捷键",
+        "shortcutHint": "点击后按下新的按键组合。Esc 取消录制。",
+        "title": "快速聊天"
+      },
+      "startup": {
+        "title": "启动与后台"
+      }
+    },
+    "about": {
+      "autoCheckUpdates": "自动检查更新",
+      "betaUpdates": "接收 Beta 更新",
+      "copyright": "版权",
+      "license": "许可证",
+      "licenseToggle": "许可证全文",
+      "tagline": "住在你电脑里的助手，有很好的记忆。",
+      "title": "关于",
+      "updateCheckBtn": "检查更新",
+      "updateChecking": "正在检查更新…",
+      "updateDiskSpace": "磁盘空间不足，无法下载更新",
+      "updateError": "更新检查失败",
+      "updateInstall": "重启以更新",
+      "updateInstallManualHint": "点击「重启以更新」后安装；退出不会自动安装",
+      "updateInstalling": "正在安装更新。HanaAgent 将自动重启…",
+      "updateLatest": "已经是最新版本",
+      "updateNeedInstall": "请先将 HanaAgent 移到应用程序文件夹"
+    },
     "access": {
       "networkAccess": "局域网访问",
       "mobileAccess": "手机访问",
@@ -1599,7 +1713,8 @@
       "injectAgentsMd": "注入 AGENTS.md",
       "injectAgentsMdDesc": "开启后，新会话会读取当前工作目录到 Git 根目录之间的 AGENTS.md。",
       "injectClaudeMd": "注入 CLAUDE.md",
-      "injectClaudeMdDesc": "开启后，新会话会读取当前工作目录到 Git 根目录之间的 CLAUDE.md。"
+      "injectClaudeMdDesc": "开启后，新会话会读取当前工作目录到 Git 根目录之间的 CLAUDE.md。",
+      "cronAutoApprove": "自动化任务自动审核"
     },
     "toolCaps": {
       "title": "技能安装权限"
