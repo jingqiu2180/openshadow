@@ -16,6 +16,9 @@ test-stage1a.cjs
 
 # Runtime data (database, sessions, memory)
 data/
+agents/*/memory/
+*.db-shm
+*.db-wal
 
 # Test scripts (transient)
 test-*.ts
