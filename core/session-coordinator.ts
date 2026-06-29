@@ -2077,20 +2077,30 @@ export class SessionCoordinator {
     if (turnContext) this._turnContextBySession.set(sessionPath, turnContext);
     try {
       await entry.session.prompt(text, promptOpts);
-      // prompt 完成后立即 flush 到磁盘：agent.state.messages 需同步到 sessionManager.fileEntries
+      // prompt 完成后强制 flush session 到磁盘
       try {
         const mgr = entry.session?.sessionManager;
-        const agMsgs = entry.session?.agent?.state?.messages || [];
-        if (mgr && agMsgs.length > 0 && mgr.sessionFile) {
-          for (const m of agMsgs) {
-            if (!mgr.fileEntries.some((e: any) => e.type === 'message' && e.message?.id === m.id)) {
-              mgr.fileEntries.push({ type: 'message', message: m });
+        if (mgr && mgr.sessionFile) {
+          const agMsgs = entry.session?.agent?.state?.messages || [];
+          const fileMsgEntries = mgr.fileEntries.filter((e: any) => e.type === 'message');
+          console.log('[session-coordinator] post-prompt flush: fileEntries.total=', mgr.fileEntries.length, 'fileEntries.msg=', fileMsgEntries.length, 'agent.messages=', agMsgs.length, 'persist=', mgr.persist, 'flushed=', mgr.flushed);
+          // 从 agent.state.messages 同步到 fileEntries
+          if (agMsgs.length > 0) {
+            for (const m of agMsgs) {
+              if (!mgr.fileEntries.some((e: any) => e.type === 'message' && e.message?.id === m.id)) {
+                mgr.fileEntries.push({ type: 'message', message: m });
+              }
             }
           }
-          mgr._rewriteFile?.();
-          log.log(`[session] flushed ${agMsgs.length} messages after prompt`);
+          // 强制写盘：绕过 _persist 的 hasAssistant 门控
+          if (mgr.fileEntries.length > 1) {
+            const fs = await import('fs');
+            fs.writeFileSync(mgr.sessionFile, mgr.fileEntries.map((e: any) => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
+            mgr.flushed = true;
+            console.log('[session-coordinator] force-wrote', mgr.fileEntries.length, 'entries to', path.basename(mgr.sessionFile));
+          }
         }
-      } catch (flushErr) { log.warn(`[session] flush error: ${flushErr?.message || flushErr}`); }
+      } catch (flushErr) { console.error('[session-coordinator] flush error:', flushErr); }
     } finally {
       if (turnContext) this._turnContextBySession.delete(sessionPath);
       engine?.endCurrentTurnNativeMedia?.(nativeMediaTurn);
