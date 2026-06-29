@@ -4,7 +4,7 @@ import { join } from 'path'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 
 const isDev = !app.isPackaged
-const VITE_DEV_URL = process.env.VITE_DEV_URL ?? 'http://localhost:5173'
+const VITE_DEV_URL = process.env.VITE_DEV_URL ?? 'http://localhost:5280'
 
 /**
  * First-run wizard: if no workspace roots configured, prompt user to select.

@@ -14,7 +14,7 @@ function requireMain() {
   const { join } = require$$1;
   const { readFileSync, writeFileSync, existsSync, mkdirSync } = require$$2;
   const isDev = !app.isPackaged;
-  const VITE_DEV_URL = process.env.VITE_DEV_URL || "http://localhost:5173";
+  const VITE_DEV_URL = process.env.VITE_DEV_URL || "http://localhost:5280";
   const WIZ_DEV_HTML = join(__dirname, "wizard", "index.html");
   const APP_ICON_PATH = join(__dirname, "assets", "rem-avatar.png");
   if (process.platform === "win32") {

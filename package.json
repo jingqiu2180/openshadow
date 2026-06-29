@@ -20,7 +20,7 @@
     "electron": "npm run electron:main && npm run electron:preload && node scripts/copy-desktop-assets.js && node scripts/start-electron.mjs",
     "desktop:vite": "vite --config desktop/vite.config.ts",
     "desktop:build": "vite build --config desktop/vite.config.ts && node -e \"const fs=require('fs'); fs.cpSync('desktop/src/lib','desktop/dist-renderer/lib',{recursive:true}); fs.cpSync('desktop/src/modules','desktop/dist-renderer/modules',{recursive:true}); fs.cpSync('desktop/src/locales','desktop/dist-renderer/locales',{recursive:true}); console.log('Static assets copied.')\"",
-    "electron:dev": "concurrently -k -n server,vite,electron -c blue,magenta,green \"npm run dev\" \"npm run desktop:vite\" \"wait-on tcp:3000 tcp:5173 && node scripts/start-electron.mjs\"",
+    "electron:dev": "concurrently -k -n server,vite,electron -c blue,magenta,green \"npm run dev\" \"npm run desktop:vite\" \"wait-on tcp:3000 tcp:5280 && node scripts/start-electron.mjs\"",
     "electron:build": "npm run build && npm run desktop:build && npm run electron && electron-builder --dir",
     "electron:dist": "npm run build && npm run desktop:build && npm run electron && electron-builder",
     "pack": "npm run electron:build",

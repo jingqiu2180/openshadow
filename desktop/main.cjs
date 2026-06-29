@@ -11,7 +11,7 @@ const { join } = require('path')
 const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
 
 const isDev = !app.isPackaged
-const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5173'
+const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5280'
 const WIZ_DEV_HTML = join(__dirname, 'wizard', 'index.html')
 
 // App icon
