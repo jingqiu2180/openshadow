@@ -236,6 +236,22 @@ export class Hub {
       }
     }
 
+    // ── 文本附件预处理：将非媒体附件（txt/md/json 等）内联到 prompt 中 ──
+    const textAttachments = extractTextAttachments(o.displayMessage);
+    if (textAttachments.length > 0) {
+      const parts: string[] = [];
+      for (const att of textAttachments) {
+        try {
+          const content = await fs.promises.readFile(att.path, "utf-8");
+          const truncated = content.length > 30000 ? content.slice(0, 30000) + "\n...(truncated)" : content;
+          parts.push(`[File: ${att.name || path.basename(att.path)}]\n${truncated}`);
+        } catch { /* skip unreadable files */ }
+      }
+      if (parts.length) {
+        text = `${parts.join("\n\n")}\n\n${text}`;
+      }
+    }
+
     // 路由表：按顺序匹配，第一条命中即执行。
     // 优先级通过位置保证，新增路由在此处显式插入，不依赖散落在各处的 if 顺序。
     const routes = [
@@ -948,4 +964,22 @@ function extensionForVideoMime(mimeType) {
   if (normalized === "video/webm") return ".webm";
   if (normalized === "video/quicktime") return ".mov";
   return ".mp4";
+}
+
+const TEXT_EXTENSIONS = new Set(["txt", "md", "json", "xml", "yaml", "yml", "toml", "csv", "tsv", "log", "html", "css", "js", "jsx", "ts", "tsx", "py", "java", "c", "cpp", "h", "hpp", "rs", "go", "rb", "php", "sh", "bat", "ps1", "sql", "r", "swift", "kt", "scala", "lua", "cfg", "ini", "conf", "env", "gitignore", "dockerfile", "makefile", "cmake"]);
+const TEXT_MIMES = new Set(["text/plain", "text/markdown", "text/csv", "text/html", "text/xml", "application/json", "application/xml", "application/yaml", "application/x-yaml", "application/toml"]);
+
+function isTextAttachment(attachment) {
+  if (!attachment?.path || attachment.isDir) return false;
+  const ext = path.extname(attachment.name || attachment.path).toLowerCase().replace(/^\./, "");
+  if (TEXT_EXTENSIONS.has(ext)) return true;
+  const mime = (attachment.mimeType || "").toLowerCase();
+  if (TEXT_MIMES.has(mime)) return true;
+  return false;
+}
+
+function extractTextAttachments(displayMessage) {
+  const attachments = displayMessage?.attachments;
+  if (!Array.isArray(attachments)) return [];
+  return attachments.filter((att) => isTextAttachment(att));
 }
