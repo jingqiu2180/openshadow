@@ -24,8 +24,8 @@ agents/*/memory/
 test-*.ts
 e2e-*.ts
 
-# Transient shared/ directory (if not part of core)
-shared/
+# shared/ is now part of the core (shared between openhanako server/desktop).
+# Do NOT ignore it.
 nul
 desktop/dist-renderer/
 playwright-report/
