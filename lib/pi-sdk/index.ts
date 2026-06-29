@@ -179,7 +179,17 @@ return {
       async reload() {},
       async prompt(promptText: string, _opts2?: any) {
         try {
+          const beforeCount = sessionMessages.length
           const result = await callMiniMaxAPI(promptText)
+          // 持久化本轮新消息到 session JSONL（用户消息 + assistant 回复）
+          if (sessionManager && typeof (sessionManager as any).appendMessage === 'function') {
+            for (let i = beforeCount; i < sessionMessages.length; i++) {
+              const msg = sessionMessages[i]
+              if (msg.role === 'user' || msg.role === 'assistant') {
+                try { (sessionManager as any).appendMessage(msg) } catch {}
+              }
+            }
+          }
           return { text: result, toolMedia: [] }
         } catch (err: any) {
           emit({ type: 'error', message: err.message })
