@@ -7,9 +7,10 @@ const electronMock = resolve(__dirname, 'tests/__mocks__/electron.cjs')
 export default defineConfig({
   resolve: {
     alias: {
-      // 在测试环境里把 'electron' 模块替换成 mock
       electron: electronMock,
     },
+    // 让 vite 解析 .cjs 后缀
+    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json', '.cjs'],
   },
   test: {
     environment: 'node',
@@ -20,5 +21,9 @@ export default defineConfig({
       'desktop/src/react/__tests__/**/*.test.{ts,tsx,js}',
     ],
     exclude: ['node_modules', 'dist'],
+    // React/TiPTap 测试用 jsdom
+    environmentMatchGlobs: [
+      ['desktop/src/react/__tests__/**', 'jsdom'],
+    ],
   },
 })
