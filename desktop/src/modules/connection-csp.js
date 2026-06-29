@@ -8,6 +8,7 @@
     "script-src": ["'self'"],
     "font-src": ["'self'", "data:"],
     "frame-src": ["blob:", "data:", "http://127.0.0.1:*", "http://localhost:*"],
+    "worker-src": ["'self'", "blob:"],
   };
 
   function addOrigin(out, value) {

@@ -183,11 +183,17 @@ return {
           const result = await callMiniMaxAPI(promptText)
           // 持久化本轮新消息到 session JSONL（用户消息 + assistant 回复）
           if (sessionManager && typeof (sessionManager as any).appendMessage === 'function') {
+            let hasAssistantInSessionMessages = false
             for (let i = beforeCount; i < sessionMessages.length; i++) {
               const msg = sessionMessages[i]
               if (msg.role === 'user' || msg.role === 'assistant') {
                 try { (sessionManager as any).appendMessage(msg) } catch {}
+                if (msg.role === 'assistant') hasAssistantInSessionMessages = true
               }
+            }
+            // 无工具调用时 assistant 不在 sessionMessages 中（只作为 return 值返回），手动补
+            if (!hasAssistantInSessionMessages && result && result !== '(no response)' && result !== '已执行工具调用。') {
+              try { (sessionManager as any).appendMessage({ role: 'assistant', content: result }) } catch {}
             }
           }
           return { text: result, toolMedia: [] }
