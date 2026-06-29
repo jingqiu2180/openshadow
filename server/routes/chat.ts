@@ -1143,13 +1143,19 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
     upgradeWebSocket((c) => {
       let closed = false;
       const requestContext = createRequestContext(c, engine);
+      // openshadow 修复：desktop + local server 架构，所有 ws 客户端都来自本机 loopback
+      // 强制 assumeLocalOwner=true，跳过 token 鉴权（prod 模式打包后 desktop 内嵌 server 同样 loopback）
       const isAdapterWithoutHttpRequest = !c?.req;
+      const isLoopbackHost = c?.req?.url
+        ? /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?\//i.test(c.req.url)
+        : false;
+      const assumeLocalOwner = isAdapterWithoutHttpRequest || isLoopbackHost || process.env.OPENSHADOW_TRUST_WS === '1';
 
       return {
         onOpen(event, ws) {
           activeWsClients++;
           clients.set(ws, createInitialWsClientRecord(requestContext, {
-            assumeLocalOwner: isAdapterWithoutHttpRequest,
+            assumeLocalOwner,
           }));
           cancelDisconnectAbort();
           debugLog()?.log("ws", "client connected");
@@ -1160,7 +1166,7 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
           const msg = wsParse(event.data);
           if (!msg) return;
           let client = ensureWsClientRecord(ws, requestContext, {
-            assumeLocalOwner: isAdapterWithoutHttpRequest,
+            assumeLocalOwner,
           });
           if (!wsClientCanSendMessage(client, msg)) {
             wsSend(ws, { type: "error", message: "insufficient_scope", sessionPath: msg.sessionPath });

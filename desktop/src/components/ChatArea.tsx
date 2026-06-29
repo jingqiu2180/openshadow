@@ -202,7 +202,9 @@ export default function ChatArea() {
     setStreaming('')
     setWsStatus('connecting')
 
-    const ws = new WebSocket('ws://localhost:3000/api/ws')
+    // openshadow 修复：走 vite 5280 dev server，让 vite proxy 转发到 server:3000/ws
+    // 原来直连 3000/api/ws（路径错、port 错）
+    const ws = new WebSocket('ws://localhost:5280/api/ws')
     let buffer = ''
 
     ws.onopen = () => {

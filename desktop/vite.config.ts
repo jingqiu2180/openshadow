@@ -81,8 +81,21 @@ export default defineConfig({
     port: 5280,
     strictPort: true,
     proxy: {
-      '/api': 'http://localhost:3000',
-      '/ws': { target: 'ws://localhost:3000', ws: true },
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/api/ws': {
+        target: 'ws://localhost:3000/ws',
+        ws: true,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+      '/ws': {
+        target: 'ws://localhost:3000/ws',
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
 })
