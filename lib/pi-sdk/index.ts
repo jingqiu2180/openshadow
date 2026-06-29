@@ -80,14 +80,25 @@ export async function createAgentSession(_opts: any): Promise<{ session: any; mo
   let systemPrompt = ""; try { const p = path.join(process.cwd(), "yuan", "hanako.md"); if (fs.existsSync(p)) systemPrompt = fs.readFileSync(p, "utf-8"); } catch {} const sessionMessages: any[] = [];
   if (systemPrompt) sessionMessages.push({ role: "system", content: systemPrompt });
 
-  async function callMiniMaxAPI(text: string): Promise<string> {
+  async function callMiniMaxAPI(text: string, images?: Array<{ type: string; data: string; mimeType: string }>): Promise<string> {
     const apiKey = minimaxApiKey;
     if (!apiKey) throw new Error('MiniMax API key not configured');
 
-    // 构建消息历史
-    const messages: any[] = [];
-    if (systemPrompt) sessionMessages.push({ role: 'system', content: systemPrompt });
-    sessionMessages.push({ role: 'user', content: text });
+    // 构建用户消息：有图片时使用 content 数组格式（MiniMax 多模态 API）
+    let userContent: any = text;
+    if (images && images.length > 0) {
+      const parts: any[] = [{ type: 'text', text }];
+      for (const img of images) {
+        if (img.data && img.mimeType) {
+          parts.push({ type: 'image_url', image_url: { url: `data:${img.mimeType};base64,${img.data}` } });
+        }
+      }
+      userContent = parts;
+    }
+    if (systemPrompt && sessionMessages.length === 0) {
+      sessionMessages.push({ role: 'system', content: systemPrompt });
+    }
+    sessionMessages.push({ role: 'user', content: userContent });
 
     // 工具调用循环（最多 5 轮）
     for (let round = 0; round < 5; round++) {
@@ -180,7 +191,8 @@ return {
       async prompt(promptText: string, _opts2?: any) {
         try {
           const beforeCount = sessionMessages.length
-          const result = await callMiniMaxAPI(promptText)
+          const images = _opts2?.images || []
+          const result = await callMiniMaxAPI(promptText, images)
           // 持久化本轮新消息到 session JSONL（用户消息 + assistant 回复）
           if (sessionManager && typeof (sessionManager as any).appendMessage === 'function') {
             let hasAssistantInSessionMessages = false
