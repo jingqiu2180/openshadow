@@ -16,6 +16,14 @@ const projectRoot = resolve(__dirname, '..');
 // 必须从 process.env 里 delete，这样子进程才不会继承
 delete process.env.ELECTRON_RUN_AS_NODE;
 
+// CI 守护：GitHub Actions Linux runner 没有 X server，启动 GUI 必然 SIGSEGV
+// GitHub Actions 自动 export CI=true，手动 CI 跑可设 ELECTRON_SKIP_LAUNCH=1
+if (process.env.CI === 'true' || process.env.ELECTRON_SKIP_LAUNCH === '1') {
+  console.error(`[start-electron] CI detected (CI=${process.env.CI}, ELECTRON_SKIP_LAUNCH=${process.env.ELECTRON_SKIP_LAUNCH ?? '(unset)'}), skipping GUI launch.`);
+  console.error('[start-electron] main+preload+assets already built by previous steps in `npm run electron`.');
+  process.exit(0);
+}
+
 // 找到 electron 二进制路径
 const electronBin = process.platform === 'win32'
   ? resolve(projectRoot, 'node_modules', '.bin', 'electron.cmd')
