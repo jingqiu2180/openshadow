@@ -59,6 +59,7 @@
       "package.json",
       "!packages/**",
       "!**/node_modules/**",
+      "desktop/wizard/**",
       "node_modules/ws/**"
     ],
     "extraResources": [
