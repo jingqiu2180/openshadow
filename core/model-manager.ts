@@ -10,21 +10,21 @@
  * 都在这个数组上完成，不再经过中间层。
  */
 import path from "path";
-import { AuthStorage, createModelRegistry } from '../lib/pi-sdk/index.js';
-import { t } from '../lib/i18n.js';
-import { ProviderRegistry } from './provider-registry.js';
-import { ExecutionRouter } from './execution-router.js';
-import { findModel, parseModelRef } from '../shared/model-ref.js';
-import { isLocalBaseUrl } from '../shared/net-utils.js';
-import { syncModels } from './model-sync.js';
-import { enrichModelFromKnownMetadata } from './model-known-enrichment.js';
-import { migrateLegacyApiKeyAuthToProviders } from './provider-auth-migration.js';
+import { AuthStorage, createModelRegistry } from "../lib/pi-sdk/index.ts";
+import { t } from "../lib/i18n.ts";
+import { ProviderRegistry } from "./provider-registry.ts";
+import { ExecutionRouter } from "./execution-router.ts";
+import { findModel, parseModelRef } from "../shared/model-ref.ts";
+import { isLocalBaseUrl } from "../shared/net-utils.ts";
+import { syncModels } from "./model-sync.ts";
+import { enrichModelFromKnownMetadata } from "./model-known-enrichment.ts";
+import { migrateLegacyApiKeyAuthToProviders } from "./provider-auth-migration.ts";
 import {
   normalizeSessionThinkingLevel,
   normalizeThinkingLevelChoices,
   normalizeThinkingLevelForModel,
   resolveModelDefaultThinkingLevel,
-} from './session-thinking-level.js';
+} from "./session-thinking-level.ts";
 
 function isRecord(value): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value);
@@ -130,34 +130,15 @@ export class ModelManager {
       (ref) => this._resolveFromAvailable(ref),
       this.providerRegistry,
     );
-
-    // 启动时立即同步模型（异步，不阻塞 init）
-    // 注意：注入在 engine.init() 之后，这里先不调 syncAndRefresh()
-    // 避免覆盖注入的模型。注入后 server/index.ts 会手动调一次。
-    // this.syncAndRefresh().catch((err) => {
-    //   console.error('[model-manager] syncAndRefresh failed:', err.message);
-    // });
   }
 
   // ── Getters ──
 
   get authStorage() { return this._authStorage; }
   get modelRegistry() { return this._modelRegistry; }
-  get defaultModel() { 
-    // 兜底：如果 _defaultModel 是 null 但有可用模型，自动选第一个
-    if (!this._defaultModel && this._availableModels.length > 0) {
-      this._defaultModel = this._availableModels[0];
-    }
-    return this._defaultModel; 
-  }
+  get defaultModel() { return this._defaultModel; }
   set defaultModel(m) { this._defaultModel = m; }
-  get currentModel() { 
-    // 兜底：如果 _defaultModel 是 null 但有可用模型，返回第一个
-    if (!this._defaultModel && this._availableModels.length > 0) {
-      return this._availableModels[0];
-    }
-    return this._defaultModel; 
-  }
+  get currentModel() { return this._defaultModel; }
   get availableModels() { return this._availableModels; }
   get modelsJsonPath() { return path.join(this._hanakoHome, "models.json"); }
   get authJsonPath() { return path.join(this._hanakoHome, "auth.json"); }
@@ -205,20 +186,7 @@ export class ModelManager {
 
   /** 刷新可用模型列表，用 Provider Catalog v2 过滤 */
   async refreshAvailable() {
-    console.log('[model-manager] refreshAvailable() called');
-    // 如果已有注入的模型，直接返回（不执行后续过滤逻辑）
-    if (this._availableModels.length > 0) {
-      console.log('[model-manager] _availableModels already has', this._availableModels.length, 'models, skipping refresh');
-      return this._availableModels;
-    }
     const allModels = await this._modelRegistry.getAvailable();
-    console.log('[model-manager] allModels:', allModels?.length || 0);
-    // 如果 getAvailable() 返回空，保留当前 _availableModels（注入的模型）
-    if (!allModels || allModels.length === 0) {
-      console.log('[model-manager] getAvailable() returned empty, keeping current _availableModels:', this._availableModels.length);
-      return this._availableModels;
-    }
-    // 后续逻辑...
     // Pi SDK 返回所有有 auth 的模型（包括 OAuth 内置模型），
     // 但用户只想看自己配置或 ProviderRegistry 明确声明的模型。
     const rawProviders = this.providerRegistry.getAllProvidersRaw();
@@ -257,14 +225,8 @@ export class ModelManager {
    * @returns {boolean} 是否有变化
    */
   async syncAndRefresh() {
-    // 如果已有注入的模型，直接 return（不执行后续同步逻辑，避免覆盖）
-    if (this._availableModels.length > 0) {
-      return false;
-    }
-    console.log('[model-manager] syncAndRefresh() called');
     this._removeApiKeyProviderAuthEntries();
     const rawProviders = this.providerRegistry.getAllProvidersRaw();
-    console.log('[model-manager] rawProviders:', Object.keys(rawProviders));
     // 合并 plugin 默认值（base_url/api），YAML 里可能只存了 api_key + models
     const providers: any = {};
     for (const [name, raw] of Object.entries(rawProviders) as [string, any][]) {
@@ -284,51 +246,10 @@ export class ModelManager {
       chatProjectionMap: this._buildChatProjectionMap(),
     });
     this._applyRuntimeApiKeyOverrides(providers);
-    // 保存当前 _availableModels 和 _defaultModel（防止 refreshAvailable() 覆盖）
-    const savedAvailable = this._availableModels.length > 0 ? [...this._availableModels] : null;
-    const savedDefault = this._defaultModel;
     if (changed) {
       this._modelRegistry.refresh();
       await this.refreshAvailable();
-      // 恢复 _availableModels 和 _defaultModel（如果 refreshAvailable() 覆盖了它们）
-      if (savedAvailable && this._availableModels.length === 0) {
-        this._availableModels = savedAvailable;
-        console.log('[model-manager] _availableModels restored from saved');
-      }
-      if (savedDefault && !this._defaultModel) {
-        this._defaultModel = savedDefault;
-        console.log('[model-manager] _defaultModel restored from saved:', savedDefault.id);
-      }
       this._rebindDefaultModel();
-    }
-    // 强制：如果 _availableModels 还是空，调用 refreshAvailable()
-    if (this._availableModels.length === 0) {
-      console.log('[model-manager] _availableModels is empty, forcing refreshAvailable()');
-      await this.refreshAvailable();
-    }
-    // 无条件：如果 _defaultModel 还是 null，从 config.json models.main 初始化
-    if (!this._defaultModel && this._hanaHome) {
-      try {
-        const fs = require('fs');
-        const path = require('path');
-        const configPath = path.join(this._hanaHome, "config.json");
-        if (fs.existsSync(configPath)) {
-          const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-          const mainModelRef = config?.models?.main;
-          if (mainModelRef) {
-            const parsed = parseModelRef(mainModelRef);
-            if (parsed?.id && parsed?.provider) {
-              const model = findModel(this._availableModels, parsed.id, parsed.provider);
-              if (model) this._defaultModel = model;
-            }
-          }
-        }
-      } catch (e) { /* ignore */ }
-    }
-    // 兜底：如果还是 null 且有可用模型，选第一个
-    if (!this._defaultModel && this._availableModels.length > 0) {
-      this._defaultModel = this._availableModels[0];
-      console.log('[model-manager] auto-selected default model:', this._availableModels[0].id);
     }
     return changed;
   }
@@ -608,8 +529,4 @@ export class ModelManager {
     const all = this._modelRegistry.getAll();
     return all.filter(m => m.provider === name || m.provider === authKey);
   }
-}
-
-export function createModelManager(opts: any = {}) {
-  return new ModelManager({ hanakoHome: opts.hanakoHome || '' });
 }
