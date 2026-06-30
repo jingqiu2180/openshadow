@@ -1,48 +1,39 @@
 /**
- * Rem Wizard — desktop/wizard/wizard.js (Stage 1b)
- *
- * 5-step first-launch wizard running in an Electron BrowserWindow.
- * Communicates with the main process via 4 IPC channels:
- *   - wizard:get-config     → pull current config.json
- *   - wizard:save-config    → write merged wizard.completed=true
- *   - wizard:test-connection → probe provider with a max_tokens:1 call
- *   - wizard:pick-folder    → native folder dialog
- *
- * State machine: 5 steps, linear, no branching. Each step validates before allowing "next".
+ * OpenShadow Wizard — desktop/wizard/wizard.js
  */
 
-// ─── i18n strings (placeholder; Stage 1c will wire real i18n.ts) ──────
+// ─── i18n strings ──────
 const i18n = {
   'zh-CN': {
-    appName: 'Rem 启动向导',
+    appName: 'OpenShadow 启动向导',
     steps: ['选择语言', '你的名字', 'AI 供应商', '对话模型', '工作区'],
     next: '下一步 →',
     back: '← 上一步',
-    finish: '启动 Rem ✨',
+    finish: '启动 OpenShadow ✨',
     stepIndicator: (n, total) => `第 ${n} 步 / 共 ${total} 步`,
   },
   'en': {
-    appName: 'Rem Setup',
+    appName: 'OpenShadow Setup',
     steps: ['Language', 'Your name', 'AI Provider', 'Models', 'Workspace'],
     next: 'Next →',
     back: '← Back',
-    finish: 'Launch Rem ✨',
+    finish: 'Launch OpenShadow ✨',
     stepIndicator: (n, total) => `Step ${n} of ${total}`,
   },
   'ja': {
-    appName: 'Rem セットアップ',
+    appName: 'OpenShadow セットアップ',
     steps: ['言語', 'お名前', 'AI プロバイダー', 'モデル', 'ワークスペース'],
     next: '次へ →',
     back: '← 戻る',
-    finish: 'Rem を起動 ✨',
+    finish: 'OpenShadow を起動 ✨',
     stepIndicator: (n, total) => `ステップ ${n} / ${total}`,
   },
   'ko': {
-    appName: 'Rem 설정',
+    appName: 'OpenShadow 설정',
     steps: ['언어', '이름', 'AI 공급자', '모델', '작업 공간'],
     next: '다음 →',
     back: '← 뒤로',
-    finish: 'Rem 시작 ✨',
+    finish: 'OpenShadow 시작 ✨',
     stepIndicator: (n, total) => `${n} / ${total} 단계`,
   },
 }
@@ -145,7 +136,7 @@ function renderStepLanguage(container) {
   container.innerHTML = `
     <div class="step">
       <h2>选择你的语言</h2>
-      <p class="step-desc">Rem 会用这种语言和你对话。选择之后还可以随时在设置里改。</p>
+      <p class="step-desc">OpenShadow 会用这种语言和你对话。选择之后还可以随时在设置里改。</p>
       <div class="lang-grid">
         ${langs.map(l => `
           <button type="button" class="lang-card ${state.ui.language === l.code ? 'selected' : ''}" data-lang="${l.code}">
@@ -169,7 +160,7 @@ function renderStepUser(container) {
   container.innerHTML = `
     <div class="step">
       <h2>你的名字</h2>
-      <p class="step-desc">Rem 会用这个名字称呼你。改名字随时在设置里改。</p>
+      <p class="step-desc">OpenShadow 会用这个名字称呼你。改名字随时在设置里改。</p>
       <div class="input-group">
         <label for="userName">你叫什么?</label>
         <input type="text" id="userName" class="input" value="${state.user.name}" placeholder="王帅" />
@@ -178,7 +169,7 @@ function renderStepUser(container) {
       <div class="toggle-row" id="memoryToggle">
         <div>
           <strong>开启长期记忆</strong>
-          <div class="step-desc" style="margin-top:4px">Rem 会记住你告诉它的重要信息(API key 不存)</div>
+          <div class="step-desc" style="margin-top:4px">OpenShadow 会记住你告诉它的重要信息(API key 不存)</div>
         </div>
         <button type="button" class="toggle ${state.memory.enabled ? 'on' : ''}" id="memoryBtn" aria-label="记忆开关"></button>
       </div>
@@ -199,7 +190,7 @@ function renderStepProvider(container) {
   container.innerHTML = `
     <div class="step">
       <h2>选择一个 AI 供应商</h2>
-      <p class="step-desc">Rem 兼容 OpenAI API,所以支持多家供应商。选一个填上 API key,Rem 会自动测试连接。</p>
+      <p class="step-desc">OpenShadow 兼容 OpenAI API,所以支持多家供应商。选一个填上 API key,OpenShadow 会自动测试连接。</p>
 
       <div class="input-group">
         <label for="builtinSelect">供应商</label>
@@ -287,7 +278,7 @@ function renderStepModels(container) {
   container.innerHTML = `
     <div class="step">
       <h2>为不同任务选模型</h2>
-      <p class="step-desc">Rem 把任务分 3 档:主对话用大模型,小工具用便宜模型,长任务用大模型。也可以都选同一个。</p>
+      <p class="step-desc">OpenShadow 把任务分 3 档:主对话用大模型,小工具用便宜模型,长任务用大模型。也可以都选同一个。</p>
       <div class="model-row">
         <label>主对话 (main)</label>
         ${modelSelect('main', state.models.main)}
@@ -312,7 +303,7 @@ function renderStepWorkspace(container) {
   container.innerHTML = `
     <div class="step">
       <h2>选择工作区目录</h2>
-      <p class="step-desc">Rem 在这些目录下有完整权限(读/写/删)。之后可以随时在设置里加/删。</p>
+      <p class="step-desc">OpenShadow 在这些目录下有完整权限(读/写/删)。之后可以随时在设置里加/删。</p>
       <button type="button" class="test-conn-btn" id="addFolderBtn">+ 添加目录</button>
       <div class="folder-list" id="folderList">
         ${state.workspace.folders.length === 0
