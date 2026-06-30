@@ -178,6 +178,32 @@ function requireMain() {
       return { ok: false, latencyMs: Date.now() - start, modelUsed: model, error: e.message };
     }
   }
+  async function testAnthropicCompatible(baseUrl, apiKey, model) {
+    const start = Date.now();
+    try {
+      const res = await fetch(baseUrl.replace(/\/+$/, "") + "/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01"
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 1,
+          messages: [{ role: "user", content: "hi" }]
+        })
+      });
+      const latencyMs = Date.now() - start;
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        return { ok: false, latencyMs, modelUsed: model, error: res.status + " " + res.statusText + ": " + errText.slice(0, 200) };
+      }
+      return { ok: true, latencyMs, modelUsed: model };
+    } catch (e) {
+      return { ok: false, latencyMs: Date.now() - start, modelUsed: model, error: e.message };
+    }
+  }
   let mainWindow = null;
   let wizardWindow = null;
   async function runWizardWindow() {
@@ -270,7 +296,14 @@ function requireMain() {
       const spec = BUILTIN_PROVIDERS[providerInput.id];
       if (!spec) return { ok: false, error: "Unknown provider: " + providerInput.id };
       const model = providerInput.model || spec.models[0];
-      const result = await testOpenAICompatible(spec.baseUrl, providerInput.apiKey, model);
+      let result;
+      if (spec.type === "anthropic") {
+        result = await testAnthropicCompatible(spec.baseUrl, providerInput.apiKey, model);
+      } else if (spec.type === "gemini") {
+        result = { ok: false, error: "Gemini 测试暂未支持" };
+      } else {
+        result = await testOpenAICompatible(spec.baseUrl, providerInput.apiKey, model);
+      }
       return { ok: result.ok, latencyMs: result.latencyMs, error: result.error, modelUsed: result.modelUsed };
     });
     ipcMain.handle("wizard:pick-folder", async () => {
