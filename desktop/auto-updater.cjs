@@ -257,8 +257,8 @@ function setupAutoUpdater() {
   // 显式设置 feed URL，不依赖 app-update.yml（electron-builder --dir 不生成该文件）
   autoUpdater.setFeedURL({
     provider: "github",
-    owner: "liliMozi",
-    repo: "openhanako",
+    owner: "jingqiu2180",
+    repo: "openshadow",
   });
 
   autoUpdater.autoDownload = false;          // 由我们控制（磁盘空间检查后手动触发）

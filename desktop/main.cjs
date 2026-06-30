@@ -1,6 +1,6 @@
 // desktop/main.cjs
 // OpenShadow Desktop — Electron 主进程（CJS）
-// 跟随 openhanako 模式：用 CJS 写，Vite 编译为 main.bundle.cjs
+// 用 CJS 写，Vite 编译为 main.bundle.cjs
 // 任务：
 // 1. 创建启动窗口（splash / wizard）
 // 2. 处理 IPC 路由

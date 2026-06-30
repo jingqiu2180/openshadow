@@ -4,7 +4,7 @@
  * 用法：
  *   await i18n.load("zh");           // 加载语言包
  *   t("sidebar.title")               // → "对话"
- *   t("tool.bash.running", { name }) // → "💻 Hana 正在小心翼翼地用你的电脑"
+ *   t("tool.bash.running", { name }) // → "💻 Shadow 正在执行操作"
  *
  * 占位符：{key} 格式，在第二个参数对象中查找替换
  *
@@ -24,7 +24,7 @@ const i18n = {
   locale: "zh",
 
   /** 默认 agent 名（占位符 {name} 的 fallback） */
-  defaultName: "Hanako",
+  defaultName: "Shadow",
 
   /**
    * 加载语言包
