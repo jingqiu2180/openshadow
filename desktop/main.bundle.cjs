@@ -207,7 +207,7 @@ function requireMain() {
       wizardWindow && wizardWindow.show();
       console.log("[wizard] window shown");
     });
-    const htmlPath = app.isPackaged ? join(app.getAppPath(), "wizard", "index.html") : join(__dirname, "wizard", "index.html");
+    const htmlPath = app.isPackaged ? join(app.getAppPath(), "desktop", "wizard", "index.html") : join(__dirname, "wizard", "index.html");
     console.log("[wizard] html path:", htmlPath);
     await wizardWindow.loadFile(htmlPath);
     console.log("[wizard] loaded HTML from", htmlPath);

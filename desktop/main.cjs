@@ -176,7 +176,7 @@ async function runWizardWindow() {
   })
 
   const htmlPath = app.isPackaged
-    ? join(app.getAppPath(), 'wizard', 'index.html')
+    ? join(app.getAppPath(), 'desktop', 'wizard', 'index.html')
     : join(__dirname, 'wizard', 'index.html')
   console.log('[wizard] html path:', htmlPath)
   await wizardWindow.loadFile(htmlPath)
