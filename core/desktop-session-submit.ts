@@ -25,11 +25,11 @@
  * @returns {Promise<{ text: string | null, toolMedia: string[] }>}
  */
 import path from "path";
-import { extOfName, inferFileKind } from '../lib/file-metadata.js';
-import { collectMediaItems } from '../lib/tools/media-details.js';
-import { formatSettingsUpdateText } from '../lib/tools/settings-update-result.js';
-import { materializeBridgeInboundFiles } from '../lib/session-files/bridge-inbound-files.js';
-import { serializeSessionFile } from '../lib/session-files/session-file-response.js';
+import { extOfName, inferFileKind } from "../lib/file-metadata.ts";
+import { collectMediaItems } from "../lib/tools/media-details.ts";
+import { formatSettingsUpdateText } from "../lib/tools/settings-update-result.ts";
+import { materializeBridgeInboundFiles } from "../lib/session-files/bridge-inbound-files.ts";
+import { serializeSessionFile } from "../lib/session-files/session-file-response.ts";
 
 /**
  * 非桌面来源（bridge /rc 等）用户消息的来源元信息持久化条目类型。
@@ -247,23 +247,6 @@ export async function submitDesktopSessionMessage(engine: any, opts: {
       });
       await engine.promptSession(sessionPath, promptText, promptOpts);
     } finally {
-      // 每轮对话完成后强制 flush session 到磁盘（无论 promptSession 成功还是抛错）
-      try {
-        const mgr = session?.sessionManager;
-        const msgs = session?.agent?.state?.messages || [];
-        console.log('[desktop-session-submit] flush check: mgr=', !!mgr, 'msgsLen=', msgs.length, 'sessionFile=', mgr?.sessionFile, 'persist=', mgr?.persist);
-        if (mgr && msgs.length > 0 && mgr.sessionFile) {
-          const existingEntries = Array.isArray(mgr.fileEntries) ? [...mgr.fileEntries] : [];
-          for (const m of msgs) {
-            if (!existingEntries.some((e: any) => e.type === 'message' && e.message?.id === m.id)) {
-              existingEntries.push({ type: 'message', message: m });
-            }
-          }
-          const { writeFileSync } = await import('fs');
-          writeFileSync(mgr.sessionFile, existingEntries.map((e: any) => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
-          console.log('[desktop-session-submit] flushed', msgs.length, 'messages to', mgr.sessionFile);
-        }
-      } catch (e) { console.error('[desktop-session-submit] flush error:', e); }
       try { unsub?.(); } catch {}
       engine.emitEvent?.({ type: "session_status", isStreaming: false }, sessionPath);
     }

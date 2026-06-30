@@ -6,23 +6,23 @@ import { appendFileSync } from "fs";
 import fs from "fs/promises";
 import path from "path";
 import { Hono } from "hono";
-import { safeJson } from '../hono-helpers.js';
-import { t } from '../../lib/i18n.js';
-import { extractBlocks, resolveMediaGenerationBlocks } from '../block-extractors.js';
-import { buildDeferredResultInterludeBlock, resolveDeferredReceiverName } from '../deferred-result-interlude.js';
-import { BrowserManager } from '../../lib/browser/browser-manager.js';
-import { sessionIdFromFilename } from '../../lib/session-jsonl.js';
+import { safeJson } from "../hono-helpers.ts";
+import { t } from "../../lib/i18n.ts";
+import { extractBlocks, resolveMediaGenerationBlocks } from "../block-extractors.ts";
+import { buildDeferredResultInterludeBlock, resolveDeferredReceiverName } from "../deferred-result-interlude.ts";
+import { BrowserManager } from "../../lib/browser/browser-manager.ts";
+import { sessionIdFromFilename } from "../../lib/session-jsonl.ts";
 import {
   DEFERRED_RESULT_MESSAGE_TYPE,
   DEFERRED_RESULT_RECORD_TYPE,
   buildDeferredResultRecord,
   parseDeferredResultNotification,
   parseDeferredResultRecord,
-} from '../../lib/deferred-result-notification.js';
+} from "../../lib/deferred-result-notification.ts";
 import {
   materializeExecutorIdentity,
   readSubagentSessionMetaSync,
-} from '../../lib/subagent-executor-metadata.js';
+} from "../../lib/subagent-executor-metadata.ts";
 import {
   extractTextContent,
   filterUnreferencedInlineImages,
@@ -31,23 +31,23 @@ import {
   isValidSessionPath,
   isActiveDesktopSessionPath,
   isArchivedDesktopSessionPath,
-} from '../../core/message-utils.js';
-import { sessionFileRevision } from '../../core/session-list-projection-cache.js';
+} from "../../core/message-utils.ts";
+import { sessionFileRevision } from "../../core/session-list-projection-cache.ts";
 import {
   extractLatestTodos,
   loadLatestTodoSnapshotFromSessionFile,
-} from '../../lib/tools/todo-compat.js';
-import { SessionManager } from '../../lib/pi-sdk/index.js';
-import { TODO_STATE_CUSTOM_TYPE } from '../../lib/tools/todo-constants.js';
-import { mergeWorkspaceHistory } from '../../shared/workspace-history.js';
+} from "../../lib/tools/todo-compat.ts";
+import { SessionManager } from "../../lib/pi-sdk/index.ts";
+import { TODO_STATE_CUSTOM_TYPE } from "../../lib/tools/todo-constants.ts";
+import { mergeWorkspaceHistory } from "../../shared/workspace-history.ts";
 import {
   deleteSessionFileSidecarSync,
   moveSessionFileSidecarSync,
   sessionFileSidecarPath,
-} from '../../lib/session-files/session-file-registry.js';
-import { serializeSessionFile } from '../../lib/session-files/session-file-response.js';
-import { browserScreenshotPath } from '../../lib/session-files/browser-screenshot-file.js';
-import { getModelThinkingLevels, normalizeSessionThinkingLevel, modelSupportsXhigh, resolveModelDefaultThinkingLevel } from '../../core/session-thinking-level.js';
+} from "../../lib/session-files/session-file-registry.ts";
+import { serializeSessionFile } from "../../lib/session-files/session-file-response.ts";
+import { browserScreenshotPath } from "../../lib/session-files/browser-screenshot-file.ts";
+import { getModelThinkingLevels, normalizeSessionThinkingLevel, modelSupportsXhigh, resolveModelDefaultThinkingLevel } from "../../core/session-thinking-level.ts";
 import {
   modelSupportsDirectAudioInput,
   modelSupportsDirectVideoInput,
@@ -55,13 +55,13 @@ import {
   modelSupportsVideoInput,
   resolveModelAudioInputTransport,
   resolveModelVideoInputTransport,
-} from '../../shared/model-capabilities.js';
-import { replayLatestUserTurn } from '../../core/session-turn-actions.js';
-import { createRequestContext } from '../http/boundary.js';
-import { createModuleLogger } from '../../lib/debug-log.js';
-import { searchSessions } from '../../lib/search/session-search.js';
-import { SessionSearchTokenizerUnavailableError } from '../../lib/search/session-search-tokenizer.js';
-import { MountAwareFileError, MountAwareFileService } from '../../core/mount-aware-file-service.js';
+} from "../../shared/model-capabilities.ts";
+import { replayLatestUserTurn } from "../../core/session-turn-actions.ts";
+import { createRequestContext } from "../http/boundary.ts";
+import { createModuleLogger } from "../../lib/debug-log.ts";
+import { searchSessions } from "../../lib/search/session-search.ts";
+import { SessionSearchTokenizerUnavailableError } from "../../lib/search/session-search-tokenizer.ts";
+import { MountAwareFileError, MountAwareFileService } from "../../core/mount-aware-file-service.ts";
 
 const log = createModuleLogger("sessions");
 const lifecycleLog = createModuleLogger("sessions/lifecycle");
@@ -1730,34 +1730,6 @@ export function createSessionsRoute(engine, hub = null) {
       // 清理 titles.json 孤儿（key = 对应的活跃路径）
       try { await engine.clearSessionTitle(activeKey); } catch {}
       return c.json({ ok: true });
-    } catch (err) {
-      return c.json({ error: err.message }, 500);
-    }
-  });
-
-  // ── 思考深度 ──
-  route.get("/session-thinking-level", async (c) => {
-    try {
-      const model = engine.currentModel;
-      const defaultLevel = engine.getThinkingLevel?.() ?? 'off';
-      const levels = engine.getModelThinkingLevels?.(model) ?? [
-        { value: 'off', label: 'Off' },
-        { value: 'low', label: 'Low' },
-        { value: 'medium', label: 'Medium' },
-        { value: 'high', label: 'High' },
-      ];
-      return c.json({ defaultLevel, levels, model: model?.id });
-    } catch (err) {
-      return c.json({ error: err.message }, 500);
-    }
-  });
-
-  route.post("/session-thinking-level", async (c) => {
-    try {
-      const body = await safeJson(c);
-      const { level } = body;
-      engine.setThinkingLevel?.(level);
-      return c.json({ ok: true, level });
     } catch (err) {
       return c.json({ error: err.message }, 500);
     }

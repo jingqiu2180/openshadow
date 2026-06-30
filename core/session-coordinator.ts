@@ -9,93 +9,93 @@
 import fs from "fs";
 import fsp from "fs/promises";
 import path from "path";
-import { createAgentSession, SessionManager, estimateTokens, refreshSessionModelFromRegistry } from '../lib/pi-sdk/index.js';
-import { createDefaultSettings } from './session-defaults.js';
-import { restoreDefaultWorkspaceIfMissing } from '../shared/default-workspace.js';
-import { computeHardTruncation } from './compaction-utils.js';
+import { createAgentSession, SessionManager, estimateTokens, refreshSessionModelFromRegistry } from "../lib/pi-sdk/index.ts";
+import { createDefaultSettings } from "./session-defaults.ts";
+import { restoreDefaultWorkspaceIfMissing } from "../shared/default-workspace.ts";
+import { computeHardTruncation } from "./compaction-utils.ts";
 import {
   appendCompactionResultToSession,
   createCachePreservingCompactionResult,
   runCachePreservingCompactionForSession,
-} from './session-compactor.js';
-import { teardownSessionResources } from './session-teardown.js';
-import { evaluateSessionHealth, repairOrphanToolResultEntriesInFile } from './session-health.js';
-import { createModuleLogger } from '../lib/debug-log.js';
-import { BrowserManager } from '../lib/browser/browser-manager.js';
-import { t, getLocale } from '../lib/i18n.js';
+} from "./session-compactor.ts";
+import { teardownSessionResources } from "./session-teardown.ts";
+import { evaluateSessionHealth, repairOrphanToolResultEntriesInFile } from "./session-health.ts";
+import { createModuleLogger } from "../lib/debug-log.ts";
+import { BrowserManager } from "../lib/browser/browser-manager.ts";
+import { t, getLocale } from "../lib/i18n.ts";
 import {
   DEFAULT_SESSION_PERMISSION_MODE,
   SESSION_PERMISSION_MODES,
   isReadOnlyPermissionMode,
   legacyAccessModeFromPermissionMode,
   normalizeSessionPermissionMode,
-} from './session-permission-mode.js';
-import { findModel } from '../shared/model-ref.js';
-import { computeToolSnapshot, DEFAULT_DISABLED_TOOL_NAMES, uniqueToolNames } from '../shared/tool-categories.js';
+} from "./session-permission-mode.ts";
+import { findModel } from "../shared/model-ref.ts";
+import { computeToolSnapshot, DEFAULT_DISABLED_TOOL_NAMES, uniqueToolNames } from "../shared/tool-categories.ts";
 import {
   computeRuntimeDisabledToolNames,
   getStableFeatureDisabledToolNames,
   toolNamesFromObjects,
-} from './tool-availability.js';
-import { isActiveSessionPath } from './message-utils.js';
-import { formatWorkspaceScopePrompt, normalizeSessionFolderScope, normalizeWorkspaceScope } from '../shared/workspace-scope.js';
-import { getProviderPromptPatches } from './provider-prompt-patches.js';
+} from "./tool-availability.ts";
+import { isActiveSessionPath } from "./message-utils.ts";
+import { formatWorkspaceScopePrompt, normalizeSessionFolderScope, normalizeWorkspaceScope } from "../shared/workspace-scope.ts";
+import { getProviderPromptPatches } from "./provider-prompt-patches.ts";
 import {
   DEEPSEEK_ROLEPLAY_REASONING_PATCH_EXPERIMENT_ID,
   getResolvedExperimentValue,
-} from '../lib/experiments/registry.js';
+} from "../lib/experiments/registry.ts";
 import {
   normalizePlainDescription,
   stripClosedInternalNarrationBlocks,
-} from '../lib/text/internal-narration.js';
-import { prepareVisionInputForTextOnlyModel } from './vision-prepare.js';
-import { prepareModelImageInputsForPrompt } from './model-image-preprocess.js';
+} from "../lib/text/internal-narration.ts";
+import { prepareVisionInputForTextOnlyModel } from "./vision-prepare.ts";
+import { prepareModelImageInputsForPrompt } from "./model-image-preprocess.ts";
 import {
   pruneSessionInlineMediaHistory,
   repairSessionInlineMediaEntriesInFile,
-} from './session-inline-media-prune.js';
+} from "./session-inline-media-prune.ts";
 import {
   flushSessionManagerSnapshot,
   repairOversizedSessionEntries,
   repairOversizedSessionEntriesInFile,
   schedulePreAssistantSessionManagerFlush,
-} from './session-jsonl-file.js';
-import { createVisionContextInjectionExtension } from './vision-context-injector.js';
+} from "./session-jsonl-file.ts";
+import { createVisionContextInjectionExtension } from "./vision-context-injector.ts";
 import {
   createSessionTurnContextExtension,
   normalizeSessionTurnContext,
-} from './session-turn-context.js';
+} from "./session-turn-context.ts";
 import {
   modelSupportsDirectAudioInput,
   modelSupportsAudioInput,
   modelSupportsDirectVideoInput,
   modelSupportsVideoInput,
-} from '../shared/model-capabilities.js';
+} from "../shared/model-capabilities.ts";
 import {
   normalizeSessionThinkingLevel,
   normalizeThinkingLevelForModel,
   resolveModelDefaultThinkingLevel,
   resolveThinkingLevelForModel,
-} from './session-thinking-level.js';
+} from "./session-thinking-level.ts";
 import {
   resolveSessionSkillsForRuntime,
   snapshotSkillsForSession,
-} from '../lib/skills/session-skill-snapshot.js';
-import { SessionListProjectionCache } from './session-list-projection-cache.js';
+} from "../lib/skills/session-skill-snapshot.ts";
+import { SessionListProjectionCache } from "./session-list-projection-cache.ts";
 import {
   buildLlmContextCachePrefixContract,
   diffCachePrefixContracts,
   summarizeCachePrefixContract,
-} from '../lib/llm/cache-prefix-contract.js';
-import { buildSessionCacheSnapshot as buildSessionCacheSnapshotValue } from './session-cache-snapshot.js';
-import { repairRestoredToolSnapshotDetailed, sameToolNames } from './tool-snapshot-repair.js';
+} from "../lib/llm/cache-prefix-contract.ts";
+import { buildSessionCacheSnapshot as buildSessionCacheSnapshotValue } from "./session-cache-snapshot.ts";
+import { repairRestoredToolSnapshotDetailed, sameToolNames } from "./tool-snapshot-repair.ts";
 import {
   SESSION_PROMPT_SNAPSHOT_VERSION,
   freezeAgentsFilesResult,
   freezeSkillsResult,
   normalizeSessionPromptSnapshot,
   normalizeStringArray,
-} from './session-prompt-snapshot.js';
+} from "./session-prompt-snapshot.ts";
 
 const log = createModuleLogger("session");
 const SESSION_META_PAYLOAD_DIR = "session-meta-payloads";
@@ -595,9 +595,9 @@ export class SessionCoordinator {
    * @param {string} deps.agentsDir
    * @param {() => object} deps.getAgent - 当前焦点 agent
    * @param {() => string} deps.getActiveAgentId
-   * @param {() => import('./model-manager.js').ModelManager} deps.getModels
+   * @param {() => import('./model-manager.ts').ModelManager} deps.getModels
    * @param {() => object} deps.getResourceLoader
-   * @param {() => import('./skill-manager.js').SkillManager} deps.getSkills
+   * @param {() => import('./skill-manager.ts').SkillManager} deps.getSkills
    * @param {(cwd, customTools?, opts?) => object} deps.buildTools
    * @param {(event, sp) => void} deps.emitEvent
    * @param {() => string|null} deps.getHomeCwd
@@ -762,16 +762,10 @@ export class SessionCoordinator {
     const ownerAgentId = explicitAgentId || agent.id || this._d.getActiveAgentId();
     const effectiveCwd = cwd || this._d.getHomeCwd(agent.id) || process.cwd();
     restoreDefaultWorkspaceIfMissing(effectiveCwd);
-    // 强制兜底：如果所有方法都失败，直接用 availableModels[0]
     const models = this._d.getModels();
-    // 先清 pendingModel（防止覆盖）
+    // restore 模式：不指定 model，让 PI SDK 从 JSONL 恢复（session model 单一数据源）
+    const effectiveModel = restore ? null : (model || this._pendingModel || models.currentModel);
     this._pendingModel = null;
-    if (!models.currentModel && models.availableModels?.length > 0) {
-      models._defaultModel = models.availableModels[0];
-    }
-    const fallbackModel = models.availableModels?.length > 0 ? models.availableModels[0] : null;
-    const effectiveModel = restore ? null : (model || models.currentModel || fallbackModel);
-    this._pendingModel = null;  // 再次清（防止后面逻辑改）
     log.log(`createSession cwd=${effectiveCwd} restore=${restore} (传入: ${cwd || "未指定"})`);
 
     await this._d.onBeforeSessionCreate?.(effectiveCwd);
@@ -2038,10 +2032,6 @@ export class SessionCoordinator {
       this._session = entry.session;
     }
     entry.lastTouchedAt = Date.now();
-    // 记录首条用户消息作为 session 预览（磁盘 jsonl 不持久化消息）
-    if (!entry._firstUserMessage && text) {
-      entry._firstUserMessage = text.slice(0, 100);
-    }
     if (entry.sessionVisibility !== "plugin_private" && entry.sessionVisibility !== "private") {
       entry.visibleInSessionList = true;
     }
@@ -2077,30 +2067,6 @@ export class SessionCoordinator {
     if (turnContext) this._turnContextBySession.set(sessionPath, turnContext);
     try {
       await entry.session.prompt(text, promptOpts);
-      // prompt 完成后强制 flush session 到磁盘
-      try {
-        const mgr = entry.session?.sessionManager;
-        if (mgr && mgr.sessionFile) {
-          const agMsgs = entry.session?.agent?.state?.messages || [];
-          const fileMsgEntries = mgr.fileEntries.filter((e: any) => e.type === 'message');
-          console.log('[session-coordinator] post-prompt flush: fileEntries.total=', mgr.fileEntries.length, 'fileEntries.msg=', fileMsgEntries.length, 'agent.messages=', agMsgs.length, 'persist=', mgr.persist, 'flushed=', mgr.flushed);
-          // 从 agent.state.messages 同步到 fileEntries
-          if (agMsgs.length > 0) {
-            for (const m of agMsgs) {
-              if (!mgr.fileEntries.some((e: any) => e.type === 'message' && e.message?.id === m.id)) {
-                mgr.fileEntries.push({ type: 'message', message: m });
-              }
-            }
-          }
-          // 强制写盘：绕过 _persist 的 hasAssistant 门控
-          if (mgr.fileEntries.length > 1) {
-            const fs = await import('fs');
-            fs.writeFileSync(mgr.sessionFile, mgr.fileEntries.map((e: any) => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
-            mgr.flushed = true;
-            console.log('[session-coordinator] force-wrote', mgr.fileEntries.length, 'entries to', path.basename(mgr.sessionFile));
-          }
-        }
-      } catch (flushErr) { console.error('[session-coordinator] flush error:', flushErr); }
     } finally {
       if (turnContext) this._turnContextBySession.delete(sessionPath);
       engine?.endCurrentTurnNativeMedia?.(nativeMediaTurn);
@@ -3218,32 +3184,6 @@ export class SessionCoordinator {
             s.modelId = metaEntry?.modelId || null;
             s.modelProvider = null;
           }
-          // 如果内存里有活跃 session，用真实消息数覆盖磁盘投影（磁盘 jsonl 可能没 flush）
-          if (runtimeEntry?.session) {
-            try {
-              // 优先用记录的 _firstUserMessage
-              if (runtimeEntry._firstUserMessage) {
-                s.firstMessage = runtimeEntry._firstUserMessage;
-              }
-              const msgs = runtimeEntry.session?.agent?.state?.messages
-                || runtimeEntry.session?.sessionManager?.buildSessionContext?.()?.messages
-                || [];
-              if (msgs.length > 0) {
-                s.messageCount = msgs.length;
-                if (!s.firstMessage || s.firstMessage === '(no messages)') {
-                  for (const m of msgs) {
-                    const c = m?.content;
-                    const text = typeof c === 'string' ? c
-                      : Array.isArray(c) ? c.filter(p => p?.type === 'text').map(p => p.text).join('')
-                      : '';
-                    if (text) { s.firstMessage = text; break; }
-                  }
-                }
-              } else if (runtimeEntry._firstUserMessage && s.messageCount === 0) {
-                s.messageCount = 1; // 至少有 1 条用户消息
-              }
-            } catch {}
-          }
           if (!sessionMatchesListOptions(s, options)) continue;
           visibleSessions.push(s);
         }
@@ -3274,33 +3214,12 @@ export class SessionCoordinator {
       const projected = {
         path: sessionPath,
         title: null,
-        firstMessage: (() => {
-          try {
-            if (entry._firstUserMessage) return entry._firstUserMessage;
-            const msgs = entry.session?.agent?.state?.messages
-              || entry.session?.sessionManager?.buildSessionContext?.()?.messages
-              || [];
-            for (const m of msgs) {
-              const c = m?.content;
-              const text = typeof c === 'string' ? c
-                : Array.isArray(c) ? c.filter(p => p?.type === 'text').map(p => p.text).join('')
-                : '';
-              if (text) return text;
-            }
-          } catch {}
-          return "";
-        })(),
+        firstMessage: "",
         modified: new Date(entry.lastTouchedAt || Date.now()),
         // 内存占位投影没有磁盘修订点；revision=null 表示「未知」，
         // 前端 reconcile 对 null 不做盲目重拉。
         revision: null,
-        messageCount: (() => {
-          try {
-            return entry.session?.agent?.state?.messages?.length
-              ?? entry.session?.sessionManager?.buildSessionContext?.()?.messages?.length
-              ?? 0;
-          } catch { return 0; }
-        })(),
+        messageCount: 0,
         cwd: entry.session?.sessionManager?.getCwd?.() || "",
         agentId: entry.agentId || this._d.getActiveAgentId(),
         agentName: agent?.agentName || agent?.name || entry.agentId || null,

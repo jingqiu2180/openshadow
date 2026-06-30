@@ -6,38 +6,38 @@
  * 支持多 session 并发：所有 session 事件平等广播，前端按 sessionPath 路由
  */
 import { Hono } from "hono";
-import { MoodParser, ThinkTagParser, CardParser } from '../../core/events.js';
-import { extractBlocks } from '../block-extractors.js';
-import { toAppEventWsMessage } from '../app-events.js';
+import { MoodParser, ThinkTagParser, CardParser } from "../../core/events.ts";
+import { extractBlocks } from "../block-extractors.ts";
+import { toAppEventWsMessage } from "../app-events.ts";
 import {
   createSessionStreamEventWsMessage,
   createStreamResumeWsMessage,
   wsSend,
   wsParse,
   wsSendSerialized,
-} from '../ws-protocol.js';
-import { debugLog, createModuleLogger } from '../../lib/debug-log.js';
-import { t } from '../../lib/i18n.js';
-import { getLastAssistantUsage } from '../../lib/pi-sdk/index.js';
-import { compactSessionWithCachePreservation, isStaleExtensionContextError } from '../../core/session-compactor.js';
-import { submitDesktopSessionInterjection } from '../../core/desktop-session-submit.js';
-import { logLlmUsage } from '../../lib/llm/usage-observer.js';
-import { BrowserManager } from '../../lib/browser/browser-manager.js';
+} from "../ws-protocol.ts";
+import { debugLog, createModuleLogger } from "../../lib/debug-log.ts";
+import { t } from "../../lib/i18n.ts";
+import { getLastAssistantUsage } from "../../lib/pi-sdk/index.ts";
+import { compactSessionWithCachePreservation, isStaleExtensionContextError } from "../../core/session-compactor.ts";
+import { submitDesktopSessionInterjection } from "../../core/desktop-session-submit.ts";
+import { logLlmUsage } from "../../lib/llm/usage-observer.ts";
+import { BrowserManager } from "../../lib/browser/browser-manager.ts";
 import {
   createSessionStreamState,
   beginSessionStream,
   finishSessionStream,
   appendSessionStreamEvent,
   resumeSessionStream,
-} from '../session-stream-store.js';
-import { AppError } from '../../shared/errors.js';
-import { errorBus } from '../../shared/error-bus.js';
-import { createRequestContext } from '../http/boundary.js';
-import { buildDeferredResultInterludeBlock, resolveDeferredReceiverName } from '../deferred-result-interlude.js';
-import { buildAutomationSuggestionBlock } from '../suggestion-blocks.js';
-import { isAllowedChatImageMime, isChatImageBase64WithinLimit } from '../../shared/image-mime.js';
-import { isAllowedChatVideoMime, isChatVideoBase64WithinLimit } from '../../shared/video-mime.js';
-import { isAllowedChatAudioMime, isChatAudioBase64WithinLimit } from '../../shared/audio-mime.js';
+} from "../session-stream-store.ts";
+import { AppError } from "../../shared/errors.ts";
+import { errorBus } from "../../shared/error-bus.ts";
+import { createRequestContext } from "../http/boundary.ts";
+import { buildDeferredResultInterludeBlock, resolveDeferredReceiverName } from "../deferred-result-interlude.ts";
+import { buildAutomationSuggestionBlock } from "../suggestion-blocks.ts";
+import { isAllowedChatImageMime, isChatImageBase64WithinLimit } from "../../shared/image-mime.ts";
+import { isAllowedChatVideoMime, isChatVideoBase64WithinLimit } from "../../shared/video-mime.ts";
+import { isAllowedChatAudioMime, isChatAudioBase64WithinLimit } from "../../shared/audio-mime.ts";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
@@ -46,7 +46,7 @@ import {
   subscribeWsClientToSession,
   wsClientCanReceiveEvent,
   wsClientCanSendMessage,
-} from '../ws-scope.js';
+} from "../ws-scope.ts";
 
 const log = createModuleLogger("chat");
 const wsLog = createModuleLogger("ws");
@@ -1143,19 +1143,13 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
     upgradeWebSocket((c) => {
       let closed = false;
       const requestContext = createRequestContext(c, engine);
-      // openshadow 修复：desktop + local server 架构，所有 ws 客户端都来自本机 loopback
-      // 强制 assumeLocalOwner=true，跳过 token 鉴权（prod 模式打包后 desktop 内嵌 server 同样 loopback）
       const isAdapterWithoutHttpRequest = !c?.req;
-      const isLoopbackHost = c?.req?.url
-        ? /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?\//i.test(c.req.url)
-        : false;
-      const assumeLocalOwner = isAdapterWithoutHttpRequest || isLoopbackHost || process.env.OPENSHADOW_TRUST_WS === '1';
 
       return {
         onOpen(event, ws) {
           activeWsClients++;
           clients.set(ws, createInitialWsClientRecord(requestContext, {
-            assumeLocalOwner,
+            assumeLocalOwner: isAdapterWithoutHttpRequest,
           }));
           cancelDisconnectAbort();
           debugLog()?.log("ws", "client connected");
@@ -1166,7 +1160,7 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
           const msg = wsParse(event.data);
           if (!msg) return;
           let client = ensureWsClientRecord(ws, requestContext, {
-            assumeLocalOwner,
+            assumeLocalOwner: isAdapterWithoutHttpRequest,
           });
           if (!wsClientCanSendMessage(client, msg)) {
             wsSend(ws, { type: "error", message: "insufficient_scope", sessionPath: msg.sessionPath });
@@ -1346,28 +1340,6 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
               return;
             }
 
-            // ── openshadow 兼容：前端 ChatArea 发 type='chat'，映射为 prompt ──
-            if (msg.type === "chat" && msg.content) {
-              msg.type = "prompt";
-              msg.text = msg.content;
-              // 后端需要 sessionPath，前端没发就自动找/创建 session
-              if (!msg.sessionPath) {
-                const sc = (engine as any)._sessionCoord;
-                msg.sessionPath = sc?._currentSessionPath
-                  || (sc?._sessions?.size > 0 ? sc._sessions.keys().next().value : null)
-                  || null;
-                // 都没找到 → 自动新建 session
-                if (!msg.sessionPath) {
-                  try {
-                    const result = await engine.createSession(null, process.cwd(), true, null, {});
-                    msg.sessionPath = result?.sessionPath || result?.path || null;
-                  } catch (e) {
-                    console.error('[chat-adapter] auto-create session failed:', (e as any).message);
-                  }
-                }
-              }
-            }
-
             if ((msg.type === "prompt" || msg.type === "interject") && (msg.text || msg.images?.length || msg.videos?.length || msg.audios?.length)) {
               const interject = msg.type === "interject";
               // 图片校验：最多 10 张，单张 ≤ 20MB，仅允许常见图片 MIME
@@ -1468,7 +1440,6 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
                 return;
               }
               try {
-                console.log(`[chat] hub.send called, sessionPath=${promptSessionPath}, text=${promptText.substring(0, 30)}`);
                 await hub.send(promptText, {
                   sessionPath: promptSessionPath,
                   clientMessageId: msg.clientMessageId,
@@ -1489,21 +1460,6 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
                     : err.message;
                   wsSend(ws, { type: "error", message: errMessage, sessionPath: promptSessionPath });
                 }
-              } finally {
-                // 每轮对话后强制 flush session 到磁盘
-                try {
-                  const s = engine.getSessionByPath?.(promptSessionPath);
-                  const mgr = s?.sessionManager;
-                  // agent.state.messages 在 promptSession 后被清，消息在 sessionManager.fileEntries 里
-                  const entries = mgr?.fileEntries || [];
-                  const msgs = entries.filter((e: any) => e.type === 'message');
-                  console.log('[chat] flush: session=', !!s, 'mgr=', !!mgr, 'entriesLen=', entries.length, 'msgEntries=', msgs.length, 'sessionFile=', mgr?.sessionFile?.split('/').pop());
-                  if (mgr && entries.length > 0 && mgr.sessionFile) {
-                    const { writeFileSync } = await import('fs');
-                    writeFileSync(mgr.sessionFile, entries.map((e: any) => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
-                    console.log('[chat] flushed', msgs.length, 'messages to', mgr.sessionFile?.split('/').pop());
-                  }
-                } catch (flushErr) { console.error('[chat] flush error:', flushErr); }
               }
             }
           })().catch((err) => {
