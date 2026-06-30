@@ -1,19 +1,20 @@
-/* ─── Rem Wizard — desktop/wizard/wizard.css ─────────────────────── */
-/* Color tokens: warm paper, follow main Rem theme (#faf8f5 bg) */
+/* ─── OpenShadow Wizard — 暗影主宰 · 中二风 ─────────────────── */
+/* 量子黑 + 暗影紫 + 脉冲白 */
 
 :root {
-  --bg: #faf8f5;
-  --bg-elevated: #ffffff;
-  --bg-subtle: #f3efe8;
-  --text: #2a2520;
-  --text-muted: #8a8278;
-  --primary: #e8a0b8;          /* Rem 粉 */
-  --primary-hover: #d68ba6;
-  --primary-text: #ffffff;
-  --border: #e3dcd1;
-  --danger: #d4536a;
-  --success: #6ba368;
-  --shadow: 0 6px 24px rgba(40, 30, 25, 0.08);
+  --bg: #0F1419;                /* 量子黑 */
+  --bg-elevated: #18212C;       /* 暗影板 */
+  --bg-subtle: #1A2430;         /* 深邃面 */
+  --text: #F5FAFF;              /* 脉冲白 */
+  --text-muted: #788896;        /* 灰晶 */
+  --primary: #50288C;           /* 暗影紫 */
+  --primary-hover: #6B3EBF;     /* 暗影紫·辉 */
+  --primary-glow: rgba(80, 40, 140, 0.35);  /* 紫辉 */
+  --primary-text: #F5FAFF;
+  --border: #263040;            /* 暗界 */
+  --danger: #E0556A;            /* 破灭红 */
+  --success: #4AE087;           /* 虚空绿 */
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.6), 0 0 40px var(--primary-glow);
   --radius: 12px;
   --radius-sm: 8px;
 }
@@ -26,7 +27,7 @@ html, body {
     'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   font-size: 14px;
   color: var(--text);
-  background: linear-gradient(135deg, #faf8f5 0%, #f3efe8 100%);
+  background: linear-gradient(160deg, #0F1419 0%, #141A24 50%, #0A0F14 100%);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -57,23 +58,26 @@ html, body {
 .brand-avatar {
   width: 48px; height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #50288C 0%, #8B5CF6 50%, #A78BFA 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 0 20px rgba(80, 40, 140, 0.5);
 }
 
 .brand h1 {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text);
+  text-shadow: 0 0 12px rgba(80, 40, 140, 0.4);
   margin-bottom: 2px;
 }
 
 .brand-sub {
   font-size: 12px;
-  color: var(--text-muted);
+  color: #A78BFA;
+  letter-spacing: 0.05em;
 }
 
 .lang-pill {
@@ -83,6 +87,11 @@ html, body {
   border-radius: 999px;
   font-size: 12px;
   color: var(--text-muted);
+  transition: border-color 0.2s;
+}
+
+.lang-pill:hover {
+  border-color: var(--primary);
 }
 
 /* ─── Progress ──────────────────────────────────────────── */
@@ -119,26 +128,29 @@ html, body {
   font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .progress-dot.active {
   background: var(--primary);
-  border-color: var(--primary);
+  border-color: var(--primary-hover);
   color: var(--primary-text);
   transform: scale(1.1);
+  box-shadow: 0 0 16px var(--primary-glow);
 }
 
 .progress-dot.done {
   background: var(--success);
   border-color: var(--success);
-  color: var(--primary-text);
+  color: #0F1419;
+  box-shadow: 0 0 12px rgba(74, 224, 135, 0.3);
 }
 
 /* ─── Step container ────────────────────────────────────── */
 .step-container {
   flex: 1;
   background: var(--bg-elevated);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 32px;
   box-shadow: var(--shadow);
@@ -155,6 +167,7 @@ html, body {
 .step h2 {
   font-size: 22px;
   font-weight: 600;
+  color: var(--text);
 }
 
 .step-desc {
@@ -171,33 +184,39 @@ html, body {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
   font-family: inherit;
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(135deg, #50288C 0%, #6B3EBF 100%);
   color: var(--primary-text);
+  box-shadow: 0 0 20px var(--primary-glow);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: linear-gradient(135deg, #6B3EBF 0%, #8B5CF6 100%);
+  box-shadow: 0 0 30px rgba(80, 40, 140, 0.5);
+  transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
-  background: var(--border);
+  background: #1E2938;
   color: var(--text-muted);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);
+  border: 1px solid transparent;
 }
 
 .btn-ghost:hover {
   background: var(--bg-subtle);
   color: var(--text);
+  border-color: var(--border);
 }
 
 .btn-ghost:disabled {
@@ -228,11 +247,11 @@ html, body {
 
 .lang-card {
   padding: 18px;
-  background: var(--bg-elevated);
+  background: var(--bg-subtle);
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
   text-align: left;
   font-family: inherit;
   display: flex;
@@ -242,11 +261,13 @@ html, body {
 
 .lang-card:hover {
   border-color: var(--primary);
+  box-shadow: 0 0 12px var(--primary-glow);
 }
 
 .lang-card.selected {
   border-color: var(--primary);
-  background: rgba(232, 160, 184, 0.08);
+  background: rgba(80, 40, 140, 0.15);
+  box-shadow: 0 0 16px var(--primary-glow);
 }
 
 .lang-card .lang-flag {
@@ -257,6 +278,7 @@ html, body {
 .lang-card .lang-name {
   font-weight: 600;
   font-size: 15px;
+  color: var(--text);
 }
 
 .lang-card .lang-local {
@@ -286,14 +308,20 @@ html, body {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 14px;
-  background: var(--bg-elevated);
+  background: var(--bg-subtle);
+  color: var(--text);
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input:focus {
   border-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
 }
 
 .toggle-row {
@@ -304,6 +332,7 @@ html, body {
   background: var(--bg-subtle);
   border-radius: var(--radius-sm);
   cursor: pointer;
+  border: 1px solid var(--border);
 }
 
 .toggle {
@@ -314,7 +343,7 @@ html, body {
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.2s;
 }
 
 .toggle::after {
@@ -324,13 +353,14 @@ html, body {
   left: 2px;
   width: 20px;
   height: 20px;
-  background: white;
+  background: var(--text);
   border-radius: 50%;
-  transition: left 0.15s;
+  transition: left 0.2s;
 }
 
 .toggle.on {
   background: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
 }
 
 .toggle.on::after {
@@ -342,11 +372,18 @@ html, body {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 14px;
-  background: var(--bg-elevated);
+  background: var(--bg-subtle);
+  color: var(--text);
   font-family: inherit;
   cursor: pointer;
   outline: none;
   width: 100%;
+  transition: border-color 0.2s;
+}
+
+.provider-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
 }
 
 .test-conn-btn {
@@ -358,9 +395,13 @@ html, body {
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-family: inherit;
+  transition: all 0.2s;
 }
 
-.test-conn-btn:hover { background: var(--border); }
+.test-conn-btn:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
+}
 
 .test-conn-result {
   margin-top: 6px;
@@ -371,8 +412,8 @@ html, body {
 }
 
 .test-conn-result.show { display: block; }
-.test-conn-result.ok { background: rgba(107, 163, 104, 0.12); color: #4a7847; }
-.test-conn-result.err { background: rgba(212, 83, 106, 0.12); color: #a23a4d; }
+.test-conn-result.ok { background: rgba(74, 224, 135, 0.12); color: var(--success); }
+.test-conn-result.err { background: rgba(224, 85, 106, 0.12); color: var(--danger); }
 
 .model-row {
   display: grid;
@@ -399,8 +440,10 @@ html, body {
   justify-content: space-between;
   padding: 8px 12px;
   background: var(--bg-subtle);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 13px;
+  color: var(--text);
 }
 
 .folder-item .folder-remove {
@@ -423,4 +466,7 @@ html, body {
 
 .completion-emoji { font-size: 64px; }
 
-.completion-card h2 { color: var(--primary); }
+.completion-card h2 {
+  color: var(--primary);
+  text-shadow: 0 0 16px var(--primary-glow);
+}
