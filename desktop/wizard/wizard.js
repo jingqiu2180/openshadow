@@ -76,14 +76,29 @@ const state = {
   },
 }
 
-// ─── Builtin providers (mirror of core/providers/builtin.ts) ─────────
+// ─── Builtin providers (aligned with desktop/src/react/utils/provider-presets.ts) ─────────
 const BUILTIN_PROVIDERS = {
-  openai:    { label: 'OpenAI',                   type: 'openai', models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'], requiresApiKey: true },
-  minimax:   { label: 'MiniMax (abab)',           type: 'openai', models: ['abab6.5s-chat', 'abab6.5s'], requiresApiKey: true },
-  dashscope: { label: '阿里云百炼 (DashScope)',   type: 'openai', models: ['qwen-max', 'qwen-plus', 'qwen-turbo'], requiresApiKey: true },
-  deepseek:  { label: 'DeepSeek',                  type: 'openai', models: ['deepseek-chat', 'deepseek-reasoner'], requiresApiKey: true },
-  gemini:    { label: 'Google Gemini',             type: 'gemini', models: ['gemini-2.0-flash', 'gemini-1.5-pro'], requiresApiKey: true, note: '暂不支持(Stage 1d)' },
-  ollama:    { label: 'Ollama (本地)',             type: 'ollama', models: [], requiresApiKey: false, note: '本地服务,需先运行 ollama serve' },
+  // ── 本地 ──
+  ollama:      { label: 'Ollama (本地)',             type: 'ollama',    models: [],                       requiresApiKey: false, url: 'http://localhost:11434/v1', note: '本地服务，需先运行 ollama serve' },
+  // ── 国内 ──
+  dashscope:   { label: '阿里云百炼 DashScope (Qwen)', type: 'openai',  models: ['qwen-plus', 'qwen-turbo', 'qwen-max', 'qwen-vl-plus', 'qwen3-235b-a22b'], requiresApiKey: true, url: 'https://dashscope.aliyuncs.com/compatible-mode/v1' },
+  zhipu:       { label: '智谱 (GLM)',                type: 'openai',   models: ['glm-4-plus', 'glm-4-flash', 'glm-4-air', 'glm-4-airx'], requiresApiKey: true, url: 'https://open.bigmodel.cn/api/paas/v4' },
+  moonshot:    { label: 'Moonshot (Kimi)',            type: 'openai',   models: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'], requiresApiKey: true, url: 'https://api.moonshot.cn/v1' },
+  'kimi-coding':{ label: 'Kimi Coding Plan',          type: 'anthropic',models: ['kimi-coding'],          requiresApiKey: true, url: 'https://api.kimi.com/coding/' },
+  volcengine:  { label: 'Volcengine (豆包)',          type: 'openai',  models: ['doubao-pro-32k', 'doubao-lite-32k', 'deepseek-r1-2501', 'deepseek-v3-250324'], requiresApiKey: true, url: 'https://ark.cn-beijing.volces.com/api/v3' },
+  siliconflow: { label: 'SiliconFlow',                type: 'openai',  models: ['Qwen/Qwen2.5-7B-Instruct', 'deepseek-ai/DeepSeek-V2.5', 'Pro/Qwen/Qwen2.5-7B-Instruct'], requiresApiKey: true, url: 'https://api.siliconflow.cn/v1' },
+  minimax:     { label: 'MiniMax',                    type: 'openai',   models: ['abab6.5s-chat', 'abab6.5g-chat', 'abab6.5t-chat'], requiresApiKey: true, url: 'https://api.minimax.chat/v1' },
+  'minimax-token-plan':{ label: 'MiniMax Token Plan', type: 'anthropic',models: ['MiniMax-M3'],          requiresApiKey: true, url: 'https://api.minimaxi.com/anthropic' },
+  deepseek:    { label: 'DeepSeek',                   type: 'openai',  models: ['deepseek-chat', 'deepseek-reasoner'], requiresApiKey: true, url: 'https://api.deepseek.com/v1' },
+  mimo:        { label: 'Xiaomi (MiMo)',              type: 'openai',  models: ['mimo-chat'],            requiresApiKey: true, url: 'https://api.xiaomimimo.com/v1' },
+  'mimo-token-plan':{ label: 'Xiaomi MiMo Token Plan',type: 'openai',  models: ['mimo-chat'],            requiresApiKey: true, url: 'https://token-plan-cn.xiaomimimo.com/v1' },
+  // ── 国际 ──
+  openai:      { label: 'OpenAI',                     type: 'openai',  models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1-mini', 'o3-mini'], requiresApiKey: true, url: 'https://api.openai.com/v1' },
+  anthropic:   { label: 'Anthropic (compatible)',     type: 'openai',  models: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-sonnet-4-20250514'], requiresApiKey: true, url: 'https://api.anthropic.com/v1' },
+  gemini:      { label: 'Google Gemini',              type: 'gemini',  models: ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'], requiresApiKey: true, url: 'https://generativelanguage.googleapis.com/v1beta', note: '暂不支持 (Stage 1d)' },
+  groq:        { label: 'Groq',                       type: 'openai',  models: ['llama-3.3-70b-versatile', 'mixtral-8x7b-32768', 'qwen-2.5-32b'], requiresApiKey: true, url: 'https://api.groq.com/openai/v1' },
+  mistral:     { label: 'Mistral',                    type: 'openai',  models: ['mistral-large-latest', 'mistral-small-latest', 'codestral-latest'], requiresApiKey: true, url: 'https://api.mistral.ai/v1' },
+  openrouter:  { label: 'OpenRouter',                 type: 'openai',  models: [],                       requiresApiKey: true, url: 'https://openrouter.ai/api/v1' },
 }
 
 // ─── DOM helpers ────────────────────────────────────────────────────
@@ -384,6 +399,7 @@ async function finish() {
   nextBtn.textContent = '保存中…'
   console.log('[wizard] finish() started')
   try {
+    const builtin = BUILTIN_PROVIDERS[state.provider.builtinId]
     const cfg = {
       wizard: { completed: true, completedAt: new Date().toISOString() },
       ui: state.ui,
@@ -391,10 +407,10 @@ async function finish() {
       memory: { enabled: state.memory.enabled },
       providers: [{
         id: state.provider.builtinId,
-        type: BUILTIN_PROVIDERS[state.provider.builtinId].type,
+        type: builtin.type,
         apiKey: state.provider.apiKey,
-        baseUrl: '',  // main process will fill from builtin
-        models: BUILTIN_PROVIDERS[state.provider.builtinId].models,
+        baseUrl: builtin.url || '',  // 优先用 builtin url，main.cjs 会兜底填充
+        models: builtin.models,
         isDefault: true,
       }],
       models: {
