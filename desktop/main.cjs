@@ -67,139 +67,48 @@ function isWizardCompleted() {
   return readConfig().wizard && readConfig().wizard.completed === true
 }
 
-// ─── Builtin provider metadata ────────────────────────────────
-// ─── Builtin providers (aligned with desktop/src/react/utils/provider-presets.ts) ───
-const BUILTIN_PROVIDERS = {
-  // ── 本地 ──
-  ollama: {
-    type: 'ollama',
-    label: 'Ollama (本地)',
-    baseUrl: 'http://localhost:11434/v1',
-    models: [],
-    requiresApiKey: false,
-    notes: '本地运行，无需 API Key',
-  },
-  // ── 国内 ──
-  dashscope: {
-    type: 'openai',
-    label: '阿里云百炼 DashScope (Qwen)',
-    baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-    models: ['qwen-plus', 'qwen-turbo', 'qwen-max', 'qwen-vl-plus', 'qwen3-235b-a22b'],
-    requiresApiKey: true,
-  },
-  zhipu: {
-    type: 'openai',
-    label: '智谱 (GLM)',
-    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-    models: ['glm-4-plus', 'glm-4-flash', 'glm-4-air', 'glm-4-airx'],
-    requiresApiKey: true,
-  },
-  moonshot: {
-    type: 'openai',
-    label: 'Moonshot (Kimi)',
-    baseUrl: 'https://api.moonshot.cn/v1',
-    models: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
-    requiresApiKey: true,
-  },
-  'kimi-coding': {
-    type: 'anthropic',
-    label: 'Kimi Coding Plan',
-    baseUrl: 'https://api.kimi.com/coding/',
-    models: ['kimi-coding'],
-    requiresApiKey: true,
-  },
-  volcengine: {
-    type: 'openai',
-    label: 'Volcengine (豆包)',
-    baseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
-    models: ['doubao-pro-32k', 'doubao-lite-32k', 'deepseek-r1-2501', 'deepseek-v3-250324'],
-    requiresApiKey: true,
-  },
-  siliconflow: {
-    type: 'openai',
-    label: 'SiliconFlow',
-    baseUrl: 'https://api.siliconflow.cn/v1',
-    models: ['Qwen/Qwen2.5-7B-Instruct', 'deepseek-ai/DeepSeek-V2.5', 'Pro/Qwen/Qwen2.5-7B-Instruct'],
-    requiresApiKey: true,
-  },
-  minimax: {
-    type: 'openai',
-    label: 'MiniMax',
-    baseUrl: 'https://api.minimax.chat/v1',
-    models: ['abab6.5s-chat', 'abab6.5g-chat', 'abab6.5t-chat'],
-    requiresApiKey: true,
-  },
-  'minimax-token-plan': {
-    type: 'anthropic',
-    label: 'MiniMax Token Plan',
-    baseUrl: 'https://api.minimaxi.com/anthropic',
-    models: ['MiniMax-M3'],
-    requiresApiKey: true,
-  },
-  deepseek: {
-    type: 'openai',
-    label: 'DeepSeek',
-    baseUrl: 'https://api.deepseek.com/v1',
-    models: ['deepseek-chat', 'deepseek-reasoner'],
-    requiresApiKey: true,
-  },
-  mimo: {
-    type: 'openai',
-    label: 'Xiaomi (MiMo)',
-    baseUrl: 'https://api.xiaomimimo.com/v1',
-    models: ['mimo-chat'],
-    requiresApiKey: true,
-  },
-  'mimo-token-plan': {
-    type: 'openai',
-    label: 'Xiaomi MiMo Token Plan',
-    baseUrl: 'https://token-plan-cn.xiaomimimo.com/v1',
-    models: ['mimo-chat'],
-    requiresApiKey: true,
-  },
-  // ── 国际 ──
-  openai: {
-    type: 'openai',
-    label: 'OpenAI',
-    baseUrl: 'https://api.openai.com/v1',
-    models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1-mini', 'o3-mini'],
-    requiresApiKey: true,
-  },
-  anthropic: {
-    type: 'openai',
-    label: 'Anthropic (compatible)',
-    baseUrl: 'https://api.anthropic.com/v1',
-    models: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-sonnet-4-20250514'],
-    requiresApiKey: true,
-  },
-  gemini: {
-    type: 'gemini',
-    label: 'Google Gemini',
-    baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
-    models: ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'],
-    requiresApiKey: true,
-  },
-  groq: {
-    type: 'openai',
-    label: 'Groq',
-    baseUrl: 'https://api.groq.com/openai/v1',
-    models: ['llama-3.3-70b-versatile', 'mixtral-8x7b-32768', 'qwen-2.5-32b'],
-    requiresApiKey: true,
-  },
-  mistral: {
-    type: 'openai',
-    label: 'Mistral',
-    baseUrl: 'https://api.mistral.ai/v1',
-    models: ['mistral-large-latest', 'mistral-small-latest', 'codestral-latest'],
-    requiresApiKey: true,
-  },
-  openrouter: {
-    type: 'openai',
-    label: 'OpenRouter',
-    baseUrl: 'https://openrouter.ai/api/v1',
-    models: [],
-    requiresApiKey: true,
-  },
+// ─── Builtin provider metadata — single source of truth: provider-presets.ts ───
+const { API_PROVIDER_PRESETS } = require('./src/react/utils/provider-presets')
+
+// Model defaults for wizard step 4 (server may not be running yet during setup)
+const PROVIDER_MODELS = {
+  openai:    ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1-mini', 'o3-mini'],
+  anthropic: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-sonnet-4-20250514'],
+  minimax:   ['abab6.5s-chat', 'abab6.5g-chat', 'abab6.5t-chat'],
+  'minimax-token-plan': ['MiniMax-M3'],
+  dashscope: ['qwen-plus', 'qwen-turbo', 'qwen-max', 'qwen-vl-plus', 'qwen3-235b-a22b'],
+  deepseek:  ['deepseek-chat', 'deepseek-reasoner'],
+  zhipu:     ['glm-4-plus', 'glm-4-flash', 'glm-4-air', 'glm-4-airx'],
+  moonshot:  ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
+  'kimi-coding': ['kimi-coding'],
+  volcengine:['doubao-pro-32k', 'doubao-lite-32k', 'deepseek-r1-2501', 'deepseek-v3-250324'],
+  siliconflow: ['Qwen/Qwen2.5-7B-Instruct', 'deepseek-ai/DeepSeek-V2.5', 'Pro/Qwen/Qwen2.5-7B-Instruct'],
+  gemini:    ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'],
+  groq:      ['llama-3.3-70b-versatile', 'mixtral-8x7b-32768', 'qwen-2.5-32b'],
+  mistral:   ['mistral-large-latest', 'mistral-small-latest', 'codestral-latest'],
+  openrouter: [],
+  ollama:    [],
+  mimo:      ['mimo-chat'],
+  'mimo-token-plan': ['mimo-chat'],
+}
+
+// Map provider-presets api string → wizard type string
+const API_TO_TYPE = {
+  'openai-completions': 'openai',
+  'anthropic-messages': 'anthropic',
+  'google-generative-ai': 'gemini',
+}
+
+const BUILTIN_PROVIDERS = {}
+for (const p of API_PROVIDER_PRESETS) {
+  BUILTIN_PROVIDERS[p.value] = {
+    type: API_TO_TYPE[p.api] || 'openai',
+    label: p.labelZh || p.label,
+    baseUrl: p.url,
+    models: PROVIDER_MODELS[p.value] || [],
+    requiresApiKey: !p.local,
+    ...(p.local ? { notes: '本地运行，无需 API Key' } : {}),
+  }
 }
 
 async function testOpenAICompatible(baseUrl, apiKey, model) {

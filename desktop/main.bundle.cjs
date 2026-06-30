@@ -5,6 +5,66 @@ const require$$2 = require("fs");
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
+function getAugmentedNamespace(n) {
+  if (Object.prototype.hasOwnProperty.call(n, "__esModule")) return n;
+  var f = n.default;
+  if (typeof f == "function") {
+    var a = function a2() {
+      var isInstance = false;
+      try {
+        isInstance = this instanceof a2;
+      } catch {
+      }
+      if (isInstance) {
+        return Reflect.construct(f, arguments, this.constructor);
+      }
+      return f.apply(this, arguments);
+    };
+    a.prototype = f.prototype;
+  } else a = {};
+  Object.defineProperty(a, "__esModule", { value: true });
+  Object.keys(n).forEach(function(k) {
+    var d = Object.getOwnPropertyDescriptor(n, k);
+    Object.defineProperty(a, k, d.get ? d : {
+      enumerable: true,
+      get: function() {
+        return n[k];
+      }
+    });
+  });
+  return a;
+}
+const API_PROVIDER_PRESETS = [
+  { value: "ollama", label: "Ollama (Local)", labelZh: "Ollama (本地)", url: "http://localhost:11434/v1", api: "openai-completions", local: true },
+  { value: "dashscope", label: "DashScope (Qwen)", url: "https://dashscope.aliyuncs.com/compatible-mode/v1", api: "openai-completions" },
+  { value: "openai", label: "OpenAI", url: "https://api.openai.com/v1", api: "openai-completions" },
+  { value: "gemini", label: "Google Gemini", url: "https://generativelanguage.googleapis.com/v1beta", api: "google-generative-ai" },
+  { value: "deepseek", label: "DeepSeek", url: "https://api.deepseek.com", api: "openai-completions" },
+  { value: "volcengine", label: "Volcengine (Doubao)", labelZh: "Volcengine (豆包)", url: "https://ark.cn-beijing.volces.com/api/v3", api: "openai-completions" },
+  { value: "moonshot", label: "Moonshot (Kimi)", url: "https://api.moonshot.cn/v1", api: "openai-completions" },
+  { value: "kimi-coding", label: "Kimi Coding Plan", url: "https://api.kimi.com/coding/", api: "anthropic-messages" },
+  { value: "zhipu", label: "Zhipu (GLM)", url: "https://open.bigmodel.cn/api/paas/v4", api: "openai-completions" },
+  { value: "siliconflow", label: "SiliconFlow", url: "https://api.siliconflow.cn/v1", api: "openai-completions" },
+  { value: "groq", label: "Groq", url: "https://api.groq.com/openai/v1", api: "openai-completions" },
+  { value: "mistral", label: "Mistral", url: "https://api.mistral.ai/v1", api: "openai-completions" },
+  { value: "minimax", label: "MiniMax", url: "https://api.minimaxi.com/anthropic", api: "anthropic-messages" },
+  { value: "minimax-token-plan", label: "MiniMax Token Plan", url: "https://api.minimaxi.com/anthropic", api: "anthropic-messages" },
+  { value: "openrouter", label: "OpenRouter", url: "https://openrouter.ai/api/v1", api: "openai-completions" },
+  { value: "mimo", label: "Xiaomi (MiMo)", url: "https://api.xiaomimimo.com/v1", api: "openai-completions" },
+  { value: "mimo-token-plan", label: "Xiaomi MiMo Token Plan", url: "https://token-plan-cn.xiaomimimo.com/v1", api: "openai-completions" }
+];
+function currentLocale() {
+  return typeof window === "undefined" ? void 0 : window.i18n?.locale;
+}
+function getProviderPresetLabel(preset, locale = currentLocale()) {
+  return locale?.startsWith("zh") && preset.labelZh ? preset.labelZh : preset.label;
+}
+const providerPresets = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  API_PROVIDER_PRESETS,
+  getProviderPresetLabel
+}, Symbol.toStringTag, { value: "Module" }));
+const require$$3 = /* @__PURE__ */ getAugmentedNamespace(providerPresets);
 var main$1;
 var hasRequiredMain;
 function requireMain() {
@@ -55,138 +115,43 @@ function requireMain() {
   function isWizardCompleted() {
     return readConfig().wizard && readConfig().wizard.completed === true;
   }
-  const BUILTIN_PROVIDERS = {
-    // ── 本地 ──
-    ollama: {
-      type: "ollama",
-      label: "Ollama (本地)",
-      baseUrl: "http://localhost:11434/v1",
-      models: [],
-      requiresApiKey: false,
-      notes: "本地运行，无需 API Key"
-    },
-    // ── 国内 ──
-    dashscope: {
-      type: "openai",
-      label: "阿里云百炼 DashScope (Qwen)",
-      baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-      models: ["qwen-plus", "qwen-turbo", "qwen-max", "qwen-vl-plus", "qwen3-235b-a22b"],
-      requiresApiKey: true
-    },
-    zhipu: {
-      type: "openai",
-      label: "智谱 (GLM)",
-      baseUrl: "https://open.bigmodel.cn/api/paas/v4",
-      models: ["glm-4-plus", "glm-4-flash", "glm-4-air", "glm-4-airx"],
-      requiresApiKey: true
-    },
-    moonshot: {
-      type: "openai",
-      label: "Moonshot (Kimi)",
-      baseUrl: "https://api.moonshot.cn/v1",
-      models: ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"],
-      requiresApiKey: true
-    },
-    "kimi-coding": {
-      type: "anthropic",
-      label: "Kimi Coding Plan",
-      baseUrl: "https://api.kimi.com/coding/",
-      models: ["kimi-coding"],
-      requiresApiKey: true
-    },
-    volcengine: {
-      type: "openai",
-      label: "Volcengine (豆包)",
-      baseUrl: "https://ark.cn-beijing.volces.com/api/v3",
-      models: ["doubao-pro-32k", "doubao-lite-32k", "deepseek-r1-2501", "deepseek-v3-250324"],
-      requiresApiKey: true
-    },
-    siliconflow: {
-      type: "openai",
-      label: "SiliconFlow",
-      baseUrl: "https://api.siliconflow.cn/v1",
-      models: ["Qwen/Qwen2.5-7B-Instruct", "deepseek-ai/DeepSeek-V2.5", "Pro/Qwen/Qwen2.5-7B-Instruct"],
-      requiresApiKey: true
-    },
-    minimax: {
-      type: "openai",
-      label: "MiniMax",
-      baseUrl: "https://api.minimax.chat/v1",
-      models: ["abab6.5s-chat", "abab6.5g-chat", "abab6.5t-chat"],
-      requiresApiKey: true
-    },
-    "minimax-token-plan": {
-      type: "anthropic",
-      label: "MiniMax Token Plan",
-      baseUrl: "https://api.minimaxi.com/anthropic",
-      models: ["MiniMax-M3"],
-      requiresApiKey: true
-    },
-    deepseek: {
-      type: "openai",
-      label: "DeepSeek",
-      baseUrl: "https://api.deepseek.com/v1",
-      models: ["deepseek-chat", "deepseek-reasoner"],
-      requiresApiKey: true
-    },
-    mimo: {
-      type: "openai",
-      label: "Xiaomi (MiMo)",
-      baseUrl: "https://api.xiaomimimo.com/v1",
-      models: ["mimo-chat"],
-      requiresApiKey: true
-    },
-    "mimo-token-plan": {
-      type: "openai",
-      label: "Xiaomi MiMo Token Plan",
-      baseUrl: "https://token-plan-cn.xiaomimimo.com/v1",
-      models: ["mimo-chat"],
-      requiresApiKey: true
-    },
-    // ── 国际 ──
-    openai: {
-      type: "openai",
-      label: "OpenAI",
-      baseUrl: "https://api.openai.com/v1",
-      models: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1-mini", "o3-mini"],
-      requiresApiKey: true
-    },
-    anthropic: {
-      type: "openai",
-      label: "Anthropic (compatible)",
-      baseUrl: "https://api.anthropic.com/v1",
-      models: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-sonnet-4-20250514"],
-      requiresApiKey: true
-    },
-    gemini: {
-      type: "gemini",
-      label: "Google Gemini",
-      baseUrl: "https://generativelanguage.googleapis.com/v1beta",
-      models: ["gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"],
-      requiresApiKey: true
-    },
-    groq: {
-      type: "openai",
-      label: "Groq",
-      baseUrl: "https://api.groq.com/openai/v1",
-      models: ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "qwen-2.5-32b"],
-      requiresApiKey: true
-    },
-    mistral: {
-      type: "openai",
-      label: "Mistral",
-      baseUrl: "https://api.mistral.ai/v1",
-      models: ["mistral-large-latest", "mistral-small-latest", "codestral-latest"],
-      requiresApiKey: true
-    },
-    openrouter: {
-      type: "openai",
-      label: "OpenRouter",
-      baseUrl: "https://openrouter.ai/api/v1",
-      models: [],
-      requiresApiKey: true
-    }
+  const { API_PROVIDER_PRESETS: API_PROVIDER_PRESETS2 } = require$$3;
+  const PROVIDER_MODELS = {
+    openai: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1-mini", "o3-mini"],
+    anthropic: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-sonnet-4-20250514"],
+    minimax: ["abab6.5s-chat", "abab6.5g-chat", "abab6.5t-chat"],
+    "minimax-token-plan": ["MiniMax-M3"],
+    dashscope: ["qwen-plus", "qwen-turbo", "qwen-max", "qwen-vl-plus", "qwen3-235b-a22b"],
+    deepseek: ["deepseek-chat", "deepseek-reasoner"],
+    zhipu: ["glm-4-plus", "glm-4-flash", "glm-4-air", "glm-4-airx"],
+    moonshot: ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"],
+    "kimi-coding": ["kimi-coding"],
+    volcengine: ["doubao-pro-32k", "doubao-lite-32k", "deepseek-r1-2501", "deepseek-v3-250324"],
+    siliconflow: ["Qwen/Qwen2.5-7B-Instruct", "deepseek-ai/DeepSeek-V2.5", "Pro/Qwen/Qwen2.5-7B-Instruct"],
+    gemini: ["gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"],
+    groq: ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "qwen-2.5-32b"],
+    mistral: ["mistral-large-latest", "mistral-small-latest", "codestral-latest"],
+    openrouter: [],
+    ollama: [],
+    mimo: ["mimo-chat"],
+    "mimo-token-plan": ["mimo-chat"]
   };
+  const API_TO_TYPE = {
+    "openai-completions": "openai",
+    "anthropic-messages": "anthropic",
+    "google-generative-ai": "gemini"
+  };
+  const BUILTIN_PROVIDERS = {};
+  for (const p of API_PROVIDER_PRESETS2) {
+    BUILTIN_PROVIDERS[p.value] = {
+      type: API_TO_TYPE[p.api] || "openai",
+      label: p.labelZh || p.label,
+      baseUrl: p.url,
+      models: PROVIDER_MODELS[p.value] || [],
+      requiresApiKey: !p.local,
+      ...p.local ? { notes: "本地运行，无需 API Key" } : {}
+    };
+  }
   async function testOpenAICompatible(baseUrl, apiKey, model) {
     const start = Date.now();
     try {

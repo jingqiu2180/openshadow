@@ -67,39 +67,21 @@ const state = {
   workspace: {
     folders: [],
   },
+  // builtins 从主进程通过 wizard:get-config IPC 获取（单源: provider-presets.ts）
+  builtins: {},
   _validation: {
     1: () => !!state.ui.language,
     2: () => state.user.name.trim().length > 0,
-    3: () => state.provider.apiKey.length > 0 || !BUILTIN_PROVIDERS[state.provider.builtinId]?.requiresApiKey,
+    3: () => state.provider.apiKey.length > 0 || !state.builtins[state.provider.builtinId]?.requiresApiKey,
     4: () => state.models.main.length > 0,
     5: () => state.workspace.folders.length > 0,
   },
 }
 
-// ─── Builtin providers (aligned with desktop/src/react/utils/provider-presets.ts) ─────────
-const BUILTIN_PROVIDERS = {
-  // ── 本地 ──
-  ollama:      { label: 'Ollama (本地)',             type: 'ollama',    models: [],                       requiresApiKey: false, url: 'http://localhost:11434/v1', note: '本地服务，需先运行 ollama serve' },
-  // ── 国内 ──
-  dashscope:   { label: '阿里云百炼 DashScope (Qwen)', type: 'openai',  models: ['qwen-plus', 'qwen-turbo', 'qwen-max', 'qwen-vl-plus', 'qwen3-235b-a22b'], requiresApiKey: true, url: 'https://dashscope.aliyuncs.com/compatible-mode/v1' },
-  zhipu:       { label: '智谱 (GLM)',                type: 'openai',   models: ['glm-4-plus', 'glm-4-flash', 'glm-4-air', 'glm-4-airx'], requiresApiKey: true, url: 'https://open.bigmodel.cn/api/paas/v4' },
-  moonshot:    { label: 'Moonshot (Kimi)',            type: 'openai',   models: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'], requiresApiKey: true, url: 'https://api.moonshot.cn/v1' },
-  'kimi-coding':{ label: 'Kimi Coding Plan',          type: 'anthropic',models: ['kimi-coding'],          requiresApiKey: true, url: 'https://api.kimi.com/coding/' },
-  volcengine:  { label: 'Volcengine (豆包)',          type: 'openai',  models: ['doubao-pro-32k', 'doubao-lite-32k', 'deepseek-r1-2501', 'deepseek-v3-250324'], requiresApiKey: true, url: 'https://ark.cn-beijing.volces.com/api/v3' },
-  siliconflow: { label: 'SiliconFlow',                type: 'openai',  models: ['Qwen/Qwen2.5-7B-Instruct', 'deepseek-ai/DeepSeek-V2.5', 'Pro/Qwen/Qwen2.5-7B-Instruct'], requiresApiKey: true, url: 'https://api.siliconflow.cn/v1' },
-  minimax:     { label: 'MiniMax',                    type: 'openai',   models: ['abab6.5s-chat', 'abab6.5g-chat', 'abab6.5t-chat'], requiresApiKey: true, url: 'https://api.minimax.chat/v1' },
-  'minimax-token-plan':{ label: 'MiniMax Token Plan', type: 'anthropic',models: ['MiniMax-M3'],          requiresApiKey: true, url: 'https://api.minimaxi.com/anthropic' },
-  deepseek:    { label: 'DeepSeek',                   type: 'openai',  models: ['deepseek-chat', 'deepseek-reasoner'], requiresApiKey: true, url: 'https://api.deepseek.com/v1' },
-  mimo:        { label: 'Xiaomi (MiMo)',              type: 'openai',  models: ['mimo-chat'],            requiresApiKey: true, url: 'https://api.xiaomimimo.com/v1' },
-  'mimo-token-plan':{ label: 'Xiaomi MiMo Token Plan',type: 'openai',  models: ['mimo-chat'],            requiresApiKey: true, url: 'https://token-plan-cn.xiaomimimo.com/v1' },
-  // ── 国际 ──
-  openai:      { label: 'OpenAI',                     type: 'openai',  models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1-mini', 'o3-mini'], requiresApiKey: true, url: 'https://api.openai.com/v1' },
-  anthropic:   { label: 'Anthropic (compatible)',     type: 'openai',  models: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-sonnet-4-20250514'], requiresApiKey: true, url: 'https://api.anthropic.com/v1' },
-  gemini:      { label: 'Google Gemini',              type: 'gemini',  models: ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'], requiresApiKey: true, url: 'https://generativelanguage.googleapis.com/v1beta', note: '暂不支持 (Stage 1d)' },
-  groq:        { label: 'Groq',                       type: 'openai',  models: ['llama-3.3-70b-versatile', 'mixtral-8x7b-32768', 'qwen-2.5-32b'], requiresApiKey: true, url: 'https://api.groq.com/openai/v1' },
-  mistral:     { label: 'Mistral',                    type: 'openai',  models: ['mistral-large-latest', 'mistral-small-latest', 'codestral-latest'], requiresApiKey: true, url: 'https://api.mistral.ai/v1' },
-  openrouter:  { label: 'OpenRouter',                 type: 'openai',  models: [],                       requiresApiKey: true, url: 'https://openrouter.ai/api/v1' },
-}
+// ─── Builtin providers — 单源: desktop/src/react/utils/provider-presets.ts ───
+// wizard 不再维护自己的供应商列表。builtins 数据通过 wizard:get-config IPC
+// 从主进程获取，主进程 import provider-presets.ts 统一管理。
+// state.builtins 在 boot() 中从 existing.builtins 填充。
 
 // ─── DOM helpers ────────────────────────────────────────────────────
 const $ = (sel) => document.querySelector(sel)
@@ -211,8 +193,8 @@ function renderStepUser(container) {
 }
 
 function renderStepProvider(container) {
-  const builtinEntries = Object.entries(BUILTIN_PROVIDERS)
-  const selectedSpec = BUILTIN_PROVIDERS[state.provider.builtinId]
+  const builtinEntries = Object.entries(state.builtins)
+  const selectedSpec = state.builtins[state.provider.builtinId]
   const models = selectedSpec?.models ?? []
   container.innerHTML = `
     <div class="step">
@@ -284,7 +266,7 @@ function renderStepProvider(container) {
 }
 
 function renderStepModels(container) {
-  const models = BUILTIN_PROVIDERS[state.provider.builtinId]?.models ?? []
+  const models = state.builtins[state.provider.builtinId]?.models ?? []
   if (models.length === 0) {
     state.models = { main: state.models.main || 'custom', small: state.models.small || 'custom', large: state.models.large || 'custom' }
   } else {
@@ -399,7 +381,7 @@ async function finish() {
   nextBtn.textContent = '保存中…'
   console.log('[wizard] finish() started')
   try {
-    const builtin = BUILTIN_PROVIDERS[state.provider.builtinId]
+    const builtin = state.builtins[state.provider.builtinId]
     const cfg = {
       wizard: { completed: true, completedAt: new Date().toISOString() },
       ui: state.ui,
@@ -444,10 +426,14 @@ async function finish() {
 // ─── Boot ───────────────────────────────────────────────────────────
 async function boot() {
   try {
-    // Try to pull existing config (resumable wizard)
+    // Try to pull existing config (resumable wizard) + builtins from main process
     try {
       const existing = await window.wizard.getConfig()
       if (existing) {
+        // Capture builtins from main process (single source: provider-presets.ts)
+        if (existing.builtins && Object.keys(existing.builtins).length > 0) {
+          state.builtins = existing.builtins
+        }
         if (existing.user?.name) state.user.name = existing.user.name
         if (existing.ui?.language) state.ui.language = existing.ui.language
         if (existing.providers?.[0]) {
@@ -460,6 +446,16 @@ async function boot() {
       }
     } catch (e) {
       console.warn('[wizard] getConfig failed, starting fresh:', e.message)
+    }
+
+    // 兜底: 如果 builtins 为空（mock 或 IPC 失败），提供最小默认值
+    if (Object.keys(state.builtins).length === 0) {
+      console.warn('[wizard] builtins is empty — using minimal fallback')
+      state.builtins = {
+        minimax: { label: 'MiniMax', type: 'openai', models: ['abab6.5s-chat'], requiresApiKey: true, url: 'https://api.minimax.chat/v1' },
+        openai:  { label: 'OpenAI',  type: 'openai', models: ['gpt-4o', 'gpt-4o-mini'], requiresApiKey: true, url: 'https://api.openai.com/v1' },
+        ollama:  { label: 'Ollama (本地)', type: 'ollama', models: [], requiresApiKey: false, url: 'http://localhost:11434/v1' },
+      }
     }
 
     $('#backBtn').onclick = () => {
