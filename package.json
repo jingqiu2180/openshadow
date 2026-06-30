@@ -117,8 +117,8 @@
       "allowToChangeInstallationDirectory": false,
       "shortcutName": "OpenShadow",
       "include": "build/installer.nsh",
-      "installerIcon": "desktop/src/icon.png",
-      "uninstallerIcon": "desktop/src/icon.png"
+      "installerIcon": "desktop/src/icon.ico",
+      "uninstallerIcon": "desktop/src/icon.ico"
     },
     "linux": {
       "target": [
