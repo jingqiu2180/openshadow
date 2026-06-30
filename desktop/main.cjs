@@ -7,13 +7,11 @@
 // 3. 创建主窗口加载 Vite dev server 或 dist 资源
 
 const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu } = require('electron')
-const { join } = require('path')
+const { join, dirname } = require('path')
 const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
 
 const isDev = !app.isPackaged
 const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5280'
-const WIZ_DEV_HTML = join(__dirname, 'wizard', 'index.html')
-
 // App icon
 const APP_ICON_PATH = join(__dirname, 'assets', 'rem-avatar.png')
 
@@ -156,6 +154,12 @@ let wizardWindow = null
 async function runWizardWindow() {
   if (isWizardCompleted()) return
 
+  // asar:true 时 preload 必须指向真实文件系统路径（asar 解包后）
+  const preloadPath = app.isPackaged
+    ? join(dirname(app.getAppPath()), 'app.asar.unpacked', 'desktop', 'wizard', 'preload.js')
+    : join(app.getAppPath(), 'desktop', 'wizard', 'preload.js')
+  console.log('[wizard] preload path:', preloadPath, '| exists:', existsSync(preloadPath))
+
   wizardWindow = new BrowserWindow({
     width: 760,
     height: 640,
@@ -166,7 +170,7 @@ async function runWizardWindow() {
     minimizable: false,
     maximizable: false,
     webPreferences: {
-      preload: join(__dirname, 'wizard', 'preload.js'),
+      preload: preloadPath,
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false,
@@ -181,8 +185,12 @@ async function runWizardWindow() {
     console.log('[wizard] window shown')
   })
 
-  await wizardWindow.loadFile(WIZ_DEV_HTML)
-  console.log('[wizard] loaded HTML from', WIZ_DEV_HTML)
+  const htmlPath = app.isPackaged
+    ? join(app.getAppPath(), 'wizard', 'index.html')
+    : join(__dirname, 'wizard', 'index.html')
+  console.log('[wizard] html path:', htmlPath)
+  await wizardWindow.loadFile(htmlPath)
+  console.log('[wizard] loaded HTML from', htmlPath)
 
   wizardWindow.on('close', (e) => {
     if (!isWizardCompleted()) {
@@ -220,6 +228,7 @@ function registerIpcHandlers() {
   })
 
   ipcMain.handle('wizard:save-config', (_e, payload) => {
+    console.log('[wizard] save-config called')
     try {
       const cfg = readConfig()
       const merged = Object.assign({}, cfg, payload)
@@ -227,8 +236,10 @@ function registerIpcHandlers() {
         merged.security = Object.assign({}, cfg.security || {}, { workspaceRoots: payload.security.workspaceRoots })
       }
       writeConfig(merged)
+      console.log('[wizard] config saved to', CONFIG_PATH)
       return { ok: true }
     } catch (e) {
+      console.error('[wizard] save-config error:', e.message)
       return { ok: false, error: e.message }
     }
   })

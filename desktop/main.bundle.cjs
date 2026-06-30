@@ -11,11 +11,10 @@ function requireMain() {
   if (hasRequiredMain) return main$1;
   hasRequiredMain = 1;
   const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu } = require$$0;
-  const { join } = require$$1;
+  const { join, dirname } = require$$1;
   const { readFileSync, writeFileSync, existsSync, mkdirSync } = require$$2;
   const isDev = !app.isPackaged;
   const VITE_DEV_URL = process.env.VITE_DEV_URL || "http://localhost:5280";
-  const WIZ_DEV_HTML = join(__dirname, "wizard", "index.html");
   const APP_ICON_PATH = join(__dirname, "assets", "rem-avatar.png");
   if (process.platform === "win32") {
     app.setAppUserModelId("com.openshadow.app");
@@ -138,6 +137,8 @@ function requireMain() {
   let wizardWindow = null;
   async function runWizardWindow() {
     if (isWizardCompleted()) return;
+    const preloadPath = app.isPackaged ? join(dirname(app.getAppPath()), "app.asar.unpacked", "desktop", "wizard", "preload.js") : join(app.getAppPath(), "desktop", "wizard", "preload.js");
+    console.log("[wizard] preload path:", preloadPath, "| exists:", existsSync(preloadPath));
     wizardWindow = new BrowserWindow({
       width: 760,
       height: 640,
@@ -148,7 +149,7 @@ function requireMain() {
       minimizable: false,
       maximizable: false,
       webPreferences: {
-        preload: join(__dirname, "wizard", "preload.js"),
+        preload: preloadPath,
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: false,
@@ -161,8 +162,10 @@ function requireMain() {
       wizardWindow && wizardWindow.show();
       console.log("[wizard] window shown");
     });
-    await wizardWindow.loadFile(WIZ_DEV_HTML);
-    console.log("[wizard] loaded HTML from", WIZ_DEV_HTML);
+    const htmlPath = app.isPackaged ? join(app.getAppPath(), "wizard", "index.html") : join(__dirname, "wizard", "index.html");
+    console.log("[wizard] html path:", htmlPath);
+    await wizardWindow.loadFile(htmlPath);
+    console.log("[wizard] loaded HTML from", htmlPath);
     wizardWindow.on("close", (e) => {
       if (!isWizardCompleted()) {
         const choice = dialog.showMessageBoxSync(wizardWindow, {
@@ -196,6 +199,7 @@ function requireMain() {
       };
     });
     ipcMain.handle("wizard:save-config", (_e, payload) => {
+      console.log("[wizard] save-config called");
       try {
         const cfg = readConfig();
         const merged = Object.assign({}, cfg, payload);
@@ -203,8 +207,10 @@ function requireMain() {
           merged.security = Object.assign({}, cfg.security || {}, { workspaceRoots: payload.security.workspaceRoots });
         }
         writeConfig(merged);
+        console.log("[wizard] config saved to", CONFIG_PATH);
         return { ok: true };
       } catch (e) {
+        console.error("[wizard] save-config error:", e.message);
         return { ok: false, error: e.message };
       }
     });

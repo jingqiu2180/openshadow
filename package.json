@@ -42,6 +42,9 @@
     "appId": "com.openshadow.app",
     "productName": "OpenShadow",
     "asar": true,
+    "asarUnpack": [
+      "desktop/wizard/preload.js"
+    ],
     "npmRebuild": false,
     "directories": {
       "output": "release"

@@ -117,6 +117,12 @@ if (!window.wizard) {
     pickFolder: async () => ['D:\\src\\aicoding\\openshadow'],
     done: () => {},
   }
+} else {
+  console.log('[wizard] window.wizard is present')
+  // 防御：如果 done 是空函数（mock），给出提示
+  if (typeof window.wizard.done !== 'function' || window.wizard.done.toString().includes('{}')) {
+    console.warn('[wizard] window.wizard.done looks like a mock — IPC may not work in packaged app')
+  }
 }
 
 // Use `window.wizard` directly (no local alias) to avoid any scoping issues.
@@ -373,8 +379,10 @@ function render() {
 
 // ─── Save / finish ──────────────────────────────────────────────────
 async function finish() {
-  $('#nextBtn').disabled = true
-  $('#nextBtn').textContent = '保存中…'
+  const nextBtn = $('#nextBtn')
+  nextBtn.disabled = true
+  nextBtn.textContent = '保存中…'
+  console.log('[wizard] finish() started')
   try {
     const cfg = {
       wizard: { completed: true, completedAt: new Date().toISOString() },
@@ -397,14 +405,23 @@ async function finish() {
       theme: 'warm-paper',
       security: { workspaceRoots: state.workspace.folders },
     }
-    await window.wizard.saveConfig(cfg)
-    // Notify main process to proceed (close wizard, open main window)
+    console.log('[wizard] calling saveConfig...')
+    const saveResult = await window.wizard.saveConfig(cfg)
+    console.log('[wizard] saveConfig result:', saveResult)
+    if (!saveResult || !saveResult.ok) {
+      throw new Error(saveResult?.error || '保存返回异常')
+    }
+    console.log('[wizard] calling done()...')
+    if (typeof window.wizard.done !== 'function') {
+      throw new Error('window.wizard.done 不可用')
+    }
     window.wizard.done()
+    console.log('[wizard] done() sent')
   } catch (e) {
     console.error('[wizard] save failed:', e)
     alert('保存失败: ' + e.message)
-    $('#nextBtn').disabled = false
-    $('#nextBtn').textContent = t('finish')
+    nextBtn.disabled = false
+    nextBtn.textContent = t('finish')
   }
 }
 
