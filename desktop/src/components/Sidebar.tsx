@@ -61,8 +61,8 @@ export default function Sidebar({
         justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <RemBadge />
-          <span style={{ fontSize: 15, fontWeight: 600, color: '#333' }}>Rem</span>
+          <ShadowBadge />
+          <span style={{ fontSize: 15, fontWeight: 600, color: '#333' }}>Shadow</span>
         </div>
         <button
           onClick={() => { newConversation(); onNavigate('chat') }}
@@ -266,7 +266,7 @@ export default function Sidebar({
         color: '#bbb',
         textAlign: 'center',
       }}>
-        Rem Agent v0.1.0
+        OpenShadow v0.2.0
       </div>
     </div>
   )
@@ -321,8 +321,8 @@ function MenuItem({ icon, label, onClick, danger }: {
   )
 }
 
-// ─── Rem Badge (mini 版本，Q 版头像) ───────────────────────
-function RemBadge() {
+// ─── Shadow Badge (mini 版本，Q 版头像) ───────────────────────
+function ShadowBadge() {
   return (
     <div style={{
       width: 28, height: 28, borderRadius: '50%',
@@ -333,7 +333,7 @@ function RemBadge() {
     }}>
       <img
         src={remAvatar}
-        alt="Rem"
+        alt="Shadow"
         style={{
           width: '100%', height: '100%',
           objectFit: 'cover',

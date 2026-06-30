@@ -1,5 +1,5 @@
 /**
- * Rem Wizard — preload script
+ * OpenShadow Wizard — preload script
  *
  * Runs in the wizard BrowserWindow with contextIsolation enabled.
  * Exposes a typed `window.wizard` object that the renderer uses to call

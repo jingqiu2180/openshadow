@@ -90,7 +90,7 @@ export class SessionManager {
       })
     }
 
-    addMemory(`User: ${content} | Rem: ${result.content}`, 2, 'conversation')
+    addMemory(`User: ${content} | Shadow: ${result.content}`, 2, 'conversation')
 
     if (this.store.needsCompaction(this.activeSessionId!)) {
       await this.runCompaction(this.activeSessionId!)

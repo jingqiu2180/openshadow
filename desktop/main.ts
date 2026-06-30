@@ -27,8 +27,8 @@ async function runFirstRunWizard(): Promise<void> {
   if (hasWorkspace) return
 
   const { canceled, filePaths } = await dialog.showOpenDialog({
-    title: '选择 Rem 的工作区目录',
-    message: '请选择 Rem 可以读写的目录（可多选）。这些目录拥有完整权限（读/写/删）。',
+    title: '选择 Shadow 的工作区目录',
+    message: '请选择 Shadow 可以读写的目录（可多选）。这些目录拥有完整权限（读/写/删）。',
     properties: ['openDirectory', 'multiSelections', 'createDirectory'],
   })
 
@@ -51,7 +51,7 @@ function createWindow() {
     height: 760,
     minWidth: 900,
     minHeight: 600,
-    title: 'Rem Agent',
+    title: 'Shadow Agent',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

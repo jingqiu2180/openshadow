@@ -202,7 +202,7 @@ function ActivityPlaceholder() {
     <PlaceholderView
       icon="📊"
       title="助手活动"
-      desc="这里会显示 Rem 最近的任务执行记录、文件操作、命令调用等。当前还没有任何活动记录。"
+      desc="这里会显示 Shadow 最近的任务执行记录、文件操作、命令调用等。当前还没有任何活动记录。"
       actionLabel="查看日志"
     />
   )

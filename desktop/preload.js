@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * Preload script for the Rem main window.
+ * Preload script for the OpenShadow main window.
  * Exposes safe IPC bridges to the renderer via contextBridge.
  *
  * Bridges exposed on window.__REM_API__:

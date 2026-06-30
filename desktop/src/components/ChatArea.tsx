@@ -653,7 +653,7 @@ function WelcomePanel({
         fontSize: 19, color: '#5a5a5a', fontWeight: 300,
         letterSpacing: '0.02em', margin: 0,
       }}>
-        要做什么, 交给 Rem 吧
+        要做什么, 交给 Shadow 吧
       </p>
 
       <div style={{
@@ -692,7 +692,7 @@ function WelcomePanel({
   )
 }
 
-// ─── Rem Avatar ───────────────────────────────────────────────
+// ─── Shadow Avatar ───────────────────────────────────────────────
 function RemAvatar() {
   return (
     <div style={{
@@ -700,7 +700,7 @@ function RemAvatar() {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <img
-        src={remAvatar} alt="Rem"
+        src={remAvatar} alt="Shadow"
         style={{
           width: 100, height: 100, borderRadius: '50%',
           objectFit: 'cover',

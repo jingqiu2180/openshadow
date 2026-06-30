@@ -1,6 +1,6 @@
 @import url('../animations.css');
 
-/* Rem Agent — 全局样式 (Stage 1c: 主题化) */
+/* OpenShadow — 全局样式 */
 
 /* ── Theme variables are set by [data-theme="..."] blocks in themes/*.css ── */
 /* This file just consumes them via var(--token). Default falls back to warm-paper tokens defined in :root. */

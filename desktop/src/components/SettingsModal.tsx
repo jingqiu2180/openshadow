@@ -199,7 +199,7 @@ function GeneralTab() {
       </Section>
 
       <Section title="启动">
-        <Row label="开机自启" desc="登录系统时自动启动 Rem">
+        <Row label="开机自启" desc="登录系统时自动启动 OpenShadow">
           <Toggle value={false} onChange={() => alert('开机自启需要在 electron-builder 配置,后续版本提供')} />
         </Row>
         <Row label="启动时最小化到托盘" desc="启动后不显示主窗口,只显示托盘图标">
@@ -280,7 +280,7 @@ function AgentTab({
       </Section>
 
       <Section title="记忆">
-        <Row label="开启长期记忆" desc="Rem 会记住你告诉它的重要信息 (API key 不存)">
+        <Row label="开启长期记忆" desc="Shadow 会记住你告诉它的重要信息 (API key 不存)">
           <Toggle value={memoryOn} onChange={setMemoryOn} />
         </Row>
       </Section>
@@ -337,10 +337,10 @@ function SecurityTab({ workspaceRoots, newPath, setNewPath, allowExternalReads, 
       </Section>
 
       <Section title="权限">
-        <Row label="允许读取工作区外文件" desc="开启后 Rem 可以读取任意路径的文件">
+        <Row label="允许读取工作区外文件" desc="开启后 Shadow 可以读取任意路径的文件">
           <Toggle value={allowExternalReads} onChange={v => setSettings({ allowExternalReads: v })} />
         </Row>
-        <Row label="启用沙箱隔离" desc="把 Rem 的文件操作限制在工作区内">
+        <Row label="启用沙箱隔离" desc="把 Shadow 的文件操作限制在工作区内">
           <Toggle value={sandbox} onChange={v => setSettings({ sandbox: v })} />
         </Row>
       </Section>
@@ -355,7 +355,7 @@ function ProvidersTab() {
     <div>
       <Section title="已配置的模型供应商">
         <div style={{ fontSize: 12, color: '#999', marginBottom: 8 }}>
-          模型在 config.json 的 providers 字段中配置,修改后重启 Rem 生效
+          模型在 config.json 的 providers 字段中配置,修改后重启 Shadow 生效
         </div>
         {availableModels.length === 0 ? (
           <div style={{ padding: 16, textAlign: 'center', color: '#aaa', fontSize: 13 }}>
@@ -401,7 +401,7 @@ function SkillsTab() {
         <Placeholder
           icon="✦"
           title="技能市场"
-          desc="浏览、安装、管理 Rem 的技能。技能是从提示词模板派生的可复用工作流,后续版本提供完整市场。当前仅有内置基础技能。"
+          desc="浏览、安装、管理 Shadow 的技能。技能是从提示词模板派生的可复用工作流,后续版本提供完整市场。当前仅有内置基础技能。"
         />
       </Section>
     </div>
@@ -416,7 +416,7 @@ function McpTab() {
         <Placeholder
           icon="🔌"
           title="Model Context Protocol"
-          desc="MCP 让 Rem 调用外部工具。当前 core/mcp 已有 stdio + SSE 客户端实现,UI 端后续提供配置入口。"
+          desc="MCP 让 Shadow 调用外部工具。当前 core/mcp 已有 stdio + SSE 客户端实现,UI 端后续提供配置入口。"
         />
       </Section>
     </div>
@@ -431,7 +431,7 @@ function BridgeTab() {
         <Placeholder
           icon="🌉"
           title="接入飞书 / Telegram / 微信 / QQ"
-          desc="桥接层让 Rem 通过社交平台收发消息。当前仅占位 UI,后续版本提供 OAuth 流程和 webhook 配置。"
+          desc="桥接层让 Shadow 通过社交平台收发消息。当前仅占位 UI,后续版本提供 OAuth 流程和 webhook 配置。"
         />
       </Section>
     </div>
@@ -442,11 +442,11 @@ function BridgeTab() {
 function AboutTab() {
   return (
     <div>
-      <Section title="关于 Rem">
+      <Section title="关于 OpenShadow">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
           <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='20' font-size='20'>🌸</text></svg>" style={{ width: 48, height: 48 }} />
           <div>
-            <div style={{ fontSize: 16, fontWeight: 600 }}>Rem Agent</div>
+            <div style={{ fontSize: 16, fontWeight: 600 }}>Shadow Agent</div>
             <div style={{ fontSize: 12, color: '#888' }}>v0.1.0 · Stage 1j</div>
           </div>
         </div>

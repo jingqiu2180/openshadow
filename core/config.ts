@@ -113,7 +113,7 @@ const DEFAULT_CONFIG: Config = {
   version: '0.1.0',
   agent: {
     id: 'default',
-    name: 'Rem',
+    name: 'Shadow',
     model: process.env.AGENT_MODEL ?? 'abab6.5s-chat',
     apiKey: '',
     baseUrl: 'https://api.openai.com/v1',
