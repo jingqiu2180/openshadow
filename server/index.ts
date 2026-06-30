@@ -27,7 +27,6 @@ import { createChannelsRoute } from './routes/channels.js'
 import { createCharacterCardsRoute } from './routes/character-cards.js'
 import { createChatRoute } from './routes/chat.js'
 import { Hub } from '../hub/index.js'
-import { setMiniMaxConfig } from '../lib/pi-sdk/index.js'
 import { createCheckpointsRoute } from './routes/checkpoints.js'
 import { createCommandsRoute } from './routes/commands.js'
 import { createConfigRoute } from './routes/config.js'
@@ -128,89 +127,33 @@ async function start() {
     await engine.init((msg: any) => console.log('[engine]', msg))
     console.log('[shadow] Engine initialized')
 
-    // ── 注入 MiniMax Token Plan 模型（占位 ModelRegistry 不持久化）──
-    // 关键：baseUrl 必须用 OpenAI 兼容端点（/v1/chat/completions）。
-    // MiniMax 的 Anthropic 端点（/anthropic/v1/messages）走的是 Messages API，
-    // 跟 OpenAI 客户端不兼容。这里直接走 OpenAI 兼容端点最稳。
-    const mmModels = [
-      { id: 'MiniMax-M3', name: 'MiniMax-M3', provider: 'minimax-token-plan', context: null, maxOutput: null },
-    ]
-    // ── 注入中国模型（DeepSeek / Qwen / GLM）────────────────
-    const cnModels = [
-      { id: 'deepseek-chat', name: 'DeepSeek-V3', provider: 'deepseek', context: 65536, maxOutput: 8192 },
-      { id: 'deepseek-reasoner', name: 'DeepSeek-R1', provider: 'deepseek', context: 65536, maxOutput: 8192 },
-      { id: 'qwen-plus', name: 'Qwen-Plus', provider: 'qwen', context: 131072, maxOutput: 8192 },
-      { id: 'qwen-max', name: 'Qwen-Max', provider: 'qwen', context: 32768, maxOutput: 8192 },
-      { id: 'qwen-turbo', name: 'Qwen-Turbo', provider: 'qwen', context: 1000000, maxOutput: 8192 },
-      { id: 'glm-4-plus', name: 'GLM-4-Plus', provider: 'glm', context: 128000, maxOutput: 4096 },
-      { id: 'glm-4-flash', name: 'GLM-4-Flash', provider: 'glm', context: 128000, maxOutput: 4096 },
-    ]
-    const allModels = [...mmModels, ...cnModels]
-    try {
-      const models = (engine as any)._models
-      if (models?._availableModels) {
-        models._availableModels = [...models._availableModels, ...allModels]
-        console.log('[shadow] Injected', allModels.length, 'model(s):', allModels.map(m => m.id).join(', '))
-      }
-      // 注入 API key + 注册 provider
-      if (models?.providerRegistry) {
-        // 重写 minimax-token-plan 为 OpenAI 兼容端点（/v1/chat/completions）
-        // 因为 chat-engine 走的是 OpenAI SDK，Anthropic Messages 端点会 404
-        try { models.providerRegistry.saveProvider('minimax-token-plan', { base_url: 'https://api.minimaxi.com/v1', api: 'openai-completions', api_key: 'sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro', models: ['MiniMax-M3', 'MiniMax-M2.1'] }) } catch(e) { console.log('[shadow] saveProvider minimax-token-plan err:', (e as any).message) }
-        models.providerRegistry.updateModelEntry('minimax-token-plan', 'MiniMax-M2.1', { name: 'MiniMax-M2.1' })
-        // 注册中国模型 provider（持久化到 added-models.yaml）
-        try { models.providerRegistry.saveProvider('deepseek', { base_url: 'https://api.deepseek.com/v1', api: 'openai-completions', api_key: '<你的 DeepSeek API Key>', models: ['deepseek-chat', 'deepseek-reasoner'] }) } catch(e) {}
-        try { models.providerRegistry.saveProvider('qwen', { base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', api: 'openai-completions', api_key: '<你的 DashScope API Key>', models: ['qwen-plus', 'qwen-max', 'qwen-turbo'] }) } catch(e) {}
-        try { models.providerRegistry.saveProvider('glm', { base_url: 'https://open.bigmodel.cn/api/paas/v4', api: 'openai-completions', api_key: '<你的智谱 API Key>', models: ['glm-4-plus', 'glm-4-flash'] }) } catch(e) {}
-      }
-      // 注入 provider API key 到 authStorage
-      // minimax-token-plan 用 MiniMax 的 OpenAI 兼容端点（/v1/chat/completions）
-      // 因为 server 端 chat-engine 走的是 OpenAI SDK，不会自动转 Anthropic Messages 协议
-      const authStorage = (engine as any).authStorage
-      if (authStorage?.set) {
-        authStorage.set('minimax-token-plan', {
-          api_key: 'sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro',
-          base_url: 'https://api.minimaxi.com/v1',
-          api: 'openai-completions',
-        })
-        authStorage.set('deepseek', {
-          api_key: '<你的 DeepSeek API Key>',
-          base_url: 'https://api.deepseek.com/v1',
-          api: 'openai-completions',
-        })
-        authStorage.set('qwen', {
-          api_key: '<你的 DashScope API Key>',
-          base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-          api: 'openai-completions',
-        })
-        authStorage.set('glm', {
-          api_key: '<你的智谱 API Key>',
-          base_url: 'https://open.bigmodel.cn/api/paas/v4',
-          api: 'openai-completions',
-        })
-      }
-      // 注入到 pi-sdk session 创建层
-      // 用 config.json 里的 minimax provider 配置（OpenAI 兼容端点）
-      setMiniMaxConfig('sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro', 'https://api.minimaxi.com/v1')
-      console.log('[shadow] MiniMax API config injected to pi-sdk')
-      // 手动设置默认模型（因为 _modelRegistry 是占位实现，syncAndRefresh() 没法自动初始化）
-      if (models && mmModels.length > 0) {
-        models._defaultModel = mmModels[0];
-        // 强制设置（绕过所有检查，确保 engine.currentModel 非 null）
-        (engine as any).forceSetCurrentModel?.(mmModels[0]);
-        console.log('[shadow] Default model set:', models._defaultModel?.id);
-        console.log('[shadow] _availableModels:', models._availableModels?.length || 0);
-        // 不调 syncAndRefresh()（保护逻辑可能有漏洞，直接跳过）
-        // models.syncAndRefresh().catch((err: any) => {
-        //   console.warn('[shadow] syncAndRefresh() after injection failed:', err?.message);
-        // });
-      }
-    } catch (e) {
-      console.warn('[shadow] MiniMax injection failed:', (e as any).message)
+    // ── 注入 API key 到 AuthStorage（真 Pi SDK 从 models.json 加载模型，此处只提供密钥）──
+    const authStorage = (engine as any).authStorage
+    if (authStorage?.set) {
+      authStorage.set('minimax-token-plan', {
+        api_key: 'sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro',
+        base_url: 'https://api.minimaxi.com/v1',
+        api: 'openai-completions',
+      })
+      authStorage.set('deepseek', {
+        api_key: '<你的 DeepSeek API Key>',
+        base_url: 'https://api.deepseek.com/v1',
+        api: 'openai-completions',
+      })
+      authStorage.set('qwen', {
+        api_key: '<你的 DashScope API Key>',
+        base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+        api: 'openai-completions',
+      })
+      authStorage.set('glm', {
+        api_key: '<你的智谱 API Key>',
+        base_url: 'https://open.bigmodel.cn/api/paas/v4',
+        api: 'openai-completions',
+      })
+      console.log('[shadow] API keys injected to AuthStorage')
     }
   } catch (err) {
     console.error('[shadow] engine.init() failed:', (err as any).message)
-    // 继续启动，部分功能可能不可用
   }
 
   // ═══ 创建 Hub（bridge / desktop session 等依赖）═══

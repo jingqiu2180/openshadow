@@ -1,327 +1,185 @@
 // @ts-nocheck
 /**
- * pi-sdk 兼容层 — 让 openhanako 工具代码能直接在 openshadow 里用
+ * PI SDK Adapter — 所有 PI SDK 导入的唯一入口
  *
- * openhanako 的 lib/pi-sdk/index.ts 是 @mariozechner/pi-coding-agent 的适配层。
- * openshadow 不需要那个 SDK，只需要提供工具代码里用到的导出占位符。
+ * 稳定 API 直接 re-export，不稳定 API 通过适配函数封装。
+ * 消费方不应直接 import "@mariozechner/..."，全部从这里导入。
+ *
+ * 纪律：
+ *   - 不接受 engine / agent / config 参数
+ *   - 不拼 session options（compaction、thinkingLevel 等）
+ *   - 不做工具过滤 / plan mode 逻辑
+ *   - 不持有任何状态
  */
 
-// ── Type — 直接 re-export typebox ────────────────────────
-import { Type } from 'typebox'
-import path from 'path'
-import fs from 'fs'
-import https from 'https'
-import { execSync } from 'child_process'
-export { Type }
+import {
+  createAgentSession as rawCreateAgentSession,
+  ModelRegistry,
+} from "@mariozechner/pi-coding-agent";
+import {
+  getModel as rawGetPiModel,
+  completeSimple as rawCompleteSimple,
+} from "@mariozechner/pi-ai";
+import {
+  normalizeCreateAgentSessionOptions,
+  PI_BUILTIN_TOOL_NAMES,
+} from "./session-options.js";
+import { installAssistantStreamGuard } from "./stream-guard.js";
+import {
+  createFindTool,
+  createGrepTool,
+} from "./search-tools.js";
+import {
+  resizeImage as rawResizeImage,
+  formatDimensionNote as rawFormatDimensionNote,
+} from "../../node_modules/@mariozechner/pi-coding-agent/dist/utils/image-resize.js";
+import {
+  convertToLlm as rawConvertToLlm,
+} from "../../node_modules/@mariozechner/pi-coding-agent/dist/core/messages.js";
+import {
+  prepareCompaction as rawPrepareCompaction,
+} from "../../node_modules/@mariozechner/pi-coding-agent/dist/core/compaction/compaction.js";
 
-// ── MiniMax API 配置（从 server/index.ts 注入）─────────────
-export let minimaxApiKey: string | null = null
-export let minimaxBaseUrl: string = 'https://token-plan-cn.xiaomimimo.com/v1'
-export let minimaxModel: string = 'MiniMax-M3'
+// ── Session 管理 ──
+export { SessionManager, SettingsManager } from "@mariozechner/pi-coding-agent";
 
-export function setMiniMaxConfig(key: string, baseUrl?: string, model?: string) {
-  minimaxApiKey = key
-  if (baseUrl) minimaxBaseUrl = baseUrl
-  if (model) minimaxModel = model
+/**
+ * Hana 侧保持稳定的 Tool[] 调用契约，适配层负责转换 Pi SDK 版本差异。
+ *
+ * Pi SDK 0.68+ 将 `tools` 改成 string[] allowlist；Hana 的沙盒工具仍然
+ * 是 session 级对象，必须先注册为同名 customTools，再用名字启用。
+ *
+ * @param {object} options
+ */
+export async function createAgentSession(options) {
+  const resourceLoaderAgentDir = options?.resourceLoader?.agentDir;
+  const sessionOptions = !options?.agentDir && typeof resourceLoaderAgentDir === "string" && resourceLoaderAgentDir
+    ? { ...options, agentDir: resourceLoaderAgentDir }
+    : options;
+  const result = await rawCreateAgentSession(normalizeCreateAgentSessionOptions(sessionOptions));
+  installAssistantStreamGuard(result?.session);
+  return result;
 }
 
-// ── StringEnum — 生成枚举型 JSON Schema ──────────────────
-export function StringEnum(values: string[], opts: { description?: string; fallback?: string } = {}) {
-  const schema: any = {
-    type: 'string',
-    enum: [...values],
+// ── 内置工具名常量 ──
+export { PI_BUILTIN_TOOL_NAMES };
+
+// ── 工具工厂（沙盒用）──
+export {
+  createReadTool, createWriteTool, createEditTool, createBashTool,
+  createLsTool,
+} from "@mariozechner/pi-coding-agent";
+export { createGrepTool, createFindTool };
+
+// ── 资源加载 ──
+export { DefaultResourceLoader } from "@mariozechner/pi-coding-agent";
+
+// ── Utilities ──
+export { formatSkillsForPrompt, getLastAssistantUsage } from "@mariozechner/pi-coding-agent";
+export { AuthStorage } from "@mariozechner/pi-coding-agent";
+
+// ── Session/history utilities ──
+export {
+  estimateTokens, findCutPoint,
+  serializeConversation, shouldCompact,
+  parseSessionEntries, buildSessionContext,
+} from "@mariozechner/pi-coding-agent";
+
+// Diary material summarization only. Context compaction must go through core/session-compactor.js.
+export { generateSummary } from "@mariozechner/pi-coding-agent";
+
+export const completeSimple = rawCompleteSimple;
+export const convertAgentMessagesToLlm = rawConvertToLlm;
+export const prepareCompaction = rawPrepareCompaction;
+
+// ── pi-ai（直接依赖，需保持与 pi-coding-agent 内部依赖同版本，避免双实例）──
+export { StringEnum } from "@mariozechner/pi-ai";
+export { registerOAuthProvider } from "@mariozechner/pi-ai/oauth";
+
+export function getPiModel(provider, modelId) {
+  return rawGetPiModel(provider, modelId);
+}
+
+// ── Schema 构造（typebox 的 Type 透过 adapter，避免工具直接依赖第三方包名）──
+export { Type } from "typebox";
+
+// ── 类型 re-export（供 JSDoc 引用）──
+/** @typedef {import('@mariozechner/pi-coding-agent').ToolDefinition} ToolDefinition */
+
+// ── Lifecycle helpers ──
+
+/**
+ * Emit `session_shutdown` event to the session's extension runner.
+ *
+ * 为什么在 adapter 层实现而不从 SDK 导出:
+ *   SDK 的 emitSessionShutdownEvent 辅助函数只在 core/extensions/runner.js
+ *   内部暴露, 顶级 index.js 未 re-export。直接 import 深层路径会违反
+ *   adapter 纪律。实现本身仅 7 行, 自己实现更干净。
+ *
+ * 契约: AgentSession.dispose() 本身不 emit shutdown, 调用方必须在
+ *   dispose 前显式 emit, 否则监听 session_shutdown 的扩展(如
+ *   deferred-result-ext) 无法清理自身的 setInterval 和 store 订阅,
+ *   导致长期运行进程的内存泄漏。
+ *
+ * @param {object} session - AgentSession 实例
+ * @returns {Promise<boolean>} 事件是否被 emit (false = 无 handler)
+ */
+export async function emitSessionShutdown(session) {
+  const runner = session?.extensionRunner;
+  if (runner?.hasHandlers?.("session_shutdown")) {
+    await runner.emit({ type: "session_shutdown" });
+    return true;
   }
-  if (opts.description) schema.description = opts.description
-  if (opts.fallback) schema.default = opts.fallback
-  return schema
+  return false;
 }
 
-// ── 占位导出（工具代码里 import 了但 openshadow 不需要实际实现）─────
-// ── 工具 ───────────────────────────────────────
-const TOOLS: any[] = [
-  { type: "function", function: { name: "bash", description: "Execute a shell command. Returns stdout/stderr.", parameters: { type: "object", properties: { command: { type: "string", description: "The shell command to execute" } }, required: ["command"] } } },
-  { type: "function", function: { name: "read", description: "Read a file's contents", parameters: { type: "object", properties: { path: { type: "string", description: "Absolute or relative file path" } }, required: ["path"] } } },
-  { type: "function", function: { name: "write", description: "Create or overwrite a file", parameters: { type: "object", properties: { path: { type: "string", description: "File path" }, content: { type: "string", description: "File content" } }, required: ["path", "content"] } } },
-  { type: "function", function: { name: "grep", description: "Search for text pattern in files", parameters: { type: "object", properties: { pattern: { type: "string", description: "Regex pattern to search for" }, path: { type: "string", description: "Directory or file path (optional, defaults to cwd)" } }, required: ["pattern"] } } },
-  { type: "function", function: { name: "ls", description: "List directory contents", parameters: { type: "object", properties: { path: { type: "string", description: "Directory path" } }, required: ["path"] } } },
-  { type: "function", function: { name: "edit", description: "Edit a file by replacing old text with new text", parameters: { type: "object", properties: { path: { type: "string", description: "File path" }, old: { type: "string", description: "Text to find" }, "new": { type: "string", description: "Replacement text" } }, required: ["path", "old", "new"] } } },
-];
+// ── 不稳定 API 适配 ──
 
-function executeTool(name: string, args: any): string {
-  try {
-    switch (name) {
-      case "bash": return String(execSync(args.command, { encoding: "utf8", timeout: 30000, maxBuffer: 1024 * 1024 }));
-      case "read": { const content = fs.readFileSync(args.path, "utf8"); return content.length > 50000 ? content.slice(0, 50000) + "\n...(truncated)" : content; }
-      case "write": { fs.writeFileSync(args.path, args.content, "utf8"); return "文件已写入: " + args.path; }
-      case "grep": { const p = args.pattern.replace(/"/g, '\\"'); return String(execSync('grep -rn "' + p + '" ' + (args.path || '.'), { encoding: "utf8", timeout: 10000 })).slice(0, 20000); }
-      case "ls": return fs.readdirSync(args.path, { withFileTypes: true }).map((e: any) => (e.isDirectory() ? "[dir]  " : "       ") + e.name).join("\n");
-      case "edit": { let c2 = fs.readFileSync(args.path, "utf8"); c2 = c2.replace(args.old, args["new"]); fs.writeFileSync(args.path, c2, "utf8"); return "编辑完成: " + args.path; }
-      default: return "未知工具: " + name;
-    }
-  } catch (e: any) { return "Error: " + (e.message || String(e)); }
+/**
+ * Pi SDK 的 CLI / read tool 已经使用这套图片压缩策略，但顶层包暂未导出。
+ * Hana 只在 adapter 层碰深层路径，保证调用侧不用知道 SDK 内部文件布局。
+ *
+ * @param {{type?: string, data: string, mimeType?: string}} image
+ * @param {{maxWidth?: number, maxHeight?: number, maxBytes?: number, jpegQuality?: number}} options
+ */
+export async function resizeModelImageInput(image: any, options: any): Promise<any> {
+  return rawResizeImage(image, options);
 }
 
-export async function createAgentSession(_opts: any): Promise<{ session: any; modelFallbackMessage?: string }> {
-  const noop = () => {}
-  const sessionManager = _opts?.sessionManager || {}
-  const model = _opts?.model || null
-
-  // ── 真实事件发射器 ──
-  const listeners: Set<(event: any) => void> = new Set()
-  function emit(event: any) {
-    for (const fn of listeners) fn(event)
-  }
-  function subscribe(handler: any) {
-    listeners.add(handler)
-    return () => { listeners.delete(handler) }
-  }
-
-  // ── MiniMax API 调用 ──
-  let systemPrompt = ""; try { const p = path.join(process.cwd(), "yuan", "hanako.md"); if (fs.existsSync(p)) systemPrompt = fs.readFileSync(p, "utf-8"); } catch {} const sessionMessages: any[] = [];
-  if (systemPrompt) sessionMessages.push({ role: "system", content: systemPrompt });
-
-  async function callMiniMaxAPI(text: string, images?: Array<{ type: string; data: string; mimeType: string }>): Promise<string> {
-    const apiKey = minimaxApiKey;
-    if (!apiKey) throw new Error('MiniMax API key not configured');
-
-    // 构建用户消息：有图片时使用 content 数组格式（MiniMax 多模态 API）
-    let userContent: any = text;
-    if (images && images.length > 0) {
-      const parts: any[] = [{ type: 'text', text }];
-      for (const img of images) {
-        if (img.data && img.mimeType) {
-          parts.push({ type: 'image_url', image_url: { url: `data:${img.mimeType};base64,${img.data}` } });
-        }
-      }
-      userContent = parts;
-    }
-    if (systemPrompt && sessionMessages.length === 0) {
-      sessionMessages.push({ role: 'system', content: systemPrompt });
-    }
-    sessionMessages.push({ role: 'user', content: userContent });
-
-    // 工具调用循环（最多 5 轮）
-    for (let round = 0; round < 5; round++) {
-      const body = JSON.stringify({
-        model: minimaxModel,
-        messages: sessionMessages,
-        tools: TOOLS,
-        tool_choice: 'auto',
-        stream: true,
-        max_tokens: 4096,
-      });
-
-      const streamResult: { text: string; toolCalls: any[]; finishReason: string } = await new Promise((resolve, reject) => {
-        const url = new URL(minimaxBaseUrl + '/chat/completions');
-        const req = https.request(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        }, (res) => {
-          let fullText = '';
-          const toolCalls: Record<number, any> = {};
-          let finishReason = '';
-          res.on('data', (chunk: Buffer) => {
-            const lines = chunk.toString().split('\n').filter((l: string) => l.startsWith('data: '));
-            for (const line of lines) {
-              const json = line.slice(6);
-              if (json === '[DONE]') { resolve({ text: fullText, toolCalls: Object.values(toolCalls), finishReason }); return; }
-              try {
-                const parsed = JSON.parse(json);
-                const delta = parsed.choices?.[0]?.delta;
-                if (!delta) continue;
-                if (delta.content) {
-                  fullText += delta.content;
-                  emit({ type: 'message_update', assistantMessageEvent: { type: 'text_delta', delta: delta.content } });
-                }
-                if (delta.tool_calls) {
-                  for (const tc of delta.tool_calls) {
-                    const idx = tc.index;
-                    if (!toolCalls[idx]) toolCalls[idx] = { id: '', function: { name: '', arguments: '' } };
-                    if (tc.id) toolCalls[idx].id = tc.id;
-                    if (tc.function?.name) toolCalls[idx].function.name += tc.function.name;
-                    if (tc.function?.arguments) toolCalls[idx].function.arguments += tc.function.arguments;
-                  }
-                }
-                if (parsed.choices?.[0]?.finish_reason) finishReason = parsed.choices[0].finish_reason;
-              } catch {}
-            }
-          });
-          res.on('end', () => resolve({ text: fullText, toolCalls: Object.values(toolCalls), finishReason }));
-          res.on('error', reject);
-        });
-        req.on('error', reject);
-        req.write(body);
-        req.end();
-      });
-
-      // 无工具调用 → 返回文本
-      if (streamResult.toolCalls.length === 0) {
-        return streamResult.text || '(no response)';
-      }
-
-      // 添加 assistant 消息（含 tool_calls）
-      const assistantMsg: any = { role: 'assistant', content: streamResult.text || null };
-      assistantMsg.tool_calls = streamResult.toolCalls.map((tc: any) => ({
-        id: tc.id,
-        type: 'function',
-        function: { name: tc.function.name, arguments: tc.function.arguments },
-      }));
-      sessionMessages.push(assistantMsg);
-
-      // 执行工具
-      for (const tc of streamResult.toolCalls) {
-        let args: any = {};
-        try { args = JSON.parse(tc.function.arguments); } catch {}
-        const toolName = tc.function.name;
-        emit({ type: 'tool_start', name: toolName, args });
-        const result = executeTool(toolName, args);
-        emit({ type: 'tool_end', name: toolName, result });
-        sessionMessages.push({ role: 'tool', tool_call_id: tc.id, content: result });
-      }
-    }
-
-    return '已执行工具调用。';
-  }
-return {
-    session: {
-      subscribe,
-      addEventListener: subscribe,
-      dispatchEvent: (e: any) => { emit(e); return true },
-      async reload() {},
-      async prompt(promptText: string, _opts2?: any) {
-        try {
-          const beforeCount = sessionMessages.length
-          const images = _opts2?.images || []
-          const result = await callMiniMaxAPI(promptText, images)
-          // 持久化本轮新消息到 session JSONL（用户消息 + assistant 回复）
-          if (sessionManager && typeof (sessionManager as any).appendMessage === 'function') {
-            let hasAssistantInSessionMessages = false
-            for (let i = beforeCount; i < sessionMessages.length; i++) {
-              const msg = sessionMessages[i]
-              if (msg.role === 'user' || msg.role === 'assistant') {
-                try { (sessionManager as any).appendMessage(msg) } catch {}
-                if (msg.role === 'assistant') hasAssistantInSessionMessages = true
-              }
-            }
-            // 无工具调用时 assistant 不在 sessionMessages 中（只作为 return 值返回），手动补
-            if (!hasAssistantInSessionMessages && result && result !== '(no response)' && result !== '已执行工具调用。') {
-              try { (sessionManager as any).appendMessage({ role: 'assistant', content: result }) } catch {}
-            }
-          }
-          return { text: result, toolMedia: [] }
-        } catch (err: any) {
-          emit({ type: 'error', message: err.message })
-          return { text: `[Error: ${err.message}]`, toolMedia: [] }
-        }
-      },
-      isStreaming: false,
-      isCompacting: false,
-      model,
-      thinkingLevel: 'off',
-      sessionManager,
-      setThinkingLevel: noop,
-      setActiveToolsByName: noop,
-      settingsManager: _opts?.settingsManager || { getCompactionSettings: () => null },
-      agent: { state: {} },
-    },
-  }
+/**
+ * @param {{wasResized?: boolean, originalWidth: number, originalHeight: number, width: number, height: number}} result
+ */
+export function formatModelImageDimensionNote(result) {
+  return rawFormatDimensionNote(result);
 }
 
-// Re-export real SessionManager from @mariozechner/pi-coding-agent
-export { SessionManager } from '@mariozechner/pi-coding-agent'
-
-export const SettingsManager = {
-  inMemory(): any {
-    return {
-      getAll: () => ({}),
-      get: (_key: string) => undefined,
-      set: (_key: string, _val: any) => {},
-    }
-  },
+/**
+ * ModelRegistry 工厂。
+ * 0.64.0 将构造函数私有化，必须用静态方法。
+ * 下次 SDK 改工厂签名，只改这里。
+ * @param {import('@mariozechner/pi-coding-agent').AuthStorage} authStorage
+ * @param {string} [modelsJsonPath]
+ * @returns {import('@mariozechner/pi-coding-agent').ModelRegistry}
+ */
+export function createModelRegistry(authStorage, modelsJsonPath) {
+  return ModelRegistry.create(authStorage, modelsJsonPath);
 }
 
-export const PI_BUILTIN_TOOL_NAMES = ['read', 'write', 'edit', 'bash', 'grep', 'find', 'ls']
-export const getPiModel = undefined as any
-export const completeSimple = undefined as any
-export const convertAgentMessagesToLlm = undefined as any
-export const prepareCompaction = undefined as any
-export const formatSkillsForPrompt = undefined as any
-export const getLastAssistantUsage = undefined as any
-
-export const AuthStorage = {
-  create(filePath: string): any {
-    return {
-      filePath,
-      _data: {} as Record<string, any>,
-      load() { return this._data },
-      save() { /* noop */ },
-      get(provider: string) { return this._data[provider] },
-      set(provider: string, data: any) { this._data[provider] = data },
-    }
-  }
+/**
+ * 强制 session 从 ModelRegistry 重新解析当前 model 对象。
+ *
+ * 为什么需要：Pi SDK 的 model 对象把 baseUrl 烤在字段里
+ * （openai-completions.js 等 provider 直接读 model.baseUrl 构造 client），
+ * session 持有的是创建时的对象引用。当 ModelRegistry.refresh() 重建模型
+ * 表后，session 仍指向旧对象，导致改完 base_url / api 等字段后 active
+ * session 用旧值发请求，必须重启或切换 session 才生效。
+ *
+ * SDK 内部有 _refreshCurrentModelFromRegistry()，但只在 extension
+ * registerProvider/unregisterProvider 时被调用，没有公开包装。
+ * 这里走 adapter 纪律统一桥接，下次 SDK 升级改名只改这里。
+ *
+ * @param {object} session - AgentSession 实例
+ */
+export function refreshSessionModelFromRegistry(session) {
+  session?._refreshCurrentModelFromRegistry?.();
 }
-
-export const estimateTokens = undefined as any
-export const findCutPoint = undefined as any
-export const serializeConversation = undefined as any
-export const shouldCompact = undefined as any
-export const parseSessionEntries = undefined as any
-export const buildSessionContext = undefined as any
-export const generateSummary = undefined as any
-export const registerOAuthProvider = undefined as any
-
-// ── DefaultResourceLoader ────────────────────────────────
-export class DefaultResourceLoader {
-  options: any = {}
-  getSystemPrompt: () => any = () => null
-  getSkills: () => any = () => ({ skills: [] })
-
-  constructor(opts: any) {
-    this.options = opts
-  }
-
-  async reload(): Promise<void> {}
-}
-
-// ── SkillManager 占位 ────────────────────────────────────
-export class SkillManager {
-  allSkills: any[] = []
-  init(resourceLoader: any, agents: any, hiddenSkills: Set<string>): void {
-    // minimal placeholder — noop
-  }
-}
-
-// ── 占位函数导出 ────────────────────────────────────────
-export function createModelRegistry(authStorage: any, filePath: string): any {
-  return {
-    getAvailable(): any[] { return [] },
-    getModel(ref: any): any { return null },
-    getAll(): any[] { return [] },
-    async refresh(): Promise<void> {},
-  }
-}
-
-export function emitSessionShutdown(...args: any[]): any {
-  return undefined
-}
-
-export function refreshSessionModelFromRegistry(...args: any[]): any {
-  return undefined
-}
-
-// ── 工具创建函数占位 ──────────────────────────────────
-function makeTool(name: string, desc: string): any {
-  return {
-    name,
-    description: desc,
-    parameters: { type: 'object', properties: {} },
-    execute: async () => ({ content: [{ type: 'text', text: `[placeholder] ${name}` }] }),
-  }
-}
-export function createReadTool(...args: any[]): any { return makeTool('read', 'Read a file') }
-export function createWriteTool(...args: any[]): any { return makeTool('write', 'Write a file') }
-export function createEditTool(...args: any[]): any { return makeTool('edit', 'Edit a file') }
-export function createBashTool(...args: any[]): any { return makeTool('bash', 'Run a shell command') }
-export function createGrepTool(...args: any[]): any { return makeTool('grep', 'Search file contents') }
-export function createFindTool(...args: any[]): any { return makeTool('find', 'Find files by name') }
-export function createLsTool(...args: any[]): any { return makeTool('ls', 'List directory contents') }

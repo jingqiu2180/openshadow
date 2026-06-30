@@ -5,6 +5,10 @@ agent:
   name: rem-default
   yuan: hanako
   avatar: null
+models:
+  chat:
+    id: MiniMax-M3
+    provider: minimax-token-plan
 memory:
   enabled: true
 desk:
@@ -14,7 +18,7 @@ desk:
 user:
   name: ""
 preferences: {}
-last_cwd: D:\test\workspace-fixture
+last_cwd: D:/src/aicoding/openshadow
 cwd_history:
-  - D:/test/workspace-fixture
   - D:/src/aicoding/openshadow
+  - D:/test/workspace-fixture
