@@ -2,6 +2,19 @@ import React from 'react';
 import { t } from '../../helpers';
 
 import kongBannerUrl from '../../../../assets/kong-banner.jpg';
+import HanakoAvatar from '../../../../assets/Hanako.png';
+import ButterAvatar from '../../../../assets/Butter.png';
+import MingAvatar from '../../../../assets/Ming.png';
+
+const YUAN_AVATAR_MAP: Record<string, string> = {
+  'Hanako.png': HanakoAvatar,
+  'Butter.png': ButterAvatar,
+  'Ming.png': MingAvatar,
+};
+
+function resolveAvatarUrl(avatar: string): string {
+  return YUAN_AVATAR_MAP[avatar] || HanakoAvatar;
+}
 
 export function YuanSelector({ currentYuan, onChange }: { currentYuan: string; onChange: (key: string) => void }) {
   const types = t('yuan.types') || {};
@@ -27,7 +40,7 @@ export function YuanSelector({ currentYuan, onChange }: { currentYuan: string; o
           >
             <img
               className="yuan-chip-avatar"
-              src={`assets/${meta.avatar || 'Hanako.png'}`}
+              src={resolveAvatarUrl(meta.avatar || 'Hanako.png')}
               draggable={false}
             />
             <div className="yuan-chip-info">
