@@ -268,7 +268,8 @@ async function start() {
   })
 
   // ═══ 启动 HTTP 服务 ═══
-  const port = Number(process.env.PORT || 3000)
+  // 端口优先级：SHADOW_PORT (dev-web) > PORT > 3000
+  const port = Number(process.env.SHADOW_PORT ?? process.env.PORT ?? 3000)
 
   const server = serve({
     fetch: app.fetch,
@@ -281,6 +282,54 @@ async function start() {
     console.log('🔌 WebSocket support enabled')
   } catch {
     console.warn('[shadow] WebSocket support not available')
+  }
+
+  // dev-web 模式：等 listen 完成再写 server-info.json（拿到真实端口）
+  if (process.env.SHADOW_HOME) {
+    await new Promise((r) => setImmediate(r))
+  }
+
+  // ═══ dev-web 握手：写 server-info.json 给 scripts/dev-web.js ═══
+  // dev-web 启动 server 后会 poll 这个文件，拿到 port + token 才能配置 vite proxy。
+  // 仅在显式设置 SHADOW_HOME 时启用（dev-web 模式），生产/桌面端不写。
+  if (process.env.SHADOW_HOME) {
+    try {
+      const crypto = await import('crypto')
+      const token = process.env.SHADOW_TOKEN || crypto.randomBytes(16).toString('hex')
+      const serverInfoPath = path.join(process.env.SHADOW_HOME, 'server-info.json')
+      // 优先从底层 node http.Server 拿实际端口（处理 SHADOW_PORT=0 自动分配场景）
+      let actualPort = port
+      const nodeServer = (server as any)?.server ?? server
+      try {
+        const addr = nodeServer?.address?.()
+        if (addr && typeof addr === 'object' && addr.port) {
+          actualPort = addr.port
+        } else if (typeof nodeServer?.port === 'number' && nodeServer.port > 0) {
+          actualPort = nodeServer.port
+        }
+      } catch {}
+      fsSync.writeFileSync(
+        serverInfoPath,
+        JSON.stringify({
+          pid: process.pid,
+          port: actualPort,
+          host: '127.0.0.1',
+          token,
+          version: '0.2.0',
+        }),
+      )
+      try { fsSync.chmodSync(serverInfoPath, 0o600) } catch {}
+      console.log(`[dev-web] server-info.json written: port=${actualPort}`)
+
+      // 关闭时清理
+      const cleanup = () => {
+        try { fsSync.unlinkSync(serverInfoPath) } catch {}
+      }
+      process.on('SIGINT', () => { cleanup(); process.exit(0) })
+      process.on('SIGTERM', () => { cleanup(); process.exit(0) })
+    } catch (e: any) {
+      console.error('[dev-web] failed to write server-info.json:', e?.message)
+    }
   }
 
   console.log(`🚀 Server running on http://localhost:${port}`)

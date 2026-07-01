@@ -11,6 +11,7 @@
   "main": "desktop/bootstrap.cjs",
   "scripts": {
     "dev": "tsx watch start.ts",
+    "dev:web": "node scripts/dev-web.js",
     "build": "tsc && node scripts/copy-desktop-assets.js",
     "start": "node dist/server/index.js",
     "test": "vitest",

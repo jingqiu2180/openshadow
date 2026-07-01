@@ -224,6 +224,11 @@ function serveMobilePwaStaticFiles(): Plugin {
           next();
           return;
         }
+        // Don't intercept Vite's own transforms (e.g. ?import for asset modules)
+        if (typeof req.url === 'string' && req.url.includes('?')) {
+          next();
+          return;
+        }
         fs.readFile(asset.file, (err, data) => {
           if (err) {
             next(err);
@@ -360,8 +365,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
-    strictPort: true,
+    port: parseInt(process.env.HANA_DEV_WEB_CLIENT_PORT || '5173', 10),
+    strictPort: false,
     proxy: createDevWebProxy(),
   },
   test: {
