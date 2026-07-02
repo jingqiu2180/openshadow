@@ -1,4 +1,4 @@
-# HanaAgent 系统配置
+# OpenShadow 系统配置
 # 由设置页面管理，手动编辑也可以
 
 agent:
@@ -13,3 +13,7 @@ desk:
 user:
   name: ""
 preferences: {}
+models:
+  chat:
+    id: MiniMax-M3
+    provider: minimax

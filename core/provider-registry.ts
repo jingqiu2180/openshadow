@@ -598,7 +598,7 @@ export class ProviderRegistry {
         if (Object.keys(overrides).length === 0) {
           delete cfg.models.overrides;
         }
-        const header = "# HanaAgent 助手配置\n# 由设置页面管理，手动编辑也可以\n\n";
+        const header = "# OpenShadow 助手配置\n# 由设置页面管理，手动编辑也可以\n\n";
         const yamlStr = header + YAML.dump(cfg, { indent: 2, lineWidth: -1, sortKeys: false, quotingType: '"', forceQuotes: false });
         atomicWriteSync(cfgPath, yamlStr);
       }

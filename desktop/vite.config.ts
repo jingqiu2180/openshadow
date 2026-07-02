@@ -164,7 +164,9 @@ export default defineConfig({
     outDir: OUT_DIR,
     emptyOutDir: true,
     rollupOptions: {
-      input: resolve(ROOT, 'index.html'),
+      input: {
+        index: resolve(ROOT, 'index.html'),
+      },
     },
   },
   server: {

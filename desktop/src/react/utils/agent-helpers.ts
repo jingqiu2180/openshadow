@@ -10,13 +10,13 @@ import { useStore } from '../stores';
 import { displayInitial } from './grapheme';
 
 // Vite import: 确保 dev/build/Electron 三模式下路径都正确
-import HanakoAvatar from '../../assets/Hanako.png';
+import ShadowAvatar from '../../assets/Hanako.png';
 import ButterAvatar from '../../assets/Butter.png';
 import MingAvatar from '../../assets/Ming.png';
 import KongAvatar from '../../assets/Kong.png';
 
 const YUAN_AVATAR_MAP: Record<string, string> = {
-  hanako: HanakoAvatar,
+  hanako: ShadowAvatar,
   butter: ButterAvatar,
   ming: MingAvatar,
   kong: KongAvatar,
@@ -28,7 +28,7 @@ function tr(key: string, vars?: Record<string, string>): any {
 }
 
 export function yuanFallbackAvatar(yuan?: string): string {
-  return YUAN_AVATAR_MAP[yuan || 'hanako'] || HanakoAvatar;
+  return YUAN_AVATAR_MAP[yuan || 'hanako'] || ShadowAvatar;
 }
 
 export function userFallbackAvatar(displayName: string): string {

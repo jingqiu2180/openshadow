@@ -43,7 +43,7 @@ class DebugLog {
   header(version: string, info: any = {}): void {
     const lines = [
       '═'.repeat(60),
-      `HanaAgent v${version} — started at ${new Date().toISOString()}`,
+      `OpenShadow v${version} — started at ${new Date().toISOString()}`,
       '═'.repeat(60),
     ]
     if (info.model) lines.push(`Model: ${info.model}`)

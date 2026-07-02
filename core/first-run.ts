@@ -168,7 +168,7 @@ function seedDefaultAgent(agentsDir, productDir) {
   fs.mkdirSync(path.join(agentDir, "avatars"), { recursive: true });
   fs.mkdirSync(path.join(agentDir, "desk"), { recursive: true });
 
-  // config.yaml（保持模板默认值：name=Hanako, yuan=hanako）
+  // config.yaml（保持模板默认值：name=Shadow, yuan=hanako）
   const cfgDest = path.join(agentDir, "config.yaml");
   const configSrc = path.join(productDir, "config.example.yaml");
   if (!fs.existsSync(configSrc)) {

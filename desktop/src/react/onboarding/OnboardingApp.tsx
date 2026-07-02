@@ -18,7 +18,7 @@ import {
   persistServerConnectionSelection,
   type ServerConnection,
 } from '../services/server-connection';
-import HanakoAvatarDefault from '../../assets/Hanako.png';
+import ShadowAvatarDefault from '../../assets/Hanako.png';
 
 interface OnboardingAppProps { preview: boolean; skipToTutorial: boolean }
 export function OnboardingApp({ preview, skipToTutorial }: OnboardingAppProps) {
@@ -26,7 +26,7 @@ export function OnboardingApp({ preview, skipToTutorial }: OnboardingAppProps) {
   const [step, setStep] = useState(skipToTutorial ? 6 : 0);
   const [stepKey, setStepKey] = useState(0);
   const [agentName, setAgentName] = useState('Shadow');
-  const [avatarSrc, setAvatarSrc] = useState(HanakoAvatarDefault);
+  const [avatarSrc, setAvatarSrc] = useState(ShadowAvatarDefault);
   const [locale, setLocale] = useState('zh-CN');
   const [i18nReady, setI18nReady] = useState(false);
 

@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * PathGuard v2: 4-level access control (HanaAgent-style)
+ * PathGuard v2: 4-level access control (OpenShadow-style)
  *
  * Access levels:
  *   BLOCKED   — no access
@@ -24,7 +24,7 @@ export type AccessLevel = 'BLOCKED' | 'READ_ONLY' | 'READ_WRITE' | 'FULL'
 export interface PathGuardPolicy {
   /** If true, skip all checks (dev mode) */
   mode: 'full-access' | 'restricted'
-  /** HanaAgent home dir (~/.hanako or openshadow data dir) */
+  /** OpenShadow home dir (openshadow data dir) */
   openshadowHome: string
   /** Agent data dir */
   agentDir: string

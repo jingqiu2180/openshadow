@@ -672,7 +672,7 @@ export function createHeartbeat({
 
       // 笺目录扫描
       const wsPath = getWorkspacePath?.();
-      const agentName = getAgentName?.() || "Hanako";
+      const agentName = getAgentName?.() || "Shadow";
       const relativeOutputDirs = resolveAgentWorkspaceOutputRelativeDirs(agentName, locale);
       const jianDirs = (onJianBeat && wsPath) ? scanJianDirs(wsPath) : [];
       const jianChanges = _detectJianChanges(jianDirs);

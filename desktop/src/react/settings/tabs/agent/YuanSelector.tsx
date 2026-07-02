@@ -2,18 +2,18 @@ import React from 'react';
 import { t } from '../../helpers';
 
 import kongBannerUrl from '../../../../assets/kong-banner.jpg';
-import HanakoAvatar from '../../../../assets/Hanako.png';
+import ShadowAvatar from '../../../../assets/Hanako.png';
 import ButterAvatar from '../../../../assets/Butter.png';
 import MingAvatar from '../../../../assets/Ming.png';
 
 const YUAN_AVATAR_MAP: Record<string, string> = {
-  'Hanako.png': HanakoAvatar,
+  'Hanako.png': ShadowAvatar,
   'Butter.png': ButterAvatar,
   'Ming.png': MingAvatar,
 };
 
 function resolveAvatarUrl(avatar: string): string {
-  return YUAN_AVATAR_MAP[avatar] || HanakoAvatar;
+  return YUAN_AVATAR_MAP[avatar] || ShadowAvatar;
 }
 
 export function YuanSelector({ currentYuan, onChange }: { currentYuan: string; onChange: (key: string) => void }) {
