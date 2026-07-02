@@ -45,14 +45,14 @@ describe('ActivityPanel', () => {
         label: 'Markdown cover',
         status: 'running',
         agentId: 'agent-hana',
-        agentName: 'Hanako',
+        agentName: 'Shadow',
         summary: '正在为 傍晚.md 生成 cover',
         sessionFile: 'act_cover.jsonl',
         startedAt: Date.now(),
       }],
-      agents: [{ id: 'agent-hana', name: 'Hanako', yuan: '', isPrimary: true }],
+      agents: [{ id: 'agent-hana', name: 'Shadow', yuan: '', isPrimary: true }],
       currentAgentId: 'agent-hana',
-      agentName: 'Hanako',
+      agentName: 'Shadow',
     } as never);
   });
 

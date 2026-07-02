@@ -128,7 +128,7 @@ async function buildScreenshotPayloadForMessages(
 
   if (!payload.messages) return payload;
 
-  const assistantName = state.agentName || 'Hanako';
+  const assistantName = state.agentName || 'Shadow';
   const userName = state.userName || '我';
 
   for (const msg of payload.messages) {

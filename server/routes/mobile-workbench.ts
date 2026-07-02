@@ -30,7 +30,7 @@ export function createMobileWorkbenchRoute(engine) {
     engine.gcWorkspacePersistence?.();
     return c.json({
       locale: engine.getLocale?.() || engine.config?.locale || "zh-CN",
-      agentName: engine.agentName || "Hanako",
+      agentName: engine.agentName || "Shadow",
       userName: engine.userName || "User",
       currentAgentId: engine.currentAgentId || null,
       agentYuan: engine.agent?.config?.agent?.yuan || "hanako",

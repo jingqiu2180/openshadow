@@ -356,7 +356,7 @@ describe('streamBufferManager.ensureMessage 自愈', () => {
         status: 'success',
         sourceKind: 'workflow',
         sourceLabel: 'ten-writers',
-        text: 'Hanako 收到了来自 ten-writers workflow 的结果',
+        text: 'Shadow 收到了来自 ten-writers workflow 的结果',
         detailMarkdown: 'workflow result',
       },
     });
@@ -405,7 +405,7 @@ describe('streamBufferManager.ensureMessage 自愈', () => {
         status: 'success',
         sourceKind: 'workflow',
         sourceLabel: '冒烟测试',
-        text: 'Hanako 收到了来自 冒烟测试 workflow 的结果',
+        text: 'Shadow 收到了来自 冒烟测试 workflow 的结果',
       },
     });
 
@@ -448,7 +448,7 @@ describe('streamBufferManager.ensureMessage 自愈', () => {
         status: 'success',
         sourceKind: 'workflow',
         sourceLabel: '早到结果',
-        text: 'Hanako 收到了来自 早到结果 workflow 的结果',
+        text: 'Shadow 收到了来自 早到结果 workflow 的结果',
       },
     });
 

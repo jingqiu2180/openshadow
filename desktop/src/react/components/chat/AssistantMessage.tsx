@@ -77,7 +77,7 @@ export const AssistantMessage = memo(function AssistantMessage({
   messageRef,
 }: Props) {
   const agents = useStore(s => s.agents);
-  const globalAgentName = useStore(s => s.agentName) || 'Hanako';
+  const globalAgentName = useStore(s => s.agentName) || 'Shadow';
   const globalYuan = useStore(s => s.agentYuan) || 'hanako';
   const isStreaming = useStore(s => selectIsStreamingSession(s, sessionPath));
   const selectedIds = useStore(s => selectSelectedIdsBySession(s, sessionPath));
@@ -880,7 +880,7 @@ const CronConfirmBlock = memo(function CronConfirmBlock({ block, sessionPath }: 
   const initialType = (jobData.type || jobData.scheduleType || 'cron') as string;
   const agents = useStore(s => s.agents);
   const currentAgentId = useStore(s => s.currentAgentId);
-  const fallbackAgentName = useStore(s => s.agentName) || 'Hanako';
+  const fallbackAgentName = useStore(s => s.agentName) || 'Shadow';
   const fallbackAgentYuan = useStore(s => s.agentYuan) || 'hanako';
   const initialPrompt = (jobData.prompt as string) || (block.description as string) || '';
   const [draftLabel, setDraftLabel] = useState((jobData.label as string) || (block.title as string) || initialPrompt.slice(0, 40) || '');

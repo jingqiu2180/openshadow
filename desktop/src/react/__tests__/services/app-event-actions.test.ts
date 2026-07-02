@@ -91,7 +91,7 @@ describe('handleAppEvent', () => {
     };
     (globalThis as Record<string, unknown>).i18n = {
       locale: 'zh-CN',
-      defaultName: 'Hanako',
+      defaultName: 'Shadow',
       load: vi.fn(async (locale: string) => {
         (globalThis as any).i18n.locale = locale;
       }),

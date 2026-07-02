@@ -20,7 +20,7 @@ describe('ComputerUseOverlay', () => {
     } as never);
   });
 
-  it('does not draw background action cursors in the Hanako window', () => {
+  it('does not draw background action cursors in the Shadow window', () => {
     useStore.getState().setComputerOverlayForSession('/session/b.jsonl', {
       phase: 'running',
       action: 'click_element',
@@ -41,7 +41,7 @@ describe('ComputerUseOverlay', () => {
     expect(second.container.querySelector('[data-action="click_element"]')).toBeNull();
   });
 
-  it('does not draw done pulses in the Hanako window', () => {
+  it('does not draw done pulses in the Shadow window', () => {
     useStore.getState().setComputerOverlayForSession('/session/a.jsonl', {
       phase: 'done',
       action: 'click_element',
@@ -91,7 +91,7 @@ describe('ComputerUseOverlay', () => {
     expect(useStore.getState().computerOverlayBySession['/session/a.jsonl']).toBeUndefined();
   });
 
-  it('keeps the Hanako overlay reserved for foreground takeover UI only', () => {
+  it('keeps the Shadow overlay reserved for foreground takeover UI only', () => {
     useStore.getState().setComputerOverlayForSession('/session/a.jsonl', {
       phase: 'running',
       action: 'click_point',

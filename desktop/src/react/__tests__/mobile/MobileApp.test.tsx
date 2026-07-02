@@ -86,7 +86,7 @@ describe('MobileApp', () => {
     window.t = ((key: string) => key) as typeof window.t;
     window.i18n = {
       locale: 'zh',
-      defaultName: 'Hanako',
+      defaultName: 'Shadow',
       _data: {},
       _agentOverrides: {},
       load: vi.fn(async function load(this: typeof window.i18n, locale: string) {
@@ -916,7 +916,7 @@ function resetStoreForMobileTest(): void {
     previewOpen: false,
     agents: [],
     currentAgentId: null,
-    agentName: 'Hanako',
+    agentName: 'Shadow',
     userName: 'User',
     agentAvatarUrl: null,
     userAvatarUrl: null,

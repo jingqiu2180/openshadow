@@ -540,7 +540,7 @@ export function createChatRoute(engine: any, hub: any, { upgradeWebSocket }: any
       const { agentId, agentName } = resolveSessionNotificationIdentity(sessionPath);
       const idempotencyKey = streamId ? `turn-completion:${sessionPath}:${streamId}` : null;
       const delivery = engine.deliverNotification({
-        title: agentName || "HanaAgent",
+        title: agentName || "OpenShadow",
         body: t("notification.turnCompletionBody"),
         channels: ["desktop"],
         desktopFocusPolicy: prefs.turnCompletion === "when_session_unfocused"

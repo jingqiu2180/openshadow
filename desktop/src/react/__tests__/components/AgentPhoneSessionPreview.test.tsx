@@ -61,7 +61,7 @@ describe('AgentPhoneSessionPreview', () => {
       agents: [
         { id: 'butter-agent', name: 'butter', yuan: 'butter', hasAvatar: false },
       ],
-      agentName: 'Hanako',
+      agentName: 'Shadow',
       agentYuan: 'hanako',
     } as never);
   });

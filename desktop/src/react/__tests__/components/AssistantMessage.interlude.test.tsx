@@ -29,7 +29,7 @@ describe('AssistantMessage interlude-only rendering', () => {
     });
     useStore.setState({
       agents: [],
-      agentName: 'Hanako',
+      agentName: 'Shadow',
       agentYuan: 'hanako',
       streamingSessions: [],
       selectedMessageIdsBySession: {},
@@ -67,7 +67,7 @@ describe('AssistantMessage interlude-only rendering', () => {
     );
 
     expect(screen.getByText('小花 收到了来自 明 · 大纲评估 的回复')).toBeInTheDocument();
-    expect(container.textContent).not.toContain('Hanako');
+    expect(container.textContent).not.toContain('Shadow');
     expect(container.querySelector('[data-message-actions]')).toBeNull();
     expect(container.querySelector('[data-testid="assistant-completion-actions"]')).toBeNull();
   });

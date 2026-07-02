@@ -237,7 +237,7 @@ describe('chat-slice', () => {
         taskId: 'workflow-1',
         status: 'success',
         sourceKind: 'workflow',
-        text: 'Hanako 收到了来自 冒烟测试 workflow 的结果',
+        text: 'Shadow 收到了来自 冒烟测试 workflow 的结果',
       });
 
       expect(inserted).toBe(true);

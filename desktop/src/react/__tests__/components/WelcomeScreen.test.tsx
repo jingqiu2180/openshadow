@@ -56,7 +56,7 @@ describe('WelcomeScreen workspace picker', () => {
     useStore.setState({
       welcomeVisible: true,
       agents: [],
-      agentName: 'Hanako',
+      agentName: 'Shadow',
       agentAvatarUrl: null,
       agentYuan: 'hanako',
       currentAgentId: null,
@@ -202,7 +202,7 @@ describe('WelcomeScreen workspace picker', () => {
   it('disables the memory toggle when the selected agent has memory disabled in settings', async () => {
     useStore.setState({
       agents: [
-        { id: 'hana', name: 'Hanako', yuan: 'hanako', isPrimary: true, memoryMasterEnabled: false },
+        { id: 'hana', name: 'Shadow', yuan: 'hanako', isPrimary: true, memoryMasterEnabled: false },
       ],
       currentAgentId: 'hana',
       memoryEnabled: true,
@@ -222,7 +222,7 @@ describe('WelcomeScreen workspace picker', () => {
       agents: [
         {
           id: 'hana',
-          name: 'Hanako',
+          name: 'Shadow',
           yuan: 'hanako',
           isPrimary: true,
           homeFolder: '/workspace/Hana',

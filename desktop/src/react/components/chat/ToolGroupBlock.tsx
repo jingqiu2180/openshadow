@@ -35,7 +35,7 @@ function isCardBackedAutomationCreate(tool: ToolCall): boolean {
     || action === 'add_plugin_action';
 }
 
-export const ToolGroupBlock = memo(function ToolGroupBlock({ tools: rawTools, collapsed: initialCollapsed, agentName = 'Hanako' }: Props) {
+export const ToolGroupBlock = memo(function ToolGroupBlock({ tools: rawTools, collapsed: initialCollapsed, agentName = 'Shadow' }: Props) {
   // subagent / stage_files / automation create 有独立卡片，不在工具组里重复显示
   const tools = rawTools.filter(t =>
     t.name !== 'subagent'
