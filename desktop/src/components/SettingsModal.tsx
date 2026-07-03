@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react'
 import { useStore, type ModelInfo, type ThinkingLevel, type PermissionMode } from '../store'
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * bridge.js — 外部平台接入 REST API
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // shared/config-scope.js
 
 import { CONFIG_SCHEMA } from './config-schema';

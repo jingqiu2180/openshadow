@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * CircuitBreaker: halts execution after repeated failures.
  *

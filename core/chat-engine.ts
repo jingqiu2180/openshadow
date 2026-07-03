@@ -1,4 +1,3 @@
-// @ts-nocheck
 import OpenAI from 'openai'
 import { config } from './config.js'
 import { createClient as createProviderClient, pickModel } from './providers/index.js'
@@ -21,7 +20,7 @@ import { registerPinnedMemoryTool } from './tools/pinned-memory-tool.js'
 import { registerNotifyTool } from './tools/notify-tool.js'
 import { registerExperienceTool } from './tools/experience-tool.js'
 import { registerComputerUseTool } from './tools/computer-use-tool.js'
-// openhanako 对齐工具（使用 // @ts-nocheck，暂时轻量注册）
+// openhanako 对齐工具（使用 ，暂时轻量注册）
 import { createChannelTool } from './tools/channel-tool.js'
 import { createDmTool } from './tools/dm-tool.js'
 import { createWorkflowTool } from './tools/workflow-tool.js'
@@ -33,15 +32,15 @@ import { name as beautifyGetHtmlStyleName, description as beautifyGetHtmlStyleDe
 import { name as beautifyListCapsName, description as beautifyListCapsDesc, parameters as beautifyListCapsParams, execute as beautifyListCapsExec } from '../plugins/builtin/beautify/tools/beautify-list-capabilities.js'
 // install_skill 工具（openshadow 原生实现，完整功能）
 import { createInstallSkillTool } from './tools/install-skill-impl.js'
-// office 插件工具（openhanako plugins/office/，// @ts-nocheck）
+// office 插件工具（openhanako plugins/office/，）
 import { name as officeReadName, description as officeReadDesc, parameters as officeReadParams, execute as officeReadExec } from '../plugins/builtin/office/tools/read-document.js'
 import { name as officeHtmlToPdfName, description as officeHtmlToPdfDesc, parameters as officeHtmlToPdfParams, execute as officeHtmlToPdfExec } from '../plugins/builtin/office/tools/html-to-pdf.js'
 import { name as officeListCapsName, description as officeListCapsDesc, parameters as officeListCapsParams, execute as officeListCapsExec } from '../plugins/builtin/office/tools/list-capabilities.js'
-// image-gen 插件工具（openhanako plugins/image-gen/tools/，// @ts-nocheck）
+// image-gen 插件工具（openhanako plugins/image-gen/tools/，）
 import { name as imgGenName, description as imgGenDesc, parameters as imgGenParams, execute as imgGenExec } from '../plugins/builtin/image-gen/tools/generate-image.js'
 import { name as vidGenName, description as vidGenDesc, parameters as vidGenParams, execute as vidGenExec } from '../plugins/builtin/image-gen/tools/generate-video.js'
 import { name as mediaOptsName, description as mediaOptsDesc, parameters as mediaOptsParams, execute as mediaOptsExec } from '../plugins/builtin/image-gen/tools/describe-media-options.js'
-// update_settings 工具（openhanako lib/tools/update-settings-tool.ts，// @ts-nocheck）
+// update_settings 工具（openhanako lib/tools/update-settings-tool.ts，）
 import { createUpdateSettingsTool } from './tools/update-settings-tool.js'
 import { speechToText, recordAudio } from './stt.js'
 import { textToSpeech, listVoices } from './tts.js'

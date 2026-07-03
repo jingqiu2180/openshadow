@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * workflow-activity-store.js —— 右侧活动卡（workflow + subagent）的持久化背书
  *

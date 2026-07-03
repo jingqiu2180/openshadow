@@ -1,4 +1,3 @@
-// @ts-nocheck
 const INPUT_MODES = new Set(["buffer", "local_file", "remote_url", "public_url"]);
 const FILE_KINDS = new Set(["image", "video", "audio", "document"]);
 const DELIVERY_MODES = new Set(["native_image", "native_video", "native_audio", "native_document", "native_file"]);

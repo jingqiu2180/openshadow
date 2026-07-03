@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Tencent Hunyuan (腾讯混元) provider plugin
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * core/provider-compat/tool-pairing.js — 孤儿 toolResult 配对兜底（provider-agnostic）
  *

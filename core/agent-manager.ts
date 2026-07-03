@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * AgentManager — 多 Agent 生命周期管理
  *

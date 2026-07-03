@@ -1,4 +1,3 @@
-// @ts-nocheck
 function parseVersionPart(value: any) {
   const n = Number.parseInt(value, 10);
   return Number.isFinite(n) && n >= 0 ? n : 0;

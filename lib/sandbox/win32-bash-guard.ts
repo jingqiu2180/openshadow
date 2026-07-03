@@ -1,4 +1,3 @@
-// @ts-nocheck
 function readShellWord(command, start) {
   let word = "";
   let quote = null;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Anthropic Messages prompt-cache compatibility layer.
  *

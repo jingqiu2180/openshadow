@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * 桌面 session 的统一提交入口。
  * 本地输入与 bridge /rc 接管都应通过这一层提交消息到桌面 session。
@@ -25,11 +24,11 @@
  * @returns {Promise<{ text: string | null, toolMedia: string[] }>}
  */
 import path from "path";
-import { extOfName, inferFileKind } from "../lib/file-metadata.ts";
-import { collectMediaItems } from "../lib/tools/media-details.ts";
-import { formatSettingsUpdateText } from "../lib/tools/settings-update-result.ts";
-import { materializeBridgeInboundFiles } from "../lib/session-files/bridge-inbound-files.ts";
-import { serializeSessionFile } from "../lib/session-files/session-file-response.ts";
+import { extOfName, inferFileKind } from '../lib/file-metadata.js';
+import { collectMediaItems } from '../lib/tools/media-details.js';
+import { formatSettingsUpdateText } from '../lib/tools/settings-update-result.js';
+import { materializeBridgeInboundFiles } from '../lib/session-files/bridge-inbound-files.js';
+import { serializeSessionFile } from '../lib/session-files/session-file-response.js';
 
 /**
  * 非桌面来源（bridge /rc 等）用户消息的来源元信息持久化条目类型。

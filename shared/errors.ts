@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const ErrorSeverity = Object.freeze({
   CRITICAL: 'critical',
   DEGRADED: 'degraded',

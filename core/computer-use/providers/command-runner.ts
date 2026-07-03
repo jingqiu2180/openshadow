@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { spawn } from "child_process";
 
 interface SpawnOptions {

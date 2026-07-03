@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { McpRuntime } from './lib/mcp-runtime.js';
 
 export default class McpPlugin {

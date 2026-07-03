@@ -1,4 +1,3 @@
-// @ts-nocheck
 import os from "os";
 import QRCode from "qrcode";
 import { Hono } from "hono";

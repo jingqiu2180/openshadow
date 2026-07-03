@@ -1,4 +1,3 @@
-// @ts-nocheck
 // shared/migrate-config-scope.js
 
 import fs from "fs";

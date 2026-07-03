@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Server-side i18n — 从 locale JSON 加载翻译
  */

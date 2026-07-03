@@ -1,4 +1,3 @@
-// @ts-nocheck
 export function buildFactExtractionPrompt({ locale = "zh-CN", hasPrevious = false } = {}) {
   const isZh = String(locale || "").startsWith("zh");
 

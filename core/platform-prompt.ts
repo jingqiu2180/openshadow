@@ -1,4 +1,3 @@
-// @ts-nocheck
 import os from "node:os";
 import { envValue, baseNameForShellPath } from '../lib/shell/shell-utils.js';
 import { SANDBOX_MODE_LABEL } from '../lib/sandbox/policy.js';

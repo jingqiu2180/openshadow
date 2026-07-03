@@ -1,4 +1,3 @@
-// @ts-nocheck
 // pi-sdk.ts — PI SDK adapter stub（对齐 openhanako lib/pi-sdk/index.ts）
 // 提供最小化的 Type 和 StringEnum 实现，让 update_settings 等工具能编译和运行
 

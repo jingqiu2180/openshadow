@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * time-utils.js — 日界线 + 逻辑日期工具
  *

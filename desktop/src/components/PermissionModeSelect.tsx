@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import type { PermissionMode } from '../store'
 

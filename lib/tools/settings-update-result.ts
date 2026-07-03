@@ -1,4 +1,3 @@
-// @ts-nocheck
 const MASKED_VALUE = "********";
 const SENSITIVE_KEY_RE = /token|secret|password|api[_-]?key|authorization|credential/i;
 

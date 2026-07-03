@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ChannelManager — 频道管理
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * CoderAgent: autonomous coding agent.
  *

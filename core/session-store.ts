@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { randomUUID } from 'crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, unlinkSync } from 'fs'
 import { join, dirname } from 'path'

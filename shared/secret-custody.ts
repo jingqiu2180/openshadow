@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const MASKED_SECRET = "********";
 
 type SecretKeyInput = Set<string> | string[] | undefined;

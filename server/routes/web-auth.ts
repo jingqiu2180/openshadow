@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Hono } from "hono";
 import { safeJson } from '../hono-helpers.js';
 import { verifyLocalAccountPassword } from '../../core/local-user-account.js';

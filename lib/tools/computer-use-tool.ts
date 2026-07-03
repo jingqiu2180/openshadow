@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Type, StringEnum } from '../pi-sdk/index.js';
 import { toolOk } from './tool-result.js';
 import { getToolSessionPath } from './tool-session.js';

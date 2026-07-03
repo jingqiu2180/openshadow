@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * todo.js — todo_write tool
  *

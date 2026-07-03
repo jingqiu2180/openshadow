@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Built-in provider catalog (Stage 1a).
  *

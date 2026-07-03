@@ -1,4 +1,3 @@
-// @ts-nocheck
 function lower(value: unknown): string {
   return typeof value === "string" ? value.toLowerCase() : "";
 }

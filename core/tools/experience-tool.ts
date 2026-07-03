@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * experience-tool.ts — recall_experience / record_experience 工具
  * 移植自 openhanako/lib/tools/experience.ts

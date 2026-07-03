@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * stage-files-tool.ts — 文件暂存工具
  *

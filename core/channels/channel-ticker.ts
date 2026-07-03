@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * channel-ticker.js — 频道手机调度器（中断恢复 + 主动提醒）

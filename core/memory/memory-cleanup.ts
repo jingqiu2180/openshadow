@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * memory-cleanup.ts — 自动清理过期记忆
  *

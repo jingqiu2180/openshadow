@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Zhipu GLM Coding Plan provider plugin.
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * telegram-adapter.js — Telegram Bot 长轮询适配器
  *

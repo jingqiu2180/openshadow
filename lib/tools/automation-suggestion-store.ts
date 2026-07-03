@@ -1,4 +1,3 @@
-// @ts-nocheck
 function clonePlain<T>(value: T): T {
   if (value === undefined) return undefined;
   return JSON.parse(JSON.stringify(value)) as T;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * vector-store.ts — 基于 embedding 的向量记忆检索（openshadow 版）
  *

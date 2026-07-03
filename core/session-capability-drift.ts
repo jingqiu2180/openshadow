@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * #1624: Session capability fingerprint & drift detection.
  *

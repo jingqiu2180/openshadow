@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * channel-store.js — 频道 MD 文件的读写层
  *

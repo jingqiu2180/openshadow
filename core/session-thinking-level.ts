@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { lookupKnown } from '../shared/known-models.js';
 
 export const DEFAULT_SESSION_THINKING_LEVEL = "medium";

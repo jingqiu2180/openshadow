@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * agent-id-resolver.js — 把用户传入的 agent 标识解析成真实 agent.id
  *

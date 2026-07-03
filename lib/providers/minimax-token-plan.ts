@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * MiniMax Token Plan provider plugin (API key)
  *

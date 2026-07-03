@@ -1,4 +1,3 @@
-// @ts-nocheck
 import MarkdownIt from "markdown-it";
 
 const TELEGRAM_MAX_HTML_LENGTH = 4096;

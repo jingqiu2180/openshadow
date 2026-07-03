@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * known-models.js — 模型词典查询
  *

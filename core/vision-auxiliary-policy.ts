@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const VISION_AUXILIARY_DISABLED_ERROR =
   "vision auxiliary is disabled for image input with the current text-only model";
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Notification Store（简化版）
  * 存储通知记录，支持查询

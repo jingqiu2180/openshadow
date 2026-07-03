@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * current-status-tool.ts — 查询当前运行环境状态
  *

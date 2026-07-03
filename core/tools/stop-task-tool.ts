@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * stop-task-tool.ts — 终止后台任务工具
  *

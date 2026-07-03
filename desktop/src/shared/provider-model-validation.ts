@@ -1,4 +1,3 @@
-// @ts-nocheck
 const OFFICIAL_DEEPSEEK_PROVIDER_ID = "deepseek";
 const OFFICIAL_DEEPSEEK_HOST = "api.deepseek.com";
 const OFFICIAL_DEEPSEEK_RESERVED_MODEL_IDS = new Set(["deepseek"]);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * memory-ticker.js — 记忆调度器（v3）
  *

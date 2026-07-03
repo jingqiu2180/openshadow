@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { emitSessionShutdown } from '../lib/pi-sdk/index.js';
 
 /**

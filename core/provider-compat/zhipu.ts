@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Zhipu GLM OpenAI-compatible provider compatibility.
  *

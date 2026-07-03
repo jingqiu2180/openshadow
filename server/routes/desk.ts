@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * desk.js — Desk 系统 REST API
  *

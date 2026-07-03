@@ -1,4 +1,3 @@
-// @ts-nocheck
 // core/tools/tool-session.ts
 // Simplified tool session helpers (from openhanako lib/tools/tool-session.ts)
 

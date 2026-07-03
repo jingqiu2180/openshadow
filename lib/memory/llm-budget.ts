@@ -1,4 +1,3 @@
-// @ts-nocheck
 const DEFAULT_REASONING_BUFFER_TOKENS = 1024;
 
 function positiveInteger(value) {

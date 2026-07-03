@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { listRecentAgentSessions } from './list-agent-sessions.js';
 
 /** @type {import('../slash-command-registry.js').CommandDef[]} */

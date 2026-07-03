@@ -1,4 +1,3 @@
-// @ts-nocheck
 export interface ToolSpec {
   type: 'function'
   function: {

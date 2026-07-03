@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * OpenAI Codex OAuth provider plugin
  *

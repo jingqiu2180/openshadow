@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * notify-tool.ts — 用户通知工具
  * 移植自 openhanako/lib/tools/notify-tool.ts

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * OpenAI input_audio compatibility.
  *

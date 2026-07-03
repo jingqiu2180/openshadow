@@ -1,4 +1,3 @@
-// @ts-nocheck
 import vm from "node:vm";
 import { extractMeta } from './meta.js';
 

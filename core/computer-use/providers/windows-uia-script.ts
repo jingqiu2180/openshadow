@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const WINDOWS_UIA_HELPER_SCRIPT = String.raw`
 param(
   [string]$RequestPath = "",

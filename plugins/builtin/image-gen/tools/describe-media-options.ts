@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { inferMediaMode } from '../../../../core/media/media-parameters.js';
 
 export const name = "describe-media-options";

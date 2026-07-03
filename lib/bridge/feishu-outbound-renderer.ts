@@ -1,4 +1,3 @@
-// @ts-nocheck
 import MarkdownIt from "markdown-it";
 
 const FEISHU_AT_TOKEN_RE = /<at\s+user_id=(["'])([^"']+)\1\s*>([\s\S]*?)<\/at>/gi;

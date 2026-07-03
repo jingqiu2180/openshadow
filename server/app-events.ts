@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * App 级事件（agent 切换、locale 变更等）的发射 + WS 序列化。
  *

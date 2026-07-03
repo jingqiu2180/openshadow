@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * check-pending-tasks-tool.ts — 查询后台异步任务状态
  *

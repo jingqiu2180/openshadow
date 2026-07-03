@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Provider abstraction — Stage 1a
  *

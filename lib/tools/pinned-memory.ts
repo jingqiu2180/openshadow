@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * pinned-memory.js — pin_memory / unpin_memory 自定义工具
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { CORE_TOOL_NAMES, uniqueToolNames } from '../shared/tool-categories.js';
 
 /**

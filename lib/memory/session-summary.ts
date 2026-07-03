@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * session-summary.js — Session 摘要管理器
  *

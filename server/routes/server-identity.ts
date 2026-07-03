@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Hono } from "hono";
 import { createServerRuntimeContext, toServerIdentityResponse } from '../../core/server-runtime-context.js';
 import { readAuthPrincipal } from '../http/capability-guard.js';

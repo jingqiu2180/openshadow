@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { principalHasScope as principalHasNormalizedScope } from '../../core/security-principal.js';
 import { isLocalOwnerPrincipal, scopeAllows } from './route-security.js';
 

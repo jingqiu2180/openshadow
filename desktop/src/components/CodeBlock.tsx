@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useCallback } from 'react'
 import styles from './CodeBlock.module.css'
 

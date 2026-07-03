@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Subagent 工具（对齐 openhanako）
  * 支持 agent/access/model 参数，集成 SubagentThreadStore/SubagentRunStore

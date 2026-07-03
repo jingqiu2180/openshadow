@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "path";
 import { SESSION_PERMISSION_MODES, normalizeSessionPermissionMode } from '../../core/session-permission-mode.js';
 import { StringEnum, Type } from '../pi-sdk/index.js';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sandbox/index.js — 沙盒入口（无状态工厂）
  *

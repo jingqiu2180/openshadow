@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * 并发限流器：限制同时在飞的子 agent 数（信号量），并对累计派发总数设 backstop。
  * @param {{ maxConcurrent: number, maxTotal: number }} opts

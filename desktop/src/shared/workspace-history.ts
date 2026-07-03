@@ -1,4 +1,3 @@
-// @ts-nocheck
 const DEFAULT_WORKSPACE_HISTORY_LIMIT = 10;
 
 export function normalizeWorkspacePath(value: unknown): string | null {

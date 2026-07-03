@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   computeToolSnapshot,
   DEFAULT_DISABLED_TOOL_NAMES,

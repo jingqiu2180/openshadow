@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { redactLogText, redactLogValue } from '../log-redactor.js';
 
 export function summarizeBrowserActionParams(action: any, params: any = {}) {

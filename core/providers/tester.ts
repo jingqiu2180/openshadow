@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Connection tester — Stage 1a
  *

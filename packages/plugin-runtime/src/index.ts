@@ -1,4 +1,3 @@
-// @ts-nocheck
 export type MaybePromise<T> = T | Promise<T>;
 
 export type JsonSchema = Record<string, unknown>;

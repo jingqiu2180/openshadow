@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * session-folders-tool.ts — 管理当前会话的授权文件夹范围
  *

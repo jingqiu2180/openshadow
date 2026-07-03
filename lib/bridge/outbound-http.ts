@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * outbound-http.ts — Bridge 出站 REST 统一出口（#1612）
  *

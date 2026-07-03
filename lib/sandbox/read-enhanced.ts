@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * read-enhanced.js — 增强的 readFile，支持 xlsx/docx 解析和非 UTF-8 编码检测
  *

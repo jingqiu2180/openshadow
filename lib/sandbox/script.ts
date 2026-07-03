@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * script.js — 临时脚本 / profile 文件管理
  *

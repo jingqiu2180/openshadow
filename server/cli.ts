@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * cli.js — 终端交互界面
  *

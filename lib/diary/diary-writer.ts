@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * diary-writer.js — 日记生成模块
  *

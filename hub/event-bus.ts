@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * EventBus — 统一事件总线
  *

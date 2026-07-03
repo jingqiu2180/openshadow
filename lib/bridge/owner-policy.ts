@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { parseSessionKey } from './session-key.js';
 
 export function getConfiguredBridgeOwner(agent, platform) {

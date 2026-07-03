@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * memory-manager.ts — openshadow 记忆系统管理器
  *

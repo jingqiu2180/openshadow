@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * path-security.js — 路径安全校验共享模块
  *

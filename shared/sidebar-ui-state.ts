@@ -1,4 +1,3 @@
-// @ts-nocheck
 export interface SidebarUiProjectViewPrefs {
   collapsedProjectIds: string[];
   collapsedFolderIds: string[];

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * web-fetch.ts - web_fetch 工具（最小化实现）
  *

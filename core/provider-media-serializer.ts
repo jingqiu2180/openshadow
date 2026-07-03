@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Provider media serialization helpers.
  *

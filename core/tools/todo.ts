@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * todo.ts — 替换式 todo 工具（对标 Claude Code TodoWrite）
  *

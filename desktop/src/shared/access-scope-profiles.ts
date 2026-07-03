@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const STUDIO_OWNER_SCOPE = "studio.owner";
 
 export const MOBILE_REMOTE_ACCESS_SCOPES = Object.freeze([

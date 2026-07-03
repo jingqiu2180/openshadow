@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Plugin route request context — 插件 route handler 的请求级执行上下文。
  *

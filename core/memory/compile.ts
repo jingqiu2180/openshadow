@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * compile.ts — 记忆编译器（openshadow 版）
  *

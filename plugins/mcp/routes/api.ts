@@ -1,4 +1,3 @@
-// @ts-nocheck
 export default function registerMcpRoutes(app, ctx) {
   const runtime = () => ctx._mcpRuntime;
 

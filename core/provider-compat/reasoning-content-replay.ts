@@ -1,4 +1,3 @@
-// @ts-nocheck
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
 function hasToolCalls(message) {

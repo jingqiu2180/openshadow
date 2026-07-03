@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   COVER_STYLE_GUIDE_VERSION,
   buildCoverStyleGuideForAgent,

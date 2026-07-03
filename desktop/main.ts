@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { app, BrowserWindow, dialog } from 'electron'
 import { join } from 'path'
 import { readFileSync, writeFileSync, existsSync } from 'fs'

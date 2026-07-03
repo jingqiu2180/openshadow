@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * MCP Registry — manages MCP server connections.
  *

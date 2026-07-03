@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { DAY_BOUNDARY_HOUR } from '../time-utils.js';
 import { createModuleLogger } from '../debug-log.js';
 

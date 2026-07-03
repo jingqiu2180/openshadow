@@ -1,4 +1,3 @@
-// @ts-nocheck
 import crypto from "node:crypto";
 
 const AES_128_HEX_RE = /^[0-9a-f]{32}$/;

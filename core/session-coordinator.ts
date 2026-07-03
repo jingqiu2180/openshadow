@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SessionCoordinator — Session 生命周期管理
  *
@@ -9,93 +8,93 @@
 import fs from "fs";
 import fsp from "fs/promises";
 import path from "path";
-import { createAgentSession, SessionManager, estimateTokens, refreshSessionModelFromRegistry } from "../lib/pi-sdk/index.ts";
-import { createDefaultSettings } from "./session-defaults.ts";
-import { restoreDefaultWorkspaceIfMissing } from "../shared/default-workspace.ts";
-import { computeHardTruncation } from "./compaction-utils.ts";
+import { createAgentSession, SessionManager, estimateTokens, refreshSessionModelFromRegistry } from '../lib/pi-sdk/index.js';
+import { createDefaultSettings } from './session-defaults.js';
+import { restoreDefaultWorkspaceIfMissing } from '../shared/default-workspace.js';
+import { computeHardTruncation } from './compaction-utils.js';
 import {
   appendCompactionResultToSession,
   createCachePreservingCompactionResult,
   runCachePreservingCompactionForSession,
-} from "./session-compactor.ts";
-import { teardownSessionResources } from "./session-teardown.ts";
-import { evaluateSessionHealth, repairOrphanToolResultEntriesInFile } from "./session-health.ts";
-import { createModuleLogger } from "../lib/debug-log.ts";
-import { BrowserManager } from "../lib/browser/browser-manager.ts";
-import { t, getLocale } from "../lib/i18n.ts";
+} from './session-compactor.js';
+import { teardownSessionResources } from './session-teardown.js';
+import { evaluateSessionHealth, repairOrphanToolResultEntriesInFile } from './session-health.js';
+import { createModuleLogger } from '../lib/debug-log.js';
+import { BrowserManager } from '../lib/browser/browser-manager.js';
+import { t, getLocale } from '../lib/i18n.js';
 import {
   DEFAULT_SESSION_PERMISSION_MODE,
   SESSION_PERMISSION_MODES,
   isReadOnlyPermissionMode,
   legacyAccessModeFromPermissionMode,
   normalizeSessionPermissionMode,
-} from "./session-permission-mode.ts";
-import { findModel } from "../shared/model-ref.ts";
-import { computeToolSnapshot, DEFAULT_DISABLED_TOOL_NAMES, uniqueToolNames } from "../shared/tool-categories.ts";
+} from './session-permission-mode.js';
+import { findModel } from '../shared/model-ref.js';
+import { computeToolSnapshot, DEFAULT_DISABLED_TOOL_NAMES, uniqueToolNames } from '../shared/tool-categories.js';
 import {
   computeRuntimeDisabledToolNames,
   getStableFeatureDisabledToolNames,
   toolNamesFromObjects,
-} from "./tool-availability.ts";
-import { isActiveSessionPath } from "./message-utils.ts";
-import { formatWorkspaceScopePrompt, normalizeSessionFolderScope, normalizeWorkspaceScope } from "../shared/workspace-scope.ts";
-import { getProviderPromptPatches } from "./provider-prompt-patches.ts";
+} from './tool-availability.js';
+import { isActiveSessionPath } from './message-utils.js';
+import { formatWorkspaceScopePrompt, normalizeSessionFolderScope, normalizeWorkspaceScope } from '../shared/workspace-scope.js';
+import { getProviderPromptPatches } from './provider-prompt-patches.js';
 import {
   DEEPSEEK_ROLEPLAY_REASONING_PATCH_EXPERIMENT_ID,
   getResolvedExperimentValue,
-} from "../lib/experiments/registry.ts";
+} from '../lib/experiments/registry.js';
 import {
   normalizePlainDescription,
   stripClosedInternalNarrationBlocks,
-} from "../lib/text/internal-narration.ts";
-import { prepareVisionInputForTextOnlyModel } from "./vision-prepare.ts";
-import { prepareModelImageInputsForPrompt } from "./model-image-preprocess.ts";
+} from '../lib/text/internal-narration.js';
+import { prepareVisionInputForTextOnlyModel } from './vision-prepare.js';
+import { prepareModelImageInputsForPrompt } from './model-image-preprocess.js';
 import {
   pruneSessionInlineMediaHistory,
   repairSessionInlineMediaEntriesInFile,
-} from "./session-inline-media-prune.ts";
+} from './session-inline-media-prune.js';
 import {
   flushSessionManagerSnapshot,
   repairOversizedSessionEntries,
   repairOversizedSessionEntriesInFile,
   schedulePreAssistantSessionManagerFlush,
-} from "./session-jsonl-file.ts";
-import { createVisionContextInjectionExtension } from "./vision-context-injector.ts";
+} from './session-jsonl-file.js';
+import { createVisionContextInjectionExtension } from './vision-context-injector.js';
 import {
   createSessionTurnContextExtension,
   normalizeSessionTurnContext,
-} from "./session-turn-context.ts";
+} from './session-turn-context.js';
 import {
   modelSupportsDirectAudioInput,
   modelSupportsAudioInput,
   modelSupportsDirectVideoInput,
   modelSupportsVideoInput,
-} from "../shared/model-capabilities.ts";
+} from '../shared/model-capabilities.js';
 import {
   normalizeSessionThinkingLevel,
   normalizeThinkingLevelForModel,
   resolveModelDefaultThinkingLevel,
   resolveThinkingLevelForModel,
-} from "./session-thinking-level.ts";
+} from './session-thinking-level.js';
 import {
   resolveSessionSkillsForRuntime,
   snapshotSkillsForSession,
-} from "../lib/skills/session-skill-snapshot.ts";
-import { SessionListProjectionCache } from "./session-list-projection-cache.ts";
+} from '../lib/skills/session-skill-snapshot.js';
+import { SessionListProjectionCache } from './session-list-projection-cache.js';
 import {
   buildLlmContextCachePrefixContract,
   diffCachePrefixContracts,
   summarizeCachePrefixContract,
-} from "../lib/llm/cache-prefix-contract.ts";
-import { buildSessionCacheSnapshot as buildSessionCacheSnapshotValue } from "./session-cache-snapshot.ts";
-import { repairRestoredToolSnapshotDetailed, sameToolNames } from "./tool-snapshot-repair.ts";
+} from '../lib/llm/cache-prefix-contract.js';
+import { buildSessionCacheSnapshot as buildSessionCacheSnapshotValue } from './session-cache-snapshot.js';
+import { repairRestoredToolSnapshotDetailed, sameToolNames } from './tool-snapshot-repair.js';
 import {
   SESSION_PROMPT_SNAPSHOT_VERSION,
   freezeAgentsFilesResult,
   freezeSkillsResult,
   normalizeSessionPromptSnapshot,
   normalizeStringArray,
-} from "./session-prompt-snapshot.ts";
+} from './session-prompt-snapshot.js';
 
 const log = createModuleLogger("session");
 const SESSION_META_PAYLOAD_DIR = "session-meta-payloads";

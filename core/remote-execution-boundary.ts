@@ -1,4 +1,3 @@
-// @ts-nocheck
 const SCHEMA_VERSION = 1;
 
 const NODE_ROLES = ["authority", "resource_node", "execution_node", "replica"];

@@ -1,4 +1,3 @@
-// @ts-nocheck
 const LOCAL_EXECUTION_KIND = "local_process";
 const DEFAULT_WORKBENCH_KIND = "legacy_agent_workbench";
 

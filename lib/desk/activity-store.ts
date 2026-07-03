@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * activity-store.js — 助手活动元数据存储
  *

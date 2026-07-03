@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * 数据迁移 runner
  *

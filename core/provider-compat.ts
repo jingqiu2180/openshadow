@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * core/provider-compat.js — LLM HTTP payload 兼容层（唯一对外入口）
  *

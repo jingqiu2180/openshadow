@@ -1,4 +1,3 @@
-// @ts-nocheck
 export type TurnCompletionNotificationMode = "never" | "when_unfocused" | "when_session_unfocused";
 
 export interface NotificationPreferences {

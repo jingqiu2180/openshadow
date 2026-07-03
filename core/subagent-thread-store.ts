@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SubagentThreadStore — subagent 线程生命周期管理（简化版）
  *

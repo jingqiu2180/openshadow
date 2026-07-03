@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * pii-guard.js — PII / 凭证检测与脱敏
  *

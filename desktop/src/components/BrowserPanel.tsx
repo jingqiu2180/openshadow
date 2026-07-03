@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * BrowserPanel — embeds a <webview> for in-app browsing.
  *

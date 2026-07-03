@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   HTML_STYLE_GUIDE_SECTIONS,
   HTML_STYLE_GUIDE_VERSION,

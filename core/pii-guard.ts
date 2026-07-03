@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * pii-guard.ts — PII / 凭证检测与脱敏
  * 移植自 openhanako/lib/pii-guard.ts

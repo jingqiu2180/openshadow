@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Zhipu AI (智谱) provider plugin
  *

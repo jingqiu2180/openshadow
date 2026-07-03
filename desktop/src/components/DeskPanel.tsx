@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useCallback, useEffect, DragEvent } from 'react'
 import { useStore, FileEntry, TreeNode } from '../store'
 import { DeskEditor } from './DeskEditor'

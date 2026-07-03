@@ -1,4 +1,3 @@
-// @ts-nocheck
 const TOOL_PROTOCOL_TAGS = Object.freeze([
   "tool_calls",
   "tool_call",

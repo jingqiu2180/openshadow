@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Moonshot (月之暗面 / Kimi) provider plugin
  *

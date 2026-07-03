@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * MCP client — connects to MCP servers via stdio or SSE transport.
  *

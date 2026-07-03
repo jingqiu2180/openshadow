@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * extract-zip.js — 跨平台 zip 解压
  *

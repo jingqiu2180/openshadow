@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Temporary provider prompt patches.
  *

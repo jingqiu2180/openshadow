@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * browser-transport.js — BrowserManager 通信传输层
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { SlashCommandRegistry } from '../slash-command-registry.js';
 import { SlashCommandDispatcher } from '../slash-command-dispatcher.js';
 import { createSessionOps } from './session-ops.js';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * confirm.js — 阻塞式确认 REST API
  *

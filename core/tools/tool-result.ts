@@ -1,4 +1,3 @@
-// @ts-nocheck
 // core/tools/tool-result.ts
 // Standardized tool result constructors (from openhanako lib/tools/tool-result.ts)
 

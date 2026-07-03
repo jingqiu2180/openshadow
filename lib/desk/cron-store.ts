@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * cron-store.js — 定时任务存储
  *

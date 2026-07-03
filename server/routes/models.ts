@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * 模型管理 REST 路由
  */

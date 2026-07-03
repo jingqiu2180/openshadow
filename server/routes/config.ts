@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * 配置管理 REST 路由
  */

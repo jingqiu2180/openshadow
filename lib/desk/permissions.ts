@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * permissions.js — Desk 权限接口
  *

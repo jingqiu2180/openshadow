@@ -1,4 +1,3 @@
-// @ts-nocheck
 export function registerTaskRegistryBusHandlers(eventBus, taskRegistry) {
   eventBus.handle("task:register-handler", ({ type, abort, run }) => {
     const handler: { abort: any; run?: any } = { abort };

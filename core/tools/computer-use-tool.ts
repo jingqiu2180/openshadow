@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * computer-use-tool.ts — 浏览器自动化工具
  * 移植自 openhanako/lib/tools/computer-use-tool.ts

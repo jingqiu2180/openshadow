@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * migrate-providers.js — 一次性迁移旧数据到 added-models.yaml
  *

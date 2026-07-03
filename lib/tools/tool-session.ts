@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * tool-session.js — 从 tool execute 的 ctx 中提取 sessionPath
  *

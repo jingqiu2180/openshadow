@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { normalizeComputerUseSettings } from './settings.js';
 
 const SUPPORTED_COMPUTER_USE_PLATFORMS = new Set(["darwin", "win32"]);

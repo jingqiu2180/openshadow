@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * DeferredResultStore — 异步后台任务结果通知存储（带磁盘持久化）
  *

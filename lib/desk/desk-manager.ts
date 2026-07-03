@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * desk-manager.js — Desk 目录管理
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Baidu Cloud (百度智能云 / 千帆 / 文心) provider plugin
  *

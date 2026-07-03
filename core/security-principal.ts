@@ -1,4 +1,3 @@
-// @ts-nocheck
 const PRINCIPAL_KINDS = new Set([
   "local_user",
   "account_user",

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ESM cache-busting import.
  * 每次调用都用唯一 timestamp query 绕过 Node.js 的模块缓存。

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { normalizeWorkspacePath, workspaceDisplayName } from './workspace-history';
 
 export const SESSION_PROJECTS_VERSION = 1;

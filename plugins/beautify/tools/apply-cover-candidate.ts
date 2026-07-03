@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "node:path";
 import { applyMarkdownCoverFromGeneratedFile } from '../lib/markdown-cover-service.js';
 import { isBeautifyEnabledForAgentConfig } from '../lib/availability.js';

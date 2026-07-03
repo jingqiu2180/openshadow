@@ -1,4 +1,3 @@
-// @ts-nocheck
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const FACT_TIME_RE = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})$/;
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;

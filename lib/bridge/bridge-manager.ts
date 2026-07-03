@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * bridge-manager.js — 外部平台接入管理器
  *

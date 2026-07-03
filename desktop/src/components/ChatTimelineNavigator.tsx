@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState, useRef, useCallback } from 'react'
 import styles from './ChatTimelineNavigator.module.css'
 

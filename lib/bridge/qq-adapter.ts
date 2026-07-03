@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * qq-adapter.js — QQ 机器人适配器（v2 API）

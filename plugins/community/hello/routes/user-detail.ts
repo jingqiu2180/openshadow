@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * 示例路由：获取用户详情（带路径参数）
  * 挂载路径：GET /plugins/hello/users/:id

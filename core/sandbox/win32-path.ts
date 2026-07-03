@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * win32-path.ts — Windows shell 路径规范化
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const CACHE_STRATEGIES = Object.freeze({
   SESSION_SNAPSHOT: "session_snapshot",
   UTILITY_TEMPLATE: "utility_template",

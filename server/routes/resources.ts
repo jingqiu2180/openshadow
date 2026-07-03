@@ -1,4 +1,3 @@
-// @ts-nocheck
 import fs from "fs";
 import { Readable } from "stream";
 import { Hono } from "hono";

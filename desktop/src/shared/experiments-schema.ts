@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const EXPERIMENT_STATUSES = new Set(["alpha", "beta", "deprecated", "retired"]);
 export const EXPERIMENT_SCOPES = new Set(["global", "agent", "session"]);
 export const EXPERIMENT_VALUE_SCHEMA_TYPES = new Set(["boolean", "enum", "number"]);

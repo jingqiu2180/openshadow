@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * PathGuard v2: 4-level access control (OpenShadow-style)
  *

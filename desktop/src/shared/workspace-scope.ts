@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "path";
 
 function cleanPath(value) {

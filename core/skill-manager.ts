@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SkillManager — Skill 加载、过滤、运行时同步
  *

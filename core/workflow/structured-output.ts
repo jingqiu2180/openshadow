@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * 把脚本给的 JSON Schema 包成一个一次性 StructuredOutput 工具，
  * 注入子 agent 的 extraCustomTools。子 agent 调用它把结构化结果交回；getResult() 取出。

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Platform-owned interaction-surface capability declaration.
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 export interface YuanVisual {
   yuan: string;
   symbol: string;

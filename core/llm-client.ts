@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { AppError } from '../shared/errors.js';
 import { errorBus } from '../shared/error-bus.js';
 import { normalizeProviderPayload } from './provider-compat.js';

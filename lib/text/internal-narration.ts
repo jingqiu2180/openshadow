@@ -1,4 +1,3 @@
-// @ts-nocheck
 const INTERNAL_NARRATION_TAGS = ["mood", "pulse", "reflect"];
 const INTERNAL_TAG_PATTERN = INTERNAL_NARRATION_TAGS.join("|");
 

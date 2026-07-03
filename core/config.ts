@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { readFileSync, writeFileSync, existsSync, mkdirSync, accessSync } from 'fs'
 import { join, dirname } from 'path'
 import { homedir } from 'os'

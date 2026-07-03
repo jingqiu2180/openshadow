@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { authorizeHttpRoute } from './route-security.js';
 import {
   PluginSurfaceSessionError,

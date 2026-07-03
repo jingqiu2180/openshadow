@@ -1,4 +1,3 @@
-// @ts-nocheck
 // provider-registry.ts — Computer Use Provider 注册表
 // 参考 openhanako 的 core/computer-use/provider-registry.ts
 // 简化版

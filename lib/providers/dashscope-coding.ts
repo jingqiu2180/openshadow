@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * DashScope Coding Plan (百炼 Coding Plan) provider plugin
  *

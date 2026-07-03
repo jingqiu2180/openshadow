@@ -1,4 +1,3 @@
-// @ts-nocheck
 const VALID_CALL_PURPOSES = new Set([
   "auxiliary_vision",
   "utility",

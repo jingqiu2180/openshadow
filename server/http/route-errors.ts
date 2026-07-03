@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { ClientErrorStatusCode, ServerErrorStatusCode } from "hono/utils/http-status";
 
 export type RouteErrorStatus = ClientErrorStatusCode | ServerErrorStatusCode;

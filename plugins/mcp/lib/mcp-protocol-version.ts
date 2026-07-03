@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { MCP_PROTOCOL_VERSION } from './mcp-stdio-client.js';
 
 export const MCP_PROTOCOL_VERSION_HEADER = "MCP-Protocol-Version";

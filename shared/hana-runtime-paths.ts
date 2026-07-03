@@ -1,4 +1,3 @@
-// @ts-nocheck
 import runtimePaths from './hana-runtime-paths.cjs';
 
 export const {

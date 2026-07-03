@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Ollama provider plugin (本地模型)
  *

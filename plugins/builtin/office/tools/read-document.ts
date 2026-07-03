@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { readOfficeDocument } from '../lib/read-document.js';
 
 export { isOfficeEnabledForAgentConfig as isEnabledForAgentConfig } from '../lib/availability.js';

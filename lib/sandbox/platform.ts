@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * platform.js — 平台检测 + 沙盒工具可用性
  */

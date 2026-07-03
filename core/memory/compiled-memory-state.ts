@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * compiled-memory-state.ts — 编译快照状态管理
  *

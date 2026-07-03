@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getLocale } from '../lib/i18n.js';
 import { modelSupportsDirectImageInput } from '../shared/model-capabilities.js';
 import { prepareModelImageInputsForPrompt } from './model-image-preprocess.js';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import fs from "fs/promises";
 
 const DEFAULT_MAX_PAGES = 25;

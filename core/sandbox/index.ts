@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Sandbox Manager: manages multiple sandboxed environments per session.
  *

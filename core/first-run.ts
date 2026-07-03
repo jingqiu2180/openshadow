@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * first-run.js — 首次运行播种
  *

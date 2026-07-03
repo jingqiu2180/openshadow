@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Kimi Coding Plan provider plugin
  *

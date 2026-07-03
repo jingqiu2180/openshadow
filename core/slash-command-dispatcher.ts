@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createModuleLogger } from '../lib/debug-log.js';
 import { t } from '../lib/i18n.js';
 

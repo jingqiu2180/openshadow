@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * lib/llm/provider-client.js — Provider 认证 header 和连通性探测 URL 构造
  *

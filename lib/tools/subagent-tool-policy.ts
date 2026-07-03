@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * subagent-tool-policy.js —— subagent 工具访问策略的唯一决策点（收口）
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "path";
 
 const ATTACHED_AUDIO_MARKER_RE = /\[attached_audio:\s*([^\]]+)\]/g;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * deep-memory.js — 深度记忆处理器
  *

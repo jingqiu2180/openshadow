@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Volcengine Speech provider plugin.
  *

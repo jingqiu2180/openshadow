@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const ALLOWED_CHAT_IMAGE_MIME_TYPES = Object.freeze([
   "image/png",
   "image/jpeg",

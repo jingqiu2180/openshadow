@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { SessionStore, type Session, sessionToChatMessages } from './session-store.js'
 import { compactSessionWithCachePreservation } from './session-compactor.js'
 import { ChatEngine, type ChatMessage, type ChatResult } from './chat-engine.js'

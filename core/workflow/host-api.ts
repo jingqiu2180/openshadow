@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import { createStructuredOutputTool } from './structured-output.js';
 import { WorkflowJournal } from './journal.js';

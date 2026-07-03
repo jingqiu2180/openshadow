@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * hana-root.js — 项目根目录解析
  *

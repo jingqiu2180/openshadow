@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { readFile, writeFile, stat, readdir } from 'fs/promises'
 import { PathGuard } from './path-guard.js'
 

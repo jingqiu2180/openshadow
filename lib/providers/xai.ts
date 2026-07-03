@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * xAI (Grok) provider plugin
  *

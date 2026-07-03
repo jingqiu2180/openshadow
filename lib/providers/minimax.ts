@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * MiniMax provider plugin (API key)
  *

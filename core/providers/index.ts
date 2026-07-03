@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Provider factory — Stage 1a
  *

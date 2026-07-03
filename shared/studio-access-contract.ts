@@ -1,4 +1,3 @@
-// @ts-nocheck
 export type StudioConnectionKind = 'local' | 'lan' | 'custom_remote' | 'relay' | 'cloud';
 export type ServerTrustState = 'local' | 'lan' | 'tunnel' | 'cloud';
 export type ConnectionCredentialKind = 'none' | 'loopback_token' | 'device_credential' | 'user_session';

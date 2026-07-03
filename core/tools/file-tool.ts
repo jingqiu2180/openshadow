@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * file-tool.ts — 统一文件工具（stat + copy）
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Browser tools — Electron webview mode.
  *

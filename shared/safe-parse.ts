@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { AppError } from './errors.js';
 import { errorBus } from './error-bus.js';
 

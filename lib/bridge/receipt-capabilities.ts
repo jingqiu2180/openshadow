@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Platform-owned waiting receipt capability declaration.
  *

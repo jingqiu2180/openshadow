@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "path";
 import { debugLog } from '../debug-log.js';
 import { extOfName, inferFileKind } from '../file-metadata.js';

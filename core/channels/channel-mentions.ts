@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * channel-mentions.js — resolve textual @mentions to channel member agent IDs.
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import fs from "fs";
 import path from "path";
 import { detectMime, extOfName, inferFileKind } from '../file-metadata.js';

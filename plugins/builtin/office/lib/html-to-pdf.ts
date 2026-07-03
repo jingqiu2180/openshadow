@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { spawn as nodeSpawn } from "child_process";
 import crypto from "crypto";
 import fs from "fs";

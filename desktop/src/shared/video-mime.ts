@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const ALLOWED_CHAT_VIDEO_MIME_TYPES = Object.freeze([
   "video/mp4",
   "video/webm",

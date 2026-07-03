@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * StepFun (阶跃星辰) provider plugin
  *

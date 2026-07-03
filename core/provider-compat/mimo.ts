@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * MiMo provider 兼容层
  *

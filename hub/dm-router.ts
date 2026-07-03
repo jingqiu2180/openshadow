@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * DmRouter — 私信路由
  *

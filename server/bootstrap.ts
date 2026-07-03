@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "path";
 import { pathToFileURL } from "url";
 import { Worker } from "worker_threads";

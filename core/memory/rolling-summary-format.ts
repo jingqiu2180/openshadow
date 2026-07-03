@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * rolling-summary-format.ts — rolling summary ⇄ compileFacts 的格式契约单一源头
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * 消息发送前净化器 — capability-aware message adaptation layer
  *

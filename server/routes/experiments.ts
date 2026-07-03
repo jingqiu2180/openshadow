@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "path";
 import { Hono } from "hono";
 import { safeJson } from '../hono-helpers.js';

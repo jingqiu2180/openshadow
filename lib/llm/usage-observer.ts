@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { debugLog } from '../debug-log.js';
 
 function numberOrNull(value) {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * session-summary.ts — Session 摘要管理（openshadow 版）
  *

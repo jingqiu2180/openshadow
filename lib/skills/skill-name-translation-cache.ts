@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createHash } from "crypto";
 import fs from "fs";
 import os from "os";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 const DEFAULT_MARKDOWN_TYPOGRAPHY = Object.freeze({
   fontPreset: "follow",
   bodyFontSize: 15,

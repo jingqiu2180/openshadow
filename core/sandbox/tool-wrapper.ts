@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * tool-wrapper.ts — 工具沙盒包装
  *

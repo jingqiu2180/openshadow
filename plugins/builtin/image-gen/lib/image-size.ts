@@ -1,4 +1,3 @@
-// @ts-nocheck
 // plugins/image-gen/lib/image-size.js
 import { createReadStream } from "node:fs";
 

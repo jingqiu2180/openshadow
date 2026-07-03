@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { AppError } from './errors.js';
 
 function randomBetween(min: number, max: number) {

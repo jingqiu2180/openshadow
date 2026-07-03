@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * subagent-tool.js — Sub-agent 工具（非阻塞）
  *

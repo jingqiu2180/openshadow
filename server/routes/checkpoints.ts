@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Hono } from "hono";
 import path from "path";
 

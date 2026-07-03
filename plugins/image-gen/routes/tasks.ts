@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * image-gen/routes/tasks.js
  *

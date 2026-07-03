@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * agent-id-resolver.ts
  * 简单的 agent ID 解析器（参考 openhanako）

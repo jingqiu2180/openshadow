@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Browser-safe ESM diagnostic log redaction.
  *

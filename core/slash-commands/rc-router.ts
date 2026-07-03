@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { collectMediaItems } from '../../lib/tools/media-details.js';
 import { formatSettingsUpdateText } from '../../lib/tools/settings-update-result.js';
 import { modelSupportsDirectImageInput } from '../../shared/model-capabilities.js';

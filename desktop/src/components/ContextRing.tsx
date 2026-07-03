@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import styles from './ContextRing.module.css'
 

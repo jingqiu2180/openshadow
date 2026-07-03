@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "path";
 import { serializeSessionFile } from '../lib/session-files/session-file-response.js';
 import { createPluginConfigStore } from './plugin-config.js';

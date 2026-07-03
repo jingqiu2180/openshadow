@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * debug-log.ts — 持久化调试日志
  * 移植自 openhanako/lib/debug-log.ts

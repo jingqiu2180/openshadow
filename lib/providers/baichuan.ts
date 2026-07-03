@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Baichuan (百川智能) provider plugin
  *

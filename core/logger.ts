@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { writeFileSync, existsSync, mkdirSync } from 'fs'
 import { dirname } from 'path'
 

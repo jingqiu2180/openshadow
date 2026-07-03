@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * find-tool.ts — 文件名搜索工具
  *

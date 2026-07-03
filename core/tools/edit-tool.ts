@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * edit-tool.ts — 文件编辑工具
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * todo-constants.js — 共享的 todo tool 相关常量
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * commands.js — Slash 命令 REST API
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "path";
 import { loadConfig } from '../memory/config-loader.js';
 

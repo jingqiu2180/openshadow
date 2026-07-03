@@ -1,4 +1,3 @@
-// @ts-nocheck
 // safe-fs.ts — 安全文件系统操作（简化版）
 
 import fs from 'fs'

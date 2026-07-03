@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const PLUGIN_UI_PROTOCOL = 'hana.plugin.ui' as const;
 export const PLUGIN_UI_PROTOCOL_VERSION = 1 as const;
 

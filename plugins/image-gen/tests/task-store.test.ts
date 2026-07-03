@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * image-gen/tests/task-store.test.js
  *

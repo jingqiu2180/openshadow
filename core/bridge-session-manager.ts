@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * BridgeSessionManager — Bridge（外部平台）session 管理
  *

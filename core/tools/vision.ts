@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Vision tool - analyze screenshots using multi-modal LLM.
  */

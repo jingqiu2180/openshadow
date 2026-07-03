@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Multi-Agent Team: orchestrate multiple agents working together.
  *

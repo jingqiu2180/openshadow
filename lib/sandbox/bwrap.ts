@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * bwrap.js — Linux bubblewrap 沙盒
  *

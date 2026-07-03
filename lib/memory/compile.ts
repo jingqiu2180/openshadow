@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * compile.js — 记忆编译器（v3 四块独立编译 + assemble）
  *

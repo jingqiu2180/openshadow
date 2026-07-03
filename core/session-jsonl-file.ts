@@ -1,4 +1,3 @@
-// @ts-nocheck
 import fs from "fs";
 
 export const DEFAULT_SESSION_JSONL_MAX_LINE_BYTES = 1024 * 1024;

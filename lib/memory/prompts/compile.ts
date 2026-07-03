@@ -1,4 +1,3 @@
-// @ts-nocheck
 export function buildCompileTodayPrompt(locale = "zh-CN") {
   const isZh = String(locale || "").startsWith("zh");
   return {

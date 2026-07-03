@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * channel-tool.js — Agent 使用的频道工具
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * win32-exec.js — Windows 平台的命令执行函数
  *

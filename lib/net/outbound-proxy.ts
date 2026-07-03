@@ -1,4 +1,3 @@
-// @ts-nocheck
 // lib/net/outbound-proxy.js
 
 import {

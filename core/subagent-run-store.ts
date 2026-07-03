@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SubagentRunStore — subagent 运行记录管理（简化版）
  *

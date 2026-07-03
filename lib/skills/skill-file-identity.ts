@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "path";
 
 export const SKILL_SOURCE_IDENTITY_VERSION = 1;

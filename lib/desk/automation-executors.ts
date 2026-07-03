@@ -1,4 +1,3 @@
-// @ts-nocheck
 export function getAutomationExecutor(job) {
   if (job?.executor?.kind) return job.executor;
   return {

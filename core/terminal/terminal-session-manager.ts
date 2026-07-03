@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Terminal Session Manager（对齐 openhanako）
  * 管理持久化终端会话，支持创建、读写、关闭

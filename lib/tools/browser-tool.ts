@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * browser-tool.js — 浏览器控制工具
  *

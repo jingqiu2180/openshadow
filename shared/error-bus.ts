@@ -1,4 +1,3 @@
-// @ts-nocheck
 // shared/error-bus.js
 import { AppError } from './errors.js';
 import { redactLogText, redactLogValue } from './log-redactor.js';

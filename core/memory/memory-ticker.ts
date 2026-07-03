@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Memory Ticker — 简化版记忆调度器
  *

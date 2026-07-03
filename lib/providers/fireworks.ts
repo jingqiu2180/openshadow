@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Fireworks AI provider plugin
  *

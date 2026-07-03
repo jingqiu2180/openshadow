@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const COMPACTION_MODE_EXPERIMENT_ID = "session.compaction_mode";
 
 export const COMPACTION_MODES = Object.freeze({

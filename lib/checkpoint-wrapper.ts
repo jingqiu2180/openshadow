@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from "path";
 
 export function wrapWithCheckpoint(tools, { store, maxFileSizeKb, cwd, getSessionPath }) {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * wechat-adapter.js — 微信 iLink Bridge Adapter
  *

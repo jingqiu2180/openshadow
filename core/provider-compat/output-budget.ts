@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Generic output budget normalization.
  *

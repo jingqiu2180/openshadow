@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Terminal 工具（对齐 openhanako）
  * 管理持久化终端会话，支持 start / write / read / close / list

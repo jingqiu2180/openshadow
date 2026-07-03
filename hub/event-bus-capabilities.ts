@@ -1,4 +1,3 @@
-// @ts-nocheck
 const OBJECT_SCHEMA = Object.freeze({ type: "object", additionalProperties: true });
 
 export const EVENT_BUS_ERROR_CODES = Object.freeze({

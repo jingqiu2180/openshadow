@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * fact-store.ts — 深度记忆增强（参考 openhanako）
  * 

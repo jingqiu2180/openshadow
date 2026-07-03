@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { Provider } from '../config.js'
 import type { ChatMessage } from '../chat-engine.js'
 

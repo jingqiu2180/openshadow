@@ -36,7 +36,7 @@ export default defineConfig({
     },
     {
       name: 'vite',
-      command: 'node_modules/.bin/vite --config desktop/vite.config.ts',
+      command: 'npx vite --config desktop/vite.config.ts',
       url: `http://127.0.0.1:${PORT_STATIC}`,
       timeout: 30000,
       reuseExistingServer: true,

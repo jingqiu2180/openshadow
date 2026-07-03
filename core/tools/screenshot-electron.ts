@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Electron screenshot bridge — renderer-side IPC client.
  * Only used when running inside Electron (detected via window.__ELECTRON__ flag

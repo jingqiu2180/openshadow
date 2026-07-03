@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * compat/index.js — 启动兼容性检查 & 数据迁移
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * memory-reflection-runner.ts — 记忆反思运行器
  *

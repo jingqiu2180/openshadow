@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * hono-helpers.js — Hono migration utilities
  */

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Agent Phone Projection
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useStore } from '../store'
 import styles from './CapabilityDriftNotice.module.css'
 

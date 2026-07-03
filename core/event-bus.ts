@@ -1,4 +1,3 @@
-// @ts-nocheck
 export type EventHandler<T = any> = (event: T) => void | Promise<void>
 
 export interface EventMap {

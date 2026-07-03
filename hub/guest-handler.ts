@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * GuestHandler — Guest 留言机处理
  *

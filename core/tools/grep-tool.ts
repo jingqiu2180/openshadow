@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * grep-tool.ts — 文件内容搜索工具
  *

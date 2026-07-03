@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { DEFAULT_DISABLED_TOOL_NAMES } from '../../../shared/tool-categories.js';
 
 export const BEAUTIFY_OPTIONAL_TOOL_NAME = "beautify";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * 示例路由：获取插件状态
  * 挂载路径：GET /plugins/hello/status

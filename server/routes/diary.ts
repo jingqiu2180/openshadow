@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * diary.js — 日记 REST API
  *

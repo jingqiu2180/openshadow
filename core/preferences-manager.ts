@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * PreferencesManager — 全局 preferences.json 读写
  *

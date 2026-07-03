@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * update-settings-tool.js — 设置修改工具（渐进式披露）
  *

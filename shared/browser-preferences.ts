@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const BROWSER_AGENT_OPEN_BEHAVIORS = ["smart", "current_tab", "new_tab"] as const;
 
 export type BrowserAgentOpenBehavior = typeof BROWSER_AGENT_OPEN_BEHAVIORS[number];

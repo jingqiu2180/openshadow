@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Sandbox: isolated execution environment for agent operations.
  *

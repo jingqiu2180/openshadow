@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * web-search.ts — 增强版 web_search 工具
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * PI SDK Adapter — 所有 PI SDK 导入的唯一入口
  *
@@ -32,13 +31,13 @@ import {
 import {
   resizeImage as rawResizeImage,
   formatDimensionNote as rawFormatDimensionNote,
-} from "../../node_modules/@mariozechner/pi-coding-agent/dist/utils/image-resize.js";
+} from "@mariozechner/pi-coding-agent/dist/utils/image-resize.js";
 import {
   convertToLlm as rawConvertToLlm,
-} from "../../node_modules/@mariozechner/pi-coding-agent/dist/core/messages.js";
+} from "@mariozechner/pi-coding-agent";
 import {
   prepareCompaction as rawPrepareCompaction,
-} from "../../node_modules/@mariozechner/pi-coding-agent/dist/core/compaction/compaction.js";
+} from "@mariozechner/pi-coding-agent/dist/core/compaction/compaction.js";
 
 // ── Session 管理 ──
 export { SessionManager, SettingsManager } from "@mariozechner/pi-coding-agent";

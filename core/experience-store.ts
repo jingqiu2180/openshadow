@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * experience-store.ts — 经验库存储层
  * 移植自 openhanako/lib/tools/experience.ts

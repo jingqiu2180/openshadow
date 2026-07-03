@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * config-loader.js — per-agent config.yaml 加载与保存
  *

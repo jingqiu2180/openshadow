@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { execFile } from 'child_process'
 import { promisify } from 'util'
 import { PathGuard } from './path-guard.js'

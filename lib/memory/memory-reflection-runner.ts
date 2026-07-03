@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { runSessionSnapshotSideTask } from '../llm/session-snapshot-side-task-runner.js';
 import { scrubPII } from '../pii-guard.js';
 import { getLocale } from '../i18n.js';

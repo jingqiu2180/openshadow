@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   PLUGIN_UI_CAPABILITY,
   PLUGIN_UI_PROTOCOL,

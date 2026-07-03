@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { isMaskedSecretValue } from '../../shared/secret-custody.js';
 
 export function hasInlineProviderCredentialPatch(block: any) {

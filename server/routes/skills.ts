@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Skills 管理路由
  *

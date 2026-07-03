@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const AUTO_SEARCH_PROVIDER = "auto";
 export const SEARCH_CAPABILITY_KIND = "web.search";
 

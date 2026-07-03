@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Infini (无问芯穹) provider plugin
  *

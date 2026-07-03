@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { authorizeCapability } from '../../core/capability-policy.js';
 import { findActiveGrantsForPrincipal } from '../../core/grant-registry.js';
 import { normalizePrincipal } from '../../core/security-principal.js';

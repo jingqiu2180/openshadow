@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { readdir, readFile, stat, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * OpenShadow Server — HTTP + WebSocket API
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // computer-use-tools.ts — Computer Use 工具注册
 // 为 Agent 注册 computer_take_snapshot、computer_execute_action 等工具
 // 参考 openhanako 的工具注册模式

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SiliconFlow (硅基流动) provider plugin
  *

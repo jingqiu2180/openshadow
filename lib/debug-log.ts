@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * debug-log.js — 持久化调试日志
  *

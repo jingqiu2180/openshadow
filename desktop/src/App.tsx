@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 // ChatArea moved to ./react/components/chat/ChatArea

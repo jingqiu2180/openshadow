@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Volcengine Coding Plan (火山引擎 Coding Plan) provider plugin
  *

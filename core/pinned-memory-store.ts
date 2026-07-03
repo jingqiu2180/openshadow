@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Pinned Memory Store（对齐 openhanako）
  * 管理固定记忆，支持重要性评分、自动清理、搜索

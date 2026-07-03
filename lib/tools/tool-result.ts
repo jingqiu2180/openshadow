@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Standardized tool result constructors.
  * All Pi SDK tools return { content: ContentBlock[], details?: object }.

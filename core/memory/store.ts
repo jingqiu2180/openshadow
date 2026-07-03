@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Database from 'better-sqlite3'
 import { randomUUID } from 'crypto'
 import { readFileSync, mkdirSync, existsSync } from 'fs'

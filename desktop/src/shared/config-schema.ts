@@ -1,4 +1,3 @@
-// @ts-nocheck
 // shared/config-schema.js
 
 /**

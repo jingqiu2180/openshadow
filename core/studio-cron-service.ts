@@ -1,4 +1,3 @@
-// @ts-nocheck
 import fs from "fs";
 import path from "path";
 import { CronStore } from '../lib/desk/cron-store.js';

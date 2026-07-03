@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * MCP (Model Context Protocol) type definitions.
  * Based on the JSON-RPC 2.0 protocol used by MCP servers.

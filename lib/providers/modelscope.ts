@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ModelScope (魔搭) provider plugin
  *

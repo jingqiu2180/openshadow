@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Type } from '../pi-sdk/index.js';
 import { getToolSessionPath } from './tool-session.js';
 

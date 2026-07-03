@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * session-file-registry.ts — 最小化 SessionFile 注册表
  *

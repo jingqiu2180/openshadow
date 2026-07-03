@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as WS from 'ws'
 import type { Agent } from '../core/agent.js'
 import type { SessionManager } from '../core/session-manager.js'

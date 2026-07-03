@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * session-key.js — bridge sessionKey 解析工具
  *

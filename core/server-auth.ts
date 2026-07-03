@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { authenticateDeviceCredential } from './device-registry.js';
 import { normalizePrincipal } from './security-principal.js';
 import { authenticateWebSession } from './web-session-store.js';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * deep-memory.ts — 深度记忆系统（openshadow 版）
  *

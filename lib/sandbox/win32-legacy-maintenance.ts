@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Legacy AppContainer maintenance is intentionally separate from restricted-token execution args.
 export function buildWin32LegacyAclDiagnosticArgs({ paths = [], cleanup = false } = {}) {
   if (!Array.isArray(paths) || paths.length === 0) {

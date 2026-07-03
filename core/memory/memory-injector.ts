@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * memory-injector.ts — Memory 注入器（openshadow 版）
  *

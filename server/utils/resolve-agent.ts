@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Resolve target agent from request context.
  * Priority: query.agentId > params.agentId > engine.currentAgentId (焦点 agent)

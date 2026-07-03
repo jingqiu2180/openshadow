@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * path-guard.ts — 路径权限校验
  *

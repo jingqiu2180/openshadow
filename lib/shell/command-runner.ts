@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { resolveShellProfile } from './shell-profile.js';
 
 export function createCommandRunner({

@@ -1,4 +1,3 @@
-// @ts-nocheck
 type TextCaller<TResponse = unknown> = (request: Record<string, unknown>) => Promise<TResponse>;
 
 export type OutputLengthUnit = "chars" | "words";

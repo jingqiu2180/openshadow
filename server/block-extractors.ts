@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * block-extractors.js — Content Block 统一提取注册表
  *

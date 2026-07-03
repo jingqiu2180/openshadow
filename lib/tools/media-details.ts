@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { normalizeMediaItems } from '../bridge/media-item-normalizer.js';
 
 export function collectMediaItems(media) {

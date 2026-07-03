@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * cron-scheduler.js — Cron 调度器
  *

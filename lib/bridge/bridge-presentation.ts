@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const FEISHU_CARDKIT_STREAM_ELEMENT_ID = "hana_stream_markdown";
 
 export type BridgePresentation = {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * install-skill.ts — install_skill 工具（openshadow 原生实现，完整对齐 openhanako）
  *

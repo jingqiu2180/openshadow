@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * OpenAI-compatible video_url 兼容层
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { parseSessionKey } from './session-key.js';
 import { interactionCapabilitiesForPlatform } from './interaction-capabilities.js';
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Agent — 一个助手实例
  *

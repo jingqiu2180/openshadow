@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { adaptVisualContextMessages } from './visual-context-pipeline.js';
 import {
   VISION_CONTEXT_END,

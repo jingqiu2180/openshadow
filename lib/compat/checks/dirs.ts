@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * dirs.js — 关键目录存在性检查
  *

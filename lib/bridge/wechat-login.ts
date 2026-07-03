@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * wechat-login.js — 微信 iLink 扫码登录模块
  *

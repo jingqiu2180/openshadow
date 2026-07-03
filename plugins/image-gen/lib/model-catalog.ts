@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * plugins/image-gen/lib/model-catalog.js
  *

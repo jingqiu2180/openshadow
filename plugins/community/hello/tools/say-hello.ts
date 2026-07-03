@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const name = "say_hello";
 export const description = "Say hello to someone";
 export const parameters = {

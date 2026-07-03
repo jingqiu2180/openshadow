@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * rc-summary.js — 为 /rc 接管生成桌面 session 简述（三级 fallback）
  *

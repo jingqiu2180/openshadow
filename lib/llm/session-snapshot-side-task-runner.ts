@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { completeSimple } from '../pi-sdk/index.js';
 import {
   assertSessionSnapshotRequest,

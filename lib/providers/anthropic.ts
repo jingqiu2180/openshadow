@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Anthropic provider plugin (API key)
  */

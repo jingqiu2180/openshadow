@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { MediaAdapterRegistry } from './media-adapter-registry.js';
 import { builtinSpeechRecognitionAdapters } from './speech-recognition/adapters.js';
 import { createModuleLogger } from '../lib/debug-log.js';

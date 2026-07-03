@@ -1,4 +1,3 @@
-// @ts-nocheck
 import redactor, {
   redactLogText,
   redactLogValue,

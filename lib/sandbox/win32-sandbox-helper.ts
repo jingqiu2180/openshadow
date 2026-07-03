@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import { existsSync as defaultExistsSync } from "fs";
 import path from "path";

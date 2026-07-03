@@ -1,4 +1,3 @@
-// @ts-nocheck
 const GIT_PUSH_RULES = {
   force: {
     id: "force-push-blocked",

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ls-tool.ts — 目录列表工具
  *

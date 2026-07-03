@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { normalizeBridgePlatforms } from '../bridge/bridge-context.js';
 
 const CHANNEL_DESKTOP = "desktop";

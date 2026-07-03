@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * notify-delivery.ts — 通知投递层
  * 移植自 openhanako 的 onNotify 回调实现

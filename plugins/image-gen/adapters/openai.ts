@@ -1,4 +1,3 @@
-// @ts-nocheck
 // plugins/image-gen/adapters/openai.js
 import fs from "fs";
 import path from "path";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { normalizeWorkspacePath } from './workspace-history.js';
 
 const MAX_WORKSPACES = 50;

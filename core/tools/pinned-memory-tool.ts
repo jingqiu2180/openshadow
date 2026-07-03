@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Pinned Memory 工具（对齐 openhanako）
  * 管理固定记忆，支持 pin / unpin / list / search / clear

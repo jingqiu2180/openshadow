@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const RUNTIME_API_KEY_PREFIX = "hana-runtime-api-key:";
 
 export function buildRuntimeApiKeyRef(providerId) {

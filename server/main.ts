@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { serve } from '@hono/node-server'
 import { Agent } from '../core/agent.js'
 import { createScheduler } from '../core/scheduler.js'

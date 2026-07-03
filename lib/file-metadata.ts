@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * file-metadata.js — shared file metadata helpers.
  *

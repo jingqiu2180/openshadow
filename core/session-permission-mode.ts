@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const SESSION_PERMISSION_MODES = Object.freeze({
   AUTO: "auto",
   OPERATE: "operate",
