@@ -12,6 +12,10 @@ const { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } = r
 const { createThemeController } = require('./theme-controller.cjs')
 const { setIpcSenderValidator, wrapIpcHandler, wrapIpcOn } = require('./ipc-wrapper.cjs')
 const { createServerManager } = require('./server-manager.cjs')
+const { createSettingsWindow, getSettingsWindow } = require('./settings-window-controller.cjs')
+const { initAutoUpdater, checkForUpdatesAuto } = require('./auto-updater.cjs')
+const { createFileWatchRegistry } = require('./file-watch-registry.cjs')
+const { createWorkspaceWatchRegistry } = require('./workspace-watch-registry.cjs')
 
 const isDev = !app.isPackaged
 const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5280'
@@ -463,6 +467,71 @@ function registerIpcHandlers() {
     const win = BrowserWindow.fromWebContents(event.sender)
     return win ? win.isMaximized() : false
   })
+
+  // 登录项自启动（开机自启）
+  wrapIpcHandler('wizard:set-login-item', (_e, enable) => {
+    app.setLoginItemSettings({
+      openAtLogin: enable,
+      name: 'OpenShadow',
+    })
+    console.log('[main] login item auto-start:', enable ? 'enabled' : 'disabled')
+    return { ok: true }
+  })
+
+  wrapIpcHandler('wizard:get-login-item', () => {
+    const settings = app.getLoginItemSettings()
+    return { enabled: settings.openAtLogin }
+  })
+
+  // 打开设置窗口
+  wrapIpcHandler('window:open-settings', () => {
+    const win = createSettingsWindow({
+      mainWindow,
+      preloadPath: join(__dirname, 'preload.bundle.cjs'),
+      iconPath: APP_ICON_PATH,
+      isDev,
+      viteDevUrl: VITE_DEV_URL,
+    })
+    return { ok: true, id: win?.id }
+  })
+
+  // ─── File Watch IPC ───
+  wrapIpcHandler('file-watch:subscribe', (event, filePath) => {
+    const subscriberId = event.sender.getId()
+    fileWatchRegistry.subscribe(filePath, subscriberId)
+    return { ok: true }
+  })
+
+  wrapIpcHandler('file-watch:unsubscribe', (event, filePath) => {
+    const subscriberId = event.sender.getId()
+    fileWatchRegistry.unsubscribe(filePath, subscriberId)
+    return { ok: true }
+  })
+
+  wrapIpcHandler('file-watch:unsubscribe-all', (event) => {
+    const subscriberId = event.sender.getId()
+    fileWatchRegistry.unsubscribeAll(subscriberId)
+    return { ok: true }
+  })
+
+  // ─── Workspace Watch IPC ───
+  wrapIpcHandler('workspace-watch:subscribe', (event, rootPath) => {
+    const subscriberId = event.sender.getId()
+    workspaceWatchRegistry.subscribe(rootPath, subscriberId)
+    return { ok: true }
+  })
+
+  wrapIpcHandler('workspace-watch:unsubscribe', (event, rootPath) => {
+    const subscriberId = event.sender.getId()
+    workspaceWatchRegistry.unsubscribe(rootPath, subscriberId)
+    return { ok: true }
+  })
+
+  wrapIpcHandler('workspace-watch:unsubscribe-all', (event) => {
+    const subscriberId = event.sender.getId()
+    workspaceWatchRegistry.unsubscribeAll(subscriberId)
+    return { ok: true }
+  })
 }
 
 // ─── Main window ─────────────────────────────────────
@@ -657,9 +726,53 @@ const serverManager = createServerManager({
   },
 })
 
-// ─── Theme controller ────────────────────────────────────────
-// 跟随 Lynn/main.cjs 模式：thin main + 独立 controller
-// 必须在 app.whenReady() 之前创建——createMainWindow() 引用它
+// ─── File Watch Registry ─────────────────────────────────────
+// 文件监控注册表：同一文件只创建一个 fs.watch，多个订阅者共享
+const fileWatchRegistry = createFileWatchRegistry({
+  watch: (filePath, callback) => {
+    // 使用 chokidar 监控文件
+    const watcher = require('chokidar').watch(filePath, {
+      ignoreInitial: true,
+      atomic: true,
+      awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
+    })
+    watcher.on('all', (eventType, changedPath) => {
+      callback(eventType, changedPath)
+    })
+    return watcher
+  },
+  notifySubscriber: (subscriberId, eventType, filePath) => {
+    const win = BrowserWindow.fromId(subscriberId)
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('file-watch:change', { eventType, filePath })
+    }
+  },
+})
+
+// ─── Workspace Watch Registry ─────────────────────────────────────
+// 工作区监控注册表：监控整个工作区的文件变化
+const workspaceWatchRegistry = createWorkspaceWatchRegistry({
+  watch: (rootPath, callback) => {
+    const watcher = require('chokidar').watch(rootPath, {
+      ignoreInitial: true,
+      atomic: true,
+      awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
+      ignored: (path) => {
+        return shouldIgnoreWorkspacePath(rootPath, path)
+      },
+    })
+    watcher.on('all', (eventType, changedPath) => {
+      callback(eventType, changedPath)
+    })
+    return watcher
+  },
+  notifySubscriber: (subscriberId, eventType, rootPath, changedPath) => {
+    const win = BrowserWindow.fromId(subscriberId)
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('workspace-watch:change', { eventType, rootPath, changedPath })
+    }
+  },
+})
 const themeController = createThemeController({
   BrowserWindow,
   nativeTheme,
@@ -687,6 +800,10 @@ app.whenReady().then(async () => {
   await runWizardWindow()
   if (isWizardCompleted()) {
     createMainWindow()
+    // 初始化 Auto Updater（需要在 mainWindow 创建后）
+    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+    initAutoUpdater(mainWindow, { hanakoHome })
+    checkForUpdatesAuto()
   } else {
     console.log('[main] waiting for wizard to complete…')
     wrapIpcOn('wizard:done-signal', () => {
@@ -694,6 +811,10 @@ app.whenReady().then(async () => {
       if (wizardWindow) wizardWindow.close()
       wizardWindow = null
       createMainWindow()
+      // 初始化 Auto Updater
+      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+      initAutoUpdater(mainWindow, { hanakoHome })
+      checkForUpdatesAuto()
     })
   }
 })
@@ -704,6 +825,30 @@ app.on('window-all-closed', () => {
   if (!trayIcon) {
     app.quit()
   }
+})
+
+// ─── 登录项自启动（开机自启）─────────────────────────────────────
+let loginItemEnabled = false
+
+function setLoginItem(enable) {
+  loginItemEnabled = enable
+  app.setLoginItemSettings({
+    openAtLogin: enable,
+    name: 'OpenShadow',
+    path: process.execPath,
+  })
+  console.log('[main] login item auto-start:', enable ? 'enabled' : 'disabled')
+}
+
+// 在 wizard 保存配置时持久化登录项设置
+wrapIpcHandler('wizard:set-login-item', (_e, enable) => {
+  setLoginItem(enable)
+  return { ok: true }
+})
+
+// 读取登录项状态
+wrapIpcHandler('wizard:get-login-item', () => {
+  return { enabled: loginItemEnabled }
 })
 
 // ─── Tray 图标 ───────────────────────────────────────
@@ -725,6 +870,19 @@ function createTray() {
             mainWindow.show()
             mainWindow.focus()
           }
+        },
+      },
+      {
+        label: '设置',
+        click: () => {
+          const win = createSettingsWindow({
+            mainWindow,
+            preloadPath: join(__dirname, 'preload.bundle.cjs'),
+            iconPath: APP_ICON_PATH,
+            isDev,
+            viteDevUrl: VITE_DEV_URL,
+          })
+          if (win) win.show()
         },
       },
       { type: 'separator' },
