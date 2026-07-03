@@ -6,10 +6,11 @@
 // 2. 处理 IPC 路由
 // 3. 创建主窗口加载 Vite dev server 或 dist 资源
 
-const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeTheme } = require('electron')
-const { join, dirname } = require('path')
-const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
+const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeTheme, Tray, Menu: TrayMenu, globalShortcut, powerSaveBlocker, shell } = require('electron')
+const { join, dirname, resolve } = require('path')
+const { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } = require('fs')
 const { createThemeController } = require('./theme-controller.cjs')
+const { setIpcSenderValidator, wrapIpcHandler, wrapIpcOn } = require('./ipc-wrapper.cjs')
 
 const isDev = !app.isPackaged
 const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5280'
@@ -168,6 +169,26 @@ async function testAnthropicCompatible(baseUrl, apiKey, model) {
 
 let mainWindow = null
 let wizardWindow = null
+let settingsWindow = null
+
+// ─── IPC 安全：验证调用来源 ─────────────────────────────────────
+// 仅允许来自可信 WebContents 的 IPC 调用（主窗口、向导窗口、设置窗口）
+function isTrustedAppWebContents(webContents, channel) {
+  if (!webContents || webContents.isDestroyed && webContents.isDestroyed()) return false
+  const owner = BrowserWindow.fromWebContents(webContents)
+  if (owner === mainWindow || owner === wizardWindow || owner === settingsWindow) return true
+  // 允许 file:// 协议（本地 HTML）
+  try {
+    const url = webContents.getURL && webContents.getURL()
+    if (url && url.startsWith('file://')) return true
+    // 允许 localhost dev server
+    if (/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\//.test(url)) return true
+  } catch {}
+  console.warn(`[IPC][${channel}] untrusted sender rejected`)
+  return false
+}
+
+setIpcSenderValidator((channel, event) => isTrustedAppWebContents(event?.sender, channel))
 
 async function runWizardWindow() {
   if (isWizardCompleted()) return
@@ -233,7 +254,7 @@ async function runWizardWindow() {
 
 // ─── IPC handlers ───────────────────────────────────
 function registerIpcHandlers() {
-  ipcMain.handle('wizard:get-config', () => {
+  wrapIpcHandler('wizard:get-config', () => {
     const cfg = readConfig()
     return {
       providers: cfg.providers || [],
@@ -245,12 +266,11 @@ function registerIpcHandlers() {
     }
   })
 
-  ipcMain.handle('wizard:save-config', (_e, payload) => {
+  wrapIpcHandler('wizard:save-config', (_e, payload) => {
     console.log('[wizard] save-config called')
     try {
       const cfg = readConfig()
       const merged = Object.assign({}, cfg, payload)
-      // 补充 baseUrl：从 builtin providers 填充
       if (merged.providers && Array.isArray(merged.providers)) {
         for (const p of merged.providers) {
           if (!p.baseUrl && BUILTIN_PROVIDERS[p.id]) {
@@ -270,7 +290,7 @@ function registerIpcHandlers() {
     }
   })
 
-  ipcMain.handle('wizard:test-connection', async (_e, providerInput) => {
+  wrapIpcHandler('wizard:test-connection', async (_e, providerInput) => {
     const spec = BUILTIN_PROVIDERS[providerInput.id]
     if (!spec) return { ok: false, error: 'Unknown provider: ' + providerInput.id }
     const model = providerInput.model || spec.models[0]
@@ -280,13 +300,12 @@ function registerIpcHandlers() {
     } else if (spec.type === 'gemini') {
       result = { ok: false, error: 'Gemini 测试暂未支持' }
     } else {
-      // openai, ollama, etc.
       result = await testOpenAICompatible(spec.baseUrl, providerInput.apiKey, model)
     }
     return { ok: result.ok, latencyMs: result.latencyMs, error: result.error, modelUsed: result.modelUsed }
   })
 
-  ipcMain.handle('wizard:pick-folder', async () => {
+  wrapIpcHandler('wizard:pick-folder', async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       title: '选择 OpenShadow 的工作区目录',
       message: '请选择 OpenShadow 可以读写的目录(可多选)。这些目录拥有完整权限(读/写/删)。',
@@ -295,7 +314,7 @@ function registerIpcHandlers() {
     return canceled ? [] : filePaths
   })
 
-  ipcMain.handle('dialog:selectFolder', async (_e, opts) => {
+  wrapIpcHandler('dialog:selectFolder', async (_e, opts) => {
     opts = opts || {}
     const properties = ['openDirectory']
     if (opts.multi) properties.push('multiSelections')
@@ -308,7 +327,7 @@ function registerIpcHandlers() {
     return canceled ? null : (filePaths[0] || null)
   })
 
-  ipcMain.handle('dialog:selectFiles', async (_e, opts) => {
+  wrapIpcHandler('dialog:selectFiles', async (_e, opts) => {
     opts = opts || {}
     const properties = ['openFile']
     if (opts.multi) properties.push('multiSelections')
@@ -321,7 +340,7 @@ function registerIpcHandlers() {
   })
 
   // Screenshot
-  ipcMain.handle('screenshot:capture', async (_e, displayId) => {
+  wrapIpcHandler('screenshot:capture', async (_e, displayId) => {
     try {
       const targetDisplay = displayId !== undefined ? displayId : 0
       const sources = await desktopCapturer.getSources({
@@ -349,7 +368,7 @@ function registerIpcHandlers() {
     }
   })
 
-  ipcMain.handle('screenshot:capture-window', async (_e, windowId) => {
+  wrapIpcHandler('screenshot:capture-window', async (_e, windowId) => {
     try {
       const win = windowId
         ? BrowserWindow.getAllWindows().find(w => w.id === windowId)
@@ -376,7 +395,7 @@ function registerIpcHandlers() {
   // Browser webview IPC
   const pendingBrowserResponses = new Map()
 
-  ipcMain.on('browser:response', (_event, response) => {
+  wrapIpcOn('browser:response', (_event, response) => {
     const pending = pendingBrowserResponses.get(response.id)
     if (!pending) return
     clearTimeout(pending.timer)
@@ -407,24 +426,24 @@ function registerIpcHandlers() {
     })
   }
 
-  ipcMain.handle('browser:create', async (_e, url) => sendBrowserCommand({ type: 'create', url: url || 'about:blank' }))
-  ipcMain.handle('browser:navigate', async (_e, url) => sendBrowserCommand({ type: 'navigate', url: url }))
-  ipcMain.handle('browser:screenshot', async () => sendBrowserCommand({ type: 'screenshot' }))
-  ipcMain.handle('browser:click', async (_e, selector) => sendBrowserCommand({ type: 'click', selector: selector }))
-  ipcMain.handle('browser:type', async (_e, selector, text) => sendBrowserCommand({ type: 'type', selector: selector, text: text }))
-  ipcMain.handle('browser:press-key', async (_e, key) => sendBrowserCommand({ type: 'pressKey', key: key }))
-  ipcMain.handle('browser:get-text', async (_e, selector) => sendBrowserCommand({ type: 'getText', selector: selector }))
-  ipcMain.handle('browser:get-html', async () => sendBrowserCommand({ type: 'getHtml' }))
-  ipcMain.handle('browser:wait-for', async (_e, selector, timeout) => sendBrowserCommand({ type: 'waitForSelector', selector: selector, timeout: timeout || 10000 }))
-  ipcMain.handle('browser:close', async () => sendBrowserCommand({ type: 'close' }))
+  wrapIpcHandler('browser:create', async (_e, url) => sendBrowserCommand({ type: 'create', url: url || 'about:blank' }))
+  wrapIpcHandler('browser:navigate', async (_e, url) => sendBrowserCommand({ type: 'navigate', url: url }))
+  wrapIpcHandler('browser:screenshot', async () => sendBrowserCommand({ type: 'screenshot' }))
+  wrapIpcHandler('browser:click', async (_e, selector) => sendBrowserCommand({ type: 'click', selector: selector }))
+  wrapIpcHandler('browser:type', async (_e, selector, text) => sendBrowserCommand({ type: 'type', selector: selector, text: text }))
+  wrapIpcHandler('browser:press-key', async (_e, key) => sendBrowserCommand({ type: 'pressKey', key: key }))
+  wrapIpcHandler('browser:get-text', async (_e, selector) => sendBrowserCommand({ type: 'getText', selector: selector }))
+  wrapIpcHandler('browser:get-html', async () => sendBrowserCommand({ type: 'getHtml' }))
+  wrapIpcHandler('browser:wait-for', async (_e, selector, timeout) => sendBrowserCommand({ type: 'waitForSelector', selector: selector, timeout: timeout || 10000 }))
+  wrapIpcHandler('browser:close', async () => sendBrowserCommand({ type: 'close' }))
 
   // 窗口控制
-  ipcMain.on('window:minimize', (event) => {
+  wrapIpcOn('window:minimize', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (win) win.minimize()
   })
 
-  ipcMain.on('window:maximize', (event) => {
+  wrapIpcOn('window:maximize', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return
     if (win.isMaximized()) {
@@ -434,12 +453,12 @@ function registerIpcHandlers() {
     }
   })
 
-  ipcMain.on('window:close', (event) => {
+  wrapIpcOn('window:close', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (win) win.close()
   })
 
-  ipcMain.handle('window:is-maximized', (event) => {
+  wrapIpcHandler('window:is-maximized', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     return win ? win.isMaximized() : false
   })
@@ -447,9 +466,12 @@ function registerIpcHandlers() {
 
 // ─── Main window ─────────────────────────────────────
 function createMainWindow() {
+  if (mainWindow && !mainWindow.isDestroyed()) return mainWindow
+  const saved = loadWindowState()
+
   mainWindow = new BrowserWindow({
-    width: 1180,
-    height: 760,
+    width: (saved && saved.width) || 1180,
+    height: (saved && saved.height) || 760,
     minWidth: 900,
     minHeight: 600,
     title: 'OpenShadow Agent',
@@ -466,6 +488,14 @@ function createMainWindow() {
     backgroundColor: themeController.bgFor(themeController.getTheme()),
     show: false,
   })
+
+  // 恢复位置
+  if (saved && saved.x != null && saved.y != null) {
+    try { mainWindow.setPosition(saved.x, saved.y) } catch {}
+  }
+  if (saved && saved.isMaximized) {
+    mainWindow.maximize()
+  }
 
   mainWindow.once('ready-to-show', () => {
     if (mainWindow) {
@@ -490,6 +520,27 @@ function createMainWindow() {
     if (process.platform !== 'darwin') app.quit()
   })
 
+  // Renderer 崩溃自动恢复
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    console.error(`[main] renderer crashed: ${details.reason} (exitCode: ${details.exitCode})`)
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      setTimeout(() => {
+        try { mainWindow.reload() } catch {}
+      }, 1000)
+    }
+  })
+
+  // 拦截外部 URL 导航，用系统浏览器打开
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    try {
+      const parsed = new URL(url)
+      if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+        event.preventDefault()
+        shell.openExternal(url)
+      }
+    } catch {}
+  })
+
   const broadcastMaximizeChange = () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('window:maximize-change', mainWindow.isMaximized())
@@ -498,16 +549,87 @@ function createMainWindow() {
   mainWindow.on('maximize', broadcastMaximizeChange)
   mainWindow.on('unmaximize', broadcastMaximizeChange)
 
+  // 窗口状态持久化
+  mainWindow.on('resize', () => saveWindowStateSoon(mainWindow))
+  mainWindow.on('move', () => saveWindowStateSoon(mainWindow))
+  mainWindow.on('close', () => saveWindowState(mainWindow))
+
   console.log('Main window created (dev=' + isDev + ')')
 }
 
 // ─── App lifecycle ───────────────────────────────────
 Menu.setApplicationMenu(null)
 
+// ─── 单实例锁：防止多开 ─────────────────────────────────────
+const gotSingleInstanceLock = app.requestSingleInstanceLock()
+if (!gotSingleInstanceLock) {
+  console.log('[main] another instance is running, quitting')
+  app.quit()
+}
+app.on('second-instance', () => {
+  // 有人试图运行第二个实例，聚焦到现有窗口
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
+  }
+})
+
+// ─── Power Save Blocker ─────────────────────────────────────
+let wakeLockId = null
+const WINDOW_STATE_PATH = join(process.cwd(), 'window-state.json')
+
+function setWakeLock(active) {
+  if (active) {
+    if (wakeLockId === null) {
+      wakeLockId = powerSaveBlocker.start('prevent-app-suspension')
+      console.log('[main] wakeLock started, id:', wakeLockId)
+    }
+  } else {
+    if (wakeLockId !== null && powerSaveBlocker.isStarted(wakeLockId)) {
+      powerSaveBlocker.stop(wakeLockId)
+      wakeLockId = null
+      console.log('[main] wakeLock stopped')
+    }
+  }
+}
+
+// ─── 窗口状态持久化 ─────────────────────────────────────
+function loadWindowState() {
+  try {
+    if (existsSync(WINDOW_STATE_PATH)) {
+      return JSON.parse(readFileSync(WINDOW_STATE_PATH, 'utf-8'))
+    }
+  } catch {}
+  return null
+}
+
+function saveWindowState(win) {
+  if (!win || win.isDestroyed()) return
+  try {
+    const bounds = win.getBounds()
+    const state = {
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
+      isMaximized: win.isMaximized(),
+    }
+    writeFileSync(WINDOW_STATE_PATH, JSON.stringify(state, null, 2), 'utf-8')
+  } catch {}
+}
+
+let saveWindowStateTimer = null
+function saveWindowStateSoon(win) {
+  if (saveWindowStateTimer) clearTimeout(saveWindowStateTimer)
+  saveWindowStateTimer = setTimeout(() => {
+    saveWindowState(win)
+    saveWindowStateTimer = null
+  }, 1000)
+}
+
 // ─── Theme controller ────────────────────────────────────────
 // 跟随 Lynn/main.cjs 模式：thin main + 独立 controller
 // 必须在 app.whenReady() 之前创建——createMainWindow() 引用它
-let settingsWindow = null
 const themeController = createThemeController({
   BrowserWindow,
   nativeTheme,
@@ -515,16 +637,18 @@ const themeController = createThemeController({
   getSettingsWindow: () => settingsWindow,
   getBrowserViewer: () => null,  // 浏览器 viewer 不在 openshadow 路线里
 })
-themeController.attachIpc({ ipcMain, wrapIpcOn: ipcMain.on.bind(ipcMain) })
+themeController.attachIpc({ ipcMain, wrapIpcOn })
 
 app.whenReady().then(async () => {
   registerIpcHandlers()
+  createTray()
+  registerGlobalShortcut()
   await runWizardWindow()
   if (isWizardCompleted()) {
     createMainWindow()
   } else {
     console.log('[main] waiting for wizard to complete…')
-    ipcMain.on('wizard:done-signal', () => {
+    wrapIpcOn('wizard:done-signal', () => {
       console.log('[main] wizard done, opening main window')
       if (wizardWindow) wizardWindow.close()
       wizardWindow = null
@@ -534,10 +658,91 @@ app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  // 有托盘时保持常驻（macOS 通过 dock 重新打开，Windows 通过托盘双击）
+  // 托盘不存在时直接退出，避免幽灵进程
+  if (!trayIcon) {
     app.quit()
   }
 })
+
+// ─── Tray 图标 ───────────────────────────────────────
+let trayIcon = null
+
+function createTray() {
+  if (trayIcon) return
+  try {
+    const { nativeImage } = require('electron')
+    const trayIconPath = join(__dirname, 'src', 'assets', 'rem-avatar.png')
+    const icon = nativeImage.createFromPath(trayIconPath)
+    icon.resize({ width: 16, height: 16 })
+    trayIcon = new Tray(icon)
+    const contextMenu = TrayMenu.buildFromTemplate([
+      {
+        label: '显示主窗口',
+        click: () => {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.show()
+            mainWindow.focus()
+          }
+        },
+      },
+      { type: 'separator' },
+      {
+        label: '退出',
+        click: () => {
+          app.quit()
+        },
+      },
+    ])
+    trayIcon.setToolTip('OpenShadow')
+    trayIcon.setContextMenu(contextMenu)
+    trayIcon.on('click', () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.isVisible()) {
+          mainWindow.hide()
+        } else {
+          mainWindow.show()
+          mainWindow.focus()
+        }
+      }
+    })
+    console.log('[main] tray icon created')
+  } catch (err) {
+    console.error('[main] failed to create tray icon:', err.message)
+  }
+}
+
+function destroyTray() {
+  if (trayIcon) {
+    trayIcon.destroy()
+    trayIcon = null
+  }
+}
+
+// ─── 全局快捷键（唤醒窗口）─────────────────────────────────────
+function registerGlobalShortcut() {
+  // 默认 Alt+Space 唤醒（用户可在设置里改）
+  const shortcut = 'Alt+Space'
+  const success = globalShortcut.register(shortcut, () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isVisible()) {
+        mainWindow.hide()
+      } else {
+        mainWindow.show()
+        mainWindow.focus()
+      }
+    }
+  })
+  if (success) {
+    console.log('[main] global shortcut registered:', shortcut)
+  } else {
+    console.warn('[main] failed to register global shortcut:', shortcut)
+  }
+}
+
+function unregisterGlobalShortcut() {
+  globalShortcut.unregisterAll()
+}
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
@@ -549,7 +754,46 @@ app.on('activate', () => {
   }
 })
 
+// ─── 优雅关闭 ───────────────────────────────────
+app.on('before-quit', () => {
+  console.log('[main] before-quit')
+  destroyTray()
+  unregisterGlobalShortcut()
+  if (wakeLockId !== null && powerSaveBlocker.isStarted(wakeLockId)) {
+    powerSaveBlocker.stop(wakeLockId)
+    wakeLockId = null
+  }
+})
+
+// ─── Crash Log 写入 ───────────────────────────────────
+function writeCrashLog(err) {
+  try {
+    const logPath = join(process.cwd(), 'crash.log')
+    const timestamp = new Date().toISOString()
+    const entry = `[${timestamp}] ${err.message || err}\n${err.stack || ''}\n\n`
+    appendFileSync(logPath, entry, 'utf-8')
+    console.log('[main] crash log written to', logPath)
+  } catch {}
+}
+
+// ─── 全局错误兜底 ───────────────────────────────────
+process.on('uncaughtException', (err) => {
+  if (err.code === 'EPIPE' || err.code === 'ERR_IPC_CHANNEL_CLOSED') return
+  const traceId = Math.random().toString(16).slice(2, 10)
+  console.error(`[ErrorBus][${err.code || 'UNKNOWN'}][${traceId}] uncaughtException: ${err.message}`)
+  console.error(`[ErrorBus][${traceId}] ${err.stack || err.message}`)
+  writeCrashLog(err)
+})
+
+process.on('unhandledRejection', (reason) => {
+  const err = reason instanceof Error ? reason : new Error(String(reason))
+  const traceId = Math.random().toString(16).slice(2, 10)
+  console.error(`[ErrorBus][${err.code || 'UNKNOWN'}][${traceId}] unhandledRejection: ${err.message}`)
+  console.error(`[ErrorBus][${traceId}] ${err.stack || err.message}`)
+  writeCrashLog(err)
+})
+
 console.log('Electron starting...')
 
 // Exported for unit testing
-module.exports = { registerIpcHandlers, isWizardCompleted, readConfig }
+module.exports = { registerIpcHandlers, isWizardCompleted, readConfig, setWakeLock }
