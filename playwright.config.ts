@@ -27,7 +27,7 @@ export default defineConfig({
   webServer: [
     {
       name: 'openshadow-api',
-      command: 'node dist/server/index.js',
+      command: 'node dist-server-bundle/index.js',
       url: `http://127.0.0.1:${PORT_SERVER}/api/studio/workspaces`,
       timeout: 15000,
       reuseExistingServer: true,
