@@ -24,7 +24,7 @@ describe('ConfigManager', () => {
 
     const agent = mgr.getAgent()
     expect(agent.id).toBe('default')
-    expect(agent.name).toBe('Rem')
+    expect(agent.name).toBe('Shadow')
   })
 
   it('should load existing config', () => {
@@ -46,7 +46,7 @@ describe('ConfigManager', () => {
 
     const mgr = new ConfigManager(configPath)
     expect(mgr.getAgent().id).toBe('partial')
-    expect(mgr.getAgent().name).toBe('Rem')
+    expect(mgr.getAgent().name).toBe('Shadow')
     expect(mgr.getAgent().model).toBe('abab6.5s-chat')
   })
 

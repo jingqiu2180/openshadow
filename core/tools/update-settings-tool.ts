@@ -8,7 +8,7 @@
 
 import { Type, StringEnum } from '../pi-sdk/index.js';
 import { t } from '../i18n.js';
-import themeRegistry from '../../../lib/theme-registry.cjs';
+import themeRegistry from '../../../lib/theme-registry.js';
 import { parseModelRef } from '../../shared/model-ref.js';
 import { emitAppEvent } from '../../server/app-events.js';
 import {

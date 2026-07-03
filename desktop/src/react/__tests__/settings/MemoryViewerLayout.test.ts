@@ -1,8 +1,14 @@
 import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-const css = readFileSync(new URL('../../settings/Settings.module.css', import.meta.url), 'utf8');
-const modalCss = readFileSync(new URL('../../components/SettingsModalShell.module.css', import.meta.url), 'utf8');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const TEST_DIR = resolve(__dirname, '..', '..');
+
+const css = readFileSync(resolve(TEST_DIR, 'settings/Settings.module.css'), 'utf8');
+const modalCss = readFileSync(resolve(TEST_DIR, 'components/SettingsModalShell.module.css'), 'utf8');
 
 function cssRule(source: string, selector: string) {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

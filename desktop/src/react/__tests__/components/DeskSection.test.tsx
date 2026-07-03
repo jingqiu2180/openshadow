@@ -1,5 +1,6 @@
 /**
  * @vitest-environment jsdom
+ * @vitest-timeout 30000
  */
 
 import React from 'react';

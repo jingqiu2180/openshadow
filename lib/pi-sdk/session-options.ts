@@ -1,5 +1,7 @@
 // @ts-nocheck
 import fs from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 export const PI_BUILTIN_TOOL_NAMES = Object.freeze([
   "read",
@@ -11,8 +13,31 @@ export const PI_BUILTIN_TOOL_NAMES = Object.freeze([
   "ls",
 ]);
 
+function findPiCodingAgentDir(): URL {
+  // 用 require.resolve 定位 package.json（vitest SSR 里 require 可用）
+  try {
+    const req =
+      typeof (globalThis as any).require === "function"
+        ? (globalThis as any).require
+        : (() => { const { createRequire } = require("node:module"); return createRequire(import.meta.url); })();
+    const entry = req.resolve("@mariozechner/pi-coding-agent/package.json");
+    return new URL("./", `file://${entry.replace(/\\/g, "/")}`);
+  } catch {}
+
+  // 退回：从 node_modules 向上找
+  let dir = dirname(fileURLToPath(import.meta.url));
+  while (dir !== dirname(dir)) {
+    const pkgPath = resolve(dir, "node_modules", "@mariozechner", "pi-coding-agent", "package.json");
+    if (fs.existsSync(pkgPath)) {
+      return new URL("./", `file://${pkgPath.replace(/\\/g, "/")}`);
+    }
+    dir = dirname(dir);
+  }
+  throw new Error("Unable to locate @mariozechner/pi-coding-agent package directory");
+}
+
 function readPiCodingAgentVersion() {
-  let dir = new URL("./", import.meta.resolve("@mariozechner/pi-coding-agent"));
+  let dir = findPiCodingAgentDir();
   while (dir.href !== new URL("../", dir).href) {
     const pkgUrl = new URL("package.json", dir);
     if (fs.existsSync(pkgUrl)) {
