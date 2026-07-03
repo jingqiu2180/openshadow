@@ -30,6 +30,27 @@ const destWizard = resolve(destDir, 'wizard')
 cpSync(srcWizard, destWizard, { recursive: true })
 console.log('Copied desktop/wizard/ -> dist/desktop/wizard/')
 
+// Theme CSS files (desktop/src/themes/) + lib/theme.js — required for theme switcher.
+// index.html references `<link id="themeSheet" href="themes/<name>.css">` and `<script src="lib/theme.js">`.
+const srcThemes = resolve(root, 'desktop', 'src', 'themes')
+const destThemes = resolve(destDir, 'themes')
+if (existsSync(srcThemes)) {
+  cpSync(srcThemes, destThemes, { recursive: true })
+  console.log('Copied desktop/src/themes/ -> dist/desktop/themes/')
+}
+const srcLib = resolve(root, 'desktop', 'src', 'lib')
+const destLib = resolve(destDir, 'lib')
+if (existsSync(srcLib)) {
+  cpSync(srcLib, destLib, { recursive: true })
+  console.log('Copied desktop/src/lib/ -> dist/desktop/lib/')
+}
+const srcModules = resolve(root, 'desktop', 'src', 'modules')
+const destModules = resolve(destDir, 'modules')
+if (existsSync(srcModules)) {
+  cpSync(srcModules, destModules, { recursive: true })
+  console.log('Copied desktop/src/modules/ -> dist/desktop/modules/')
+}
+
 // App assets (Stage 1j) — PNG icons used by Electron BrowserWindow.icon
 // and referenced by React components via Vite import
 const srcAssets = resolve(root, 'desktop', 'src', 'assets')
