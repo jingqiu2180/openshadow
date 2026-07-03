@@ -11,6 +11,7 @@ const { join, dirname, resolve } = require('path')
 const { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } = require('fs')
 const { createThemeController } = require('./theme-controller.cjs')
 const { setIpcSenderValidator, wrapIpcHandler, wrapIpcOn } = require('./ipc-wrapper.cjs')
+const { createServerManager } = require('./server-manager.cjs')
 
 const isDev = !app.isPackaged
 const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5280'
@@ -627,6 +628,35 @@ function saveWindowStateSoon(win) {
   }, 1000)
 }
 
+// ─── Server Process Manager ─────────────────────────────────────
+// 管理 server 进程：启动、监控心跳、崩溃重启、优雅关闭
+const serverManager = createServerManager({
+  app,
+  lynnHome: process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow'),
+  dirname: __dirname,
+  execPath: process.execPath,
+  platform: process.platform,
+  env: process.env,
+  resourcesPath: process.resourcesPath || '',
+  fetch: globalThis.fetch,
+  onServerReady: ({ port, token, reused }) => {
+    console.log(`[main] Server ${reused ? 'reused' : 'started'} on port ${port}`)
+  },
+  onServerCrashed: (err) => {
+    console.error('[main] Server crashed:', err.message)
+    dialog.showErrorBox('OpenShadow Server', '服务器崩溃: ' + err.message)
+  },
+  onServerRestarted: ({ port, token }) => {
+    console.log('[main] Server restarted on port', port)
+  },
+  writeCrashLog: (msg) => {
+    try {
+      const logPath = join(process.cwd(), 'crash.log')
+      appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`, 'utf-8')
+    } catch {}
+  },
+})
+
 // ─── Theme controller ────────────────────────────────────────
 // 跟随 Lynn/main.cjs 模式：thin main + 独立 controller
 // 必须在 app.whenReady() 之前创建——createMainWindow() 引用它
@@ -641,6 +671,17 @@ themeController.attachIpc({ ipcMain, wrapIpcOn })
 
 app.whenReady().then(async () => {
   registerIpcHandlers()
+
+  // 启动 server（在 Wizard 之前或之后都可以，但 Wizard 里可能不依赖 server）
+  try {
+    await serverManager.start()
+    serverManager.monitor()
+    serverManager.startHeartbeat()
+  } catch (err) {
+    console.error('[main] Failed to start server:', err.message)
+    dialog.showErrorBox('OpenShadow', '服务器启动失败: ' + err.message)
+  }
+
   createTray()
   registerGlobalShortcut()
   await runWizardWindow()
@@ -755,14 +796,21 @@ app.on('activate', () => {
 })
 
 // ─── 优雅关闭 ───────────────────────────────────
-app.on('before-quit', () => {
+app.on('before-quit', async (event) => {
   console.log('[main] before-quit')
+  // 阻止默认退出，等 server 关闭后再退出
+  event.preventDefault()
   destroyTray()
   unregisterGlobalShortcut()
   if (wakeLockId !== null && powerSaveBlocker.isStarted(wakeLockId)) {
     powerSaveBlocker.stop(wakeLockId)
     wakeLockId = null
   }
+  // 优雅关闭 server
+  serverManager.setIsQuitting(true)
+  await serverManager.shutdown()
+  // 关闭完成后真正退出
+  app.exit(0)
 })
 
 // ─── Crash Log 写入 ───────────────────────────────────
