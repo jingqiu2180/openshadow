@@ -6,9 +6,10 @@
 // 2. 处理 IPC 路由
 // 3. 创建主窗口加载 Vite dev server 或 dist 资源
 
-const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu } = require('electron')
+const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeTheme } = require('electron')
 const { join, dirname } = require('path')
 const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
+const { createThemeController } = require('./theme-controller.cjs')
 
 const isDev = !app.isPackaged
 const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5280'
@@ -462,13 +463,17 @@ function createMainWindow() {
       webviewTag: true,
     },
     ...titleBarOpts(),
-    backgroundColor: '#faf8f5',
+    backgroundColor: themeController.bgFor(themeController.getTheme()),
     show: false,
   })
 
   mainWindow.once('ready-to-show', () => {
-    if (mainWindow) mainWindow.show()
-    console.log('Main window shown')
+    if (mainWindow) {
+      // 应用当前主题的背景色（避免主题切换后重启时窗口背景跟不上）
+      themeController.applyToWindow(mainWindow, themeController.getTheme())
+      mainWindow.show()
+      console.log('Main window shown')
+    }
   })
 
   if (isDev) {
@@ -498,6 +503,19 @@ function createMainWindow() {
 
 // ─── App lifecycle ───────────────────────────────────
 Menu.setApplicationMenu(null)
+
+// ─── Theme controller ────────────────────────────────────────
+// 跟随 Lynn/main.cjs 模式：thin main + 独立 controller
+// 必须在 app.whenReady() 之前创建——createMainWindow() 引用它
+let settingsWindow = null
+const themeController = createThemeController({
+  BrowserWindow,
+  nativeTheme,
+  getMainWindow: () => mainWindow,
+  getSettingsWindow: () => settingsWindow,
+  getBrowserViewer: () => null,  // 浏览器 viewer 不在 openshadow 路线里
+})
+themeController.attachIpc({ ipcMain, wrapIpcOn: ipcMain.on.bind(ipcMain) })
 
 app.whenReady().then(async () => {
   registerIpcHandlers()
