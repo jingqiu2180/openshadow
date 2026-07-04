@@ -12,6 +12,17 @@ export interface SettingsModalState {
   activeTab: string;
 }
 
+export interface ConfirmDialogState {
+  title?: string;
+  message: string;
+  detail?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  tone?: 'danger' | 'warning' | 'info';
+  onConfirm: () => void | Promise<void>;
+  onCancel?: () => void;
+}
+
 export interface UiSlice {
   sidebarOpen: boolean;
   sidebarAutoCollapsed: boolean;
@@ -34,6 +45,8 @@ export interface UiSlice {
   skillCatalogVersion: number;
   /** 频道创建弹窗是否可见 */
   channelCreateOverlayVisible: boolean;
+  /** 确认对话框状态（null = 关闭） */
+  pendingConfirm: ConfirmDialogState | null;
   setSidebarOpen: (open: boolean) => void;
   setSidebarAutoCollapsed: (collapsed: boolean) => void;
   setJianOpen: (open: boolean) => void;
@@ -51,6 +64,7 @@ export interface UiSlice {
   closeMediaViewer: () => void;
   toggleSidebar: () => void;
   toggleJian: () => void;
+  setPendingConfirm: (confirm: ConfirmDialogState | null) => void;
 }
 
 export const createUiSlice = (
@@ -74,6 +88,7 @@ export const createUiSlice = (
   settingsModal: { open: false, activeTab: 'agent' },
   skillCatalogVersion: 0,
   channelCreateOverlayVisible: false,
+  pendingConfirm: null,
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   setSidebarAutoCollapsed: (collapsed) => set({ sidebarAutoCollapsed: collapsed }),
   setJianOpen: (open) => set({ jianOpen: open }),
@@ -93,4 +108,5 @@ export const createUiSlice = (
   closeMediaViewer: () => set({ mediaViewer: null }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   toggleJian: () => set((s) => ({ jianOpen: !s.jianOpen })),
+  setPendingConfirm: (confirm) => set({ pendingConfirm: confirm }),
 });

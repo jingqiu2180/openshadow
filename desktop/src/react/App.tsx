@@ -28,6 +28,8 @@ import { MediaViewer } from './components/shared/MediaViewer/MediaViewer';
 import { SettingsModalShell } from './components/SettingsModalShell';
 import { ChangesPanel } from './components/ChangesPanel';
 import { WorkersPanel } from './components/fleet/WorkersPanel';
+import { SkillsPanel } from './components/SkillsPanel';
+import { ConfirmationDialog } from './components/ConfirmationDialog';
 import { initTheme, initDragPrevention } from './bootstrap';
 import { initApp } from './app-init';
 import { openSettingsModal } from './stores/settings-modal-actions';
@@ -157,6 +159,9 @@ function App() {
       {/* Workers panel */}
       <WorkersPanel />
 
+      {/* Skills panel */}
+      <SkillsPanel />
+
       {/* Input context menu (cut/copy/paste) */}
       <InputContextMenu />
 
@@ -165,6 +170,9 @@ function App() {
 
       {/* Toast notifications */}
       <ToastContainer />
+
+      {/* Confirmation dialog */}
+      <ConfirmationDialog />
     </ErrorBoundary>
   );
 }
