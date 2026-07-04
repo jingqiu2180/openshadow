@@ -891,6 +891,36 @@ app.whenReady().then(async () => {
   } catch (err) {
     console.warn('[main] failed to install app menu:', err.message)
   }
+
+  // 安装媒体权限处理器（麦克风/摄像头）
+  try {
+    const { session } = require('electron')
+    session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+      if (permission === 'media') {
+        // 只允许麦克风（audio），拒绝摄像头
+        const details = arguments[3] || {}
+        const mediaTypes = Array.isArray(details.mediaTypes) ? details.mediaTypes : []
+        const wantsAudio = mediaTypes.length === 0 || mediaTypes.includes('audio')
+        // 只给可信的 webContents 授权
+        const trusted = webContents.getURL().startsWith('http://localhost:') ||
+          webContents.getURL().startsWith('file://')
+        callback(Boolean(wantsAudio && trusted))
+        return
+      }
+      callback(false)
+    })
+
+    session.defaultSession.setPermissionCheckHandler((webContents, permission) => {
+      if (permission !== 'media') return false
+      const trusted = webContents.getURL().startsWith('http://localhost:') ||
+        webContents.getURL().startsWith('file://')
+      return Boolean(trusted)
+    })
+    console.log('[main] media permission handler installed')
+  } catch (err) {
+    console.warn('[main] failed to install media permission handler:', err.message)
+  }
+
   await runWizardWindow()
   if (isWizardCompleted()) {
     createMainWindow()
