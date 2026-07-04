@@ -18,7 +18,7 @@ function createSettingsWindow({ mainWindow, preloadPath, iconPath, isDev, viteDe
     width: 900,
     height: 700,
     minWidth: 700,
-    minHeight, 500,
+    minHeight: 500,
     title: 'OpenShadow 设置',
     icon: iconPath,
     show: false,

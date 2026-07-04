@@ -1,6 +1,6 @@
 {
   "name": "openshadow",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "description": "OpenShadow — Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.",
   "type": "module",
   "author": {
@@ -33,7 +33,6 @@
     "dist:all": "npm run electron:build && cross-env SKIP_NOTARIZE=true electron-builder -mwl --publish never",
     "postinstall": "node scripts/patch-pi-sdk.cjs",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test",
     "test:e2e:workspace": "playwright test tests/e2e/workspace.web.spec.ts",
     "test:e2e:chat": "playwright test tests/e2e/chat.web.spec.ts",
     "test:e2e:settings": "playwright test tests/e2e/settings.web.spec.ts",
