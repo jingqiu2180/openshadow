@@ -165,6 +165,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: resolve(ROOT, 'index.html'),
+        'quick-chat': resolve(ROOT, 'quick-chat.html'),
       },
     },
   },

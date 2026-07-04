@@ -562,6 +562,52 @@ function registerIpcHandlers() {
     workspaceWatchRegistry.unsubscribeAll(subscriberId)
     return { ok: true }
   })
+
+  // ─── Quick Chat IPC ─────────────────────────────────────
+  wrapIpcHandler('quick-chat:show', () => {
+    showQuickChatWindow()
+    return { ok: true }
+  })
+
+  wrapIpcHandler('quick-chat:hide', () => {
+    hideQuickChatWindow()
+    return { ok: true }
+  })
+
+  wrapIpcHandler('quick-chat:toggle', () => {
+    toggleQuickChatWindow()
+    return { ok: true }
+  })
+
+  wrapIpcHandler('quick-chat:resize', (_event, mode) => {
+    // mode: 'compact' | 'chat'
+    if (mode !== 'compact' && mode !== 'chat') return { ok: false, error: 'invalid mode' }
+    quickChatMode = mode
+    if (quickChatWindow && !quickChatWindow.isDestroyed()) {
+      const bounds = getQuickChatBounds()
+      quickChatWindow.setResizable(mode === 'chat')
+      quickChatWindow.setBounds(bounds, true)
+    }
+    return { ok: true }
+  })
+
+  wrapIpcHandler('quick-chat:shortcut-status', () => {
+    return {
+      shortcut: registeredQuickChatShortcut || 'Alt+Space',
+      registered: !!registeredQuickChatShortcut,
+    }
+  })
+
+  wrapIpcHandler('quick-chat:reload-shortcut', () => {
+    try {
+      const cfg = readConfig()
+      const shortcut = cfg?.quickChat?.shortcut || 'Alt+Space'
+      registerQuickChatShortcut(shortcut)
+      return { ok: true, shortcut }
+    } catch (e) {
+      return { ok: false, error: e.message }
+    }
+  })
 }
 
 // ─── Main window ─────────────────────────────────────
@@ -850,6 +896,8 @@ app.whenReady().then(async () => {
     const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
     initAutoUpdater(mainWindow, { hanakoHome })
     checkForUpdatesAuto()
+    // 初始化 Quick Chat 全局快捷键
+    initQuickChat()
   } else {
     console.log('[main] waiting for wizard to complete…')
     wrapIpcOn('wizard:done-signal', () => {
@@ -866,6 +914,8 @@ app.whenReady().then(async () => {
       const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
       initAutoUpdater(mainWindow, { hanakoHome })
       checkForUpdatesAuto()
+      // 初始化 Quick Chat 全局快捷键
+      initQuickChat()
     })
   }
 })
@@ -1102,6 +1152,161 @@ function destroySplashWindow() {
   if (splashWindow && !splashWindow.isDestroyed()) {
     splashWindow.close()
     splashWindow = null
+  }
+}
+
+// ─── Quick Chat 全局悬浮小窗 ─────────────────────────────────────
+// 全局快捷键唤醒的快捷对话窗口（compact 模式 / chat 模式）
+let quickChatWindow = null
+let quickChatMode = 'compact'
+let registeredQuickChatShortcut = null
+
+const QUICK_CHAT_STATE_PATH = join(
+  process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow'),
+  'user', 'quick-chat-window-state.json'
+)
+
+function loadQuickChatWindowState() {
+  try {
+    return JSON.parse(readFileSync(QUICK_CHAT_STATE_PATH, 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
+function saveQuickChatWindowState() {
+  if (!quickChatWindow || quickChatWindow.isDestroyed()) return
+  try {
+    const bounds = quickChatWindow.getBounds()
+    const state = { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height, mode: quickChatMode }
+    mkdirSync(join(QUICK_CHAT_STATE_PATH, '..'), { recursive: true })
+    writeFileSync(QUICK_CHAT_STATE_PATH, JSON.stringify(state, null, 2), 'utf-8')
+  } catch {}
+}
+
+function getQuickChatBounds() {
+  const state = loadQuickChatWindowState()
+  const { screen } = require('electron')
+  const primary = screen.getPrimaryDisplay().workAreaSize
+  const width = 420
+  const height = quickChatMode === 'chat' ? 600 : 120
+  const x = state?.x ?? Math.round((primary.width - width) / 2)
+  const y = state?.y ?? Math.round((primary.height - height) - 40)
+  return { x, y, width, height }
+}
+
+function createQuickChatWindow() {
+  if (quickChatWindow && !quickChatWindow.isDestroyed()) return quickChatWindow
+  const bounds = getQuickChatBounds()
+  quickChatWindow = new BrowserWindow({
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+    minWidth: 320,
+    minHeight: 80,
+    maxWidth: quickChatMode === 'compact' ? 520 : undefined,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: quickChatMode === 'chat',
+    show: false,
+    webPreferences: {
+      preload: join(__dirname, 'preload.bundle.cjs'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false,
+    },
+    ...windowIconOpts(),
+  })
+
+  // 加载 quick-chat.html
+  if (isDev) {
+    quickChatWindow.loadURL(VITE_DEV_URL.replace(/\/?$/, '') + '/quick-chat.html').catch(err => {
+      console.error('[quick-chat] failed to load dev URL:', err.message)
+    })
+  } else {
+    const htmlPath = join(__dirname, 'dist-renderer', 'quick-chat.html')
+    quickChatWindow.loadFile(htmlPath).catch(err => {
+      console.error('[quick-chat] failed to load file:', err.message)
+    })
+  }
+
+  quickChatWindow.once('ready-to-show', () => {
+    if (quickChatWindow && !quickChatWindow.isDestroyed()) {
+      quickChatWindow.show()
+    }
+  })
+
+  quickChatWindow.on('closed', () => {
+    quickChatWindow = null
+  })
+
+  // 失去焦点时隐藏（可选，注释掉则不会自动隐藏）
+  // quickChatWindow.on('blur', () => {
+  //   if (quickChatWindow && !quickChatWindow.isDestroyed()) {
+  //     hideQuickChatWindow()
+  //   }
+  // })
+
+  console.log('[main] quick chat window created, mode=', quickChatMode)
+  return quickChatWindow
+}
+
+function showQuickChatWindow() {
+  const win = createQuickChatWindow()
+  if (win && !win.isVisible()) {
+    win.show()
+    win.focus()
+  } else if (win && win.isVisible() && !win.isFocused()) {
+    win.focus()
+  }
+}
+
+function hideQuickChatWindow() {
+  if (quickChatWindow && !quickChatWindow.isDestroyed()) {
+    saveQuickChatWindowState()
+    quickChatWindow.hide()
+  }
+}
+
+function toggleQuickChatWindow() {
+  if (quickChatWindow && !quickChatWindow.isDestroyed() && quickChatWindow.isVisible()) {
+    if (quickChatWindow.isFocused()) {
+      hideQuickChatWindow()
+    } else {
+      quickChatWindow.focus()
+    }
+  } else {
+    showQuickChatWindow()
+  }
+}
+
+function registerQuickChatShortcut(shortcut) {
+  shortcut = shortcut || 'Alt+Space'
+  if (registeredQuickChatShortcut) {
+    globalShortcut.unregister(registeredQuickChatShortcut)
+    registeredQuickChatShortcut = null
+  }
+  const ok = globalShortcut.register(shortcut, toggleQuickChatWindow)
+  if (ok) {
+    registeredQuickChatShortcut = shortcut
+    console.log('[quick-chat] global shortcut registered:', shortcut)
+  } else {
+    console.warn('[quick-chat] failed to register shortcut:', shortcut)
+  }
+}
+
+// 在 app.whenReady() 之后调用（需要 mainWindow 存在）
+function initQuickChat() {
+  // 从配置读取快捷键（默认 Alt+Space）
+  try {
+    const cfg = readConfig()
+    const shortcut = cfg?.quickChat?.shortcut || 'Alt+Space'
+    registerQuickChatShortcut(shortcut)
+  } catch {
+    registerQuickChatShortcut('Alt+Space')
   }
 }
 
