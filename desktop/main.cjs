@@ -16,6 +16,8 @@ const { createSettingsWindow, getSettingsWindow } = require('./settings-window-c
 const { initAutoUpdater, checkForUpdatesAuto } = require('./auto-updater.cjs')
 const { createFileWatchRegistry } = require('./file-watch-registry.cjs')
 const { createWorkspaceWatchRegistry } = require('./workspace-watch-registry.cjs')
+const { resolveGpuStartupPolicy, applyGpuStartupPolicy, markGpuStartupPending, markGpuStartupPhase, markGpuStartupReady } = require('./src/shared/gpu-startup-policy.cjs')
+const { readNetworkProxyConfig, applyNetworkProxy } = require('./src/shared/network-proxy.cjs')
 
 const isDev = !app.isPackaged
 const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5280'
@@ -29,6 +31,34 @@ if (process.platform === 'win32') {
 
 // High-DPI 支持
 app.commandLine.appendSwitch('high-dpi-support', '1')
+
+// ─── GPU 启动策略（Windows 安全模式）──────────────────────────
+// 必须在 app.whenReady() 之前调用
+;(function applyGpuPolicy() {
+  const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+  try {
+    const policy = resolveGpuStartupPolicy({ hanakoHome, platform: process.platform })
+    console.log(`[gpu-policy] mode=${policy.mode}, reason=${policy.reason}`)
+    applyGpuStartupPolicy(app, policy)
+    try { markGpuStartupPending({ hanakoHome, phase: 'electron-starting' }) } catch {}
+  } catch (err) {
+    console.warn('[gpu-policy] failed to apply:', err.message)
+  }
+})()
+
+// ─── Network Proxy 设置 ─────────────────────────────────────
+;(function applyProxy() {
+  try {
+    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+    const config = readNetworkProxyConfig({ hanakoHome })
+    if (config.mode !== 'direct') {
+      console.log(`[network-proxy] mode=${config.mode}`)
+      applyNetworkProxy(app, config)
+    }
+  } catch (err) {
+    console.warn('[network-proxy] failed to apply:', err.message)
+  }
+})()
 
 // ─── 窗口装饰选项 ─────────────────────────────────────
 function windowIconOpts() {
@@ -751,6 +781,17 @@ const fileWatchRegistry = createFileWatchRegistry({
 
 // ─── Workspace Watch Registry ─────────────────────────────────────
 // 工作区监控注册表：监控整个工作区的文件变化
+// 忽略常见非用户文件
+function shouldIgnoreWorkspacePath(rootPath, filePath) {
+  const relative = filePath.replace(rootPath, '').replace(/\\/g, '/')
+  const ignoredPatterns = [
+    '/node_modules/', '/.git/', '/.openshadow/', '/dist/', '/out/',
+    '/.DS_Store', '~', '.swp', '.swo', '.tmp', '.temp',
+    '.log', 'crash.log', 'server-info.json',
+  ]
+  return ignoredPatterns.some(p => relative.includes(p))
+}
+
 const workspaceWatchRegistry = createWorkspaceWatchRegistry({
   watch: (rootPath, callback) => {
     const watcher = require('chokidar').watch(rootPath, {
@@ -800,6 +841,11 @@ app.whenReady().then(async () => {
   await runWizardWindow()
   if (isWizardCompleted()) {
     createMainWindow()
+    // 标记 GPU 启动完成
+    try {
+      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+      markGpuStartupReady({ hanakoHome, phase: 'main-window-created' })
+    } catch {}
     // 初始化 Auto Updater（需要在 mainWindow 创建后）
     const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
     initAutoUpdater(mainWindow, { hanakoHome })
@@ -811,6 +857,11 @@ app.whenReady().then(async () => {
       if (wizardWindow) wizardWindow.close()
       wizardWindow = null
       createMainWindow()
+      // 标记 GPU 启动完成
+      try {
+        const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+        markGpuStartupReady({ hanakoHome, phase: 'main-window-created' })
+      } catch {}
       // 初始化 Auto Updater
       const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
       initAutoUpdater(mainWindow, { hanakoHome })
@@ -999,7 +1050,92 @@ process.on('unhandledRejection', (reason) => {
   writeCrashLog(err)
 })
 
+
+// ─── Splash 启动窗口 ─────────────────────────────────────
+// 启动时显示的启动画面（暂时用简单实现，后续可换完整 HTML）
+let splashWindow = null
+
+function createSplashWindow() {
+  if (splashWindow) return splashWindow
+  try {
+    splashWindow = new BrowserWindow({
+      width: 400,
+      height: 250,
+      frame: false,
+      alwaysOnTop: true,
+      center: true,
+      skipTaskbar: true,
+      resizable: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: false,
+      },
+      backgroundColor: '#F8F5ED',
+      show: false,
+      ...windowIconOpts(),
+    })
+    // 简单的 splash HTML
+    const splashHtml = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>OpenShadow</title></head>
+<body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;background:#F8F5ED;font-family:sans-serif;">
+  <h2 style="color:#333;margin-bottom:8px;">OpenShadow</h2>
+  <p style="color:#666;margin:0;">正在启动...</p>
+</body>
+</html>`
+    splashWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(splashHtml))
+    splashWindow.once('ready-to-show', () => {
+      splashWindow.show()
+    })
+    splashWindow.once('closed', () => {
+      splashWindow = null
+    })
+    console.log('[main] splash window created')
+  } catch (err) {
+    console.warn('[main] failed to create splash window:', err.message)
+  }
+  return splashWindow
+}
+
+function destroySplashWindow() {
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.close()
+    splashWindow = null
+  }
+}
+
+// ─── 主进程 i18n（占位，后续实现）───────────────────────────────
+// 主进程中的国际化支持（当前仅英文/中文，后续扩展）
+const MAIN_PROCESS_LOCALE = 'zh-CN' // 可从配置读取
+
+function t(mainKey, locale) {
+  locale = locale || MAIN_PROCESS_LOCALE
+  const dict = {
+    'zh-CN': {
+      'app.name': 'OpenShadow',
+      'app.quitting': '正在退出...',
+      'app.server-crashed': '服务器崩溃',
+      'app.server-start-failed': '服务器启动失败',
+      'tray.show': '显示主窗口',
+      'tray.settings': '设置',
+      'tray.quit': '退出',
+    },
+    'en': {
+      'app.name': 'OpenShadow',
+      'app.quitting': 'Quitting...',
+      'app.server-crashed': 'Server Crashed',
+      'app.server-start-failed': 'Server start failed',
+      'tray.show': 'Show Main Window',
+      'tray.settings': 'Settings',
+      'tray.quit': 'Quit',
+    },
+  }
+  return (dict[locale] && dict[locale][mainKey]) || mainKey
+}
+
 console.log('Electron starting...')
 
 // Exported for unit testing
-module.exports = { registerIpcHandlers, isWizardCompleted, readConfig, setWakeLock }
+module.exports = { registerIpcHandlers, isWizardCompleted, readConfig, setWakeLock, createSplashWindow, destroySplashWindow, t }
+
