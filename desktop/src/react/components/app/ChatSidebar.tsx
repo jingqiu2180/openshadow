@@ -5,7 +5,6 @@ import { ChannelListSidebar } from '../channels/ChannelList';
 import { RegionalErrorBoundary } from '../RegionalErrorBoundary';
 import { SessionList } from '../SessionList';
 import { SidebarNoticeSlot } from '../notices/SidebarNoticeSlot';
-import { SidebarCapabilityBar } from '../SidebarCapabilityBar';
 
 interface ChatSidebarContentProps {
   showSettingsButton?: boolean;
@@ -113,9 +112,6 @@ export function ChatSidebarContent({
         </RegionalErrorBoundary>
         <SidebarNoticeSlot />
       </div>
-
-      {/* 侧边栏能力条 */}
-      <SidebarCapabilityBar />
     </>
   );
 }

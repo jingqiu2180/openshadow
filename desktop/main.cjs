@@ -18,6 +18,12 @@ const { createFileWatchRegistry } = require('./file-watch-registry.cjs')
 const { createWorkspaceWatchRegistry } = require('./workspace-watch-registry.cjs')
 const { resolveGpuStartupPolicy, applyGpuStartupPolicy, markGpuStartupPending, markGpuStartupPhase, markGpuStartupReady } = require('./src/shared/gpu-startup-policy.cjs')
 const { readNetworkProxyConfig, applyNetworkProxy } = require('./src/shared/network-proxy.cjs')
+// Desktop Access Policy (path sandbox)
+const { grantWebContentsAccess, canReadPath, canWritePath, isSetupComplete } = require('./desktop-access-policy.cjs')
+// Editor Window Controller
+const { createEditorWindowController } = require('./editor-window-controller.cjs')
+// Browser Agent Controller (WebContentsView)
+const { createBrowserAgentController } = require('./browser-agent.cjs')
 
 const isDev = !app.isPackaged
 const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5280'
@@ -205,6 +211,8 @@ async function testAnthropicCompatible(baseUrl, apiKey, model) {
 let mainWindow = null
 let wizardWindow = null
 let settingsWindow = null
+let editorController = null
+let browserAgent = null
 
 // ─── IPC 安全：验证调用来源 ─────────────────────────────────────
 // 仅允许来自可信 WebContents 的 IPC 调用（主窗口、向导窗口、设置窗口）
@@ -212,6 +220,9 @@ function isTrustedAppWebContents(webContents, channel) {
   if (!webContents || webContents.isDestroyed && webContents.isDestroyed()) return false
   const owner = BrowserWindow.fromWebContents(webContents)
   if (owner === mainWindow || owner === wizardWindow || owner === settingsWindow) return true
+  // 允许 Editor Window 和 Browser Viewer Window
+  if (editorController && owner === editorController.getWindow()) return true
+  if (browserAgent && owner === browserAgent.getWindow()) return true
   // 允许 file:// 协议（本地 HTML）
   try {
     const url = webContents.getURL && webContents.getURL()
@@ -877,6 +888,12 @@ app.whenReady().then(async () => {
     await serverManager.start()
     serverManager.monitor()
     serverManager.startHeartbeat()
+
+    // ─── 连接 Browser Agent 到 Server WebSocket ─────────────
+    if (browserAgent && serverManager.getPort()) {
+      browserAgent.setupCommands(serverManager.getPort(), serverManager.getToken())
+      console.log('[main] browser agent WebSocket setup complete')
+    }
   } catch (err) {
     console.error('[main] Failed to start server:', err.message)
     dialog.showErrorBox('OpenShadow', '服务器启动失败: ' + err.message)
@@ -884,6 +901,38 @@ app.whenReady().then(async () => {
 
   createTray()
   registerGlobalShortcut()
+
+  // ─── 初始化 Editor Window Controller ─────────────────────
+  try {
+    editorController = createEditorWindowController({
+      wrapIpcHandler,
+      isDev,
+      viteDevUrl: VITE_DEV_URL,
+      preloadPath: join(__dirname, 'preload.bundle.cjs'),
+      getMainWindow: () => mainWindow,
+      canWritePath,
+      grantWebContentsAccess,
+    })
+    editorController.register()
+    console.log('[main] editor window controller registered')
+  } catch (err) {
+    console.warn('[main] failed to init editor controller:', err.message)
+  }
+
+  // ─── 初始化 Browser Agent Controller（WebContentsView）───
+  try {
+    browserAgent = createBrowserAgentController({
+      isDev,
+      viteDevUrl: VITE_DEV_URL,
+      preloadPath: join(__dirname, 'preload.bundle.cjs'),
+      getMainWindow: () => mainWindow,
+    })
+    browserAgent.registerIpc(wrapIpcHandler)
+    console.log('[main] browser agent controller registered')
+  } catch (err) {
+    console.warn('[main] failed to init browser agent:', err.message)
+  }
+
   // 安装应用菜单（macOS 必需，Windows 提供编辑菜单）
   // 先初始化主进程 i18n（菜单项需要翻译）
   try {
@@ -992,30 +1041,6 @@ app.on('window-all-closed', () => {
   if (!trayIcon) {
     app.quit()
   }
-})
-
-// ─── 登录项自启动（开机自启）─────────────────────────────────────
-let loginItemEnabled = false
-
-function setLoginItem(enable) {
-  loginItemEnabled = enable
-  app.setLoginItemSettings({
-    openAtLogin: enable,
-    name: 'OpenShadow',
-    path: process.execPath,
-  })
-  console.log('[main] login item auto-start:', enable ? 'enabled' : 'disabled')
-}
-
-// 在 wizard 保存配置时持久化登录项设置
-wrapIpcHandler('wizard:set-login-item', (_e, enable) => {
-  setLoginItem(enable)
-  return { ok: true }
-})
-
-// 读取登录项状态
-wrapIpcHandler('wizard:get-login-item', () => {
-  return { enabled: loginItemEnabled }
 })
 
 // ─── Tray 图标 ───────────────────────────────────────
@@ -1131,6 +1156,25 @@ app.on('before-quit', async (event) => {
     powerSaveBlocker.stop(wakeLockId)
     wakeLockId = null
   }
+
+  // ─── 清理 Browser Agent 和 Editor Controller ─────
+  try {
+    if (browserAgent && browserAgent.shutdown) {
+      browserAgent.shutdown()
+      console.log('[main] browser agent shutdown complete')
+    }
+  } catch (err) {
+    console.warn('[main] browser agent shutdown error:', err.message)
+  }
+  try {
+    if (editorController && editorController.destroy) {
+      editorController.destroy()
+      console.log('[main] editor controller destroyed')
+    }
+  } catch (err) {
+    console.warn('[main] editor controller destroy error:', err.message)
+  }
+
   // 优雅关闭 server
   serverManager.setIsQuitting(true)
   await serverManager.shutdown()

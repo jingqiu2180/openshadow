@@ -166,6 +166,7 @@ export default defineConfig({
       input: {
         index: resolve(ROOT, 'index.html'),
         'quick-chat': resolve(ROOT, 'quick-chat.html'),
+        'editor-window': resolve(ROOT, 'editor-window.html'),
       },
     },
   },

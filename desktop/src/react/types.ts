@@ -270,7 +270,7 @@ export interface TodoItem {
 }
 
 // ── 浮动面板类型 ──
-export type ActivePanel = 'activity' | 'automation' | 'bridge' | 'changes' | 'fleet' | null;
+export type ActivePanel = 'activity' | 'automation' | 'bridge' | null;
 export type TabType = 'chat' | 'channels' | `plugin:${string}`;
 export type RightWorkspaceTab = 'session-files' | 'workspace' | `plugin-widget:${string}`;
 
