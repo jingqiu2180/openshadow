@@ -885,9 +885,23 @@ app.whenReady().then(async () => {
   createTray()
   registerGlobalShortcut()
   // 安装应用菜单（macOS 必需，Windows 提供编辑菜单）
+  // 先初始化主进程 i18n（菜单项需要翻译）
+  try {
+    const { createMainI18n } = require('./main-i18n.cjs')
+    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+    const localesDir = join(__dirname, 'src', 'locales')
+    const { mt, reset: resetI18n } = createMainI18n({ hanakoHome, localesDir })
+    globalThis.__mainI18nMt = mt
+    console.log('[main] i18n initialized')
+  } catch (err) {
+    console.warn('[main] failed to init i18n:', err.message)
+    globalThis.__mainI18nMt = (key, d) => d || key
+  }
+
   try {
     const { installAppMenu } = require('./app-menu.cjs')
-    installAppMenu({ Menu, app, platform: process.platform })
+    const mt = globalThis.__mainI18nMt || ((key, d) => d || key)
+    installAppMenu({ Menu, app, platform: process.platform, mt })
   } catch (err) {
     console.warn('[main] failed to install app menu:', err.message)
   }
