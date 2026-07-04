@@ -884,6 +884,13 @@ app.whenReady().then(async () => {
 
   createTray()
   registerGlobalShortcut()
+  // 安装应用菜单（macOS 必需，Windows 提供编辑菜单）
+  try {
+    const { installAppMenu } = require('./app-menu.cjs')
+    installAppMenu({ Menu, app, platform: process.platform })
+  } catch (err) {
+    console.warn('[main] failed to install app menu:', err.message)
+  }
   await runWizardWindow()
   if (isWizardCompleted()) {
     createMainWindow()
@@ -898,6 +905,21 @@ app.whenReady().then(async () => {
     checkForUpdatesAuto()
     // 初始化 Quick Chat 全局快捷键
     initQuickChat()
+    // 初始化通知控制器
+    try {
+      const { createNotificationController } = require('./notification-controller.cjs')
+      const notificationController = createNotificationController({
+        app,
+        Notification,
+        systemPreferences,
+        wrapIpcHandler,
+        getMainWindow: () => mainWindow,
+      })
+      notificationController.register()
+      console.log('[main] notification controller registered')
+    } catch (err) {
+      console.warn('[main] failed to init notification controller:', err.message)
+    }
   } else {
     console.log('[main] waiting for wizard to complete…')
     wrapIpcOn('wizard:done-signal', () => {
