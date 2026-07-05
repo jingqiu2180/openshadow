@@ -106,6 +106,18 @@ function writeConfig(cfg) {
   writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf-8')
 }
 
+// 读取 server 进程的 server-info.json（包含 port/token），用于主进程 → server HTTP 调用
+function readServerInfo() {
+  try {
+    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+    const p = join(hanakoHome, 'server-info.json')
+    if (!existsSync(p)) return null
+    return JSON.parse(readFileSync(p, 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
 function isWizardCompleted() {
   return readConfig().wizard && readConfig().wizard.completed === true
 }
@@ -329,6 +341,17 @@ function registerIpcHandlers() {
       }
       writeConfig(merged)
       console.log('[wizard] config saved to', CONFIG_PATH)
+      // 通知所有 BrowserWindow（main + wizard）配置已更新
+      try {
+        const allWins = BrowserWindow.getAllWindows()
+        for (const win of allWins) {
+          if (!win.isDestroyed()) {
+            win.webContents.send('config:updated', { source: 'wizard' })
+          }
+        }
+      } catch (e) {
+        console.warn('[wizard] broadcast config:updated failed:', e.message)
+      }
       return { ok: true }
     } catch (e) {
       console.error('[wizard] save-config error:', e.message)
@@ -1019,6 +1042,42 @@ app.whenReady().then(async () => {
       console.log('[main] wizard done, opening main window')
       if (wizardWindow) wizardWindow.close()
       wizardWindow = null
+      // 通知 server 进程重读 config.json（wizard 改了 providers/models/workspace）
+      // 这样 React store 启动时拿到的就是新 config，而不是 engine 缓存里的旧值
+      ;(async () => {
+        try {
+          const cfg = readConfig()
+          const info = readServerInfo()
+          if (!info || !info.port) {
+            console.warn('[main] server-info.json not available, skipping config reload')
+            return
+          }
+          const url = `http://127.0.0.1:${info.port}/api/config`
+          const headers = { 'Content-Type': 'application/json' }
+          if (info.token) headers['Authorization'] = `Bearer ${info.token}`
+          const res = await fetch(url, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              wizard: cfg.wizard,
+              ui: cfg.ui,
+              user: cfg.user,
+              memory: cfg.memory,
+              providers: cfg.providers,
+              models: cfg.models,
+              theme: cfg.theme,
+              security: cfg.security,
+            }),
+          })
+          if (!res.ok) {
+            console.warn('[main] PUT /api/config after wizard failed:', res.status)
+          } else {
+            console.log('[main] PUT /api/config after wizard succeeded')
+          }
+        } catch (e) {
+          console.warn('[main] reload config after wizard failed:', e.message)
+        }
+      })()
       createMainWindow()
       // 标记 GPU 启动完成
       try {

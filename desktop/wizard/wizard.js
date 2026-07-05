@@ -11,6 +11,56 @@ const i18n = {
     back: '← 上一步',
     finish: '启动 OpenShadow ✨',
     stepIndicator: (n, total) => `第 ${n} 步 / 共 ${total} 步`,
+
+    // Step 1: Language
+    langTitle: '选择你的语言',
+    langDesc: 'OpenShadow 会用这种语言和你对话。选择之后还可以随时在设置里改。',
+
+    // Step 2: User name
+    userTitle: '你的名字',
+    userDesc: 'OpenShadow 会用这个名字称呼你。改名字随时在设置里改。',
+    userLabel: '你叫什么?',
+    userPlaceholder: '王帅',
+    userHint: '默认是「王帅」,你可以改成任何你喜欢的叫法',
+    memoryTitle: '开启长期记忆',
+    memoryDesc: 'OpenShadow 会记住你告诉它的重要信息(API key 不存)',
+
+    // Step 3: Provider
+    providerTitle: '选择一个 AI 供应商',
+    providerDesc: 'OpenShadow 兼容 OpenAI API,所以支持多家供应商。选一个填上 API key,OpenShadow 会自动测试连接。',
+    providerLabel: '供应商',
+    apiKeyLabel: 'API Key',
+    apiKeyPlaceholder: 'sk-...',
+    apiKeyHint: 'API key 只存在本地 config.json,不会上传任何服务器',
+    testConnBtn: '测试连接',
+    testConnHint: '会用 1 个 token 的最小请求验证 key 是否可用',
+    testConnTesting: '测试中…',
+    testConnOk: (latencyMs, model) => `✓ 连接成功 (${latencyMs}ms, model: ${model})`,
+    testConnFail: (err) => `✗ 失败: ${err || '未知错误'}`,
+    testConnError: (msg) => `✗ 错误: ${msg}`,
+
+    // Step 4: Models
+    modelsTitle: '为不同任务选模型',
+    modelsDesc: 'OpenShadow 把任务分 3 档:主对话用大模型,小工具用便宜模型,长任务用大模型。也可以都选同一个。',
+    modelMainLabel: '主对话 (main)',
+    modelSmallLabel: '小工具 (small)',
+    modelLargeLabel: '长任务 (large)',
+    modelPlaceholder: 'model name',
+    modelOllamaHint: 'Ollama 模型动态,这里手动填模型名 (例如 llama3.1:8b)',
+
+    // Step 5: Workspace
+    workspaceTitle: '选择工作区目录',
+    workspaceDesc: 'OpenShadow 在这些目录下有完整权限(读/写/删)。之后可以随时在设置里加/删。',
+    workspaceAddBtn: '+ 添加目录',
+    workspaceEmptyHint: '还没选,点上面按钮选至少一个目录',
+
+    // Boot fatal
+    bootFatalTitle: '⚠ Wizard 启动失败',
+    bootFatalTail: '请检查控制台输出后向开发者反馈',
+
+    // Save
+    saving: '保存中…',
+    saveFail: (msg) => `保存失败: ${msg}`,
   },
   'en': {
     appName: 'OpenShadow Setup',
@@ -19,6 +69,49 @@ const i18n = {
     back: '← Back',
     finish: 'Launch OpenShadow ✨',
     stepIndicator: (n, total) => `Step ${n} of ${total}`,
+
+    langTitle: 'Choose your language',
+    langDesc: 'OpenShadow will use this language to talk to you. You can change it later in Settings.',
+
+    userTitle: 'Your name',
+    userDesc: 'OpenShadow will use this name to address you. You can change it in Settings anytime.',
+    userLabel: 'What should we call you?',
+    userPlaceholder: 'Your name',
+    userHint: 'Default is "Your name". You can change it to anything you like.',
+    memoryTitle: 'Enable long-term memory',
+    memoryDesc: 'OpenShadow will remember important info you tell it (API keys are NOT stored).',
+
+    providerTitle: 'Choose an AI provider',
+    providerDesc: 'OpenShadow is OpenAI-compatible, so it works with many providers. Pick one and fill in your API key — OpenShadow will test the connection automatically.',
+    providerLabel: 'Provider',
+    apiKeyLabel: 'API Key',
+    apiKeyPlaceholder: 'sk-...',
+    apiKeyHint: 'API keys are stored only in local config.json, never uploaded.',
+    testConnBtn: 'Test connection',
+    testConnHint: 'Uses a 1-token request to verify the key.',
+    testConnTesting: 'Testing…',
+    testConnOk: (latencyMs, model) => `✓ Connected (${latencyMs}ms, model: ${model})`,
+    testConnFail: (err) => `✗ Failed: ${err || 'Unknown error'}`,
+    testConnError: (msg) => `✗ Error: ${msg}`,
+
+    modelsTitle: 'Pick a model for each task',
+    modelsDesc: 'OpenShadow splits work into 3 tiers: chat uses a strong model, tools use a cheap model, long tasks use a strong model. You can pick the same model for all.',
+    modelMainLabel: 'Chat (main)',
+    modelSmallLabel: 'Tools (small)',
+    modelLargeLabel: 'Long tasks (large)',
+    modelPlaceholder: 'model name',
+    modelOllamaHint: 'Ollama models are dynamic — type the model name manually (e.g. llama3.1:8b)',
+
+    workspaceTitle: 'Pick workspace folders',
+    workspaceDesc: 'OpenShadow has full read/write/delete access in these folders. You can add or remove folders later in Settings.',
+    workspaceAddBtn: '+ Add folder',
+    workspaceEmptyHint: 'Nothing picked yet. Click the button above to pick at least one folder.',
+
+    bootFatalTitle: '⚠ Wizard failed to start',
+    bootFatalTail: 'Check the console output and report to the developer',
+
+    saving: 'Saving…',
+    saveFail: (msg) => `Save failed: ${msg}`,
   },
   'ja': {
     appName: 'OpenShadow セットアップ',
@@ -27,6 +120,49 @@ const i18n = {
     back: '← 戻る',
     finish: 'OpenShadow を起動 ✨',
     stepIndicator: (n, total) => `ステップ ${n} / ${total}`,
+
+    langTitle: '言語を選択',
+    langDesc: 'OpenShadow はこの言語で話します。設定でいつでも変更できます。',
+
+    userTitle: 'お名前',
+    userDesc: 'OpenShadow はこの名前で呼びます。設定でいつでも変更できます。',
+    userLabel: 'お名前は？',
+    userPlaceholder: 'お名前',
+    userHint: 'デフォルトは「お名前」。好きな呼び名に変更できます。',
+    memoryTitle: '長期メモリを有効化',
+    memoryDesc: 'OpenShadow は重要な情報を記憶します（API キーは保存しません）',
+
+    providerTitle: 'AI プロバイダーを選択',
+    providerDesc: 'OpenShadow は OpenAI 互換なので、多くのプロバイダーに対応しています。API キーを入力すれば自動で接続テストします。',
+    providerLabel: 'プロバイダー',
+    apiKeyLabel: 'API キー',
+    apiKeyPlaceholder: 'sk-...',
+    apiKeyHint: 'API キーはローカルの config.json にのみ保存され、アップロードされません',
+    testConnBtn: '接続テスト',
+    testConnHint: '最小リクエストでキーの有効性を検証します',
+    testConnTesting: 'テスト中…',
+    testConnOk: (latencyMs, model) => `✓ 接続成功 (${latencyMs}ms, model: ${model})`,
+    testConnFail: (err) => `✗ 失敗: ${err || '不明なエラー'}`,
+    testConnError: (msg) => `✗ エラー: ${msg}`,
+
+    modelsTitle: 'タスクごとにモデルを選択',
+    modelsDesc: 'OpenShadow はタスクを3段階に分けます：チャットは大モデル、ツールは安価なモデル、長時間タスクは大モデル。全部同じでも可。',
+    modelMainLabel: 'チャット (main)',
+    modelSmallLabel: 'ツール (small)',
+    modelLargeLabel: '長時間タスク (large)',
+    modelPlaceholder: 'モデル名',
+    modelOllamaHint: 'Ollama モデルは動的なので、手動で入力してください（例: llama3.1:8b）',
+
+    workspaceTitle: 'ワークスペースフォルダーを選択',
+    workspaceDesc: 'OpenShadow はこれらのフォルダーで読み/書き/削除の全権限を持ちます。設定でいつでも追加/削除できます。',
+    workspaceAddBtn: '+ フォルダーを追加',
+    workspaceEmptyHint: 'まだ未選択。上のボタンから最低1つ選んでください',
+
+    bootFatalTitle: '⚠ Wizard の起動に失敗',
+    bootFatalTail: 'コンソール出力を確認して開発者に報告してください',
+
+    saving: '保存中…',
+    saveFail: (msg) => `保存失敗: ${msg}`,
   },
   'ko': {
     appName: 'OpenShadow 설정',
@@ -35,6 +171,49 @@ const i18n = {
     back: '← 뒤로',
     finish: 'OpenShadow 시작 ✨',
     stepIndicator: (n, total) => `${n} / ${total} 단계`,
+
+    langTitle: '언어 선택',
+    langDesc: 'OpenShadow 가 이 언어로 대화합니다. 설정에서 언제든지 변경할 수 있습니다.',
+
+    userTitle: '이름',
+    userDesc: 'OpenShadow 가 이 이름으로 부릅니다. 설정에서 언제든지 변경할 수 있습니다.',
+    userLabel: '이름이 무엇입니까?',
+    userPlaceholder: '이름',
+    userHint: '기본값은 "이름"입니다. 원하는 대호칭으로 변경할 수 있습니다.',
+    memoryTitle: '장기 기억 활성화',
+    memoryDesc: 'OpenShadow 가 중요한 정보를 기억합니다 (API 키는 저장 안 함)',
+
+    providerTitle: 'AI 공급자 선택',
+    providerDesc: 'OpenShadow 는 OpenAI 호환이므로 여러 공급자를 지원합니다. API 키를 입력하면 OpenShadow 가 자동으로 연결을 테스트합니다.',
+    providerLabel: '공급자',
+    apiKeyLabel: 'API 키',
+    apiKeyPlaceholder: 'sk-...',
+    apiKeyHint: 'API 키는 로컬 config.json에만 저장되며 업로드되지 않습니다',
+    testConnBtn: '연결 테스트',
+    testConnHint: '최소 요청으로 키 유효성을 검증합니다',
+    testConnTesting: '테스트 중…',
+    testConnOk: (latencyMs, model) => `✓ 연결 성공 (${latencyMs}ms, model: ${model})`,
+    testConnFail: (err) => `✗ 실패: ${err || '알 수 없는 오류'}`,
+    testConnError: (msg) => `✗ 오류: ${msg}`,
+
+    modelsTitle: '작업별 모델 선택',
+    modelsDesc: 'OpenShadow 는 작업을 3 단계로 나눕니다: 대화는 대형 모델, 도구는 저렴한 모델, 장기 작업은 대형 모델. 모두 같게 선택해도 됩니다.',
+    modelMainLabel: '대화 (main)',
+    modelSmallLabel: '도구 (small)',
+    modelLargeLabel: '장기 작업 (large)',
+    modelPlaceholder: '모델 이름',
+    modelOllamaHint: 'Ollama 모델은 동적이므로 직접 입력하세요 (예: llama3.1:8b)',
+
+    workspaceTitle: '작업 공간 폴더 선택',
+    workspaceDesc: 'OpenShadow 는 이러한 폴더에서 읽기/쓰기/삭제 권한을 갖습니다. 설정에서 나중에 추가/삭제할 수 있습니다.',
+    workspaceAddBtn: '+ 폴더 추가',
+    workspaceEmptyHint: '아직 선택하지 않았습니다. 위 버튼을 눌러 최소 1개 폴더를 선택하세요',
+
+    bootFatalTitle: '⚠ Wizard 시작 실패',
+    bootFatalTail: '콘솔 출력을 확인하고 개발자에게 보고하세요',
+
+    saving: '저장 중…',
+    saveFail: (msg) => `저장 실패: ${msg}`,
   },
 }
 
@@ -135,8 +314,8 @@ function renderStepLanguage(container) {
   ]
   container.innerHTML = `
     <div class="step">
-      <h2>选择你的语言</h2>
-      <p class="step-desc">OpenShadow 会用这种语言和你对话。选择之后还可以随时在设置里改。</p>
+      <h2>${t('langTitle')}</h2>
+      <p class="step-desc">${t('langDesc')}</p>
       <div class="lang-grid">
         ${langs.map(l => `
           <button type="button" class="lang-card ${state.ui.language === l.code ? 'selected' : ''}" data-lang="${l.code}">
@@ -159,19 +338,19 @@ function renderStepLanguage(container) {
 function renderStepUser(container) {
   container.innerHTML = `
     <div class="step">
-      <h2>你的名字</h2>
-      <p class="step-desc">OpenShadow 会用这个名字称呼你。改名字随时在设置里改。</p>
+      <h2>${t('userTitle')}</h2>
+      <p class="step-desc">${t('userDesc')}</p>
       <div class="input-group">
-        <label for="userName">你叫什么?</label>
-        <input type="text" id="userName" class="input" value="${state.user.name}" placeholder="王帅" />
-        <span class="input-hint">默认是「王帅」,你可以改成任何你喜欢的叫法</span>
+        <label for="userName">${t('userLabel')}</label>
+        <input type="text" id="userName" class="input" value="${state.user.name}" placeholder="${t('userPlaceholder')}" />
+        <span class="input-hint">${t('userHint')}</span>
       </div>
       <div class="toggle-row" id="memoryToggle">
         <div>
-          <strong>开启长期记忆</strong>
-          <div class="step-desc" style="margin-top:4px">OpenShadow 会记住你告诉它的重要信息(API key 不存)</div>
+          <strong>${t('memoryTitle')}</strong>
+          <div class="step-desc" style="margin-top:4px">${t('memoryDesc')}</div>
         </div>
-        <button type="button" class="toggle ${state.memory.enabled ? 'on' : ''}" id="memoryBtn" aria-label="记忆开关"></button>
+        <button type="button" class="toggle ${state.memory.enabled ? 'on' : ''}" id="memoryBtn" aria-label="${t('memoryTitle')}"></button>
       </div>
     </div>
   `
@@ -189,11 +368,11 @@ function renderStepProvider(container) {
   const models = selectedSpec?.models ?? []
   container.innerHTML = `
     <div class="step">
-      <h2>选择一个 AI 供应商</h2>
-      <p class="step-desc">OpenShadow 兼容 OpenAI API,所以支持多家供应商。选一个填上 API key,OpenShadow 会自动测试连接。</p>
+      <h2>${t('providerTitle')}</h2>
+      <p class="step-desc">${t('providerDesc')}</p>
 
       <div class="input-group">
-        <label for="builtinSelect">供应商</label>
+        <label for="builtinSelect">${t('providerLabel')}</label>
         <select id="builtinSelect" class="provider-select">
           ${builtinEntries.map(([id, spec]) => `
             <option value="${id}" ${state.provider.builtinId === id ? 'selected' : ''}>
@@ -205,15 +384,15 @@ function renderStepProvider(container) {
 
       ${selectedSpec?.requiresApiKey ? `
         <div class="input-group">
-          <label for="apiKey">API Key</label>
-          <input type="password" id="apiKey" class="input" value="${state.provider.apiKey}" placeholder="sk-..." />
-          <span class="input-hint">API key 只存在本地 config.json,不会上传任何服务器</span>
+          <label for="apiKey">${t('apiKeyLabel')}</label>
+          <input type="password" id="apiKey" class="input" value="${state.provider.apiKey}" placeholder="${t('apiKeyPlaceholder')}" />
+          <span class="input-hint">${t('apiKeyHint')}</span>
         </div>
       ` : ''}
 
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <button type="button" class="test-conn-btn" id="testConnBtn">测试连接</button>
-        <span class="step-desc" id="testConnHint">会用 1 个 token 的最小请求验证 key 是否可用</span>
+        <button type="button" class="test-conn-btn" id="testConnBtn">${t('testConnBtn')}</button>
+        <span class="step-desc" id="testConnHint">${t('testConnHint')}</span>
       </div>
       <div class="test-conn-result" id="testConnResult"></div>
     </div>
@@ -230,7 +409,7 @@ function renderStepProvider(container) {
     const resultEl = $('#testConnResult')
     const btn = $('#testConnBtn')
     resultEl.className = 'test-conn-result show'
-    resultEl.textContent = '测试中…'
+    resultEl.textContent = t('testConnTesting')
     btn.disabled = true
     try {
       const res = await window.wizard.testConnection({
@@ -242,14 +421,14 @@ function renderStepProvider(container) {
       })
       if (res.ok) {
         resultEl.className = 'test-conn-result show ok'
-        resultEl.textContent = `✓ 连接成功 (${res.latencyMs}ms, model: ${res.modelUsed})`
+        resultEl.textContent = t('testConnOk')(res.latencyMs, res.modelUsed)
       } else {
         resultEl.className = 'test-conn-result show err'
-        resultEl.textContent = `✗ 失败: ${res.error || '未知错误'}`
+        resultEl.textContent = t('testConnFail')(res.error)
       }
     } catch (e) {
       resultEl.className = 'test-conn-result show err'
-      resultEl.textContent = `✗ 错误: ${e.message}`
+      resultEl.textContent = t('testConnError')(e.message)
     } finally {
       btn.disabled = false
     }
@@ -267,7 +446,7 @@ function renderStepModels(container) {
   }
   const modelSelect = (role, current) => {
     if (models.length === 0) {
-      return `<input type="text" class="input" data-role="${role}" value="${current}" placeholder="model name" />`
+      return `<input type="text" class="input" data-role="${role}" value="${current}" placeholder="${t('modelPlaceholder')}" />`
     }
     return `
       <select class="provider-select" data-role="${role}">
@@ -277,21 +456,21 @@ function renderStepModels(container) {
   }
   container.innerHTML = `
     <div class="step">
-      <h2>为不同任务选模型</h2>
-      <p class="step-desc">OpenShadow 把任务分 3 档:主对话用大模型,小工具用便宜模型,长任务用大模型。也可以都选同一个。</p>
+      <h2>${t('modelsTitle')}</h2>
+      <p class="step-desc">${t('modelsDesc')}</p>
       <div class="model-row">
-        <label>主对话 (main)</label>
+        <label>${t('modelMainLabel')}</label>
         ${modelSelect('main', state.models.main)}
       </div>
       <div class="model-row">
-        <label>小工具 (small)</label>
+        <label>${t('modelSmallLabel')}</label>
         ${modelSelect('small', state.models.small)}
       </div>
       <div class="model-row">
-        <label>长任务 (large)</label>
+        <label>${t('modelLargeLabel')}</label>
         ${modelSelect('large', state.models.large)}
       </div>
-      ${models.length === 0 ? '<span class="input-hint">Ollama 模型动态,这里手动填模型名 (例如 llama3.1:8b)</span>' : ''}
+      ${models.length === 0 ? `<span class="input-hint">${t('modelOllamaHint')}</span>` : ''}
     </div>
   `
   $$('[data-role]').forEach(el => {
@@ -302,12 +481,12 @@ function renderStepModels(container) {
 function renderStepWorkspace(container) {
   container.innerHTML = `
     <div class="step">
-      <h2>选择工作区目录</h2>
-      <p class="step-desc">OpenShadow 在这些目录下有完整权限(读/写/删)。之后可以随时在设置里加/删。</p>
-      <button type="button" class="test-conn-btn" id="addFolderBtn">+ 添加目录</button>
+      <h2>${t('workspaceTitle')}</h2>
+      <p class="step-desc">${t('workspaceDesc')}</p>
+      <button type="button" class="test-conn-btn" id="addFolderBtn">${t('workspaceAddBtn')}</button>
       <div class="folder-list" id="folderList">
         ${state.workspace.folders.length === 0
-          ? '<span class="input-hint">还没选,点上面按钮选至少一个目录</span>'
+          ? `<span class="input-hint">${t('workspaceEmptyHint')}</span>`
           : state.workspace.folders.map(f => `
               <div class="folder-item">
                 <span>📁 ${f}</span>
@@ -369,9 +548,9 @@ function render() {
 async function finish() {
   const nextBtn = $('#nextBtn')
   nextBtn.disabled = true
-  nextBtn.textContent = '保存中…'
-  console.log('[wizard] finish() started')
-  try {
+nextBtn.textContent = t('saving')
+    console.log('[wizard] finish() started')
+    try {
     const builtin = state.builtins[state.provider.builtinId]
     const cfg = {
       wizard: { completed: true, completedAt: new Date().toISOString() },
@@ -408,7 +587,7 @@ async function finish() {
     console.log('[wizard] done() sent')
   } catch (e) {
     console.error('[wizard] save failed:', e)
-    alert('保存失败: ' + e.message)
+    alert(t('saveFail')(e.message))
     nextBtn.disabled = false
     nextBtn.textContent = t('finish')
   }
@@ -464,10 +643,10 @@ async function boot() {
     const root = document.querySelector('main.wizard') || document.body
     root.innerHTML = `
       <div style="padding:40px;font-family:monospace;color:#c00;background:#fff5f5;border:2px solid #c00;margin:20px;border-radius:8px;">
-        <h2>⚠ Wizard 启动失败</h2>
+        <h2>${t('bootFatalTitle')}</h2>
         <p><strong>${e.message}</strong></p>
         <pre style="background:#fff;padding:10px;overflow:auto;font-size:11px;">${(e.stack || '').slice(0, 800)}</pre>
-        <p style="color:#666;font-size:12px;">检查 DevTools (View → Toggle Developer Tools 或 F12) 获取更多日志</p>
+        <p style="color:#666;font-size:12px;">${t('bootFatalTail')}</p>
       </div>
     `
   }
