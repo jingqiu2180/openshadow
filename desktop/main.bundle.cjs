@@ -194,7 +194,7 @@ function requireServerManager() {
   const SERVER_HEARTBEAT_INTERVAL_MS = 1e4;
   const SERVER_HEARTBEAT_TIMEOUT_MS = 5e3;
   const SERVER_HEARTBEAT_MAX_FAILURES = 3;
-  const SERVER_STARTUP_TIMEOUT_MS = 6e4;
+  const SERVER_STARTUP_TIMEOUT_MS = 12e4;
   function isPidAlive(pid) {
     try {
       process.kill(pid, 0);
@@ -20079,6 +20079,16 @@ function requireMain() {
     mkdirSync(join(CONFIG_PATH, ".."), { recursive: true });
     writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), "utf-8");
   }
+  function readServerInfo() {
+    try {
+      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+      const p = join(hanakoHome, "server-info.json");
+      if (!existsSync(p)) return null;
+      return JSON.parse(readFileSync(p, "utf-8"));
+    } catch {
+      return null;
+    }
+  }
   function isWizardCompleted() {
     return readConfig().wizard && readConfig().wizard.completed === true;
   }
@@ -20272,6 +20282,16 @@ function requireMain() {
         }
         writeConfig(merged);
         console.log("[wizard] config saved to", CONFIG_PATH);
+        try {
+          const allWins = BrowserWindow.getAllWindows();
+          for (const win of allWins) {
+            if (!win.isDestroyed()) {
+              win.webContents.send("config:updated", { source: "wizard" });
+            }
+          }
+        } catch (e) {
+          console.warn("[wizard] broadcast config:updated failed:", e.message);
+        }
         return { ok: true };
       } catch (e) {
         console.error("[wizard] save-config error:", e.message);
@@ -20766,18 +20786,25 @@ function requireMain() {
   themeController2.attachIpc({ ipcMain, wrapIpcOn });
   app.whenReady().then(async () => {
     registerIpcHandlers();
-    try {
-      await serverManager2.start();
-      serverManager2.monitor();
-      serverManager2.startHeartbeat();
-      if (browserAgent2 && serverManager2.getPort()) {
-        browserAgent2.setupCommands(serverManager2.getPort(), serverManager2.getToken());
-        console.log("[main] browser agent WebSocket setup complete");
+    void (async () => {
+      try {
+        await serverManager2.start();
+        serverManager2.monitor();
+        serverManager2.startHeartbeat();
+        if (browserAgent2 && serverManager2.getPort()) {
+          browserAgent2.setupCommands(serverManager2.getPort(), serverManager2.getToken());
+          console.log("[main] browser agent WebSocket setup complete");
+        }
+      } catch (err) {
+        console.error("[main] Failed to start server:", err.message);
+        try {
+          const logPath = join(process.cwd(), "crash.log");
+          appendFileSync(logPath, `[${(/* @__PURE__ */ new Date()).toISOString()}] Server start failed: ${err.message}
+`, "utf-8");
+        } catch {
+        }
       }
-    } catch (err) {
-      console.error("[main] Failed to start server:", err.message);
-      dialog.showErrorBox("OpenShadow", "服务器启动失败: " + err.message);
-    }
+    })();
     createTray();
     registerGlobalShortcut();
     try {
@@ -20879,6 +20906,40 @@ function requireMain() {
         console.log("[main] wizard done, opening main window");
         if (wizardWindow) wizardWindow.close();
         wizardWindow = null;
+        (async () => {
+          try {
+            const cfg = readConfig();
+            const info = readServerInfo();
+            if (!info || !info.port) {
+              console.warn("[main] server-info.json not available, skipping config reload");
+              return;
+            }
+            const url = `http://127.0.0.1:${info.port}/api/config`;
+            const headers = { "Content-Type": "application/json" };
+            if (info.token) headers["Authorization"] = `Bearer ${info.token}`;
+            const res = await fetch(url, {
+              method: "PUT",
+              headers,
+              body: JSON.stringify({
+                wizard: cfg.wizard,
+                ui: cfg.ui,
+                user: cfg.user,
+                memory: cfg.memory,
+                providers: cfg.providers,
+                models: cfg.models,
+                theme: cfg.theme,
+                security: cfg.security
+              })
+            });
+            if (!res.ok) {
+              console.warn("[main] PUT /api/config after wizard failed:", res.status);
+            } else {
+              console.log("[main] PUT /api/config after wizard succeeded");
+            }
+          } catch (e) {
+            console.warn("[main] reload config after wizard failed:", e.message);
+          }
+        })();
         createMainWindow();
         try {
           const hanakoHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");

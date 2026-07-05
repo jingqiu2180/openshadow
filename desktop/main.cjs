@@ -906,21 +906,27 @@ themeController.attachIpc({ ipcMain, wrapIpcOn })
 app.whenReady().then(async () => {
   registerIpcHandlers()
 
-  // 启动 server（在 Wizard 之前或之后都可以，但 Wizard 里可能不依赖 server）
-  try {
-    await serverManager.start()
-    serverManager.monitor()
-    serverManager.startHeartbeat()
+  // 启动 server（不阻塞 wizard 窗口；后台启动 + 心跳监控）
+  void (async () => {
+    try {
+      await serverManager.start()
+      serverManager.monitor()
+      serverManager.startHeartbeat()
 
-    // ─── 连接 Browser Agent 到 Server WebSocket ─────────────
-    if (browserAgent && serverManager.getPort()) {
-      browserAgent.setupCommands(serverManager.getPort(), serverManager.getToken())
-      console.log('[main] browser agent WebSocket setup complete')
+      // ─── 连接 Browser Agent 到 Server WebSocket ─────────────
+      if (browserAgent && serverManager.getPort()) {
+        browserAgent.setupCommands(serverManager.getPort(), serverManager.getToken())
+        console.log('[main] browser agent WebSocket setup complete')
+      }
+    } catch (err) {
+      console.error('[main] Failed to start server:', err.message)
+      // 不弹错误对话框阻塞主流程；只写 crash log
+      try {
+        const logPath = join(process.cwd(), 'crash.log')
+        appendFileSync(logPath, `[${new Date().toISOString()}] Server start failed: ${err.message}\n`, 'utf-8')
+      } catch {}
     }
-  } catch (err) {
-    console.error('[main] Failed to start server:', err.message)
-    dialog.showErrorBox('OpenShadow', '服务器启动失败: ' + err.message)
-  }
+  })()
 
   createTray()
   registerGlobalShortcut()
