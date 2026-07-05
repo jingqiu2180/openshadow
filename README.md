@@ -14,7 +14,7 @@
 
 OpenShadow is a desktop AI agent. It watches your workspace, executes tasks in the background, and talks to you when you need it. You don't need to be a coder — write a note, and it gets to work.
 
-It began as a fork of [openhanako](https://github.com/liliMozi/openhanako), then diverged into its own path: re-architected for stability, wired into Chinese LLM providers, and backed by an E2E test suite from scratch.
+It began as a fork of [openhanako](https://github.com/jingqiu2180/openhanako), then diverged into its own path: re-architected for stability, wired into Chinese LLM providers, and backed by an E2E test suite from scratch.
 
 The name is a tribute to *The Eminence in Shadow* — the idea that the most powerful force is the one you don't see coming.
 
@@ -135,7 +135,7 @@ npm run typecheck         # TypeScript type check
 
 ## Credits
 
-OpenShadow is forked from [openhanako](https://github.com/liliMozi/openhanako) by [liliMozi](https://github.com/liliMozi) — a solo developer's vibe-coded AI agent with 2,000+ commits. We diverged at commit `5d390121`.
+OpenShadow is forked from [openhanako](https://github.com/jingqiu2180/openhanako) by [jingqiu2180](https://github.com/jingqiu2180) — a solo developer's vibe-coded AI agent with 2,000+ commits. We diverged at commit `5d390121`.
 
 What we changed:
 - Rewired Electron main process from ESM+tsc to CJS+Vite (eliminated startup crashes)
