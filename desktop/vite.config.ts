@@ -2,7 +2,7 @@ import { defineConfig, type Plugin, type ProxyOptions } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
-import { existsSync } from 'node:fs'
+import { cpSync, existsSync } from 'node:fs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -149,8 +149,35 @@ function createDevWebProxy(): Record<string, ProxyOptions> | undefined {
   }
 }
 
+/**
+ * Build 后复制旧文件到 dist-renderer/（与 openhanako 对齐）。
+ * lib/i18n.js, modules/, locales/ 等非模块资源不会被 Vite 自动处理，
+ * 必须手动拷贝到输出目录。
+ */
+function copyLegacyFiles(): Plugin {
+  return {
+    name: 'openshadow-copy-legacy-files',
+    closeBundle() {
+      const srcDir = resolve(PROJECT_ROOT, 'src')
+      const outDir = OUT_DIR
+
+      const dirs = ['lib', 'modules', 'locales']
+      for (const dir of dirs) {
+        const src = resolve(srcDir, dir)
+        const dest = resolve(outDir, dir)
+        if (existsSync(src)) {
+          cpSync(src, dest, { recursive: true })
+          console.log(`[copyLegacy] ${dir}/ → dist-renderer/${dir}/`)
+        } else {
+          console.warn(`[copyLegacy] ${src} not found, skipping`)
+        }
+      }
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react(), sharedResolverPlugin(), injectDevWebConfig()],
+  plugins: [react(), sharedResolverPlugin(), injectDevWebConfig(), copyLegacyFiles()],
   root: ROOT,
   base: './',
   resolve: {
