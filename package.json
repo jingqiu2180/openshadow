@@ -70,10 +70,6 @@
     ],
     "extraResources": [
       {
-        "from": "dist-server/win-x64",
-        "to": "server"
-      },
-      {
         "from": "desktop/src/assets",
         "to": "assets"
       }
@@ -88,7 +84,13 @@
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "desktop/entitlements.mac.plist",
-      "entitlementsInherit": "desktop/entitlements.mac.plist"
+      "entitlementsInherit": "desktop/entitlements.mac.plist",
+      "extraResources": [
+        {
+          "from": "dist-server/mac-arm64",
+          "to": "server"
+        }
+      ]
     },
     "dmg": {
       "title": "OpenShadow",
@@ -117,7 +119,13 @@
       "icon": "desktop/src/icon.ico",
       "executableName": "OpenShadow",
       "artifactName": "${productName}-${version}-Windows-${arch}.${ext}",
-      "requestedExecutionLevel": "asInvoker"
+      "requestedExecutionLevel": "asInvoker",
+      "extraResources": [
+        {
+          "from": "dist-server/win-x64",
+          "to": "server"
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
@@ -135,7 +143,13 @@
       "maintainer": "jingqiu2180 <jingqiu2180@users.noreply.github.com>",
       "category": "Utility",
       "icon": "desktop/src/icon.png",
-      "artifactName": "${productName}-${version}-Linux-${arch}.${ext}"
+      "artifactName": "${productName}-${version}-Linux-${arch}.${ext}",
+      "extraResources": [
+        {
+          "from": "dist-server/linux-x64",
+          "to": "server"
+        }
+      ]
     }
   },
   "dependencies": {
@@ -201,6 +215,7 @@
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@types/ws": "^8.5.14",
+    "@vercel/nft": "^1.10.2",
     "@vitejs/plugin-react": "^4.7.0",
     "concurrently": "^10.0.3",
     "cross-env": "^7.0.3",
