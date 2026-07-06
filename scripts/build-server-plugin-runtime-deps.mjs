@@ -155,11 +155,19 @@ function existingDirectory(filePath) {
 function resolveRelativeRuntimeImport(fromFile, specifier) {
   const basePath = path.resolve(path.dirname(fromFile), specifier);
   const candidates = [];
+
+  // 插件源码以 .ts 形式存在，但运行时 import 用 .js 后缀（由 tsx 加载器解析回 .ts）。
+  // build 时源文件只有 .ts，因此带扩展名的 specifier 在字面 .js 不存在时要回退到 .ts。
   if (path.extname(basePath)) {
     candidates.push(basePath);
+    const ext = path.extname(basePath);
+    if (ext !== ".ts") {
+      candidates.push(`${basePath.slice(0, -ext.length)}.ts`);
+    }
   } else {
     for (const ext of RESOLVE_EXTENSIONS) candidates.push(`${basePath}${ext}`);
   }
+
   if (existingDirectory(basePath)) {
     for (const ext of RESOLVE_EXTENSIONS) candidates.push(path.join(basePath, `index${ext}`));
   }
