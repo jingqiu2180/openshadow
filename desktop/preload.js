@@ -24,22 +24,12 @@
 const { contextBridge, ipcRenderer } = require('electron');
 // 构建 platform API 对象（兼容 platform.js 的检查）
 const platformApi = {
-    // 服务器连接（通过 IPC 从主进程获取真实端口和 token）
-    getServerPort: async () => {
-      try { const info = await ipcRenderer.invoke('server:get-info'); return info?.port || null; }
-      catch { return null; }
-    },
-    getServerToken: async () => {
-      try { const info = await ipcRenderer.invoke('server:get-info'); return info?.token || null; }
-      catch { return null; }
-    },
+    // 服务器连接
+    getServerPort: async () => 3000,
+    getServerToken: async () => null,
     onServerRestarted: (callback) => {
         ipcRenderer.on('server-restarted', (_event, data) => callback(data));
         return () => { ipcRenderer.removeListener('server-restarted', callback); };
-    },
-    onServerReady: (callback) => {
-        ipcRenderer.on('server:ready', (_event, data) => callback(data));
-        return () => { ipcRenderer.removeListener('server:ready', callback); };
     },
     appReady: async () => { },
     // 文件 I/O

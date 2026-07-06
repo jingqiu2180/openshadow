@@ -107,14 +107,23 @@ function writeConfig(cfg) {
 }
 
 // 读取 server 进程的 server-info.json（包含 port/token），用于主进程 → server HTTP 调用
+// 如果文件不存在，返回默认值 { port: 3000, token: null }
 function readServerInfo() {
   try {
     const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
     const p = join(hanakoHome, 'server-info.json')
-    if (!existsSync(p)) return null
-    return JSON.parse(readFileSync(p, 'utf-8'))
+    if (!existsSync(p)) {
+      // 文件不存在，返回默认值（server 默认用 3000 端口）
+      return { port: 3000, token: null }
+    }
+    const info = JSON.parse(readFileSync(p, 'utf-8'))
+    // 确保 port 有效
+    if (!info || !info.port) {
+      return { port: 3000, token: null }
+    }
+    return info
   } catch {
-    return null
+    return { port: 3000, token: null }
   }
 }
 
