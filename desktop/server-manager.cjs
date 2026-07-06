@@ -102,20 +102,36 @@ function createServerManager(deps) {
   function resolveServerLaunch() {
     const bundledServerDir = path.join(resourcesPath || '', 'server')
     const bundledExe = path.join(bundledServerDir, 'openshadow-server.exe')
-    // extraResources: { from: "dist-server-bundle", to: "server-bundle" }
-    const bundledEntry = path.join(resourcesPath || '', 'server-bundle', 'index.js')
+    const bundledBootstrap = path.join(bundledServerDir, 'bootstrap.js')
+    // 旧版兼容：extraResources { from: "dist-server-bundle", to: "server-bundle" }
+    const BUNDLED_JS_LEGACY = path.join(resourcesPath || '', 'server-bundle', 'index.js')
+    // 新版：extraResources { from: "dist-server/{os}-{arch}", to: "server" }
+    const BUNDLED_JS = path.join(bundledServerDir, 'bundle', 'index.js')
 
-    // Windows: 优先使用打包好的 EXE
+    // Windows: 优先使用打包好的独立 Node.js（native addon ABI 正确）
     if (platform === 'win32' && fs.existsSync(bundledExe)) {
-      return { mode: 'bundled', serverBin: bundledExe, serverArgs: [], env: {} }
+      const bootstrap = fs.existsSync(bundledBootstrap)
+        ? bundledBootstrap
+        : path.join(bundledServerDir, 'bundle', 'index.js')
+      return { mode: 'bundled', serverBin: bundledExe, serverArgs: [bootstrap], env: {} }
     }
 
-    // 有打包的 JS bundle：用 Electron 的 Node.js 运行（ELECTRON_RUN_AS_NODE=1）
-    if (fs.existsSync(bundledEntry)) {
+    // 新版打包：bundle/index.js 在 server 目录下
+    if (fs.existsSync(BUNDLED_JS)) {
       return {
         mode: 'bundled',
         serverBin: execPath,
-        serverArgs: [bundledEntry],
+        serverArgs: [BUNDLED_JS],
+        env: { ELECTRON_RUN_AS_NODE: '1' },
+      }
+    }
+
+    // 旧版兼容：server-bundle/index.js
+    if (fs.existsSync(BUNDLED_JS_LEGACY)) {
+      return {
+        mode: 'bundled',
+        serverBin: execPath,
+        serverArgs: [BUNDLED_JS_LEGACY],
         env: { ELECTRON_RUN_AS_NODE: '1' },
       }
     }
