@@ -535,6 +535,10 @@ export const useStore = create<AppState>((set, get) => ({
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('rem.theme', theme)
     }
+    // Trigger CSS file switch via theme.js (changes <link id="themeSheet"> href)
+    if (typeof window !== 'undefined' && typeof window.setTheme === 'function') {
+      window.setTheme(theme)
+    }
     document.documentElement.setAttribute('data-theme', theme)
     try {
       await fetch('http://localhost:3000/api/config/theme', {

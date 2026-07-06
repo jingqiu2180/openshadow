@@ -161,7 +161,7 @@ function copyLegacyFiles(): Plugin {
       const srcDir = resolve(PROJECT_ROOT, 'src')
       const outDir = OUT_DIR
 
-      const dirs = ['lib', 'modules', 'locales']
+      const dirs = ['lib', 'modules', 'locales', 'themes']
       for (const dir of dirs) {
         const src = resolve(srcDir, dir)
         const dest = resolve(outDir, dir)

@@ -95,12 +95,19 @@ function createServerManager(deps) {
     // extraResources: { from: "dist-server-bundle", to: "server-bundle" }
     const bundledEntry = path.join(resourcesPath || '', 'server-bundle', 'index.js')
 
+    // Windows: 优先使用打包好的 EXE
     if (platform === 'win32' && fs.existsSync(bundledExe)) {
       return { mode: 'bundled', serverBin: bundledExe, serverArgs: [], env: {} }
     }
+
+    // 有打包的 JS bundle：用 Electron 的 Node.js 运行（ELECTRON_RUN_AS_NODE=1）
     if (fs.existsSync(bundledEntry)) {
-      const serverBin = platform === 'win32' ? bundledExe : path.join(bundledServerDir, 'node')
-      return { mode: 'bundled', serverBin, serverArgs: [bundledEntry], env: {} }
+      return {
+        mode: 'bundled',
+        serverBin: execPath,
+        serverArgs: [bundledEntry],
+        env: { ELECTRON_RUN_AS_NODE: '1' },
+      }
     }
 
     // 开发模式：用 Electron 的 Node
