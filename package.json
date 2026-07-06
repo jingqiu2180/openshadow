@@ -1,6 +1,6 @@
 {
   "name": "openshadow",
-  "version": "0.3.22",
+  "version": "0.3.23",
   "description": "OpenShadow — Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.",
   "type": "module",
   "author": {

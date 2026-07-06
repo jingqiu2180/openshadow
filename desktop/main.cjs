@@ -1100,10 +1100,21 @@ app.whenReady().then(async () => {
         const info = readServerInfo()
         if (info && info.port) {
           // providers: 向导格式是数组 [{id,name,type,...}] → API 期望对象 {name: {type,...}}
+          // ⚠️ 向导用 camelCase（apiKey/baseUrl），server 要求 snake_case（api_key/base_url）
           const providersObj = {}
           if (Array.isArray(cfg.providers)) {
             for (const p of cfg.providers) {
-              if (p && p.id) providersObj[p.id] = p
+              if (!p || !p.id) continue
+              // 字段名转换：camelCase → snake_case
+              providersObj[p.id] = {
+                base_url: p.baseUrl || p.base_url || p.url || '',
+                api_key: p.apiKey || p.api_key || '',
+                api: p.api || p.type === 'anthropic' ? 'anthropic-messages' :
+                         p.type === 'gemini' ? 'google-generative-ai' :
+                         'openai-completions',
+                models: Array.isArray(p.models) ? p.models : [],
+                display_name: p.name || p.display_name || p.id,
+              }
             }
           }
           const url = `http://127.0.0.1:${info.port}/api/config`

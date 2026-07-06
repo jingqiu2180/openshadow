@@ -20949,7 +20949,14 @@ function requireMain() {
             const providersObj = {};
             if (Array.isArray(cfg.providers)) {
               for (const p of cfg.providers) {
-                if (p && p.id) providersObj[p.id] = p;
+                if (!p || !p.id) continue;
+                providersObj[p.id] = {
+                  base_url: p.baseUrl || p.base_url || p.url || "",
+                  api_key: p.apiKey || p.api_key || "",
+                  api: p.api || p.type === "anthropic" ? "anthropic-messages" : p.type === "gemini" ? "google-generative-ai" : "openai-completions",
+                  models: Array.isArray(p.models) ? p.models : [],
+                  display_name: p.name || p.display_name || p.id
+                };
               }
             }
             const url = `http://127.0.0.1:${info.port}/api/config`;
