@@ -14,12 +14,12 @@ function logError(line) {
   } catch {}
 }
 
-const hanaRoot = process.env.HANA_ROOT || import.meta.dirname;
-const serverEntry = process.env.HANA_SERVER_ENTRY || path.join(hanaRoot, "bundle", "index.js");
+const shadowRoot = process.env.SHADOW_HOME || import.meta.dirname;
+const serverEntry = process.env.SHADOW_SERVER_ENTRY || path.join(shadowRoot, "bundle", "index.js");
 
 log(`[server-bootstrap] process started pid=${process.pid} platform=${process.platform} arch=${process.arch}`);
-log(`[server-bootstrap] node=${process.version} hanaHome=${process.env.HANA_HOME || "unset"}`);
-log(`[server-bootstrap] root=${hanaRoot}`);
+log(`[server-bootstrap] node=${process.version} shadowHome=${process.env.SHADOW_HOME || "unset"}`);
+log(`[server-bootstrap] root=${shadowRoot}`);
 log(`[server-bootstrap] entry=${serverEntry}`);
 
 const importStartedAt = Date.now();
