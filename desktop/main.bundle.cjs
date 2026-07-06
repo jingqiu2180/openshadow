@@ -194,7 +194,7 @@ function requireServerManager() {
   const SERVER_HEARTBEAT_INTERVAL_MS = 1e4;
   const SERVER_HEARTBEAT_TIMEOUT_MS = 5e3;
   const SERVER_HEARTBEAT_MAX_FAILURES = 3;
-  const SERVER_STARTUP_TIMEOUT_MS = 6e4;
+  const SERVER_STARTUP_TIMEOUT_MS = 9e4;
   function isPidAlive(pid) {
     try {
       process.kill(pid, 0);
@@ -203,20 +203,29 @@ function requireServerManager() {
       return false;
     }
   }
-  function pollServerInfo(infoPath, { timeout = SERVER_STARTUP_TIMEOUT_MS, interval = 200, proc } = {}) {
+  function pollServerInfo(infoPath, { timeout = SERVER_STARTUP_TIMEOUT_MS, interval = 200, proc, logs } = {}) {
     return new Promise((resolve, reject) => {
       const deadline = Date.now() + timeout;
       let exited = false;
+      function tailLogs(n) {
+        if (!logs || logs.length === 0) return "";
+        const tail = logs.slice(-20);
+        return "\n[server stderr] " + tail.join("").replace(/\n/g, "\n[server stderr] ");
+      }
       if (proc) {
         proc.on("exit", (code, signal) => {
           exited = true;
-          reject(new Error(signal ? `Server killed by signal ${signal}` : `Server exited with code ${code}`));
+          const tail = tailLogs();
+          reject(new Error(
+            (signal ? `Server killed by signal ${signal}` : `Server exited with code ${code}`) + tail
+          ));
         });
       }
       const check = () => {
         if (exited) return;
         if (Date.now() > deadline) {
-          reject(new Error("Server start timed out"));
+          const tail = tailLogs();
+          reject(new Error("Server start timed out after " + timeout / 1e3 + "s" + tail));
           return;
         }
         try {
@@ -269,13 +278,28 @@ function requireServerManager() {
     function resolveServerLaunch() {
       const bundledServerDir = path.join(resourcesPath || "", "server");
       const bundledExe = path.join(bundledServerDir, "openshadow-server.exe");
-      const bundledEntry = path.join(resourcesPath || "", "server-bundle", "index.js");
+      const bundledBootstrap = path.join(bundledServerDir, "bootstrap.js");
+      const BUNDLED_JS_LEGACY = path.join(resourcesPath || "", "server-bundle", "index.js");
+      const BUNDLED_JS = path.join(bundledServerDir, "bundle", "index.js");
       if (platform === "win32" && fs2.existsSync(bundledExe)) {
-        return { mode: "bundled", serverBin: bundledExe, serverArgs: [], env: {} };
+        const bootstrap = fs2.existsSync(bundledBootstrap) ? bundledBootstrap : path.join(bundledServerDir, "bundle", "index.js");
+        return { mode: "bundled", serverBin: bundledExe, serverArgs: [bootstrap], env: {} };
       }
-      if (fs2.existsSync(bundledEntry)) {
-        const serverBin = platform === "win32" ? bundledExe : path.join(bundledServerDir, "node");
-        return { mode: "bundled", serverBin, serverArgs: [bundledEntry], env: {} };
+      if (fs2.existsSync(BUNDLED_JS)) {
+        return {
+          mode: "bundled",
+          serverBin: execPath,
+          serverArgs: [BUNDLED_JS],
+          env: { ELECTRON_RUN_AS_NODE: "1" }
+        };
+      }
+      if (fs2.existsSync(BUNDLED_JS_LEGACY)) {
+        return {
+          mode: "bundled",
+          serverBin: execPath,
+          serverArgs: [BUNDLED_JS_LEGACY],
+          env: { ELECTRON_RUN_AS_NODE: "1" }
+        };
       }
       const appRoot = path.join(dirname, "..");
       const bundledDevEntry = path.join(appRoot, "dist-server-bundle", "index.js");
@@ -329,9 +353,12 @@ function requireServerManager() {
       }
       state.reusedPid = null;
       state.logs.length = 0;
+      const shadowHome = lynnHome || path.join(require$$3.homedir(), ".openshadow");
       const serverEnv = {
         ...env,
-        OPENSHADOW_HOME: lynnHome || path.join(require$$3.homedir(), ".openshadow")
+        OPENSHADOW_HOME: shadowHome,
+        SHADOW_HOME: shadowHome
+        // P0: server 端读的是 SHADOW_HOME，必须同步设置
       };
       const launch = resolveServerLaunch();
       const serverBin = launch.serverBin;
@@ -342,6 +369,7 @@ function requireServerManager() {
       } catch {
       }
       console.log(`[server] Starting server: ${serverBin} ${serverArgs.join(" ")}`);
+      console.log(`[server] SHADOW_HOME=${shadowHome}`);
       const proc = spawn(serverBin, serverArgs, {
         detached: true,
         windowsHide: true,
@@ -349,6 +377,10 @@ function requireServerManager() {
         stdio: ["pipe", "pipe", "pipe"]
       });
       state.process = proc;
+      proc.on("error", (err) => {
+        console.error(`[server] spawn error: ${err.message}`);
+        state.logs.push("[stderr] spawn error: " + err.message);
+      });
       proc.stdout?.on("data", (chunk) => {
         const text = chunk.toString();
         console.log(`[server] ${text.trim()}`);
@@ -361,7 +393,11 @@ function requireServerManager() {
         state.logs.push("[stderr] " + text);
         if (state.logs.length > 500) state.logs.splice(0, state.logs.length - 500);
       });
-      const info = await pollServerInfo(serverInfoPath, { timeout: SERVER_STARTUP_TIMEOUT_MS });
+      const info = await pollServerInfo(serverInfoPath, {
+        timeout: SERVER_STARTUP_TIMEOUT_MS,
+        proc,
+        logs: state.logs
+      });
       state.port = info.port;
       state.token = info.token;
       state.startedAt = Date.now();

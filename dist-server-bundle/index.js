@@ -74303,7 +74303,7 @@ function txe(e) {
     }
   }), t;
 }
-const rxe = Object.freeze({ schemaVersion: 1, plugins: [] }), nxe = "https://raw.githubusercontent.com/liliMozi/OH-Plugins/main/marketplace.json";
+const rxe = Object.freeze({ schemaVersion: 1, plugins: [] }), nxe = "https://raw.githubusercontent.com/jingqiu2180/OH-Plugins/main/marketplace.json";
 class sxe {
   constructor(t = {}) {
     this.indexPath = gt(t.indexPath), this.indexUrl = gt(t.indexUrl), this.fetchImpl = t.fetchImpl || globalThis.fetch;
@@ -79927,7 +79927,7 @@ async function CCe() {
     console.warn("[shadow] WebSocket support not available");
   }
   console.log(`🚀 Server running on http://localhost:${o}`), console.log("📡 37 business routes mounted");
-  const c = await import("crypto"), l = process.env.SHADOW_TOKEN || c.randomBytes(16).toString("hex"), u = process.env.SHADOW_HOME || m.join(process.cwd(), ".openshadow");
+  const c = await import("crypto"), l = process.env.SHADOW_TOKEN || c.randomBytes(16).toString("hex"), u = process.env.SHADOW_HOME || process.env.OPENSHADOW_HOME || m.join(process.cwd(), ".openshadow");
   try {
     Cs.mkdirSync(u, { recursive: !0 });
   } catch {

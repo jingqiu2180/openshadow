@@ -12,9 +12,30 @@ const { contextBridge, ipcRenderer, shell } = require('electron')
 
 // platform API (兼容 platform.js 的检查)
 const platformApi = {
-  // 服务器连接
-  getServerPort: async () => 3000,
-  getServerToken: async () => null,
+  // 服务器连接 — 从主进程读取真实 port/token（server-info.json），不再硬编码 3000
+  // 主进程 server-manager 启动真实 server 后写入 server-info.json 并发送 server:ready 事件
+  getServerPort: async () => {
+    try {
+      const info = await ipcRenderer.invoke('server:get-info')
+      return info?.port ?? 3000
+    } catch {
+      return 3000
+    }
+  },
+  getServerToken: async () => {
+    try {
+      const info = await ipcRenderer.invoke('server:get-info')
+      return info?.token ?? null
+    } catch {
+      return null
+    }
+  },
+  // 桥接主进程发来的 server:ready 事件（preload.bundle.cjs 之前缺失此桥接，导致渲染进程永远收不到就绪信号）
+  onServerReady: (callback) => {
+    const handler = (_event, data) => callback(data)
+    ipcRenderer.on('server:ready', handler)
+    return () => { ipcRenderer.removeListener('server:ready', handler) }
+  },
   onServerRestarted: (callback) => {
     const handler = (_event, data) => callback(data)
     ipcRenderer.on('server-restarted', handler)

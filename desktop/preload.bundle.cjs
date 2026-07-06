@@ -10,14 +10,31 @@ function requirePreload() {
   hasRequiredPreload = 1;
   const { contextBridge, ipcRenderer, shell } = require$$0;
   const platformApi = {
-    // 服务器连接（通过 IPC 从主进程获取真实端口和 token）
+    // 服务器连接 — 从主进程读取真实 port/token（server-info.json），不再硬编码 3000
+    // 主进程 server-manager 启动真实 server 后写入 server-info.json 并发送 server:ready 事件
     getServerPort: async () => {
-      try { const info = await ipcRenderer.invoke("server:get-info"); return info?.port || null; }
-      catch { return null; }
+      try {
+        const info = await ipcRenderer.invoke("server:get-info");
+        return info?.port ?? 3e3;
+      } catch {
+        return 3e3;
+      }
     },
     getServerToken: async () => {
-      try { const info = await ipcRenderer.invoke("server:get-info"); return info?.token || null; }
-      catch { return null; }
+      try {
+        const info = await ipcRenderer.invoke("server:get-info");
+        return info?.token ?? null;
+      } catch {
+        return null;
+      }
+    },
+    // 桥接主进程发来的 server:ready 事件（preload.bundle.cjs 之前缺失此桥接，导致渲染进程永远收不到就绪信号）
+    onServerReady: (callback) => {
+      const handler = (_event, data) => callback(data);
+      ipcRenderer.on("server:ready", handler);
+      return () => {
+        ipcRenderer.removeListener("server:ready", handler);
+      };
     },
     onServerRestarted: (callback) => {
       const handler = (_event, data) => callback(data);
@@ -52,7 +69,16 @@ function requirePreload() {
         ipcRenderer.removeListener("window:maximize-change", handler);
       };
     },
-    getPlatform: async () => process.platform
+    getPlatform: async () => process.platform,
+    // 设置通信 → 通知 main 进程（主题、语言等）
+    settingsChanged: (type, data) => ipcRenderer.send("settings-changed", type, data),
+    onSettingsChanged: (callback) => {
+      const handler = (_event, type, data) => callback(type, data);
+      ipcRenderer.on("settings-changed", handler);
+      return () => {
+        ipcRenderer.removeListener("settings-changed", handler);
+      };
+    }
   };
   contextBridge.exposeInMainWorld("hana", platformApi);
   contextBridge.exposeInMainWorld("__REM_API__", {
