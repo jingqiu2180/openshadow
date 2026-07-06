@@ -289,7 +289,8 @@ async function start() {
   // ═══ 写 server-info.json（供 Electron / dev-web 发现 server）═══
   const crypto = await import('crypto')
   const token = process.env.SHADOW_TOKEN || crypto.randomBytes(16).toString('hex')
-  const shadowHome = process.env.SHADOW_HOME || path.join(process.cwd(), '.openshadow')
+  // P0: SHADOW_HOME 优先，否则用 OPENSHADOW_HOME（Electron spawn 时设置），最后 fallback cwd
+  const shadowHome = process.env.SHADOW_HOME || process.env.OPENSHADOW_HOME || path.join(process.cwd(), '.openshadow')
   try { fsSync.mkdirSync(shadowHome, { recursive: true }) } catch {}
   const serverInfoPath = path.join(shadowHome, 'server-info.json')
   let actualPort = port

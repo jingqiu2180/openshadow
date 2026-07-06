@@ -10,7 +10,7 @@ const { spawn } = require('child_process')
 const SERVER_HEARTBEAT_INTERVAL_MS = 10_000
 const SERVER_HEARTBEAT_TIMEOUT_MS = 5000
 const SERVER_HEARTBEAT_MAX_FAILURES = 3
-const SERVER_STARTUP_TIMEOUT_MS = 60_000
+const SERVER_STARTUP_TIMEOUT_MS = 90_000  // 对齐 server-readiness.cjs，Windows cold start 常超 60s
 
 // 检查 PID 是否存活（不发送信号）
 function isPidAlive(pid) {
@@ -23,22 +23,32 @@ function isPidAlive(pid) {
 }
 
 // 轮询 server-info.json 等待 server 就绪
-function pollServerInfo(infoPath, { timeout = SERVER_STARTUP_TIMEOUT_MS, interval = 200, proc } = {}) {
+function pollServerInfo(infoPath, { timeout = SERVER_STARTUP_TIMEOUT_MS, interval = 200, proc, logs } = {}) {
   return new Promise((resolve, reject) => {
     const deadline = Date.now() + timeout
     let exited = false
 
+    function tailLogs(n) {
+      if (!logs || logs.length === 0) return ''
+      const tail = logs.slice(-n)
+      return '\n[server stderr] ' + tail.join('').replace(/\n/g, '\n[server stderr] ')
+    }
+
     if (proc) {
       proc.on('exit', (code, signal) => {
         exited = true
-        reject(new Error(signal ? `Server killed by signal ${signal}` : `Server exited with code ${code}`))
+        const tail = tailLogs(20)
+        reject(new Error(
+          (signal ? `Server killed by signal ${signal}` : `Server exited with code ${code}`) + tail
+        ))
       })
     }
 
     const check = () => {
       if (exited) return
       if (Date.now() > deadline) {
-        reject(new Error('Server start timed out'))
+        const tail = tailLogs(20)
+        reject(new Error('Server start timed out after ' + (timeout / 1000) + 's' + tail))
         return
       }
       try {
@@ -168,9 +178,11 @@ function createServerManager(deps) {
     state.reusedPid = null
     state.logs.length = 0
 
+    const shadowHome = lynnHome || path.join(require('os').homedir(), '.openshadow')
     const serverEnv = {
       ...env,
-      OPENSHADOW_HOME: lynnHome || path.join(require('os').homedir(), '.openshadow'),
+      OPENSHADOW_HOME: shadowHome,
+      SHADOW_HOME: shadowHome,         // P0: server 端读的是 SHADOW_HOME，必须同步设置
     }
 
     const launch = resolveServerLaunch()
@@ -182,6 +194,7 @@ function createServerManager(deps) {
     try { fs.unlinkSync(serverInfoPath) } catch {}
 
     console.log(`[server] Starting server: ${serverBin} ${serverArgs.join(' ')}`)
+    console.log(`[server] SHADOW_HOME=${shadowHome}`)
 
     const proc = spawn(serverBin, serverArgs, {
       detached: true,
@@ -190,6 +203,12 @@ function createServerManager(deps) {
       stdio: ['pipe', 'pipe', 'pipe'],
     })
     state.process = proc
+
+    // 监听 spawn 本身失败（如 ENOENT）
+    proc.on('error', (err) => {
+      console.error(`[server] spawn error: ${err.message}`)
+      state.logs.push('[stderr] spawn error: ' + err.message)
+    })
 
     // 捕获 stdout/stderr
     proc.stdout?.on('data', (chunk) => {
@@ -205,8 +224,12 @@ function createServerManager(deps) {
       if (state.logs.length > 500) state.logs.splice(0, state.logs.length - 500)
     })
 
-    // 等待 server ready
-    const info = await pollServerInfo(serverInfoPath, { timeout: SERVER_STARTUP_TIMEOUT_MS, process: proc })
+    // 等待 server ready（传入 logs 以便报错时附带诊断信息）
+    const info = await pollServerInfo(serverInfoPath, {
+      timeout: SERVER_STARTUP_TIMEOUT_MS,
+      proc,
+      logs: state.logs,
+    })
     state.port = info.port
     state.token = info.token
     state.startedAt = Date.now()
