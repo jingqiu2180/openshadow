@@ -25,10 +25,17 @@
     var cssName = LEGACY_ALIASES[name] || name;
 
     // 1. 切换主题 CSS 文件
+    // 注意：打包版（dist-renderer/index.html）不含 <link id="themeSheet">，
+    // vite 把初始 warm-paper 合并进了产物 CSS 但未保留动态切换用的 link。
+    // 因此在缺失时动态创建，确保 dev 与安装包都能切换主题 CSS。
     var themeSheet = document.getElementById('themeSheet');
-    if (themeSheet) {
-      themeSheet.setAttribute('href', 'themes/' + cssName + '.css');
+    if (!themeSheet) {
+      themeSheet = document.createElement('link');
+      themeSheet.rel = 'stylesheet';
+      themeSheet.id = 'themeSheet';
+      document.head.appendChild(themeSheet);
     }
+    themeSheet.setAttribute('href', 'themes/' + cssName + '.css');
 
     // 2. 设置 data-theme 属性（驱动 styles.css 里的覆盖）
     document.documentElement.setAttribute('data-theme', name);
