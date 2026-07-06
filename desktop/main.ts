@@ -9,7 +9,7 @@ const VITE_DEV_URL = process.env.VITE_DEV_URL ?? 'http://localhost:5280'
  * First-run wizard: if no workspace roots configured, prompt user to select.
  */
 async function runFirstRunWizard(): Promise<void> {
-  const configPath = join(process.cwd(), 'config.json')
+  const configPath = join(process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow'), 'config.json')
 
   let cfg: any = {}
   if (existsSync(configPath)) {

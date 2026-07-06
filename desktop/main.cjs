@@ -90,7 +90,9 @@ function titleBarOpts(trafficLight) {
 }
 
 // ─── Self-contained config reader ────────────────────────────
-const CONFIG_PATH = join(process.cwd(), 'config.json')
+// 对齐 openhanako：配置写到用户数据目录，不写安装目录（避免 Program Files EPERM）
+const _hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+const CONFIG_PATH = join(_hanakoHome, 'config.json')
 
 function readConfig() {
   if (!existsSync(CONFIG_PATH)) return { version: '0.1.0' }
