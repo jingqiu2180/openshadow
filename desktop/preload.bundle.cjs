@@ -10,9 +10,15 @@ function requirePreload() {
   hasRequiredPreload = 1;
   const { contextBridge, ipcRenderer, shell } = require$$0;
   const platformApi = {
-    // 服务器连接
-    getServerPort: async () => 3e3,
-    getServerToken: async () => null,
+    // 服务器连接（通过 IPC 从主进程获取真实端口和 token）
+    getServerPort: async () => {
+      try { const info = await ipcRenderer.invoke("server:get-info"); return info?.port || null; }
+      catch { return null; }
+    },
+    getServerToken: async () => {
+      try { const info = await ipcRenderer.invoke("server:get-info"); return info?.token || null; }
+      catch { return null; }
+    },
     onServerRestarted: (callback) => {
       const handler = (_event, data) => callback(data);
       ipcRenderer.on("server-restarted", handler);

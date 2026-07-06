@@ -312,6 +312,11 @@ async function runWizardWindow() {
 
 // ─── IPC handlers ───────────────────────────────────
 function registerIpcHandlers() {
+  wrapIpcHandler('server:get-info', () => {
+    const info = readServerInfo()
+    return { port: info?.port || null, token: info?.token || null }
+  })
+
   wrapIpcHandler('wizard:get-config', () => {
     const cfg = readConfig()
     return {

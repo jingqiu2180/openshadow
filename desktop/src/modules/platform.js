@@ -14,9 +14,15 @@
     const platform = window.__REM_API__?.platform || window.hana?.platform || 'win32';
 
     window.platform = {
-      // 服务器连接（Electron 环境默认连 localhost:3000）
-      getServerPort: async () => 3000,
-      getServerToken: async () => null,
+      // 服务器连接（从 preload 注入的 window.hana 获取真实 port/token）
+      getServerPort: async () => {
+        try { return await window.hana?.getServerPort?.() || null; }
+        catch { return null; }
+      },
+      getServerToken: async () => {
+        try { return await window.hana?.getServerToken?.() || null; }
+        catch { return null; }
+      },
       onServerRestarted: (callback) => {
         // Electron IPC 监听服务器重启
         if (window.__REM_API__?.onServerRestarted) {
