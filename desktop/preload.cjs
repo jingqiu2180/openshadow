@@ -26,6 +26,11 @@ const platformApi = {
     ipcRenderer.on('server-restarted', handler)
     return () => { ipcRenderer.removeListener('server-restarted', handler) }
   },
+  onServerReady: (callback) => {
+    const handler = (_event, data) => callback(data)
+    ipcRenderer.on('server:ready', handler)
+    return () => { ipcRenderer.removeListener('server:ready', handler) }
+  },
   appReady: async () => {},
 
   // 文件 I/O

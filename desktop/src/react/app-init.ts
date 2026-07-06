@@ -113,8 +113,29 @@ export async function initApp(): Promise<void> {
   });
 
   // 1. 获取 server 连接信息并存入 Zustand
-  const serverPort = await platform.getServerPort();
-  const serverToken = await platform.getServerToken();
+  // 先尝试立即读取（如果 server 已就绪）
+  let serverPort = await platform.getServerPort();
+  let serverToken = await platform.getServerToken();
+  
+  // 如果端口还没就绪，等待 server:ready 事件
+  if (!serverPort) {
+    console.log('[init] Server not ready yet, waiting for server:ready event...');
+    await new Promise<void>((resolve) => {
+      const timeout = setTimeout(() => {
+        console.warn('[init] Waiting for server:ready timed out, proceeding anyway...');
+        resolve();
+      }, 30000); // 30秒超时
+      
+      platform.onServerReady?.((data: { port: number; token?: string }) => {
+        console.log(`[init] Received server:ready event: port=${data.port}`);
+        serverPort = String(data.port);
+        serverToken = data.token ?? null;
+        clearTimeout(timeout);
+        resolve();
+      });
+    });
+  }
+  
   const localServerConnection = createLocalServerConnection({ serverPort, serverToken });
   const persistedConnections = readPersistedServerConnectionState();
   const initialRegistry = localServerConnection

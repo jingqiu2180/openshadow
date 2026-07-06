@@ -923,6 +923,19 @@ app.whenReady().then(async () => {
         browserAgent.setupCommands(serverManager.getPort(), serverManager.getToken())
         console.log('[main] browser agent WebSocket setup complete')
       }
+
+      // ─── 通知渲染进程 server 已就绪 ─────────────────────
+      const port = serverManager.getPort()
+      const token = serverManager.getToken()
+      if (port) {
+        console.log(`[main] Notifying renderer: server ready on port ${port}`)
+        // 通知所有窗口
+        for (const win of BrowserWindow.getAllWindows()) {
+          if (!win.isDestroyed()) {
+            win.webContents.send('server:ready', { port, token })
+          }
+        }
+      }
     } catch (err) {
       console.error('[main] Failed to start server:', err.message)
       // 不弹错误对话框阻塞主流程；只写 crash log

@@ -30,6 +30,13 @@
         }
         return () => {};
       },
+      onServerReady: (callback) => {
+        // Electron IPC 监听服务器就绪
+        if (window.__REM_API__?.onServerReady) {
+          return window.__REM_API__.onServerReady(callback);
+        }
+        return () => {};
+      },
       onSettingsChanged: (callback) => {
         return () => {}; // no-op unsubscribe
       },

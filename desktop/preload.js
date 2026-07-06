@@ -37,6 +37,10 @@ const platformApi = {
         ipcRenderer.on('server-restarted', (_event, data) => callback(data));
         return () => { ipcRenderer.removeListener('server-restarted', callback); };
     },
+    onServerReady: (callback) => {
+        ipcRenderer.on('server:ready', (_event, data) => callback(data));
+        return () => { ipcRenderer.removeListener('server:ready', callback); };
+    },
     appReady: async () => { },
     // 文件 I/O
     readFile: (p) => ipcRenderer.invoke('fs:read', p),
