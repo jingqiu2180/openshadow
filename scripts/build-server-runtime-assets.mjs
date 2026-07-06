@@ -56,15 +56,24 @@ export function copyServerRuntimeAssets({ rootDir, outDir, fsImpl = fs }) {
   const sourceRendererDir = path.join(rootDir, "desktop", "dist-renderer");
   const targetRendererDir = path.join(outDir, "desktop", "dist-renderer");
   assertRequiredAssetExists(fsImpl, sourceRendererDir, path.join("desktop", "dist-renderer"));
+  // openshadow 是桌面 Electron 应用，未移植 openhanako 的 mobile PWA 完整源
+  // （缺 mobile-main.tsx / manifest.webmanifest / sw.js），这些文件作为可选资源处理：
+  // 存在则复制，缺失则跳过并告警，不阻断构建。桌面主程序用 index.html，不受影响。
+  const presentRendererFiles = [];
   for (const fileName of SERVER_RUNTIME_RENDERER_REQUIRED_FILES) {
-    assertRequiredAssetExists(fsImpl, path.join(sourceRendererDir, fileName), path.join("desktop", "dist-renderer", fileName));
+    const sourcePath = path.join(sourceRendererDir, fileName);
+    if (!fsImpl.existsSync(sourcePath)) {
+      console.warn(`[build-server] ⚠ desktop/dist-renderer/${fileName} not found, skipping (optional PWA asset)`);
+      continue;
+    }
+    presentRendererFiles.push(fileName);
   }
   for (const dirName of ["assets", "lib", "themes", "locales"]) {
     assertRequiredAssetExists(fsImpl, path.join(sourceRendererDir, dirName), path.join("desktop", "dist-renderer", dirName));
   }
   fsImpl.rmSync(targetRendererDir, { recursive: true, force: true });
   fsImpl.mkdirSync(path.dirname(targetRendererDir), { recursive: true });
-  for (const fileName of SERVER_RUNTIME_RENDERER_REQUIRED_FILES) {
+  for (const fileName of presentRendererFiles) {
     copyRuntimeFile(fsImpl, path.join(sourceRendererDir, fileName), path.join(targetRendererDir, fileName));
   }
   copyMobileRuntimeAssets({
@@ -84,6 +93,11 @@ export function copyServerRuntimeAssets({ rootDir, outDir, fsImpl = fs }) {
 }
 
 function copyMobileRuntimeAssets({ fsImpl, sourceAssetsDir, targetAssetsDir, mobileHtmlPath }) {
+  // openshadow 未移植 mobile PWA 源（mobile.html 缺失），跳过移动端资源收集，避免 readFileSync 崩溃
+  if (!fsImpl.existsSync(mobileHtmlPath)) {
+    console.warn(`[build-server] ⚠ ${path.basename(mobileHtmlPath)} not found, skipping mobile asset collection`);
+    return;
+  }
   const assetNames = new Set();
   const queued = [];
 
