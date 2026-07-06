@@ -20938,18 +20938,14 @@ function requireMain() {
       }
     } else {
       console.log("[main] waiting for wizard to complete…");
-      wrapIpcOn("wizard:done-signal", () => {
-        console.log("[main] wizard done, opening main window");
+      wrapIpcOn("wizard:done-signal", async () => {
+        console.log("[main] wizard done");
         if (wizardWindow) wizardWindow.close();
         wizardWindow = null;
-        (async () => {
-          try {
-            const cfg = readConfig();
-            const info = readServerInfo();
-            if (!info || !info.port) {
-              console.warn("[main] server-info.json not available, skipping config reload");
-              return;
-            }
+        try {
+          const cfg = readConfig();
+          const info = readServerInfo();
+          if (info && info.port) {
             const providersObj = {};
             if (Array.isArray(cfg.providers)) {
               for (const p of cfg.providers) {
@@ -20963,26 +20959,28 @@ function requireMain() {
               method: "PUT",
               headers,
               body: JSON.stringify({
+                providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
+                models: cfg.models,
                 wizard: cfg.wizard,
                 ui: cfg.ui,
                 user: cfg.user,
                 memory: cfg.memory,
-                providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
-                models: cfg.models,
                 theme: cfg.theme,
                 security: cfg.security
               })
             });
             if (!res.ok) {
-              console.warn("[main] PUT /api/config after wizard failed:", res.status);
+              console.warn("[main] PUT /api/config failed:", res.status);
             } else {
-              console.log("[main] PUT /api/config after wizard succeeded");
+              console.log("[main] PUT /api/config succeeded, server models ready");
             }
-          } catch (e) {
-            console.warn("[main] reload config after wizard failed:", e.message);
+          } else {
+            console.warn("[main] server-info.json not available, skipping config push");
           }
-        })();
-        setTimeout(() => createMainWindow(), 500);
+        } catch (e) {
+          console.warn("[main] PUT /api/config error:", e.message);
+        }
+        createMainWindow();
         try {
           const hanakoHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
           markGpuStartupReady({ hanakoHome: hanakoHome2, phase: "main-window-created" });

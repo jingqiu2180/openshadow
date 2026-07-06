@@ -1089,20 +1089,16 @@ app.whenReady().then(async () => {
     }
   } else {
     console.log('[main] waiting for wizard to complete…')
-    wrapIpcOn('wizard:done-signal', () => {
-      console.log('[main] wizard done, opening main window')
+    wrapIpcOn('wizard:done-signal', async () => {
+      console.log('[main] wizard done')
       if (wizardWindow) wizardWindow.close()
       wizardWindow = null
-      // 通知 server 进程重读 config.json（wizard 改了 providers/models/workspace）
-      // 这样 React store 启动时拿到的就是新 config，而不是 engine 缓存里的旧值
-      ;(async () => {
-        try {
-          const cfg = readConfig()
-          const info = readServerInfo()
-          if (!info || !info.port) {
-            console.warn('[main] server-info.json not available, skipping config reload')
-            return
-          }
+      // ⚠️ 关键：先发 config 到 server（包括 providers/models），等待完成后再开主窗口
+      // 否则主窗口前端加载时 server 还没 providers → 模型列表为空
+      try {
+        const cfg = readConfig()
+        const info = readServerInfo()
+        if (info && info.port) {
           // providers: 向导格式是数组 [{id,name,type,...}] → API 期望对象 {name: {type,...}}
           const providersObj = {}
           if (Array.isArray(cfg.providers)) {
@@ -1117,27 +1113,29 @@ app.whenReady().then(async () => {
             method: 'PUT',
             headers,
             body: JSON.stringify({
+              providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
+              models: cfg.models,
               wizard: cfg.wizard,
               ui: cfg.ui,
               user: cfg.user,
               memory: cfg.memory,
-              providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
-              models: cfg.models,
               theme: cfg.theme,
               security: cfg.security,
             }),
           })
           if (!res.ok) {
-            console.warn('[main] PUT /api/config after wizard failed:', res.status)
+            console.warn('[main] PUT /api/config failed:', res.status)
           } else {
-            console.log('[main] PUT /api/config after wizard succeeded')
+            console.log('[main] PUT /api/config succeeded, server models ready')
           }
-        } catch (e) {
-          console.warn('[main] reload config after wizard failed:', e.message)
+        } else {
+          console.warn('[main] server-info.json not available, skipping config push')
         }
-      })()
-      // 稍等让 server 处理完 config reload 再开主窗口（避免模型列表为空）
-      setTimeout(() => createMainWindow(), 500)
+      } catch (e) {
+        console.warn('[main] PUT /api/config error:', e.message)
+      }
+      // 现在 server 已有 providers，可以安全开主窗口
+      createMainWindow()
       // 标记 GPU 启动完成
       try {
         const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
