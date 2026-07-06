@@ -1,6 +1,6 @@
 {
   "name": "openshadow",
-  "version": "0.3.24",
+  "version": "0.3.25",
   "description": "OpenShadow — Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.",
   "type": "module",
   "author": {
@@ -71,6 +71,10 @@
       {
         "from": "dist",
         "to": "server"
+      },
+      {
+        "from": "dist-server-bundle",
+        "to": "server-bundle"
       },
       {
         "from": "desktop/src/assets",

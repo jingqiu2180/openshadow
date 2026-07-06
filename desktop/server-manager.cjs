@@ -92,7 +92,8 @@ function createServerManager(deps) {
   function resolveServerLaunch() {
     const bundledServerDir = path.join(resourcesPath || '', 'server')
     const bundledExe = path.join(bundledServerDir, 'openshadow-server.exe')
-    const bundledEntry = path.join(bundledServerDir, 'dist-server-bundle', 'index.js')
+    // extraResources: { from: "dist-server-bundle", to: "server-bundle" }
+    const bundledEntry = path.join(resourcesPath || '', 'server-bundle', 'index.js')
 
     if (platform === 'win32' && fs.existsSync(bundledExe)) {
       return { mode: 'bundled', serverBin: bundledExe, serverArgs: [], env: {} }
