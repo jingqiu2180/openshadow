@@ -194,7 +194,7 @@ function requireServerManager() {
   const SERVER_HEARTBEAT_INTERVAL_MS = 1e4;
   const SERVER_HEARTBEAT_TIMEOUT_MS = 5e3;
   const SERVER_HEARTBEAT_MAX_FAILURES = 3;
-  const SERVER_STARTUP_TIMEOUT_MS = 12e4;
+  const SERVER_STARTUP_TIMEOUT_MS = 6e4;
   function isPidAlive(pid) {
     try {
       process.kill(pid, 0);
@@ -19824,7 +19824,7 @@ const chokidar = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProp
   default: index,
   watch
 }, Symbol.toStringTag, { value: "Module" }));
-const require$$16 = /* @__PURE__ */ getAugmentedNamespace(chokidar);
+const require$$17 = /* @__PURE__ */ getAugmentedNamespace(chokidar);
 var mainI18n;
 var hasRequiredMainI18n;
 function requireMainI18n() {
@@ -20083,10 +20083,16 @@ function requireMain() {
     try {
       const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
       const p = join(hanakoHome, "server-info.json");
-      if (!existsSync(p)) return null;
-      return JSON.parse(readFileSync(p, "utf-8"));
+      if (!existsSync(p)) {
+        return { port: 3e3, token: null };
+      }
+      const info = JSON.parse(readFileSync(p, "utf-8"));
+      if (!info || !info.port) {
+        return { port: 3e3, token: null };
+      }
+      return info;
     } catch {
-      return null;
+      return { port: 3e3, token: null };
     }
   }
   function isWizardCompleted() {
@@ -20254,6 +20260,10 @@ function requireMain() {
     });
   }
   function registerIpcHandlers() {
+    wrapIpcHandler("server:get-info", () => {
+      const info = readServerInfo();
+      return { port: info?.port || null, token: info?.token || null };
+    });
     wrapIpcHandler("wizard:get-config", () => {
       const cfg = readConfig();
       return {
@@ -20582,9 +20592,25 @@ function requireMain() {
       }
     });
     if (isDev) {
-      console.log("Loading Vite dev server:", VITE_DEV_URL);
-      mainWindow.loadURL(VITE_DEV_URL);
-      mainWindow.webContents.openDevTools({ mode: "detach" });
+      const http = require$$4$1;
+      const devUrl = new URL(VITE_DEV_URL);
+      const req = http.get(devUrl.origin, { timeout: 2e3 }, (res) => {
+        res.destroy();
+        console.log("Loading Vite dev server:", VITE_DEV_URL);
+        mainWindow.loadURL(VITE_DEV_URL);
+        mainWindow.webContents.openDevTools({ mode: "detach" });
+      });
+      req.on("error", () => {
+        console.log("[main] Vite dev server not available, falling back to dist-renderer");
+        const exePath = app.getAppPath();
+        mainWindow.loadFile(join(exePath, "desktop", "dist-renderer", "index.html"));
+      });
+      req.on("timeout", () => {
+        req.destroy();
+        console.log("[main] Vite dev server timeout, falling back to dist-renderer");
+        const exePath = app.getAppPath();
+        mainWindow.loadFile(join(exePath, "desktop", "dist-renderer", "index.html"));
+      });
     } else {
       const exePath = app.getAppPath();
       mainWindow.loadFile(join(exePath, "desktop", "dist-renderer", "index.html"));
@@ -20716,7 +20742,7 @@ function requireMain() {
   });
   const fileWatchRegistry2 = createFileWatchRegistry({
     watch: (filePath, callback) => {
-      const watcher = require$$16.watch(filePath, {
+      const watcher = require$$17.watch(filePath, {
         ignoreInitial: true,
         atomic: true,
         awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 }
@@ -20755,7 +20781,7 @@ function requireMain() {
   }
   const workspaceWatchRegistry2 = createWorkspaceWatchRegistry({
     watch: (rootPath, callback) => {
-      const watcher = require$$16.watch(rootPath, {
+      const watcher = require$$17.watch(rootPath, {
         ignoreInitial: true,
         atomic: true,
         awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
@@ -20794,6 +20820,16 @@ function requireMain() {
         if (browserAgent2 && serverManager2.getPort()) {
           browserAgent2.setupCommands(serverManager2.getPort(), serverManager2.getToken());
           console.log("[main] browser agent WebSocket setup complete");
+        }
+        const port = serverManager2.getPort();
+        const token = serverManager2.getToken();
+        if (port) {
+          console.log(`[main] Notifying renderer: server ready on port ${port}`);
+          for (const win of BrowserWindow.getAllWindows()) {
+            if (!win.isDestroyed()) {
+              win.webContents.send("server:ready", { port, token });
+            }
+          }
         }
       } catch (err) {
         console.error("[main] Failed to start server:", err.message);
@@ -20914,6 +20950,12 @@ function requireMain() {
               console.warn("[main] server-info.json not available, skipping config reload");
               return;
             }
+            const providersObj = {};
+            if (Array.isArray(cfg.providers)) {
+              for (const p of cfg.providers) {
+                if (p && p.id) providersObj[p.id] = p;
+              }
+            }
             const url = `http://127.0.0.1:${info.port}/api/config`;
             const headers = { "Content-Type": "application/json" };
             if (info.token) headers["Authorization"] = `Bearer ${info.token}`;
@@ -20925,7 +20967,7 @@ function requireMain() {
                 ui: cfg.ui,
                 user: cfg.user,
                 memory: cfg.memory,
-                providers: cfg.providers,
+                providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
                 models: cfg.models,
                 theme: cfg.theme,
                 security: cfg.security
@@ -20940,7 +20982,7 @@ function requireMain() {
             console.warn("[main] reload config after wizard failed:", e.message);
           }
         })();
-        createMainWindow();
+        setTimeout(() => createMainWindow(), 500);
         try {
           const hanakoHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
           markGpuStartupReady({ hanakoHome: hanakoHome2, phase: "main-window-created" });

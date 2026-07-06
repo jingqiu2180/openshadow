@@ -701,9 +701,27 @@ function createMainWindow() {
   })
 
   if (isDev) {
-    console.log('Loading Vite dev server:', VITE_DEV_URL)
-    mainWindow.loadURL(VITE_DEV_URL)
-    mainWindow.webContents.openDevTools({ mode: 'detach' })
+    // 开发模式：优先尝试 Vite dev server，不可用时回退到 dist-renderer
+    const http = require('http')
+    const devUrl = new URL(VITE_DEV_URL)
+    // 快速检测 Vite dev server 是否在运行
+    const req = http.get(devUrl.origin, { timeout: 2000 }, (res) => {
+      res.destroy()
+      console.log('Loading Vite dev server:', VITE_DEV_URL)
+      mainWindow.loadURL(VITE_DEV_URL)
+      mainWindow.webContents.openDevTools({ mode: 'detach' })
+    })
+    req.on('error', () => {
+      console.log('[main] Vite dev server not available, falling back to dist-renderer')
+      const exePath = app.getAppPath()
+      mainWindow.loadFile(join(exePath, 'desktop', 'dist-renderer', 'index.html'))
+    })
+    req.on('timeout', () => {
+      req.destroy()
+      console.log('[main] Vite dev server timeout, falling back to dist-renderer')
+      const exePath = app.getAppPath()
+      mainWindow.loadFile(join(exePath, 'desktop', 'dist-renderer', 'index.html'))
+    })
   } else {
     const exePath = app.getAppPath()
     mainWindow.loadFile(join(exePath, 'desktop', 'dist-renderer', 'index.html'))
