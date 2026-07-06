@@ -20102,7 +20102,8 @@ function requireMain() {
     }
     return framelessWindowOpts();
   }
-  const CONFIG_PATH = join(process.cwd(), "config.json");
+  const _hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || "", ".openshadow");
+  const CONFIG_PATH = join(_hanakoHome, "config.json");
   function readConfig() {
     if (!existsSync(CONFIG_PATH)) return { version: "0.1.0" };
     try {
@@ -20120,15 +20121,15 @@ function requireMain() {
       const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
       const p = join(hanakoHome, "server-info.json");
       if (!existsSync(p)) {
-        return { port: 3e3, token: null };
+        return { port: null, token: null };
       }
       const info = JSON.parse(readFileSync(p, "utf-8"));
       if (!info || !info.port) {
-        return { port: 3e3, token: null };
+        return { port: null, token: null };
       }
-      return info;
+      return { port: info.port, token: info.token || null };
     } catch {
-      return { port: 3e3, token: null };
+      return { port: null, token: null };
     }
   }
   function isWizardCompleted() {

@@ -113,27 +113,30 @@ export async function initApp(): Promise<void> {
   });
 
   // 1. 获取 server 连接信息并存入 Zustand
-  // 先尝试立即读取（如果 server 已就绪）
+  // 轮询直到 server 就绪（避免一次性 server:ready 事件在监听器注册前就发出、导致永久错过）
   let serverPort = await platform.getServerPort();
   let serverToken = await platform.getServerToken();
-  
-  // 如果端口还没就绪，等待 server:ready 事件
+
   if (!serverPort) {
-    console.log('[init] Server not ready yet, waiting for server:ready event...');
-    await new Promise<void>((resolve) => {
-      const timeout = setTimeout(() => {
-        console.warn('[init] Waiting for server:ready timed out, proceeding anyway...');
-        resolve();
-      }, 30000); // 30秒超时
-      
-      platform.onServerReady?.((data: { port: number; token?: string }) => {
-        console.log(`[init] Received server:ready event: port=${data.port}`);
-        serverPort = String(data.port);
-        serverToken = data.token ?? null;
-        clearTimeout(timeout);
-        resolve();
+    console.log('[init] Server not ready yet, polling for server port...');
+    const deadline = Date.now() + 30000;
+    while (!serverPort && Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 300));
+      serverPort = await platform.getServerPort();
+      serverToken = await platform.getServerToken();
+    }
+    // 兜底：轮询间隙若 server:ready 事件恰好发出，再等一次事件
+    if (!serverPort) {
+      await new Promise<void>((resolve) => {
+        const timeout = setTimeout(resolve, 2000);
+        platform.onServerReady?.((data: { port: number; token?: string }) => {
+          serverPort = String(data.port);
+          serverToken = data.token ?? null;
+          clearTimeout(timeout);
+          resolve();
+        });
       });
-    });
+    }
   }
   
   const localServerConnection = createLocalServerConnection({ serverPort, serverToken });
@@ -152,6 +155,19 @@ export async function initApp(): Promise<void> {
     activeServerConnectionId: activeServerConnection?.connectionId ?? null,
     activeServerConnection,
   });
+
+  // 1b. 把真实端口暴露给 legacy store.ts（它之前硬编码 3000，导致端口≠3000 时全部失败）
+  if (serverPort) {
+    try { (window as unknown as { __shadowServerPort?: number }).__shadowServerPort = Number(serverPort); } catch {}
+  }
+
+  // 1c. 等待 server 真正可服务（health 200）再加载 config/i18n/models，避免启动竞态
+  if (serverPort) {
+    const healthOk = await waitForServerHealth(30000);
+    if (!healthOk) {
+      console.warn('[init] server health check timed out, proceeding with best-effort (i18n/models may need a manual refresh)');
+    }
+  }
 
   if (!activeServerConnection) {
     setStatus('status.serverNotReady', false);
@@ -335,4 +351,19 @@ async function refreshDeviceWebSession(connection: ServerConnection): Promise<vo
     credentials: 'include',
     body: JSON.stringify({ credential: connection.token }),
   });
+}
+
+// 等待 server 真正可服务（/api/health 返回 200）。轮询重试，避免启动竞态下 health 还没好就拉 config。
+async function waitForServerHealth(timeoutMs = 30000): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const res = await hanaFetch('/api/health');
+      if (res.ok) return true;
+    } catch {
+      /* server 还没好，继续等 */
+    }
+    await new Promise((r) => setTimeout(r, 400));
+  }
+  return false;
 }

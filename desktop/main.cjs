@@ -115,17 +115,19 @@ function readServerInfo() {
     const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
     const p = join(hanakoHome, 'server-info.json')
     if (!existsSync(p)) {
-      // 文件不存在，返回默认值（server 默认用 3000 端口）
-      return { port: 3000, token: null }
+      // 文件不存在 = server 还没就绪。返回 null 端口，让渲染进程进入等待/轮询逻辑，
+      // 而不是错误地用 3000（server 实际端口是动态的，3000 被占用时会换端口）。
+      // 否则渲染进程在启动竞态里拿到 3000 就跳过等待 → 永远连不上真实 server。
+      return { port: null, token: null }
     }
     const info = JSON.parse(readFileSync(p, 'utf-8'))
     // 确保 port 有效
     if (!info || !info.port) {
-      return { port: 3000, token: null }
+      return { port: null, token: null }
     }
-    return info
+    return { port: info.port, token: info.token || null }
   } catch {
-    return { port: 3000, token: null }
+    return { port: null, token: null }
   }
 }
 
