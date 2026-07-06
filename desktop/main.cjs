@@ -1058,6 +1058,13 @@ app.whenReady().then(async () => {
             console.warn('[main] server-info.json not available, skipping config reload')
             return
           }
+          // providers: 向导格式是数组 [{id,name,type,...}] → API 期望对象 {name: {type,...}}
+          const providersObj = {}
+          if (Array.isArray(cfg.providers)) {
+            for (const p of cfg.providers) {
+              if (p && p.id) providersObj[p.id] = p
+            }
+          }
           const url = `http://127.0.0.1:${info.port}/api/config`
           const headers = { 'Content-Type': 'application/json' }
           if (info.token) headers['Authorization'] = `Bearer ${info.token}`
@@ -1069,7 +1076,7 @@ app.whenReady().then(async () => {
               ui: cfg.ui,
               user: cfg.user,
               memory: cfg.memory,
-              providers: cfg.providers,
+              providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
               models: cfg.models,
               theme: cfg.theme,
               security: cfg.security,
@@ -1084,7 +1091,8 @@ app.whenReady().then(async () => {
           console.warn('[main] reload config after wizard failed:', e.message)
         }
       })()
-      createMainWindow()
+      // 稍等让 server 处理完 config reload 再开主窗口（避免模型列表为空）
+      setTimeout(() => createMainWindow(), 500)
       // 标记 GPU 启动完成
       try {
         const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
