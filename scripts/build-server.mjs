@@ -226,9 +226,32 @@ const bundleOutDir = path.join(outDir, "bundle");
 fs.cpSync(viteBundleDir, bundleOutDir, { recursive: true });
 console.log("[build-server] Vite bundle copied to bundle/");
 
+// ── CLI bundle ──
+// cli/entry.ts 启动 server（import server/index.ts 的 IIFE）后附加终端 CLI。
+// external 必须和 vite.config.server.js 保持一致，否则 native addon 会被打进
+// bundle 导致运行时崩溃（better-sqlite3 / node-pty 等不能 bundle）。
+const cliExternalList = [
+  "ws",
+  "better-sqlite3",
+  "node-pty",
+  "@node-rs/jieba",
+  "jsdom",
+  "qrcode",
+  "fsevents",
+  "undici",
+  "exceljs",
+  "mammoth",
+  "proxy-agent",
+  "node-telegram-bot-api",
+  "@larksuiteoapi/node-sdk",
+  "@silvia-odwyer/photon-node",
+  "@mariozechner/*",
+  ...builtinModules.flatMap((m) => [m, `node:${m}`]),
+];
+const cliExternalFlags = cliExternalList.map((e) => `--external:${e}`).join(" ");
 console.log("[build-server] running CLI bundle...");
 execSync(
-  `npx esbuild "${path.join(ROOT, "cli", "entry.ts")}" --bundle --platform=node --format=esm --target=node24 --external:ws --outfile="${path.join(bundleOutDir, "cli.js")}"`,
+  `npx esbuild "${path.join(ROOT, "cli", "entry.ts")}" --bundle --platform=node --format=esm --target=node24 ${cliExternalFlags} --outfile="${path.join(bundleOutDir, "cli.js")}"`,
   {
     cwd: ROOT,
     stdio: "inherit",
