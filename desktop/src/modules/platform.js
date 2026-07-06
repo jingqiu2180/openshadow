@@ -38,7 +38,26 @@
         return () => {};
       },
       onSettingsChanged: (callback) => {
-        return () => {}; // no-op unsubscribe
+        if (window.__REM_API__?.onSettingsChanged) {
+          return window.__REM_API__.onSettingsChanged(callback);
+        }
+        if (window.hana?.onSettingsChanged) {
+          return window.hana.onSettingsChanged(callback);
+        }
+        return () => {};
+      },
+      settingsChanged: (type, data) => {
+        try {
+          if (typeof window.__REM_API__?.settingsChanged === 'function') {
+            window.__REM_API__.settingsChanged(type, data);
+            return;
+          }
+          if (typeof window.hana?.settingsChanged === 'function') {
+            window.hana.settingsChanged(type, data);
+          }
+        } catch (e) {
+          console.warn('[platform] settingsChanged failed:', e);
+        }
       },
       onMenuAction: (callback) => {
         return () => {}; // no-op unsubscribe

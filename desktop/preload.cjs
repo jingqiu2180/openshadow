@@ -42,6 +42,14 @@ const platformApi = {
     return () => { ipcRenderer.removeListener('window:maximize-change', handler) }
   },
   getPlatform: async () => process.platform,
+
+  // 设置通信 → 通知 main 进程（主题、语言等）
+  settingsChanged: (type, data) => ipcRenderer.send('settings-changed', type, data),
+  onSettingsChanged: (callback) => {
+    const handler = (_event, type, data) => callback(type, data)
+    ipcRenderer.on('settings-changed', handler)
+    return () => { ipcRenderer.removeListener('settings-changed', handler) }
+  },
 }
 
 // 注入 window.hana（兼容 platform.js）
