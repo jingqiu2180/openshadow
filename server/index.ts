@@ -13,6 +13,7 @@ import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { cors } from 'hono/cors'
 import path from 'path'
+import os from 'os'
 import * as fsSync from 'fs'
 import { createNodeWebSocket } from '@hono/node-ws'
 
@@ -89,7 +90,7 @@ function resolveShadowHome(): string {
     fsSync.mkdirSync(explicit, { recursive: true })
     return explicit
   }
-  const fallback = path.join(require('os').homedir(), '.openshadow')
+  const fallback = path.join(os.homedir(), '.openshadow')
   fsSync.mkdirSync(fallback, { recursive: true })
   return fallback
 }
