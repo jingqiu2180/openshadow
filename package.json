@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "tsx watch start.ts",
     "dev:web": "node scripts/dev-web.js",
-    "build": "vite build --config vite.config.server.js && node scripts/copy-desktop-assets.js && node scripts/copy-server-deps.js",
+    "build": "vite build --config vite.config.server.js && node scripts/copy-desktop-assets.js && node scripts/_copy-deps.cjs",
     "build:standalone": "node scripts/build-server.mjs",
     "start": "node dist-server-bundle/index.js",
     "test": "vitest",
