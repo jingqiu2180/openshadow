@@ -12,8 +12,8 @@
   "scripts": {
     "dev": "tsx watch start.ts",
     "dev:web": "node scripts/dev-web.js",
-    "build": "node scripts/build-server.mjs && node scripts/copy-desktop-assets.js",
-    "build:server": "node scripts/build-server.mjs",
+    "build": "vite build --config vite.config.server.js && node scripts/copy-desktop-assets.js && node scripts/copy-server-deps.js",
+    "build:standalone": "node scripts/build-server.mjs",
     "start": "node dist-server-bundle/index.js",
     "test": "vitest",
     "test:e2e": "playwright test",
@@ -69,6 +69,14 @@
       "node_modules/ws/**"
     ],
     "extraResources": [
+      {
+        "from": "dist",
+        "to": "server"
+      },
+      {
+        "from": "dist-server-bundle",
+        "to": "server-bundle"
+      },
       {
         "from": "desktop/src/assets",
         "to": "assets"
