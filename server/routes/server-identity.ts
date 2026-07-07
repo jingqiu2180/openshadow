@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { createServerRuntimeContext, toServerIdentityResponse } from '../../core/server-runtime-context.js';
+import { ensureLocalIdentityRegistries } from '../../core/server-identity.js';
 import { readAuthPrincipal } from '../http/capability-guard.js';
 
 export function createServerIdentityRoute({ hanakoHome, appVersion = "?", getRuntimeContext }: { hanakoHome?: string; appVersion?: string; getRuntimeContext?: () => any } = {}) {
@@ -7,9 +8,18 @@ export function createServerIdentityRoute({ hanakoHome, appVersion = "?", getRun
 
   route.get("/server/identity", (c) => {
     try {
-      const runtimeContext = typeof getRuntimeContext === "function"
-        ? getRuntimeContext()
-        : createServerRuntimeContext({ hanakoHome, appVersion });
+      let runtimeContext: any = null;
+      if (typeof getRuntimeContext === "function") {
+        try { runtimeContext = getRuntimeContext(); } catch { runtimeContext = null; }
+      }
+      if (!runtimeContext) {
+        // Self-heal: engine.init() may have failed (or has not yet populated
+        // _runtimeContext), leaving the server running but without a runtime
+        // context. Ensure the identity registries exist, then build a fresh
+        // context so this endpoint returns a valid identity instead of 500.
+        try { ensureLocalIdentityRegistries(hanakoHome); } catch { /* best effort */ }
+        runtimeContext = createServerRuntimeContext({ hanakoHome, appVersion });
+      }
       return c.json(toServerIdentityResponse(
         contextForPrincipal(runtimeContext, readAuthPrincipal(c)),
         { appVersion },

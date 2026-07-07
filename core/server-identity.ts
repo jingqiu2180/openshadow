@@ -48,17 +48,20 @@ export function ensureLocalIdentityRegistries(hanakoHome) {
   const studiosPath = path.join(hanakoHome, STUDIOS_FILE);
   const legacySpacesPath = path.join(hanakoHome, LEGACY_SPACES_FILE);
 
-  const existingServerNode = readIdentityJsonIfPresent(serverNodePath, SERVER_NODE_FILE);
-  const existingUsers = readIdentityJsonIfPresent(usersPath, USERS_FILE);
-  const existingStudios = readIdentityJsonIfPresent(studiosPath, STUDIOS_FILE);
-  const existingLegacySpaces = existingStudios
+  let existingServerNode = readIdentityJsonIfPresent(serverNodePath, SERVER_NODE_FILE);
+  let existingUsers = readIdentityJsonIfPresent(usersPath, USERS_FILE);
+  let existingStudios = readIdentityJsonIfPresent(studiosPath, STUDIOS_FILE);
+  let existingLegacySpaces = existingStudios
     ? null
     : readIdentityJsonIfPresent(legacySpacesPath, LEGACY_SPACES_FILE);
 
-  if (existingServerNode) validateServerNodeIdentity(existingServerNode, SERVER_NODE_FILE);
-  if (existingUsers) validateUsersIdentity(existingUsers, USERS_FILE);
-  if (existingStudios) validateStudiosIdentity(existingStudios, STUDIOS_FILE);
-  if (existingLegacySpaces) validateLegacySpacesIdentity(existingLegacySpaces, LEGACY_SPACES_FILE);
+  // Self-heal: a corrupt/incompatible existing registry should be treated as
+  // missing (recreated from defaults) rather than bricking startup with a 500.
+  const dropCorrupt = (p) => { try { fs.unlinkSync(p); } catch { /* ignore */ } };
+  if (existingServerNode) { try { validateServerNodeIdentity(existingServerNode, SERVER_NODE_FILE); } catch { existingServerNode = null; dropCorrupt(serverNodePath); } }
+  if (existingUsers) { try { validateUsersIdentity(existingUsers, USERS_FILE); } catch { existingUsers = null; dropCorrupt(usersPath); } }
+  if (existingStudios) { try { validateStudiosIdentity(existingStudios, STUDIOS_FILE); } catch { existingStudios = null; dropCorrupt(studiosPath); } }
+  else if (existingLegacySpaces) { try { validateLegacySpacesIdentity(existingLegacySpaces, LEGACY_SPACES_FILE); } catch { existingLegacySpaces = null; dropCorrupt(legacySpacesPath); } }
 
   const migratedStudios = existingStudios
     ? null
