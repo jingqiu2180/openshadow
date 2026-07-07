@@ -1,6 +1,6 @@
 {
   "name": "openshadow",
-  "version": "0.3.10",
+  "version": "0.3.37",
   "description": "OpenShadow — Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.",
   "type": "module",
   "author": {
@@ -12,7 +12,8 @@
   "scripts": {
     "dev": "tsx watch start.ts",
     "dev:web": "node scripts/dev-web.js",
-    "build": "vite build --config vite.config.server.js && node scripts/copy-desktop-assets.js",
+    "build": "vite build --config vite.config.server.js && node scripts/copy-desktop-assets.js && node scripts/copy-server-deps.js",
+    "build:standalone": "node scripts/build-server.mjs",
     "start": "node dist-server-bundle/index.js",
     "test": "vitest",
     "test:e2e": "playwright test",
@@ -22,9 +23,9 @@
     "electron:preload": "vite build --config vite.config.preload.js",
     "electron": "npm run electron:main && npm run electron:preload && node scripts/copy-desktop-assets.js && node scripts/start-electron.mjs",
     "desktop:vite": "vite --config desktop/vite.config.ts",
-    "desktop:build": "vite build --config desktop/vite.config.ts && node -e \"const fs=require('fs'); fs.cpSync('desktop/src/lib','desktop/dist-renderer/lib',{recursive:true}); fs.cpSync('desktop/src/modules','desktop/dist-renderer/modules',{recursive:true}); fs.cpSync('desktop/src/locales','desktop/dist-renderer/locales',{recursive:true}); console.log('Static assets copied.')\"",
+    "desktop:build": "vite build --config desktop/vite.config.ts && node -e \"const fs=require('fs'); fs.cpSync('desktop/src/lib','desktop/dist-renderer/lib',{recursive:true}); fs.cpSync('desktop/src/modules','desktop/dist-renderer/modules',{recursive:true}); fs.cpSync('desktop/src/locales','desktop/dist-renderer/locales',{recursive:true}); fs.cpSync('desktop/src/themes','desktop/dist-renderer/themes',{recursive:true}); console.log('Static assets copied.')\"",
     "electron:dev": "concurrently -k -n server,vite,electron -c blue,magenta,green \"npm run dev\" \"npm run desktop:vite\" \"wait-on tcp:3000 tcp:5280 && node scripts/start-electron.mjs\"",
-    "electron:build": "npm run build && npm run desktop:build && npm run electron && electron-builder --dir",
+    "electron:build": "npm run desktop:build && npm run build && npm run electron && electron-builder --dir",
     "electron:dist": "npm run build && npm run desktop:build && npm run electron && electron-builder",
     "pack": "npm run electron:build",
     "dist:win": "npm run electron:build && electron-builder --win nsis --publish never",
@@ -33,7 +34,6 @@
     "dist:all": "npm run electron:build && cross-env SKIP_NOTARIZE=true electron-builder -mwl --publish never",
     "postinstall": "node scripts/patch-pi-sdk.cjs",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test",
     "test:e2e:workspace": "playwright test tests/e2e/workspace.web.spec.ts",
     "test:e2e:chat": "playwright test tests/e2e/chat.web.spec.ts",
     "test:e2e:settings": "playwright test tests/e2e/settings.web.spec.ts",
@@ -74,6 +74,10 @@
         "to": "server"
       },
       {
+        "from": "dist-server-bundle",
+        "to": "server-bundle"
+      },
+      {
         "from": "desktop/src/assets",
         "to": "assets"
       }
@@ -88,7 +92,13 @@
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "desktop/entitlements.mac.plist",
-      "entitlementsInherit": "desktop/entitlements.mac.plist"
+      "entitlementsInherit": "desktop/entitlements.mac.plist",
+      "extraResources": [
+        {
+          "from": "dist-server/mac-arm64",
+          "to": "server"
+        }
+      ]
     },
     "dmg": {
       "title": "OpenShadow",
@@ -117,7 +127,13 @@
       "icon": "desktop/src/icon.ico",
       "executableName": "OpenShadow",
       "artifactName": "${productName}-${version}-Windows-${arch}.${ext}",
-      "requestedExecutionLevel": "asInvoker"
+      "requestedExecutionLevel": "asInvoker",
+      "extraResources": [
+        {
+          "from": "dist-server/win-x64",
+          "to": "server"
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
@@ -135,7 +151,13 @@
       "maintainer": "jingqiu2180 <jingqiu2180@users.noreply.github.com>",
       "category": "Utility",
       "icon": "desktop/src/icon.png",
-      "artifactName": "${productName}-${version}-Linux-${arch}.${ext}"
+      "artifactName": "${productName}-${version}-Linux-${arch}.${ext}",
+      "extraResources": [
+        {
+          "from": "dist-server/linux-x64",
+          "to": "server"
+        }
+      ]
     }
   },
   "dependencies": {
@@ -201,11 +223,13 @@
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@types/ws": "^8.5.14",
+    "@vercel/nft": "^1.10.2",
     "@vitejs/plugin-react": "^4.7.0",
     "concurrently": "^10.0.3",
     "cross-env": "^7.0.3",
     "electron": "^42.4.0",
     "electron-builder": "^26.15.3",
+    "pngjs": "^7.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.8.2",
     "vitest": "^3.0.8",
