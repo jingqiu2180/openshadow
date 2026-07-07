@@ -14,9 +14,15 @@
     const platform = window.__REM_API__?.platform || window.hana?.platform || 'win32';
 
     window.platform = {
-      // 服务器连接（Electron 环境默认连 localhost:3000）
-      getServerPort: async () => 3000,
-      getServerToken: async () => null,
+      // 服务器连接（从 preload 注入的 window.hana 获取真实 port/token）
+      getServerPort: async () => {
+        try { return await window.hana?.getServerPort?.() || null; }
+        catch { return null; }
+      },
+      getServerToken: async () => {
+        try { return await window.hana?.getServerToken?.() || null; }
+        catch { return null; }
+      },
       onServerRestarted: (callback) => {
         // Electron IPC 监听服务器重启
         if (window.__REM_API__?.onServerRestarted) {
@@ -24,8 +30,34 @@
         }
         return () => {};
       },
+      onServerReady: (callback) => {
+        // Electron IPC 监听服务器就绪
+        if (window.__REM_API__?.onServerReady) {
+          return window.__REM_API__.onServerReady(callback);
+        }
+        return () => {};
+      },
       onSettingsChanged: (callback) => {
-        return () => {}; // no-op unsubscribe
+        if (window.__REM_API__?.onSettingsChanged) {
+          return window.__REM_API__.onSettingsChanged(callback);
+        }
+        if (window.hana?.onSettingsChanged) {
+          return window.hana.onSettingsChanged(callback);
+        }
+        return () => {};
+      },
+      settingsChanged: (type, data) => {
+        try {
+          if (typeof window.__REM_API__?.settingsChanged === 'function') {
+            window.__REM_API__.settingsChanged(type, data);
+            return;
+          }
+          if (typeof window.hana?.settingsChanged === 'function') {
+            window.hana.settingsChanged(type, data);
+          }
+        } catch (e) {
+          console.warn('[platform] settingsChanged failed:', e);
+        }
       },
       onMenuAction: (callback) => {
         return () => {}; // no-op unsubscribe

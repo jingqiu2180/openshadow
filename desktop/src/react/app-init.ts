@@ -45,6 +45,28 @@ declare const i18n: {
 };
 declare function t(key: string, vars?: Record<string, string | number>): string;
 
+/**
+ * 启动即无条件加载 i18n（不依赖 server）。
+ * locale 文件已随包打包进 dist-renderer/locales，用 localStorage / navigator.language / 默认 zh 决定初始语言。
+ * 关键：i18n 绝不能耦合在 server 就绪之后——否则 server 未就绪时整段 init 被 catch 吞掉，
+ * 导致所有文案回退成原始 key（如 status.serverNotReady），且只能靠手动打开设置才恢复。
+ */
+async function loadInitialI18n(): Promise<void> {
+  let locale = 'zh';
+  try {
+    const persisted = typeof localStorage !== 'undefined' ? localStorage.getItem('openshadow.locale') : null;
+    if (persisted) locale = persisted;
+    else if (typeof navigator !== 'undefined' && navigator.language) locale = navigator.language;
+  } catch { /* ignore */ }
+  try {
+    await i18n.load(locale);
+  } catch (err) {
+    console.warn('[init] initial i18n load failed, falling back to zh:', err);
+    try { await i18n.load('zh'); } catch { /* ignore */ }
+  }
+  useStore.setState({ locale: i18n.locale });
+}
+
 /* eslint-disable @typescript-eslint/no-explicit-any -- 全局 bootstrap：platform/IPC callback 签名含 any */
 
 function markRendererLaunch(event: string, details?: unknown) {
@@ -81,6 +103,9 @@ export async function initApp(): Promise<void> {
   const platform = window.platform;
   initQuotedSelectionLifecycle();
 
+  // 0. 无条件预加载 i18n（先于任何 server 依赖），确保启动即显示翻译文案而非原始 key
+  await loadInitialI18n();
+
   const requestContextUsage = (sessionPath: string) => {
     const ws = getWebSocket();
     if (ws?.readyState === WebSocket.OPEN) {
@@ -113,8 +138,32 @@ export async function initApp(): Promise<void> {
   });
 
   // 1. 获取 server 连接信息并存入 Zustand
-  const serverPort = await platform.getServerPort();
-  const serverToken = await platform.getServerToken();
+  // 轮询直到 server 就绪（避免一次性 server:ready 事件在监听器注册前就发出、导致永久错过）
+  let serverPort = await platform.getServerPort();
+  let serverToken = await platform.getServerToken();
+
+  if (!serverPort) {
+    console.log('[init] Server not ready yet, polling for server port...');
+    const deadline = Date.now() + 30000;
+    while (!serverPort && Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 300));
+      serverPort = await platform.getServerPort();
+      serverToken = await platform.getServerToken();
+    }
+    // 兜底：轮询间隙若 server:ready 事件恰好发出，再等一次事件
+    if (!serverPort) {
+      await new Promise<void>((resolve) => {
+        const timeout = setTimeout(resolve, 2000);
+        platform.onServerReady?.((data: { port: number; token?: string }) => {
+          serverPort = String(data.port);
+          serverToken = data.token ?? null;
+          clearTimeout(timeout);
+          resolve();
+        });
+      });
+    }
+  }
+  
   const localServerConnection = createLocalServerConnection({ serverPort, serverToken });
   const persistedConnections = readPersistedServerConnectionState();
   const initialRegistry = localServerConnection
@@ -131,6 +180,19 @@ export async function initApp(): Promise<void> {
     activeServerConnectionId: activeServerConnection?.connectionId ?? null,
     activeServerConnection,
   });
+
+  // 1b. 把真实端口暴露给 legacy store.ts（它之前硬编码 3000，导致端口≠3000 时全部失败）
+  if (serverPort) {
+    try { (window as unknown as { __shadowServerPort?: number }).__shadowServerPort = Number(serverPort); } catch {}
+  }
+
+  // 1c. 等待 server 真正可服务（health 200）再加载 config/i18n/models，避免启动竞态
+  if (serverPort) {
+    const healthOk = await waitForServerHealth(30000);
+    if (!healthOk) {
+      console.warn('[init] server health check timed out, proceeding with best-effort (i18n/models may need a manual refresh)');
+    }
+  }
 
   if (!activeServerConnection) {
     setStatus('status.serverNotReady', false);
@@ -192,9 +254,16 @@ export async function initApp(): Promise<void> {
     const configData = await configRes.json();
     applyEditorTypography(configData.editor);
 
-    // 3. 加载 i18n
-    await i18n.load(configData.locale || 'zh-CN');
-    useStore.setState({ locale: i18n.locale });
+    // 3. 刷新 i18n（若 server 返回的 locale 与启动时初始语言不同）。
+    //    注意：i18n 已在 initApp 开头无条件加载，此处仅做 locale 精修，失败也不影响已加载的文案。
+    try {
+      if (configData.locale && configData.locale !== i18n.locale) {
+        await i18n.load(configData.locale);
+        useStore.setState({ locale: i18n.locale });
+      }
+    } catch (i18nErr) {
+      console.warn('[init] i18n locale refinement skipped:', i18nErr);
+    }
 
     // 4. 应用 agent 身份
     await applyAgentIdentity({
@@ -216,7 +285,7 @@ export async function initApp(): Promise<void> {
     // 6. 加载头像
     loadAvatars(healthData.avatars);
   } catch (err) {
-    console.error('[init] i18n/health/config failed:', err);
+    console.error('[init] health/config failed (i18n already loaded independently):', err);
   }
 
   // 8. 连接 WebSocket
@@ -314,4 +383,19 @@ async function refreshDeviceWebSession(connection: ServerConnection): Promise<vo
     credentials: 'include',
     body: JSON.stringify({ credential: connection.token }),
   });
+}
+
+// 等待 server 真正可服务（/api/health 返回 200）。轮询重试，避免启动竞态下 health 还没好就拉 config。
+async function waitForServerHealth(timeoutMs = 30000): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const res = await hanaFetch('/api/health');
+      if (res.ok) return true;
+    } catch {
+      /* server 还没好，继续等 */
+    }
+    await new Promise((r) => setTimeout(r, 400));
+  }
+  return false;
 }

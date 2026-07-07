@@ -74,7 +74,7 @@ export function AboutTab() {
         />
         <SettingsRow
           label={t('settings.about.copyright')}
-          control={<span>© 2026 liliMozi</span>}
+          control={<span>© 2026 jingqiu2180</span>}
         />
         <SettingsRow
           label="GitHub"
@@ -84,10 +84,10 @@ export function AboutTab() {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                hana?.openExternal?.('https://github.com/liliMozi');
+                hana?.openExternal?.('https://github.com/jingqiu2180/openshadow');
               }}
             >
-              github.com/liliMozi
+              github.com/jingqiu2180/openshadow
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                 <polyline points="15 3 21 3 21 9" />
@@ -116,7 +116,7 @@ export function AboutTab() {
 
 const LICENSE_TEXT = `Apache License, Version 2.0
 
-Copyright 2026 liliMozi
+Copyright 2026 jingqiu2180
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

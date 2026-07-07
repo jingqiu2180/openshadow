@@ -26,6 +26,7 @@ import { LeavesOverlay } from './components/LeavesOverlay';
 import { SelectionQuoteActionSurface } from './components/selection/SelectionQuoteActionSurface';
 import { MediaViewer } from './components/shared/MediaViewer/MediaViewer';
 import { SettingsModalShell } from './components/SettingsModalShell';
+import { ConfirmationDialog } from './components/ConfirmationDialog';
 import { initTheme, initDragPrevention } from './bootstrap';
 import { initApp } from './app-init';
 import { openSettingsModal } from './stores/settings-modal-actions';
@@ -157,6 +158,9 @@ function App() {
 
       {/* Toast notifications */}
       <ToastContainer />
+
+      {/* Confirmation dialog */}
+      <ConfirmationDialog />
     </ErrorBoundary>
   );
 }

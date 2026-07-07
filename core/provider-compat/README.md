@@ -161,4 +161,4 @@ Hana 内部用 `{ type: "audio", data, mimeType }` 表示当前轮音频。UI、
 
 ## 历史背景
 
-本架构由 commit `2a9ea17`（README 奠基）至 `0d87520`（llm-client 收口）一系列 commit 引入，根因来自 issue [#468](https://github.com/liliMozi/openhanako/issues/468) 的 DeepSeek 思考模式 400。
+本架构由 commit `2a9ea17`（README 奠基）至 `0d87520`（llm-client 收口）一系列 commit 引入，根因来自 issue [#468](https://github.com/jingqiu2180/openhanako/issues/468) 的 DeepSeek 思考模式 400。

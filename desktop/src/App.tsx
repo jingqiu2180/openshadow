@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 // ChatArea moved to ./react/components/chat/ChatArea
 // Use ChatPage (includes InputArea) instead of raw ChatArea
-import { ChatPage } from './react/components/app/chatPage';
+import { ChatPage } from './react/components/app/ChatPage';
 import { DeskSection } from './react/components/DeskSection'
 import SettingsModal from './components/SettingsModal'
 import { SessionConfirmationPrompt } from './components/SessionConfirmationPrompt'

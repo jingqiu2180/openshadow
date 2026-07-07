@@ -7,7 +7,7 @@ import {
 } from './plugin-versioning.js';
 
 const DEFAULT_EMPTY_MARKETPLACE = Object.freeze({ schemaVersion: 1, plugins: [] });
-export const DEFAULT_OFFICIAL_PLUGIN_MARKETPLACE_URL = "https://raw.githubusercontent.com/liliMozi/OH-Plugins/main/marketplace.json";
+export const DEFAULT_OFFICIAL_PLUGIN_MARKETPLACE_URL = "https://raw.githubusercontent.com/jingqiu2180/OH-Plugins/main/marketplace.json";
 
 export class PluginMarketplace {
   declare indexPath: string;

@@ -1734,6 +1734,36 @@ export function createSessionsRoute(engine, hub = null) {
     }
   });
 
+  // ── Session thinking level ─────────────────────────────
+  route.get("/session-thinking-level", async (c) => {
+    try {
+      const requestContext = createRequestContext(c, engine);
+      const levels = getModelThinkingLevels(engine);
+      const currentLevel = typeof engine.getThinkingLevel === "function"
+        ? engine.getThinkingLevel()
+        : null;
+      return c.json({ levels, currentLevel });
+    } catch (err) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  route.post("/session-thinking-level", async (c) => {
+    try {
+      const requestContext = createRequestContext(c, engine);
+      const body = await safeJson(c);
+      const { sessionPath, thinkingLevel } = body || {};
+      if (sessionPath && typeof engine.setSessionThinkingLevel === "function") {
+        engine.setSessionThinkingLevel(sessionPath, thinkingLevel);
+      } else if (typeof engine.setThinkingLevel === "function") {
+        engine.setThinkingLevel(thinkingLevel);
+      }
+      return c.json({ ok: true });
+    } catch (err) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
   return route;
 }
 

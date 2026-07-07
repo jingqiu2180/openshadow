@@ -94,6 +94,24 @@ export async function autoSaveConfig(
       if (k in prev && !(k in newConfig)) newConfig[k] = (prev as any)[k];
     }
     useSettingsStore.setState({ settingsConfig: newConfig });
+    // 强制刷新主 chat store 的 models + currentModel，
+    // 这样 settings 改的模型立刻在 chat 页面生效（发送按钮不再卡 disabled）
+    try {
+      const { useStore } = await import('../stores');
+      const { loadModels } = await import('../utils/ui-helpers');
+      const modelsRes = await hanaFetch('/api/models');
+      const modelsData = await modelsRes.json();
+      const models = (modelsData.models || []) as Array<{ id: string; name?: string; provider?: string; isCurrent?: boolean }>;
+      const currentModelObj = models.find((m) => m.isCurrent);
+      useStore.setState({
+        models: models as any,
+        currentModel: currentModelObj
+          ? { id: currentModelObj.id, provider: currentModelObj.provider || '' }
+          : null,
+      });
+    } catch (e) {
+      console.warn('[settings.autoSaveConfig] reload chat models failed:', e);
+    }
     return true;
   } catch (err: any) {
     store.showToast(t('settings.saveFailed') + ': ' + err.message, 'error');

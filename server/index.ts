@@ -78,19 +78,40 @@ app.get('/api/health', (c) => c.json({ ok: true }))
 /**
  * 异步启动：创建引擎 → init() → 挂载路由 → 启动 HTTP 服务
  */
+/**
+ * 解析 Shadow Home（用户数据根目录）
+ * 优先级：SHADOW_HOME > OPENSHADOW_HOME > ~/.openshadow
+ * 对齐 openhanako 的 resolveHanakoHome(process.env.HANA_HOME)
+ */
+function resolveShadowHome(): string {
+  const explicit = process.env.SHADOW_HOME || process.env.OPENSHADOW_HOME
+  if (explicit) {
+    fsSync.mkdirSync(explicit, { recursive: true })
+    return explicit
+  }
+  const fallback = path.join(require('os').homedir(), '.openshadow')
+  fsSync.mkdirSync(fallback, { recursive: true })
+  return fallback
+}
+
+const shadowHome = resolveShadowHome()
+process.env.SHADOW_HOME = shadowHome
+process.env.OPENSHADOW_HOME = shadowHome
+
 async function start() {
-  // 初始化 HanaEngine
+  // 初始化 HanaEngine（对齐 openhanako：hanakoHome 用用户数据目录，不用 process.cwd()）
+  const productDir = process.cwd()
   const engine: any = new HanaEngine({
-    hanakoHome: process.cwd(),
-    productDir: process.cwd(),
+    hanakoHome: shadowHome,
+    productDir: productDir,
     agentId: 'rem-default',
     appVersion: '0.1.0',
   } as any)
-  ;(engine as any).hanakoHome = process.cwd()
+  ;(engine as any).hanakoHome = shadowHome
   ;(engine as any).appVersion = '0.1.0'
 
-  // 初始化默认 agent 目录
-  const defaultAgentDir = path.join(process.cwd(), 'agents', 'rem-default')
+  // 初始化默认 agent 目录（放在 shadowHome 下，不在安装目录）
+  const defaultAgentDir = path.join(shadowHome, 'agents', 'rem-default')
   try { fsSync.mkdirSync(defaultAgentDir, { recursive: true }) } catch {}
 
   // 在 engine.init() 后创建真实 Hub（替代 dummy）
@@ -107,9 +128,9 @@ async function start() {
     console.error('[shadow] Failed to override agentDir getter:', (e as any).message)
   }
 
-  // 设置 userDir
+  // 设置 userDir（放在 shadowHome 下）
   try {
-    const defaultUserDir = path.join(process.cwd(), 'user')
+    const defaultUserDir = path.join(shadowHome, 'user')
     fsSync.mkdirSync(defaultUserDir, { recursive: true })
     ;(engine as any).userDir = defaultUserDir
     console.log('[shadow] Set userDir to', defaultUserDir)
@@ -283,56 +304,51 @@ async function start() {
     console.warn('[shadow] WebSocket support not available')
   }
 
-  // dev-web 模式：等 listen 完成再写 server-info.json（拿到真实端口）
-  if (process.env.SHADOW_HOME) {
-    await new Promise((r) => setImmediate(r))
-  }
-
-  // ═══ dev-web 握手：写 server-info.json 给 scripts/dev-web.js ═══
-  // dev-web 启动 server 后会 poll 这个文件，拿到 port + token 才能配置 vite proxy。
-  // 仅在显式设置 SHADOW_HOME 时启用（dev-web 模式），生产/桌面端不写。
-  if (process.env.SHADOW_HOME) {
-    try {
-      const crypto = await import('crypto')
-      const token = process.env.SHADOW_TOKEN || crypto.randomBytes(16).toString('hex')
-      const serverInfoPath = path.join(process.env.SHADOW_HOME, 'server-info.json')
-      // 优先从底层 node http.Server 拿实际端口（处理 SHADOW_PORT=0 自动分配场景）
-      let actualPort = port
-      const nodeServer = (server as any)?.server ?? server
-      try {
-        const addr = nodeServer?.address?.()
-        if (addr && typeof addr === 'object' && addr.port) {
-          actualPort = addr.port
-        } else if (typeof nodeServer?.port === 'number' && nodeServer.port > 0) {
-          actualPort = nodeServer.port
-        }
-      } catch {}
-      fsSync.writeFileSync(
-        serverInfoPath,
-        JSON.stringify({
-          pid: process.pid,
-          port: actualPort,
-          host: '127.0.0.1',
-          token,
-          version: '0.2.0',
-        }),
-      )
-      try { fsSync.chmodSync(serverInfoPath, 0o600) } catch {}
-      console.log(`[dev-web] server-info.json written: port=${actualPort}`)
-
-      // 关闭时清理
-      const cleanup = () => {
-        try { fsSync.unlinkSync(serverInfoPath) } catch {}
-      }
-      process.on('SIGINT', () => { cleanup(); process.exit(0) })
-      process.on('SIGTERM', () => { cleanup(); process.exit(0) })
-    } catch (e: any) {
-      console.error('[dev-web] failed to write server-info.json:', e?.message)
-    }
-  }
-
   console.log(`🚀 Server running on http://localhost:${port}`)
   console.log(`📡 37 business routes mounted`)
+
+  // ═══ 写 server-info.json（供 Electron / dev-web 发现 server）═══
+  const crypto = await import('crypto')
+  const token = process.env.SHADOW_TOKEN || crypto.randomBytes(16).toString('hex')
+  // shadowHome 已在模块顶部解析并写入 process.env.SHADOW_HOME
+  try { fsSync.mkdirSync(shadowHome, { recursive: true }) } catch {}
+  const serverInfoPath = path.join(shadowHome, 'server-info.json')
+  let actualPort = port
+  const nodeServer = (server as any)?.server ?? server
+  try {
+    const addr = nodeServer?.address?.()
+    if (addr && typeof addr === 'object' && addr.port) {
+      actualPort = addr.port
+    }
+  } catch {}
+  fsSync.writeFileSync(serverInfoPath, JSON.stringify({
+    pid: process.pid,
+    port: actualPort,
+    host: '127.0.0.1',
+    token,
+    version: '0.3.12',
+  }))
+  try { fsSync.chmodSync(serverInfoPath, 0o600) } catch {}
+  console.log(`[shadow] server-info.json written: port=${actualPort}, pid=${process.pid}`)
+
+  // ═══ /api/shutdown 端点 ═══
+  let shutdownPromise = null
+  app.post('/api/shutdown', async (c) => {
+    if (shutdownPromise) return c.json({ ok: true, message: 'shutdown already in progress' })
+    shutdownPromise = (async () => {
+      console.log('[shadow] Shutdown requested via /api/shutdown')
+      try { fsSync.unlinkSync(serverInfoPath) } catch {}
+      process.exit(0)
+    })()
+    return c.json({ ok: true })
+  })
+
+  // 关闭时清理 server-info.json
+  const cleanup = () => {
+    try { fsSync.unlinkSync(serverInfoPath) } catch {}
+  }
+  process.on('SIGINT', () => { cleanup(); process.exit(0) })
+  process.on('SIGTERM', () => { cleanup(); process.exit(0) })
 }
 
 start().catch((err: any) => {

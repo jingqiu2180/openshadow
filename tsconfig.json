@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "dom"],
     "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,
@@ -31,6 +31,7 @@
   ],
   "exclude": [
     "node_modules",
-    "desktop/dist-renderer"
+    "desktop/dist-renderer",
+    "desktop/src/react.bak.20260622-212145"
   ]
 }

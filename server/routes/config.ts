@@ -196,9 +196,9 @@ export function createConfigRoute(engine: any) {
       const config = { ...engine.config };
       const raw = getRawConfig(engine.configPath) || {};
 
-      // 直接读项目根目录的 config.json，确保 security 对象存在
+      // 读 shadowHome 下的 config.json（对齐 engine.configPath，不用 process.cwd()）
       try {
-        const projectConfigPath = path.join(process.cwd(), 'config.json');
+        const projectConfigPath = path.join((engine as any).hanakoHome || process.cwd(), 'config.json');
         const fullConfig = JSON.parse(fsSync.readFileSync(projectConfigPath, 'utf-8'));
         if (fullConfig.security) {
           raw.security = fullConfig.security;

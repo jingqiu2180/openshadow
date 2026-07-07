@@ -6,9 +6,24 @@
 // 2. 处理 IPC 路由
 // 3. 创建主窗口加载 Vite dev server 或 dist 资源
 
-const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu } = require('electron')
-const { join, dirname } = require('path')
-const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
+const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeTheme, Tray, Menu: TrayMenu, globalShortcut, powerSaveBlocker, shell } = require('electron')
+const { join, dirname, resolve } = require('path')
+const { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } = require('fs')
+const { createThemeController } = require('./theme-controller.cjs')
+const { setIpcSenderValidator, wrapIpcHandler, wrapIpcOn } = require('./ipc-wrapper.cjs')
+const { createServerManager } = require('./server-manager.cjs')
+const { createSettingsWindow, getSettingsWindow } = require('./settings-window-controller.cjs')
+const { initAutoUpdater, checkForUpdatesAuto } = require('./auto-updater.cjs')
+const { createFileWatchRegistry } = require('./file-watch-registry.cjs')
+const { createWorkspaceWatchRegistry } = require('./workspace-watch-registry.cjs')
+const { resolveGpuStartupPolicy, applyGpuStartupPolicy, markGpuStartupPending, markGpuStartupPhase, markGpuStartupReady } = require('./src/shared/gpu-startup-policy.cjs')
+const { readNetworkProxyConfig, applyNetworkProxy } = require('./src/shared/network-proxy.cjs')
+// Desktop Access Policy (path sandbox)
+const { grantWebContentsAccess, canReadPath, canWritePath, isSetupComplete } = require('./desktop-access-policy.cjs')
+// Editor Window Controller
+const { createEditorWindowController } = require('./editor-window-controller.cjs')
+// Browser Agent Controller (WebContentsView)
+const { createBrowserAgentController } = require('./browser-agent.cjs')
 
 const isDev = !app.isPackaged
 const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5280'
@@ -22,6 +37,34 @@ if (process.platform === 'win32') {
 
 // High-DPI 支持
 app.commandLine.appendSwitch('high-dpi-support', '1')
+
+// ─── GPU 启动策略（Windows 安全模式）──────────────────────────
+// 必须在 app.whenReady() 之前调用
+;(function applyGpuPolicy() {
+  const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+  try {
+    const policy = resolveGpuStartupPolicy({ hanakoHome, platform: process.platform })
+    console.log(`[gpu-policy] mode=${policy.mode}, reason=${policy.reason}`)
+    applyGpuStartupPolicy(app, policy)
+    try { markGpuStartupPending({ hanakoHome, phase: 'electron-starting' }) } catch {}
+  } catch (err) {
+    console.warn('[gpu-policy] failed to apply:', err.message)
+  }
+})()
+
+// ─── Network Proxy 设置 ─────────────────────────────────────
+;(function applyProxy() {
+  try {
+    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+    const config = readNetworkProxyConfig({ hanakoHome })
+    if (config.mode !== 'direct') {
+      console.log(`[network-proxy] mode=${config.mode}`)
+      applyNetworkProxy(app, config)
+    }
+  } catch (err) {
+    console.warn('[network-proxy] failed to apply:', err.message)
+  }
+})()
 
 // ─── 窗口装饰选项 ─────────────────────────────────────
 function windowIconOpts() {
@@ -47,7 +90,9 @@ function titleBarOpts(trafficLight) {
 }
 
 // ─── Self-contained config reader ────────────────────────────
-const CONFIG_PATH = join(process.cwd(), 'config.json')
+// 对齐 openhanako：配置写到用户数据目录，不写安装目录（避免 Program Files EPERM）
+const _hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+const CONFIG_PATH = join(_hanakoHome, 'config.json')
 
 function readConfig() {
   if (!existsSync(CONFIG_PATH)) return { version: '0.1.0' }
@@ -61,6 +106,29 @@ function readConfig() {
 function writeConfig(cfg) {
   mkdirSync(join(CONFIG_PATH, '..'), { recursive: true })
   writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf-8')
+}
+
+// 读取 server 进程的 server-info.json（包含 port/token），用于主进程 → server HTTP 调用
+// 如果文件不存在，返回默认值 { port: 3000, token: null }
+function readServerInfo() {
+  try {
+    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+    const p = join(hanakoHome, 'server-info.json')
+    if (!existsSync(p)) {
+      // 文件不存在 = server 还没就绪。返回 null 端口，让渲染进程进入等待/轮询逻辑，
+      // 而不是错误地用 3000（server 实际端口是动态的，3000 被占用时会换端口）。
+      // 否则渲染进程在启动竞态里拿到 3000 就跳过等待 → 永远连不上真实 server。
+      return { port: null, token: null }
+    }
+    const info = JSON.parse(readFileSync(p, 'utf-8'))
+    // 确保 port 有效
+    if (!info || !info.port) {
+      return { port: null, token: null }
+    }
+    return { port: info.port, token: info.token || null }
+  } catch {
+    return { port: null, token: null }
+  }
 }
 
 function isWizardCompleted() {
@@ -167,6 +235,31 @@ async function testAnthropicCompatible(baseUrl, apiKey, model) {
 
 let mainWindow = null
 let wizardWindow = null
+let settingsWindow = null
+let editorController = null
+let browserAgent = null
+
+// ─── IPC 安全：验证调用来源 ─────────────────────────────────────
+// 仅允许来自可信 WebContents 的 IPC 调用（主窗口、向导窗口、设置窗口）
+function isTrustedAppWebContents(webContents, channel) {
+  if (!webContents || webContents.isDestroyed && webContents.isDestroyed()) return false
+  const owner = BrowserWindow.fromWebContents(webContents)
+  if (owner === mainWindow || owner === wizardWindow || owner === settingsWindow) return true
+  // 允许 Editor Window 和 Browser Viewer Window
+  if (editorController && owner === editorController.getWindow()) return true
+  if (browserAgent && owner === browserAgent.getWindow()) return true
+  // 允许 file:// 协议（本地 HTML）
+  try {
+    const url = webContents.getURL && webContents.getURL()
+    if (url && url.startsWith('file://')) return true
+    // 允许 localhost dev server
+    if (/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\//.test(url)) return true
+  } catch {}
+  console.warn(`[IPC][${channel}] untrusted sender rejected`)
+  return false
+}
+
+setIpcSenderValidator((channel, event) => isTrustedAppWebContents(event?.sender, channel))
 
 async function runWizardWindow() {
   if (isWizardCompleted()) return
@@ -232,7 +325,12 @@ async function runWizardWindow() {
 
 // ─── IPC handlers ───────────────────────────────────
 function registerIpcHandlers() {
-  ipcMain.handle('wizard:get-config', () => {
+  wrapIpcHandler('server:get-info', () => {
+    const info = readServerInfo()
+    return { port: info?.port || null, token: info?.token || null }
+  })
+
+  wrapIpcHandler('wizard:get-config', () => {
     const cfg = readConfig()
     return {
       providers: cfg.providers || [],
@@ -244,12 +342,11 @@ function registerIpcHandlers() {
     }
   })
 
-  ipcMain.handle('wizard:save-config', (_e, payload) => {
+  wrapIpcHandler('wizard:save-config', (_e, payload) => {
     console.log('[wizard] save-config called')
     try {
       const cfg = readConfig()
       const merged = Object.assign({}, cfg, payload)
-      // 补充 baseUrl：从 builtin providers 填充
       if (merged.providers && Array.isArray(merged.providers)) {
         for (const p of merged.providers) {
           if (!p.baseUrl && BUILTIN_PROVIDERS[p.id]) {
@@ -262,6 +359,17 @@ function registerIpcHandlers() {
       }
       writeConfig(merged)
       console.log('[wizard] config saved to', CONFIG_PATH)
+      // 通知所有 BrowserWindow（main + wizard）配置已更新
+      try {
+        const allWins = BrowserWindow.getAllWindows()
+        for (const win of allWins) {
+          if (!win.isDestroyed()) {
+            win.webContents.send('config:updated', { source: 'wizard' })
+          }
+        }
+      } catch (e) {
+        console.warn('[wizard] broadcast config:updated failed:', e.message)
+      }
       return { ok: true }
     } catch (e) {
       console.error('[wizard] save-config error:', e.message)
@@ -269,7 +377,7 @@ function registerIpcHandlers() {
     }
   })
 
-  ipcMain.handle('wizard:test-connection', async (_e, providerInput) => {
+  wrapIpcHandler('wizard:test-connection', async (_e, providerInput) => {
     const spec = BUILTIN_PROVIDERS[providerInput.id]
     if (!spec) return { ok: false, error: 'Unknown provider: ' + providerInput.id }
     const model = providerInput.model || spec.models[0]
@@ -279,13 +387,12 @@ function registerIpcHandlers() {
     } else if (spec.type === 'gemini') {
       result = { ok: false, error: 'Gemini 测试暂未支持' }
     } else {
-      // openai, ollama, etc.
       result = await testOpenAICompatible(spec.baseUrl, providerInput.apiKey, model)
     }
     return { ok: result.ok, latencyMs: result.latencyMs, error: result.error, modelUsed: result.modelUsed }
   })
 
-  ipcMain.handle('wizard:pick-folder', async () => {
+  wrapIpcHandler('wizard:pick-folder', async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       title: '选择 OpenShadow 的工作区目录',
       message: '请选择 OpenShadow 可以读写的目录(可多选)。这些目录拥有完整权限(读/写/删)。',
@@ -294,7 +401,7 @@ function registerIpcHandlers() {
     return canceled ? [] : filePaths
   })
 
-  ipcMain.handle('dialog:selectFolder', async (_e, opts) => {
+  wrapIpcHandler('dialog:selectFolder', async (_e, opts) => {
     opts = opts || {}
     const properties = ['openDirectory']
     if (opts.multi) properties.push('multiSelections')
@@ -307,7 +414,7 @@ function registerIpcHandlers() {
     return canceled ? null : (filePaths[0] || null)
   })
 
-  ipcMain.handle('dialog:selectFiles', async (_e, opts) => {
+  wrapIpcHandler('dialog:selectFiles', async (_e, opts) => {
     opts = opts || {}
     const properties = ['openFile']
     if (opts.multi) properties.push('multiSelections')
@@ -320,7 +427,7 @@ function registerIpcHandlers() {
   })
 
   // Screenshot
-  ipcMain.handle('screenshot:capture', async (_e, displayId) => {
+  wrapIpcHandler('screenshot:capture', async (_e, displayId) => {
     try {
       const targetDisplay = displayId !== undefined ? displayId : 0
       const sources = await desktopCapturer.getSources({
@@ -348,7 +455,7 @@ function registerIpcHandlers() {
     }
   })
 
-  ipcMain.handle('screenshot:capture-window', async (_e, windowId) => {
+  wrapIpcHandler('screenshot:capture-window', async (_e, windowId) => {
     try {
       const win = windowId
         ? BrowserWindow.getAllWindows().find(w => w.id === windowId)
@@ -375,7 +482,7 @@ function registerIpcHandlers() {
   // Browser webview IPC
   const pendingBrowserResponses = new Map()
 
-  ipcMain.on('browser:response', (_event, response) => {
+  wrapIpcOn('browser:response', (_event, response) => {
     const pending = pendingBrowserResponses.get(response.id)
     if (!pending) return
     clearTimeout(pending.timer)
@@ -406,24 +513,24 @@ function registerIpcHandlers() {
     })
   }
 
-  ipcMain.handle('browser:create', async (_e, url) => sendBrowserCommand({ type: 'create', url: url || 'about:blank' }))
-  ipcMain.handle('browser:navigate', async (_e, url) => sendBrowserCommand({ type: 'navigate', url: url }))
-  ipcMain.handle('browser:screenshot', async () => sendBrowserCommand({ type: 'screenshot' }))
-  ipcMain.handle('browser:click', async (_e, selector) => sendBrowserCommand({ type: 'click', selector: selector }))
-  ipcMain.handle('browser:type', async (_e, selector, text) => sendBrowserCommand({ type: 'type', selector: selector, text: text }))
-  ipcMain.handle('browser:press-key', async (_e, key) => sendBrowserCommand({ type: 'pressKey', key: key }))
-  ipcMain.handle('browser:get-text', async (_e, selector) => sendBrowserCommand({ type: 'getText', selector: selector }))
-  ipcMain.handle('browser:get-html', async () => sendBrowserCommand({ type: 'getHtml' }))
-  ipcMain.handle('browser:wait-for', async (_e, selector, timeout) => sendBrowserCommand({ type: 'waitForSelector', selector: selector, timeout: timeout || 10000 }))
-  ipcMain.handle('browser:close', async () => sendBrowserCommand({ type: 'close' }))
+  wrapIpcHandler('browser:create', async (_e, url) => sendBrowserCommand({ type: 'create', url: url || 'about:blank' }))
+  wrapIpcHandler('browser:navigate', async (_e, url) => sendBrowserCommand({ type: 'navigate', url: url }))
+  wrapIpcHandler('browser:screenshot', async () => sendBrowserCommand({ type: 'screenshot' }))
+  wrapIpcHandler('browser:click', async (_e, selector) => sendBrowserCommand({ type: 'click', selector: selector }))
+  wrapIpcHandler('browser:type', async (_e, selector, text) => sendBrowserCommand({ type: 'type', selector: selector, text: text }))
+  wrapIpcHandler('browser:press-key', async (_e, key) => sendBrowserCommand({ type: 'pressKey', key: key }))
+  wrapIpcHandler('browser:get-text', async (_e, selector) => sendBrowserCommand({ type: 'getText', selector: selector }))
+  wrapIpcHandler('browser:get-html', async () => sendBrowserCommand({ type: 'getHtml' }))
+  wrapIpcHandler('browser:wait-for', async (_e, selector, timeout) => sendBrowserCommand({ type: 'waitForSelector', selector: selector, timeout: timeout || 10000 }))
+  wrapIpcHandler('browser:close', async () => sendBrowserCommand({ type: 'close' }))
 
   // 窗口控制
-  ipcMain.on('window:minimize', (event) => {
+  wrapIpcOn('window:minimize', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (win) win.minimize()
   })
 
-  ipcMain.on('window:maximize', (event) => {
+  wrapIpcOn('window:maximize', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return
     if (win.isMaximized()) {
@@ -433,22 +540,136 @@ function registerIpcHandlers() {
     }
   })
 
-  ipcMain.on('window:close', (event) => {
+  wrapIpcOn('window:close', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (win) win.close()
   })
 
-  ipcMain.handle('window:is-maximized', (event) => {
+  wrapIpcHandler('window:is-maximized', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     return win ? win.isMaximized() : false
+  })
+
+  // 登录项自启动（开机自启）
+  wrapIpcHandler('wizard:set-login-item', (_e, enable) => {
+    app.setLoginItemSettings({
+      openAtLogin: enable,
+      name: 'OpenShadow',
+    })
+    console.log('[main] login item auto-start:', enable ? 'enabled' : 'disabled')
+    return { ok: true }
+  })
+
+  wrapIpcHandler('wizard:get-login-item', () => {
+    const settings = app.getLoginItemSettings()
+    return { enabled: settings.openAtLogin }
+  })
+
+  // 打开设置窗口
+  wrapIpcHandler('window:open-settings', () => {
+    const win = createSettingsWindow({
+      mainWindow,
+      preloadPath: join(__dirname, 'preload.bundle.cjs'),
+      iconPath: APP_ICON_PATH,
+      isDev,
+      viteDevUrl: VITE_DEV_URL,
+    })
+    return { ok: true, id: win?.id }
+  })
+
+  // ─── File Watch IPC ───
+  wrapIpcHandler('file-watch:subscribe', (event, filePath) => {
+    const subscriberId = event.sender.getId()
+    fileWatchRegistry.subscribe(filePath, subscriberId)
+    return { ok: true }
+  })
+
+  wrapIpcHandler('file-watch:unsubscribe', (event, filePath) => {
+    const subscriberId = event.sender.getId()
+    fileWatchRegistry.unsubscribe(filePath, subscriberId)
+    return { ok: true }
+  })
+
+  wrapIpcHandler('file-watch:unsubscribe-all', (event) => {
+    const subscriberId = event.sender.getId()
+    fileWatchRegistry.unsubscribeAll(subscriberId)
+    return { ok: true }
+  })
+
+  // ─── Workspace Watch IPC ───
+  wrapIpcHandler('workspace-watch:subscribe', (event, rootPath) => {
+    const subscriberId = event.sender.getId()
+    workspaceWatchRegistry.subscribe(rootPath, subscriberId)
+    return { ok: true }
+  })
+
+  wrapIpcHandler('workspace-watch:unsubscribe', (event, rootPath) => {
+    const subscriberId = event.sender.getId()
+    workspaceWatchRegistry.unsubscribe(rootPath, subscriberId)
+    return { ok: true }
+  })
+
+  wrapIpcHandler('workspace-watch:unsubscribe-all', (event) => {
+    const subscriberId = event.sender.getId()
+    workspaceWatchRegistry.unsubscribeAll(subscriberId)
+    return { ok: true }
+  })
+
+  // ─── Quick Chat IPC ─────────────────────────────────────
+  wrapIpcHandler('quick-chat:show', () => {
+    showQuickChatWindow()
+    return { ok: true }
+  })
+
+  wrapIpcHandler('quick-chat:hide', () => {
+    hideQuickChatWindow()
+    return { ok: true }
+  })
+
+  wrapIpcHandler('quick-chat:toggle', () => {
+    toggleQuickChatWindow()
+    return { ok: true }
+  })
+
+  wrapIpcHandler('quick-chat:resize', (_event, mode) => {
+    // mode: 'compact' | 'chat'
+    if (mode !== 'compact' && mode !== 'chat') return { ok: false, error: 'invalid mode' }
+    quickChatMode = mode
+    if (quickChatWindow && !quickChatWindow.isDestroyed()) {
+      const bounds = getQuickChatBounds()
+      quickChatWindow.setResizable(mode === 'chat')
+      quickChatWindow.setBounds(bounds, true)
+    }
+    return { ok: true }
+  })
+
+  wrapIpcHandler('quick-chat:shortcut-status', () => {
+    return {
+      shortcut: registeredQuickChatShortcut || 'Alt+Space',
+      registered: !!registeredQuickChatShortcut,
+    }
+  })
+
+  wrapIpcHandler('quick-chat:reload-shortcut', () => {
+    try {
+      const cfg = readConfig()
+      const shortcut = cfg?.quickChat?.shortcut || 'Alt+Space'
+      registerQuickChatShortcut(shortcut)
+      return { ok: true, shortcut }
+    } catch (e) {
+      return { ok: false, error: e.message }
+    }
   })
 }
 
 // ─── Main window ─────────────────────────────────────
 function createMainWindow() {
+  if (mainWindow && !mainWindow.isDestroyed()) return mainWindow
+  const saved = loadWindowState()
+
   mainWindow = new BrowserWindow({
-    width: 1180,
-    height: 760,
+    width: (saved && saved.width) || 1180,
+    height: (saved && saved.height) || 760,
     minWidth: 900,
     minHeight: 600,
     title: 'OpenShadow Agent',
@@ -462,19 +683,49 @@ function createMainWindow() {
       webviewTag: true,
     },
     ...titleBarOpts(),
-    backgroundColor: '#faf8f5',
+    backgroundColor: themeController.bgFor(themeController.getTheme()),
     show: false,
   })
 
+  // 恢复位置
+  if (saved && saved.x != null && saved.y != null) {
+    try { mainWindow.setPosition(saved.x, saved.y) } catch {}
+  }
+  if (saved && saved.isMaximized) {
+    mainWindow.maximize()
+  }
+
   mainWindow.once('ready-to-show', () => {
-    if (mainWindow) mainWindow.show()
-    console.log('Main window shown')
+    if (mainWindow) {
+      // 应用当前主题的背景色（避免主题切换后重启时窗口背景跟不上）
+      themeController.applyToWindow(mainWindow, themeController.getTheme())
+      mainWindow.show()
+      console.log('Main window shown')
+    }
   })
 
   if (isDev) {
-    console.log('Loading Vite dev server:', VITE_DEV_URL)
-    mainWindow.loadURL(VITE_DEV_URL)
-    mainWindow.webContents.openDevTools({ mode: 'detach' })
+    // 开发模式：优先尝试 Vite dev server，不可用时回退到 dist-renderer
+    const http = require('http')
+    const devUrl = new URL(VITE_DEV_URL)
+    // 快速检测 Vite dev server 是否在运行
+    const req = http.get(devUrl.origin, { timeout: 2000 }, (res) => {
+      res.destroy()
+      console.log('Loading Vite dev server:', VITE_DEV_URL)
+      mainWindow.loadURL(VITE_DEV_URL)
+      mainWindow.webContents.openDevTools({ mode: 'detach' })
+    })
+    req.on('error', () => {
+      console.log('[main] Vite dev server not available, falling back to dist-renderer')
+      const exePath = app.getAppPath()
+      mainWindow.loadFile(join(exePath, 'desktop', 'dist-renderer', 'index.html'))
+    })
+    req.on('timeout', () => {
+      req.destroy()
+      console.log('[main] Vite dev server timeout, falling back to dist-renderer')
+      const exePath = app.getAppPath()
+      mainWindow.loadFile(join(exePath, 'desktop', 'dist-renderer', 'index.html'))
+    })
   } else {
     const exePath = app.getAppPath()
     mainWindow.loadFile(join(exePath, 'desktop', 'dist-renderer', 'index.html'))
@@ -485,6 +736,27 @@ function createMainWindow() {
     if (process.platform !== 'darwin') app.quit()
   })
 
+  // Renderer 崩溃自动恢复
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    console.error(`[main] renderer crashed: ${details.reason} (exitCode: ${details.exitCode})`)
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      setTimeout(() => {
+        try { mainWindow.reload() } catch {}
+      }, 1000)
+    }
+  })
+
+  // 拦截外部 URL 导航，用系统浏览器打开
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    try {
+      const parsed = new URL(url)
+      if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+        event.preventDefault()
+        shell.openExternal(url)
+      }
+    } catch {}
+  })
+
   const broadcastMaximizeChange = () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('window:maximize-change', mainWindow.isMaximized())
@@ -493,33 +765,506 @@ function createMainWindow() {
   mainWindow.on('maximize', broadcastMaximizeChange)
   mainWindow.on('unmaximize', broadcastMaximizeChange)
 
+  // 窗口状态持久化
+  mainWindow.on('resize', () => saveWindowStateSoon(mainWindow))
+  mainWindow.on('move', () => saveWindowStateSoon(mainWindow))
+  mainWindow.on('close', () => saveWindowState(mainWindow))
+
   console.log('Main window created (dev=' + isDev + ')')
 }
 
 // ─── App lifecycle ───────────────────────────────────
 Menu.setApplicationMenu(null)
 
+// ─── 单实例锁：防止多开 ─────────────────────────────────────
+const gotSingleInstanceLock = app.requestSingleInstanceLock()
+if (!gotSingleInstanceLock) {
+  console.log('[main] another instance is running, quitting')
+  app.quit()
+}
+app.on('second-instance', () => {
+  // 有人试图运行第二个实例，聚焦到现有窗口
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
+  }
+})
+
+// ─── Power Save Blocker ─────────────────────────────────────
+let wakeLockId = null
+const WINDOW_STATE_PATH = join(process.cwd(), 'window-state.json')
+
+function setWakeLock(active) {
+  if (active) {
+    if (wakeLockId === null) {
+      wakeLockId = powerSaveBlocker.start('prevent-app-suspension')
+      console.log('[main] wakeLock started, id:', wakeLockId)
+    }
+  } else {
+    if (wakeLockId !== null && powerSaveBlocker.isStarted(wakeLockId)) {
+      powerSaveBlocker.stop(wakeLockId)
+      wakeLockId = null
+      console.log('[main] wakeLock stopped')
+    }
+  }
+}
+
+// ─── 窗口状态持久化 ─────────────────────────────────────
+function loadWindowState() {
+  try {
+    if (existsSync(WINDOW_STATE_PATH)) {
+      return JSON.parse(readFileSync(WINDOW_STATE_PATH, 'utf-8'))
+    }
+  } catch {}
+  return null
+}
+
+function saveWindowState(win) {
+  if (!win || win.isDestroyed()) return
+  try {
+    const bounds = win.getBounds()
+    const state = {
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
+      isMaximized: win.isMaximized(),
+    }
+    writeFileSync(WINDOW_STATE_PATH, JSON.stringify(state, null, 2), 'utf-8')
+  } catch {}
+}
+
+let saveWindowStateTimer = null
+function saveWindowStateSoon(win) {
+  if (saveWindowStateTimer) clearTimeout(saveWindowStateTimer)
+  saveWindowStateTimer = setTimeout(() => {
+    saveWindowState(win)
+    saveWindowStateTimer = null
+  }, 1000)
+}
+
+// ─── Server Process Manager ─────────────────────────────────────
+// 管理 server 进程：启动、监控心跳、崩溃重启、优雅关闭
+const serverManager = createServerManager({
+  app,
+  lynnHome: process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow'),
+  dirname: __dirname,
+  execPath: process.execPath,
+  platform: process.platform,
+  env: process.env,
+  resourcesPath: process.resourcesPath || '',
+  fetch: globalThis.fetch,
+  onServerReady: ({ port, token, reused }) => {
+    console.log(`[main] Server ${reused ? 'reused' : 'started'} on port ${port}`)
+  },
+  onServerCrashed: (err) => {
+    console.error('[main] Server crashed:', err.message)
+    dialog.showErrorBox('OpenShadow Server', '服务器崩溃: ' + err.message)
+  },
+  onServerRestarted: ({ port, token }) => {
+    console.log('[main] Server restarted on port', port)
+  },
+  writeCrashLog: (msg) => {
+    try {
+      const logPath = join(process.cwd(), 'crash.log')
+      appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`, 'utf-8')
+    } catch {}
+  },
+})
+
+// ─── File Watch Registry ─────────────────────────────────────
+// 文件监控注册表：同一文件只创建一个 fs.watch，多个订阅者共享
+const fileWatchRegistry = createFileWatchRegistry({
+  watch: (filePath, callback) => {
+    // 使用 chokidar 监控文件
+    const watcher = require('chokidar').watch(filePath, {
+      ignoreInitial: true,
+      atomic: true,
+      awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
+    })
+    watcher.on('all', (eventType, changedPath) => {
+      callback(eventType, changedPath)
+    })
+    return watcher
+  },
+  notifySubscriber: (subscriberId, eventType, filePath) => {
+    const win = BrowserWindow.fromId(subscriberId)
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('file-watch:change', { eventType, filePath })
+    }
+  },
+})
+
+// ─── Workspace Watch Registry ─────────────────────────────────────
+// 工作区监控注册表：监控整个工作区的文件变化
+// 忽略常见非用户文件
+function shouldIgnoreWorkspacePath(rootPath, filePath) {
+  const relative = filePath.replace(rootPath, '').replace(/\\/g, '/')
+  const ignoredPatterns = [
+    '/node_modules/', '/.git/', '/.openshadow/', '/dist/', '/out/',
+    '/.DS_Store', '~', '.swp', '.swo', '.tmp', '.temp',
+    '.log', 'crash.log', 'server-info.json',
+  ]
+  return ignoredPatterns.some(p => relative.includes(p))
+}
+
+const workspaceWatchRegistry = createWorkspaceWatchRegistry({
+  watch: (rootPath, callback) => {
+    const watcher = require('chokidar').watch(rootPath, {
+      ignoreInitial: true,
+      atomic: true,
+      awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
+      ignored: (path) => {
+        return shouldIgnoreWorkspacePath(rootPath, path)
+      },
+    })
+    watcher.on('all', (eventType, changedPath) => {
+      callback(eventType, changedPath)
+    })
+    return watcher
+  },
+  notifySubscriber: (subscriberId, eventType, rootPath, changedPath) => {
+    const win = BrowserWindow.fromId(subscriberId)
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('workspace-watch:change', { eventType, rootPath, changedPath })
+    }
+  },
+})
+const themeController = createThemeController({
+  BrowserWindow,
+  nativeTheme,
+  getMainWindow: () => mainWindow,
+  getSettingsWindow: () => settingsWindow,
+  getBrowserViewer: () => null,  // 浏览器 viewer 不在 openshadow 路线里
+})
+themeController.attachIpc({ ipcMain, wrapIpcOn })
+
 app.whenReady().then(async () => {
   registerIpcHandlers()
+
+  // 启动 server（不阻塞 wizard 窗口；后台启动 + 心跳监控）
+  void (async () => {
+    try {
+      await serverManager.start()
+      serverManager.monitor()
+      serverManager.startHeartbeat()
+
+      // ─── 连接 Browser Agent 到 Server WebSocket ─────────────
+      if (browserAgent && serverManager.getPort()) {
+        browserAgent.setupCommands(serverManager.getPort(), serverManager.getToken())
+        console.log('[main] browser agent WebSocket setup complete')
+      }
+
+      // ─── 通知渲染进程 server 已就绪 ─────────────────────
+      const port = serverManager.getPort()
+      const token = serverManager.getToken()
+      if (port) {
+        console.log(`[main] Notifying renderer: server ready on port ${port}`)
+        // 通知所有窗口
+        for (const win of BrowserWindow.getAllWindows()) {
+          if (!win.isDestroyed()) {
+            win.webContents.send('server:ready', { port, token })
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[main] Failed to start server:', err.message)
+      // 不弹错误对话框阻塞主流程；只写 crash log
+      try {
+        const logPath = join(process.cwd(), 'crash.log')
+        appendFileSync(logPath, `[${new Date().toISOString()}] Server start failed: ${err.message}\n`, 'utf-8')
+      } catch {}
+    }
+  })()
+
+  createTray()
+  registerGlobalShortcut()
+
+  // ─── 初始化 Editor Window Controller ─────────────────────
+  try {
+    editorController = createEditorWindowController({
+      wrapIpcHandler,
+      isDev,
+      viteDevUrl: VITE_DEV_URL,
+      preloadPath: join(__dirname, 'preload.bundle.cjs'),
+      getMainWindow: () => mainWindow,
+      canWritePath,
+      grantWebContentsAccess,
+    })
+    editorController.register()
+    console.log('[main] editor window controller registered')
+  } catch (err) {
+    console.warn('[main] failed to init editor controller:', err.message)
+  }
+
+  // ─── 初始化 Browser Agent Controller（WebContentsView）───
+  try {
+    browserAgent = createBrowserAgentController({
+      isDev,
+      viteDevUrl: VITE_DEV_URL,
+      preloadPath: join(__dirname, 'preload.bundle.cjs'),
+      getMainWindow: () => mainWindow,
+    })
+    browserAgent.registerIpc(wrapIpcHandler)
+    console.log('[main] browser agent controller registered')
+  } catch (err) {
+    console.warn('[main] failed to init browser agent:', err.message)
+  }
+
+  // 安装应用菜单（macOS 必需，Windows 提供编辑菜单）
+  // 先初始化主进程 i18n（菜单项需要翻译）
+  try {
+    const { createMainI18n } = require('./main-i18n.cjs')
+    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+    const localesDir = join(__dirname, 'src', 'locales')
+    const { mt, reset: resetI18n } = createMainI18n({ hanakoHome, localesDir })
+    globalThis.__mainI18nMt = mt
+    console.log('[main] i18n initialized')
+  } catch (err) {
+    console.warn('[main] failed to init i18n:', err.message)
+    globalThis.__mainI18nMt = (key, d) => d || key
+  }
+
+  try {
+    const { installAppMenu } = require('./app-menu.cjs')
+    const mt = globalThis.__mainI18nMt || ((key, d) => d || key)
+    installAppMenu({ Menu, app, platform: process.platform, mt })
+  } catch (err) {
+    console.warn('[main] failed to install app menu:', err.message)
+  }
+
+  // 安装媒体权限处理器（麦克风/摄像头）
+  try {
+    const { session } = require('electron')
+    session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+      if (permission === 'media') {
+        // 只允许麦克风（audio），拒绝摄像头
+        const details = arguments[3] || {}
+        const mediaTypes = Array.isArray(details.mediaTypes) ? details.mediaTypes : []
+        const wantsAudio = mediaTypes.length === 0 || mediaTypes.includes('audio')
+        // 只给可信的 webContents 授权
+        const trusted = webContents.getURL().startsWith('http://localhost:') ||
+          webContents.getURL().startsWith('file://')
+        callback(Boolean(wantsAudio && trusted))
+        return
+      }
+      callback(false)
+    })
+
+    session.defaultSession.setPermissionCheckHandler((webContents, permission) => {
+      if (permission !== 'media') return false
+      const trusted = webContents.getURL().startsWith('http://localhost:') ||
+        webContents.getURL().startsWith('file://')
+      return Boolean(trusted)
+    })
+    console.log('[main] media permission handler installed')
+  } catch (err) {
+    console.warn('[main] failed to install media permission handler:', err.message)
+  }
+
   await runWizardWindow()
   if (isWizardCompleted()) {
     createMainWindow()
+    // 标记 GPU 启动完成
+    try {
+      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+      markGpuStartupReady({ hanakoHome, phase: 'main-window-created' })
+    } catch {}
+    // 初始化 Auto Updater（需要在 mainWindow 创建后）
+    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+    initAutoUpdater(mainWindow, { hanakoHome })
+    checkForUpdatesAuto()
+    // 初始化 Quick Chat 全局快捷键
+    initQuickChat()
+    // 初始化通知控制器
+    try {
+      const { createNotificationController } = require('./notification-controller.cjs')
+      const notificationController = createNotificationController({
+        app,
+        Notification,
+        systemPreferences,
+        wrapIpcHandler,
+        getMainWindow: () => mainWindow,
+      })
+      notificationController.register()
+      console.log('[main] notification controller registered')
+    } catch (err) {
+      console.warn('[main] failed to init notification controller:', err.message)
+    }
   } else {
     console.log('[main] waiting for wizard to complete…')
-    ipcMain.on('wizard:done-signal', () => {
-      console.log('[main] wizard done, opening main window')
+    wrapIpcOn('wizard:done-signal', async () => {
+      console.log('[main] wizard done')
       if (wizardWindow) wizardWindow.close()
       wizardWindow = null
+      // ⚠️ 关键：先发 config 到 server（包括 providers/models），等待完成后再开主窗口
+      // 否则主窗口前端加载时 server 还没 providers → 模型列表为空
+      try {
+        const cfg = readConfig()
+        const info = readServerInfo()
+        if (info && info.port) {
+          // providers: 向导格式是数组 [{id,name,type,...}] → API 期望对象 {name: {type,...}}
+          // ⚠️ 向导用 camelCase（apiKey/baseUrl），server 要求 snake_case（api_key/base_url）
+          const providersObj = {}
+          if (Array.isArray(cfg.providers)) {
+            for (const p of cfg.providers) {
+              if (!p || !p.id) continue
+              // 字段名转换：camelCase → snake_case
+              providersObj[p.id] = {
+                base_url: p.baseUrl || p.base_url || p.url || '',
+                api_key: p.apiKey || p.api_key || '',
+                api: p.api || p.type === 'anthropic' ? 'anthropic-messages' :
+                         p.type === 'gemini' ? 'google-generative-ai' :
+                         'openai-completions',
+                models: Array.isArray(p.models) ? p.models : [],
+                display_name: p.name || p.display_name || p.id,
+              }
+            }
+          }
+          const url = `http://127.0.0.1:${info.port}/api/config`
+          const headers = { 'Content-Type': 'application/json' }
+          if (info.token) headers['Authorization'] = `Bearer ${info.token}`
+          const res = await fetch(url, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
+              models: cfg.models,
+              wizard: cfg.wizard,
+              ui: cfg.ui,
+              user: cfg.user,
+              memory: cfg.memory,
+              theme: cfg.theme,
+              security: cfg.security,
+            }),
+          })
+          if (!res.ok) {
+            console.warn('[main] PUT /api/config failed:', res.status)
+          } else {
+            console.log('[main] PUT /api/config succeeded, server models ready')
+          }
+        } else {
+          console.warn('[main] server-info.json not available, skipping config push')
+        }
+      } catch (e) {
+        console.warn('[main] PUT /api/config error:', e.message)
+      }
+      // 现在 server 已有 providers，可以安全开主窗口
       createMainWindow()
+      // 标记 GPU 启动完成
+      try {
+        const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+        markGpuStartupReady({ hanakoHome, phase: 'main-window-created' })
+      } catch {}
+      // 初始化 Auto Updater
+      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+      initAutoUpdater(mainWindow, { hanakoHome })
+      checkForUpdatesAuto()
+      // 初始化 Quick Chat 全局快捷键
+      initQuickChat()
     })
   }
 })
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  // 有托盘时保持常驻（macOS 通过 dock 重新打开，Windows 通过托盘双击）
+  // 托盘不存在时直接退出，避免幽灵进程
+  if (!trayIcon) {
     app.quit()
   }
 })
+
+// ─── Tray 图标 ───────────────────────────────────────
+let trayIcon = null
+
+function createTray() {
+  if (trayIcon) return
+  try {
+    const { nativeImage } = require('electron')
+    const trayIconPath = join(__dirname, 'src', 'assets', 'rem-avatar.png')
+    const icon = nativeImage.createFromPath(trayIconPath)
+    icon.resize({ width: 16, height: 16 })
+    trayIcon = new Tray(icon)
+    const contextMenu = TrayMenu.buildFromTemplate([
+      {
+        label: '显示主窗口',
+        click: () => {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.show()
+            mainWindow.focus()
+          }
+        },
+      },
+      {
+        label: '设置',
+        click: () => {
+          const win = createSettingsWindow({
+            mainWindow,
+            preloadPath: join(__dirname, 'preload.bundle.cjs'),
+            iconPath: APP_ICON_PATH,
+            isDev,
+            viteDevUrl: VITE_DEV_URL,
+          })
+          if (win) win.show()
+        },
+      },
+      { type: 'separator' },
+      {
+        label: '退出',
+        click: () => {
+          app.quit()
+        },
+      },
+    ])
+    trayIcon.setToolTip('OpenShadow')
+    trayIcon.setContextMenu(contextMenu)
+    trayIcon.on('click', () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.isVisible()) {
+          mainWindow.hide()
+        } else {
+          mainWindow.show()
+          mainWindow.focus()
+        }
+      }
+    })
+    console.log('[main] tray icon created')
+  } catch (err) {
+    console.error('[main] failed to create tray icon:', err.message)
+  }
+}
+
+function destroyTray() {
+  if (trayIcon) {
+    trayIcon.destroy()
+    trayIcon = null
+  }
+}
+
+// ─── 全局快捷键（唤醒窗口）─────────────────────────────────────
+function registerGlobalShortcut() {
+  // 默认 Alt+Space 唤醒（用户可在设置里改）
+  const shortcut = 'Alt+Space'
+  const success = globalShortcut.register(shortcut, () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isVisible()) {
+        mainWindow.hide()
+      } else {
+        mainWindow.show()
+        mainWindow.focus()
+      }
+    }
+  })
+  if (success) {
+    console.log('[main] global shortcut registered:', shortcut)
+  } else {
+    console.warn('[main] failed to register global shortcut:', shortcut)
+  }
+}
+
+function unregisterGlobalShortcut() {
+  globalShortcut.unregisterAll()
+}
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
@@ -531,7 +1276,312 @@ app.on('activate', () => {
   }
 })
 
+// ─── 优雅关闭 ───────────────────────────────────
+app.on('before-quit', async (event) => {
+  console.log('[main] before-quit')
+  // 阻止默认退出，等 server 关闭后再退出
+  event.preventDefault()
+  destroyTray()
+  unregisterGlobalShortcut()
+  if (wakeLockId !== null && powerSaveBlocker.isStarted(wakeLockId)) {
+    powerSaveBlocker.stop(wakeLockId)
+    wakeLockId = null
+  }
+
+  // ─── 清理 Browser Agent 和 Editor Controller ─────
+  try {
+    if (browserAgent && browserAgent.shutdown) {
+      browserAgent.shutdown()
+      console.log('[main] browser agent shutdown complete')
+    }
+  } catch (err) {
+    console.warn('[main] browser agent shutdown error:', err.message)
+  }
+  try {
+    if (editorController && editorController.destroy) {
+      editorController.destroy()
+      console.log('[main] editor controller destroyed')
+    }
+  } catch (err) {
+    console.warn('[main] editor controller destroy error:', err.message)
+  }
+
+  // 优雅关闭 server
+  serverManager.setIsQuitting(true)
+  await serverManager.shutdown()
+  // 关闭完成后真正退出
+  app.exit(0)
+})
+
+// ─── Crash Log 写入 ───────────────────────────────────
+function writeCrashLog(err) {
+  try {
+    const logPath = join(process.cwd(), 'crash.log')
+    const timestamp = new Date().toISOString()
+    const entry = `[${timestamp}] ${err.message || err}\n${err.stack || ''}\n\n`
+    appendFileSync(logPath, entry, 'utf-8')
+    console.log('[main] crash log written to', logPath)
+  } catch {}
+}
+
+// ─── 全局错误兜底 ───────────────────────────────────
+process.on('uncaughtException', (err) => {
+  if (err.code === 'EPIPE' || err.code === 'ERR_IPC_CHANNEL_CLOSED') return
+  const traceId = Math.random().toString(16).slice(2, 10)
+  console.error(`[ErrorBus][${err.code || 'UNKNOWN'}][${traceId}] uncaughtException: ${err.message}`)
+  console.error(`[ErrorBus][${traceId}] ${err.stack || err.message}`)
+  writeCrashLog(err)
+})
+
+process.on('unhandledRejection', (reason) => {
+  const err = reason instanceof Error ? reason : new Error(String(reason))
+  const traceId = Math.random().toString(16).slice(2, 10)
+  console.error(`[ErrorBus][${err.code || 'UNKNOWN'}][${traceId}] unhandledRejection: ${err.message}`)
+  console.error(`[ErrorBus][${traceId}] ${err.stack || err.message}`)
+  writeCrashLog(err)
+})
+
+
+// ─── Splash 启动窗口 ─────────────────────────────────────
+// 启动时显示的启动画面（暂时用简单实现，后续可换完整 HTML）
+let splashWindow = null
+
+function createSplashWindow() {
+  if (splashWindow) return splashWindow
+  try {
+    splashWindow = new BrowserWindow({
+      width: 400,
+      height: 250,
+      frame: false,
+      alwaysOnTop: true,
+      center: true,
+      skipTaskbar: true,
+      resizable: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: false,
+      },
+      backgroundColor: '#F8F5ED',
+      show: false,
+      ...windowIconOpts(),
+    })
+    // 简单的 splash HTML
+    const splashHtml = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>OpenShadow</title></head>
+<body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;background:#F8F5ED;font-family:sans-serif;">
+  <h2 style="color:#333;margin-bottom:8px;">OpenShadow</h2>
+  <p style="color:#666;margin:0;">正在启动...</p>
+</body>
+</html>`
+    splashWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(splashHtml))
+    splashWindow.once('ready-to-show', () => {
+      splashWindow.show()
+    })
+    splashWindow.once('closed', () => {
+      splashWindow = null
+    })
+    console.log('[main] splash window created')
+  } catch (err) {
+    console.warn('[main] failed to create splash window:', err.message)
+  }
+  return splashWindow
+}
+
+function destroySplashWindow() {
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.close()
+    splashWindow = null
+  }
+}
+
+// ─── Quick Chat 全局悬浮小窗 ─────────────────────────────────────
+// 全局快捷键唤醒的快捷对话窗口（compact 模式 / chat 模式）
+let quickChatWindow = null
+let quickChatMode = 'compact'
+let registeredQuickChatShortcut = null
+
+const QUICK_CHAT_STATE_PATH = join(
+  process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow'),
+  'user', 'quick-chat-window-state.json'
+)
+
+function loadQuickChatWindowState() {
+  try {
+    return JSON.parse(readFileSync(QUICK_CHAT_STATE_PATH, 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
+function saveQuickChatWindowState() {
+  if (!quickChatWindow || quickChatWindow.isDestroyed()) return
+  try {
+    const bounds = quickChatWindow.getBounds()
+    const state = { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height, mode: quickChatMode }
+    mkdirSync(join(QUICK_CHAT_STATE_PATH, '..'), { recursive: true })
+    writeFileSync(QUICK_CHAT_STATE_PATH, JSON.stringify(state, null, 2), 'utf-8')
+  } catch {}
+}
+
+function getQuickChatBounds() {
+  const state = loadQuickChatWindowState()
+  const { screen } = require('electron')
+  const primary = screen.getPrimaryDisplay().workAreaSize
+  const width = 420
+  const height = quickChatMode === 'chat' ? 600 : 120
+  const x = state?.x ?? Math.round((primary.width - width) / 2)
+  const y = state?.y ?? Math.round((primary.height - height) - 40)
+  return { x, y, width, height }
+}
+
+function createQuickChatWindow() {
+  if (quickChatWindow && !quickChatWindow.isDestroyed()) return quickChatWindow
+  const bounds = getQuickChatBounds()
+  quickChatWindow = new BrowserWindow({
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+    minWidth: 320,
+    minHeight: 80,
+    maxWidth: quickChatMode === 'compact' ? 520 : undefined,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: quickChatMode === 'chat',
+    show: false,
+    webPreferences: {
+      preload: join(__dirname, 'preload.bundle.cjs'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false,
+    },
+    ...windowIconOpts(),
+  })
+
+  // 加载 quick-chat.html
+  if (isDev) {
+    quickChatWindow.loadURL(VITE_DEV_URL.replace(/\/?$/, '') + '/quick-chat.html').catch(err => {
+      console.error('[quick-chat] failed to load dev URL:', err.message)
+    })
+  } else {
+    const htmlPath = join(__dirname, 'dist-renderer', 'quick-chat.html')
+    quickChatWindow.loadFile(htmlPath).catch(err => {
+      console.error('[quick-chat] failed to load file:', err.message)
+    })
+  }
+
+  quickChatWindow.once('ready-to-show', () => {
+    if (quickChatWindow && !quickChatWindow.isDestroyed()) {
+      quickChatWindow.show()
+    }
+  })
+
+  quickChatWindow.on('closed', () => {
+    quickChatWindow = null
+  })
+
+  // 失去焦点时隐藏（可选，注释掉则不会自动隐藏）
+  // quickChatWindow.on('blur', () => {
+  //   if (quickChatWindow && !quickChatWindow.isDestroyed()) {
+  //     hideQuickChatWindow()
+  //   }
+  // })
+
+  console.log('[main] quick chat window created, mode=', quickChatMode)
+  return quickChatWindow
+}
+
+function showQuickChatWindow() {
+  const win = createQuickChatWindow()
+  if (win && !win.isVisible()) {
+    win.show()
+    win.focus()
+  } else if (win && win.isVisible() && !win.isFocused()) {
+    win.focus()
+  }
+}
+
+function hideQuickChatWindow() {
+  if (quickChatWindow && !quickChatWindow.isDestroyed()) {
+    saveQuickChatWindowState()
+    quickChatWindow.hide()
+  }
+}
+
+function toggleQuickChatWindow() {
+  if (quickChatWindow && !quickChatWindow.isDestroyed() && quickChatWindow.isVisible()) {
+    if (quickChatWindow.isFocused()) {
+      hideQuickChatWindow()
+    } else {
+      quickChatWindow.focus()
+    }
+  } else {
+    showQuickChatWindow()
+  }
+}
+
+function registerQuickChatShortcut(shortcut) {
+  shortcut = shortcut || 'Alt+Space'
+  if (registeredQuickChatShortcut) {
+    globalShortcut.unregister(registeredQuickChatShortcut)
+    registeredQuickChatShortcut = null
+  }
+  const ok = globalShortcut.register(shortcut, toggleQuickChatWindow)
+  if (ok) {
+    registeredQuickChatShortcut = shortcut
+    console.log('[quick-chat] global shortcut registered:', shortcut)
+  } else {
+    console.warn('[quick-chat] failed to register shortcut:', shortcut)
+  }
+}
+
+// 在 app.whenReady() 之后调用（需要 mainWindow 存在）
+function initQuickChat() {
+  // 从配置读取快捷键（默认 Alt+Space）
+  try {
+    const cfg = readConfig()
+    const shortcut = cfg?.quickChat?.shortcut || 'Alt+Space'
+    registerQuickChatShortcut(shortcut)
+  } catch {
+    registerQuickChatShortcut('Alt+Space')
+  }
+}
+
+// ─── 主进程 i18n（占位，后续实现）───────────────────────────────
+// 主进程中的国际化支持（当前仅英文/中文，后续扩展）
+const MAIN_PROCESS_LOCALE = 'zh-CN' // 可从配置读取
+
+function t(mainKey, locale) {
+  locale = locale || MAIN_PROCESS_LOCALE
+  const dict = {
+    'zh-CN': {
+      'app.name': 'OpenShadow',
+      'app.quitting': '正在退出...',
+      'app.server-crashed': '服务器崩溃',
+      'app.server-start-failed': '服务器启动失败',
+      'tray.show': '显示主窗口',
+      'tray.settings': '设置',
+      'tray.quit': '退出',
+    },
+    'en': {
+      'app.name': 'OpenShadow',
+      'app.quitting': 'Quitting...',
+      'app.server-crashed': 'Server Crashed',
+      'app.server-start-failed': 'Server start failed',
+      'tray.show': 'Show Main Window',
+      'tray.settings': 'Settings',
+      'tray.quit': 'Quit',
+    },
+  }
+  return (dict[locale] && dict[locale][mainKey]) || mainKey
+}
+
 console.log('Electron starting...')
 
 // Exported for unit testing
-module.exports = { registerIpcHandlers, isWizardCompleted, readConfig }
+module.exports = { registerIpcHandlers, isWizardCompleted, readConfig, setWakeLock, createSplashWindow, destroySplashWindow, t }
+

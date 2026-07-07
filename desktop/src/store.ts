@@ -1,5 +1,13 @@
 import { create } from 'zustand'
 
+// 动态 server base URL：握手成功后由 initApp 写入 window.__shadowServerPort。
+// 默认 3000 仅用于 dev / 兜底；安装包里 server 端口是动态的，必须用真实端口，
+// 否则端口≠3000（如 3000 被占用）时所有请求打错地址 → 文件树/配置/模型/主题全部失败。
+function getApiBase(): string {
+  const port = (typeof window !== 'undefined' && (window as unknown as { __shadowServerPort?: number }).__shadowServerPort) || 3000
+  return `http://127.0.0.1:${port}`
+}
+
 // ─── Content Block Types ─────────────────────────────────────
 export type ContentBlockType = 'text' | 'thinking' | 'tool_group' | 'image' | 'file' | 'interlude' | 'mood' | 'plugin_card' | 'todo' | 'workflow' | 'subagent' | 'settings_confirm' | 'settings_update'
 
@@ -371,7 +379,7 @@ export const useStore = create<AppState>((set, get) => ({
     const root = settings.workspaceRoots[0]
     if (!root) { set({ tree: [] }); return }
     try {
-      const res = await fetch(`http://localhost:3000/api/fs/tree?path=${encodeURIComponent(root)}&depth=3`)
+      const res = await fetch(`${getApiBase()}/api/fs/tree?path=${encodeURIComponent(root)}&depth=3`)
       if (!res.ok) { console.warn('refreshTree: API not implemented (404), using empty tree'); set({ tree: [] }); return }
       const data = await res.json()
       set({ tree: data.tree ?? [], deskPath: root })
@@ -383,7 +391,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   createFile: async (parentPath: string, name: string) => {
     try {
-      const res = await fetch('http://localhost:3000/api/fs/file', {
+      const res = await fetch(getApiBase() + '/api/fs/file', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ parentPath, name }),
       })
@@ -395,7 +403,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   createFolder: async (parentPath: string, name: string) => {
     try {
-      const res = await fetch('http://localhost:3000/api/fs/folder', {
+      const res = await fetch(getApiBase() + '/api/fs/folder', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ parentPath, name }),
       })
@@ -407,7 +415,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   renameFileNode: async (oldPath: string, newName: string) => {
     try {
-      const res = await fetch('http://localhost:3000/api/fs/rename', {
+      const res = await fetch(getApiBase() + '/api/fs/rename', {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ oldPath, newName }),
       })
@@ -419,7 +427,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   deleteFileNode: async (path: string) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/fs?path=${encodeURIComponent(path)}`, {
+      const res = await fetch(`${getApiBase()}/api/fs?path=${encodeURIComponent(path)}`, {
         method: 'DELETE',
       })
       if (!res.ok) return false
@@ -475,7 +483,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   loadSettings: async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/config')
+      const res = await fetch(getApiBase() + '/api/config')
       if (!res.ok) throw new Error(`GET /api/config failed: ${res.status}`)
       const config = await res.json()
       set(state => {
@@ -486,7 +494,7 @@ export const useStore = create<AppState>((set, get) => ({
             ? sec.workspaceRoots
             : ((config.workspaceRoots && config.workspaceRoots.length > 0)
               ? config.workspaceRoots
-              : (state.settings.workspaceRoots.length > 0 ? state.settings.workspaceRoots : ['D:/src/aicoding/openshadow']))
+              : (state.settings.workspaceRoots.length > 0 ? state.settings.workspaceRoots : ['']))
         return {
           settings: {
             ...state.settings,
@@ -505,7 +513,7 @@ export const useStore = create<AppState>((set, get) => ({
           ...state.settings,
           workspaceRoots: state.settings.workspaceRoots.length > 0
             ? state.settings.workspaceRoots
-            : ['D:/src/aicoding/openshadow'],
+            : [''],
           loaded: true,
         }
       }))
@@ -516,7 +524,7 @@ export const useStore = create<AppState>((set, get) => ({
   saveSettings: async () => {
     const { settings } = get()
     try {
-      await fetch('http://localhost:3000/api/config/security', {
+      await fetch(getApiBase() + '/api/config/security', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
@@ -535,9 +543,13 @@ export const useStore = create<AppState>((set, get) => ({
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('rem.theme', theme)
     }
+    // Trigger CSS file switch via theme.js (changes <link id="themeSheet"> href)
+    if (typeof window !== 'undefined' && typeof window.setTheme === 'function') {
+      window.setTheme(theme)
+    }
     document.documentElement.setAttribute('data-theme', theme)
     try {
-      await fetch('http://localhost:3000/api/config/theme', {
+      await fetch(getApiBase() + '/api/config/theme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ theme }),
@@ -550,7 +562,7 @@ export const useStore = create<AppState>((set, get) => ({
   loadModels: async () => {
     if (get().modelsLoaded) return
     try {
-      const res = await fetch('http://localhost:3000/api/models')
+      const res = await fetch(getApiBase() + '/api/models')
       const data = await res.json()
       const models: ModelInfo[] = []
       const list = Array.isArray(data.models) ? data.models : []
@@ -569,7 +581,7 @@ export const useStore = create<AppState>((set, get) => ({
       localStorage.setItem(MODEL_KEY, JSON.stringify(m))
     }
     try {
-      const res = await fetch('http://localhost:3000/api/models/set', {
+      const res = await fetch(getApiBase() + '/api/models/set', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider: m.provider, model: m.model }),
@@ -593,7 +605,7 @@ export const useStore = create<AppState>((set, get) => ({
   setPermissionMode: (m) => {
     set({ permissionMode: m })
     if (typeof localStorage !== 'undefined') localStorage.setItem(PERM_KEY, m)
-    fetch('http://localhost:3000/api/permissions/set', {
+    fetch(getApiBase() + '/api/permissions/set', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode: m }),
@@ -614,7 +626,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ memoryOn: on })
     if (typeof localStorage !== 'undefined') localStorage.setItem(MEM_KEY, on ? '1' : '0')
     try {
-      await fetch('http://localhost:3000/api/config/memory', {
+      await fetch(getApiBase() + '/api/config/memory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled: on }),
