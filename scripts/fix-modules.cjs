@@ -97,11 +97,65 @@ exports.default = async function (context) {
       throw new Error(`[fix-modules] Computer Use helper is not executable: ${computerUseHelper}`);
     }
   }
-  const serverDir = path.join(resourcesDir, "server");
-  const osDirName = platformName === "mac" ? "mac" : platformName === "windows" ? "win" : "linux";
-  const serverBuildModules = path.join(__dirname, "..", "dist-server", `${osDirName}-${arch}`, "node_modules");
+  const serverDir = path.join(resourcesDir, "server-bundle");
 
-  copyBundledServerNodeModules(serverDir, serverBuildModules);
+  // 对齐 openhanako：在打包后的 resources/server-bundle/ 中 npm install
+  // 自动处理所有传递依赖、精确版本、native addon 编译
+  const serverPkgPath = path.join(serverDir, "package.json");
+  if (fs.existsSync(serverPkgPath)) {
+    console.log("[fix-modules] npm install in server-bundle...");
+    try {
+      const { execSync } = require("child_process");
+      execSync("npm install --omit=dev --no-audit --no-fund --prefer-offline", {
+        cwd: serverDir,
+        stdio: "inherit",
+        env: { ...process.env, NODE_ENV: "production" },
+      });
+      console.log("[fix-modules] server-bundle deps installed");
+    } catch (err) {
+      console.error("[fix-modules] npm install failed:", err.message);
+      throw err;
+    }
+
+    // 关键传递依赖校验：防止漏装导致 server 启动即崩
+    // （如 @mariozechner/pi-ai → partial-json），进而首页拉不到 API。
+    const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json"];
+    const missingServerDeps = requiredServerDeps.filter(
+      (p) => !fs.existsSync(path.join(serverDir, "node_modules", p, "package.json")),
+    );
+    if (missingServerDeps.length > 0) {
+      throw new Error(
+        `[fix-modules] server-bundle 缺少关键依赖: ${missingServerDeps.join(", ")}。` +
+          " 这通常是因为打包环境离线/缓存不完整导致 npm install 漏装传递依赖。" +
+          " 请在联网环境重新构建，或检查 npm registry 可达性。",
+      );
+    }
+
+    // 修补 @mariozechner/* 包的 package.json `exports`：
+    // 这些包（如 pi-coding-agent 0.70.2）的 exports 字段未声明打包 bundle
+    // 引用的内部子路径（如 ./dist/utils/image-resize.js）。external 化后，
+    // 运行时 Node 会抛 ERR_PACKAGE_PATH_NOT_EXPORTED 导致 server 启动即崩。
+    // 这里补全通配子路径映射，使深层 import 在运行时可解析。
+    const marioDir = path.join(serverDir, "node_modules", "@mariozechner");
+    if (fs.existsSync(marioDir)) {
+      for (const pkg of fs.readdirSync(marioDir)) {
+        const pkgJson = path.join(marioDir, pkg, "package.json");
+        if (!fs.existsSync(pkgJson)) continue;
+        let p;
+        try { p = JSON.parse(fs.readFileSync(pkgJson, "utf-8")); } catch { continue; }
+        if (!p.exports || typeof p.exports !== "object") continue;
+        const patterns = ["./*", "./dist/*", "./dist/utils/*", "./dist/core/*", "./dist/llm/*"];
+        let changed = false;
+        for (const k of patterns) {
+          if (!(k in p.exports)) { p.exports[k] = k; changed = true; }
+        }
+        if (changed) {
+          fs.writeFileSync(pkgJson, JSON.stringify(p, null, 2));
+          console.log(`[fix-modules] patched exports for @mariozechner/${pkg}`);
+        }
+      }
+    }
+  }
 
   if (!fs.existsSync(distModules)) return;
 

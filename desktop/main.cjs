@@ -9,6 +9,20 @@
 const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeTheme, Tray, Menu: TrayMenu, globalShortcut, powerSaveBlocker, shell } = require('electron')
 const { join, dirname, resolve } = require('path')
 const { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } = require('fs')
+const os = require('os')
+
+// ─── 统一数据目录（对齐 server 的 resolveShadowHome）──────────
+// Windows 上 process.env.APPDATA 指向 AppData\Roaming，与 server 的 os.homedir() 不一致。
+// 必须在所有项目 require() 和 hanakoHome / _hanakoHome 使用之前设置，确保桌面和服务器读写同一目录。
+// 注意：desktop-access-policy.cjs 等模块在 require() 时即读取此 env，因此该块必须先于任何项目 require() 执行。
+if (!process.env.OPENSHADOW_HOME) {
+  process.env.OPENSHADOW_HOME = join(os.homedir(), '.openshadow')
+}
+if (!process.env.SHADOW_HOME) {
+  process.env.SHADOW_HOME = process.env.OPENSHADOW_HOME
+}
+mkdirSync(process.env.OPENSHADOW_HOME, { recursive: true })
+
 const { createThemeController } = require('./theme-controller.cjs')
 const { setIpcSenderValidator, wrapIpcHandler, wrapIpcOn } = require('./ipc-wrapper.cjs')
 const { createServerManager } = require('./server-manager.cjs')
@@ -88,6 +102,12 @@ function titleBarOpts(trafficLight) {
   }
   return framelessWindowOpts()
 }
+
+// ─── Wizard completion flag ────────────────────────────────────
+// 当 wizard:done-signal 触发时设为 true，让 close 事件跳过 "还没配置完" 对话框
+let wizardCompleting = false
+// 防止 wizard→main 切换时 window-all-closed 误退出
+let suppressWindowAllClosed = false
 
 // ─── Self-contained config reader ────────────────────────────
 // 对齐 openhanako：配置写到用户数据目录，不写安装目录（避免 Program Files EPERM）
@@ -303,6 +323,11 @@ async function runWizardWindow() {
   console.log('[wizard] loaded HTML from', htmlPath)
 
   wizardWindow.on('close', (e) => {
+    // wizardCompleting=true 表示 wizard:done-signal 主动关闭，不弹对话框
+    if (wizardCompleting) {
+      wizardWindow = null
+      return
+    }
     if (!isWizardCompleted()) {
       const choice = dialog.showMessageBoxSync(wizardWindow, {
         type: 'question',
@@ -663,6 +688,145 @@ function registerIpcHandlers() {
 }
 
 // ─── Main window ─────────────────────────────────────
+// 把 config.json 里的 providers/models 推送给 server（向导完成 / 启动已标记完成时都调用）。
+// 抽成独立函数，避免「已完成」分支与 done-signal 重复实现推送逻辑。
+async function pushWizardConfigToServer() {
+  // ⚠️ 关键：等 server 就绪后发 config（包括 providers/models），再开主窗口
+  // 等待 serverManager 就绪（最多 15s）
+  let port = serverManager.getPort()
+  let token = serverManager.getToken()
+  if (!port) {
+    console.log('[main] waiting for server to be ready...')
+    for (let i = 0; i < 75 && !port; i++) {
+      await new Promise(r => setTimeout(r, 200))
+      port = serverManager.getPort()
+      token = serverManager.getToken()
+    }
+  }
+  if (port) {
+    console.log(`[main] server ready on port ${port}, pushing config`)
+    const cfg = readConfig()
+    const providersObj = {}
+    if (Array.isArray(cfg.providers)) {
+      for (const p of cfg.providers) {
+        if (!p || !p.id) continue
+        providersObj[p.id] = {
+          base_url: p.baseUrl || p.base_url || p.url || '',
+          api_key: p.apiKey || p.api_key || '',
+          api: p.api || (p.type === 'anthropic' ? 'anthropic-messages' :
+                   p.type === 'gemini' ? 'google-generative-ai' :
+                   'openai-completions'),
+          models: Array.isArray(p.models) ? p.models : [],
+          display_name: p.name || p.display_name || p.id,
+        }
+      }
+    }
+
+    // Convert wizard model format {main: "provider::model"} to engine format {chat: {id, provider}}
+    // The wizard saves {main, small, large} as "providerId::modelId" strings.
+    // The engine expects {chat: {id, provider}, utility: {id, provider}, utility_large: {id, provider}}.
+    const engineModels = {}
+    if (cfg.models && typeof cfg.models === 'object') {
+      for (const [role, ref] of Object.entries(cfg.models)) {
+        if (typeof ref === 'string' && ref.includes('::')) {
+          const sepIdx = ref.indexOf('::')
+          const provider = ref.slice(0, sepIdx)
+          const id = ref.slice(sepIdx + 2)
+          const engineRole = role === 'main' ? 'chat'
+            : role === 'small' ? 'utility'
+            : role === 'large' ? 'utility_large'
+            : role
+          engineModels[engineRole] = { id, provider }
+        } else if (typeof ref === 'object' && ref !== null && ref.id) {
+          // Already in {id, provider} format — pass through
+          engineModels[role] = ref
+        }
+      }
+    }
+    console.log('[main] converted models:', JSON.stringify(engineModels))
+
+    const url = `http://127.0.0.1:${port}/api/config`
+    const headers = { 'Content-Type': 'application/json' }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const putBody = {
+      providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
+      models: Object.keys(engineModels).length > 0 ? engineModels : cfg.models,
+      wizard: cfg.wizard,
+      ui: cfg.ui,
+      user: cfg.user,
+      memory: cfg.memory,
+      theme: cfg.theme,
+      security: cfg.security,
+    }
+
+    // 自愈推送：最多重试 3 次；每次 PUT 后校验模型是否生效，
+    // 若未生效（availableModels 尚未就绪 / 瞬态失败）则兜底 POST /api/models/set。
+    let pushedOk = false
+    for (let attempt = 1; attempt <= 3 && !pushedOk; attempt++) {
+      try {
+        const res = await fetch(url, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(putBody),
+          signal: AbortSignal.timeout(10000),
+        })
+        console.log(`[main] PUT /api/config → ${res.status} (attempt ${attempt})`)
+        if (res.ok) pushedOk = true
+      } catch (e) {
+        console.warn(`[main] PUT /api/config failed (attempt ${attempt}):`, e.message)
+      }
+      if (!pushedOk && attempt < 3) {
+        await new Promise(r => setTimeout(r, 800))
+        continue
+      }
+      // 校验：模型是否已在 availableModels 且为 current
+      try {
+        const mRes = await fetch(`http://127.0.0.1:${port}/api/models`, { headers, signal: AbortSignal.timeout(10000) })
+        const mData = await mRes.json().catch(() => ({}))
+        const models = Array.isArray(mData) ? mData : (mData.models || [])
+        const chatModel = engineModels.chat
+        const currentModel = models.find(m => m.isCurrent)
+        const targetHit = chatModel && models.some(m => m.id === chatModel.id && m.provider === chatModel.provider)
+        if (chatModel && (!targetHit || !currentModel || currentModel.id !== chatModel.id || currentModel.provider !== chatModel.provider)) {
+          // 兜底：直接调用 set 端点把目标模型设为 current
+          console.warn(`[main] model not effective after push (attempt ${attempt}), falling back to POST /api/models/set`)
+          const setRes = await fetch(`http://127.0.0.1:${port}/api/models/set`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ modelId: chatModel.id, provider: chatModel.provider }),
+            signal: AbortSignal.timeout(10000),
+          })
+          console.log(`[main] POST /api/models/set → ${setRes.status}`)
+          if (setRes.ok) pushedOk = true
+        } else if (chatModel) {
+          pushedOk = true
+        }
+      } catch (e) {
+        console.warn(`[main] verify models failed (attempt ${attempt}):`, e.message)
+      }
+    }
+    if (!pushedOk) console.error('[main] config push did NOT take effect after retries — model may not be configured')
+
+    // Mark setup as complete so the engine knows the wizard is done
+    try {
+      const setupRes = await fetch(`http://127.0.0.1:${port}/api/preferences/setup-complete`, {
+        method: 'POST',
+        headers,
+        signal: AbortSignal.timeout(10000),
+      })
+      console.log(`[main] POST /api/preferences/setup-complete → ${setupRes.status}`)
+      const setupBody = await setupRes.json().catch(() => ({}))
+      if (!setupBody.setupComplete) {
+        console.warn('[main] setup-complete response did not confirm setupComplete=true')
+      }
+    } catch (e) {
+      console.warn('[main] setup-complete error:', e.message)
+    }
+  } else {
+    console.warn('[main] server not ready after 15s, config push skipped')
+  }
+}
+
 function createMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) return mainWindow
   const saved = loadWindowState()
@@ -703,6 +867,14 @@ function createMainWindow() {
       console.log('Main window shown')
     }
   })
+
+  // Fallback: force-show window if ready-to-show doesn't fire within 8s
+  setTimeout(() => {
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
+      mainWindow.show()
+      console.warn('[main] window force-shown (ready-to-show fallback after 8s)')
+    }
+  }, 8000)
 
   if (isDev) {
     // 开发模式：优先尝试 Vite dev server，不可用时回退到 dist-renderer
@@ -847,7 +1019,7 @@ function saveWindowStateSoon(win) {
 // 管理 server 进程：启动、监控心跳、崩溃重启、优雅关闭
 const serverManager = createServerManager({
   app,
-  lynnHome: process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow'),
+  lynnHome: process.env.OPENSHADOW_HOME || join((process.env.APPDATA || os.homedir()), '.openshadow'),
   dirname: __dirname,
   execPath: process.execPath,
   platform: process.platform,
@@ -1062,7 +1234,6 @@ app.whenReady().then(async () => {
     console.warn('[main] failed to install media permission handler:', err.message)
   }
 
-  await runWizardWindow()
   if (isWizardCompleted()) {
     createMainWindow()
     // 标记 GPU 启动完成
@@ -1091,66 +1262,36 @@ app.whenReady().then(async () => {
     } catch (err) {
       console.warn('[main] failed to init notification controller:', err.message)
     }
+    // ⚠️ 即使 wizard 已标记 completed（旧版可能残留 completed:true 但 server 没真正拿到配置），
+    // 也把 config.json 的 providers/models 推送给 server，确保主窗口模型可用。
+    pushWizardConfigToServer().catch(e => console.warn('[main] startup config push failed:', e.message))
   } else {
     console.log('[main] waiting for wizard to complete…')
-    wrapIpcOn('wizard:done-signal', async () => {
+    await runWizardWindow()
+  }
+  // ⚠️ done-signal 必须【始终】注册：旧版把 wizard.completed 写进 config.json 后，
+  // 若结构判断走到「已完成」分支会跳过注册，导致向导「启动」按钮点了无反应、
+  // 看门狗 10s 后复位（保存中 → 回到启动）。这里无条件注册，保证任何情况下都能关闭向导并开主窗口。
+  wrapIpcOn('wizard:done-signal', async () => {
       console.log('[main] wizard done')
+      wizardCompleting = true
+      suppressWindowAllClosed = true   // 防止 wizard 关闭后 app.quit()
       if (wizardWindow) wizardWindow.close()
       wizardWindow = null
-      // ⚠️ 关键：先发 config 到 server（包括 providers/models），等待完成后再开主窗口
-      // 否则主窗口前端加载时 server 还没 providers → 模型列表为空
+      // 推送 config（providers/models）→ server，确保模型生效（逻辑已抽到 pushWizardConfigToServer）
       try {
-        const cfg = readConfig()
-        const info = readServerInfo()
-        if (info && info.port) {
-          // providers: 向导格式是数组 [{id,name,type,...}] → API 期望对象 {name: {type,...}}
-          // ⚠️ 向导用 camelCase（apiKey/baseUrl），server 要求 snake_case（api_key/base_url）
-          const providersObj = {}
-          if (Array.isArray(cfg.providers)) {
-            for (const p of cfg.providers) {
-              if (!p || !p.id) continue
-              // 字段名转换：camelCase → snake_case
-              providersObj[p.id] = {
-                base_url: p.baseUrl || p.base_url || p.url || '',
-                api_key: p.apiKey || p.api_key || '',
-                api: p.api || p.type === 'anthropic' ? 'anthropic-messages' :
-                         p.type === 'gemini' ? 'google-generative-ai' :
-                         'openai-completions',
-                models: Array.isArray(p.models) ? p.models : [],
-                display_name: p.name || p.display_name || p.id,
-              }
-            }
-          }
-          const url = `http://127.0.0.1:${info.port}/api/config`
-          const headers = { 'Content-Type': 'application/json' }
-          if (info.token) headers['Authorization'] = `Bearer ${info.token}`
-          const res = await fetch(url, {
-            method: 'PUT',
-            headers,
-            body: JSON.stringify({
-              providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
-              models: cfg.models,
-              wizard: cfg.wizard,
-              ui: cfg.ui,
-              user: cfg.user,
-              memory: cfg.memory,
-              theme: cfg.theme,
-              security: cfg.security,
-            }),
-          })
-          if (!res.ok) {
-            console.warn('[main] PUT /api/config failed:', res.status)
-          } else {
-            console.log('[main] PUT /api/config succeeded, server models ready')
-          }
-        } else {
-          console.warn('[main] server-info.json not available, skipping config push')
-        }
+        await pushWizardConfigToServer()
       } catch (e) {
         console.warn('[main] PUT /api/config error:', e.message)
       }
       // 现在 server 已有 providers，可以安全开主窗口
-      createMainWindow()
+      try {
+        createMainWindow()
+      } catch (e) {
+        console.error('[main] createMainWindow failed after wizard:', e.message)
+      } finally {
+        suppressWindowAllClosed = false   // 恢复正常退出行为
+      }
       // 标记 GPU 启动完成
       try {
         const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
@@ -1163,10 +1304,11 @@ app.whenReady().then(async () => {
       // 初始化 Quick Chat 全局快捷键
       initQuickChat()
     })
-  }
 })
 
 app.on('window-all-closed', () => {
+  // wizard→main 切换期间不退出
+  if (suppressWindowAllClosed) return
   // 有托盘时保持常驻（macOS 通过 dock 重新打开，Windows 通过托盘双击）
   // 托盘不存在时直接退出，避免幽灵进程
   if (!trayIcon) {

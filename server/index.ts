@@ -16,8 +16,15 @@ import path from 'path'
 import os from 'os'
 import * as fsSync from 'fs'
 import { createNodeWebSocket } from '@hono/node-ws'
+import { fileURLToPath } from 'url'
 
 import { HanaEngine } from '../core/engine.js'
+import { ensureFirstRun } from '../core/first-run.js'
+import {
+  ensureHanaPiSdkDirs,
+  configureProcessPiSdkEnv,
+} from '../shared/hana-runtime-paths.js'
+import { fromRoot } from '../shared/hana-root.js'
 import { createAccessRoute } from './routes/access.js'
 import { createAgentsRoute } from './routes/agents.js'
 import { createAuthRoute } from './routes/auth.js'
@@ -99,80 +106,39 @@ const shadowHome = resolveShadowHome()
 process.env.SHADOW_HOME = shadowHome
 process.env.OPENSHADOW_HOME = shadowHome
 
+// 对齐 openhanako：Pi SDK 目录初始化 + 环境变量设置
+ensureHanaPiSdkDirs(shadowHome)
+configureProcessPiSdkEnv(shadowHome)
+
+// 对齐 openhanako：productDir 指向 lib/ 数据目录（config.example.yaml 等模板）
+const productDir = fromRoot('lib')
+
 async function start() {
-  // 初始化 HanaEngine（对齐 openhanako：hanakoHome 用用户数据目录，不用 process.cwd()）
-  const productDir = process.cwd()
+  // ensureFirstRun 播种默认配置（agents/config.yaml/provider-catalog.json 等）
+  // 必须在 engine.init() 之前调用，否则 engine 读取不到 providers/models
+  // ⚠️ 改为非致命：模板/路径缺失（如打包环境 lib/ 解析异常）只告警，不能让 server 起不来，
+  // 否则 server-info.json 永远不写 → 主进程 done-signal 等待 15s 后跳过配置推送 →
+  // 向导配置的模型不生效、首页也无法修改模型。
+  console.log('[shadow] ensureFirstRun...')
+  try {
+    ensureFirstRun(shadowHome, productDir)
+    console.log('[shadow] ensureFirstRun done')
+  } catch (e) {
+    console.error('[shadow] ensureFirstRun failed (non-fatal, continuing):', (e as any)?.message || e)
+  }
+
+  // 初始化 HanaEngine（对齐 openhanako：不传 agentId，引擎自动用 DEFAULT_AGENT_ID='hanako'）
   const engine: any = new HanaEngine({
     hanakoHome: shadowHome,
     productDir: productDir,
-    agentId: 'rem-default',
     appVersion: '0.1.0',
   } as any)
-  ;(engine as any).hanakoHome = shadowHome
-  ;(engine as any).appVersion = '0.1.0'
-
-  // 初始化默认 agent 目录（放在 shadowHome 下，不在安装目录）
-  const defaultAgentDir = path.join(shadowHome, 'agents', 'rem-default')
-  try { fsSync.mkdirSync(defaultAgentDir, { recursive: true }) } catch {}
-
-  // 在 engine.init() 后创建真实 Hub（替代 dummy）
-  // hub 将在 engine init 后创建，参见下方
-
-  // 修补 agentDir getter
-  try {
-    Object.defineProperty(engine, 'agentDir', {
-      get() { return defaultAgentDir },
-      configurable: true,
-    })
-    console.log('[shadow] Patched agentDir getter')
-  } catch (e) {
-    console.error('[shadow] Failed to override agentDir getter:', (e as any).message)
-  }
-
-  // 设置 userDir（放在 shadowHome 下）
-  try {
-    const defaultUserDir = path.join(shadowHome, 'user')
-    fsSync.mkdirSync(defaultUserDir, { recursive: true })
-    ;(engine as any).userDir = defaultUserDir
-    console.log('[shadow] Set userDir to', defaultUserDir)
-  } catch (e) {
-    console.error('[shadow] Failed to set userDir:', (e as any).message)
-  }
-
-  console.log('[shadow] engine.userDir =', engine.userDir)
-  console.log('[shadow] engine.agentDir =', engine.agentDir)
 
   // ═══ 关键：初始化引擎（加载 config、agents、plugins 等）═══
   console.log('[shadow] Initializing engine...')
   try {
     await engine.init((msg: any) => console.log('[engine]', msg))
-    console.log('[shadow] Engine initialized')
-
-    // ── 注入 API key 到 AuthStorage（真 Pi SDK 从 models.json 加载模型，此处只提供密钥）──
-    const authStorage = (engine as any).authStorage
-    if (authStorage?.set) {
-      authStorage.set('minimax-token-plan', {
-        api_key: 'sk-cp-EcIO_LJLgf4g8oIe8HniPvvRuwbv3QMdQs0G2RFzlszzrquCq0xzWS1VlXXzmJ3BffHRfzS68CfwaQ75jE61f5_agAIQoO6wmnnZaIwdqqFHluWaxyIDIro',
-        base_url: 'https://api.minimaxi.com/v1',
-        api: 'openai-completions',
-      })
-      authStorage.set('deepseek', {
-        api_key: '<你的 DeepSeek API Key>',
-        base_url: 'https://api.deepseek.com/v1',
-        api: 'openai-completions',
-      })
-      authStorage.set('qwen', {
-        api_key: '<你的 DashScope API Key>',
-        base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-        api: 'openai-completions',
-      })
-      authStorage.set('glm', {
-        api_key: '<你的智谱 API Key>',
-        base_url: 'https://open.bigmodel.cn/api/paas/v4',
-        api: 'openai-completions',
-      })
-      console.log('[shadow] API keys injected to AuthStorage')
-    }
+    console.log('[shadow] Engine initialized (providers/models from disk via ensureFirstRun)')
   } catch (err) {
     console.error('[shadow] engine.init() failed:', (err as any).message)
   }

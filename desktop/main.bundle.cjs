@@ -2,8 +2,8 @@
 const require$$1 = require("electron");
 const require$$1$2 = require("path");
 const require$$2 = require("fs");
-const require$$1$1 = require("child_process");
 const require$$3 = require("os");
+const require$$1$1 = require("child_process");
 const require$$0 = require("constants");
 const require$$0$1 = require("stream");
 const require$$4 = require("util");
@@ -18140,7 +18140,7 @@ const providerPresets = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.def
   API_PROVIDER_PRESETS,
   getProviderPresetLabel
 }, Symbol.toStringTag, { value: "Module" }));
-const require$$15 = /* @__PURE__ */ getAugmentedNamespace(providerPresets);
+const require$$16 = /* @__PURE__ */ getAugmentedNamespace(providerPresets);
 const EntryTypes = {
   FILE_TYPE: "files",
   DIR_TYPE: "directories",
@@ -19860,7 +19860,7 @@ const chokidar = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProp
   default: index,
   watch
 }, Symbol.toStringTag, { value: "Module" }));
-const require$$17 = /* @__PURE__ */ getAugmentedNamespace(chokidar);
+const require$$18 = /* @__PURE__ */ getAugmentedNamespace(chokidar);
 var mainI18n;
 var hasRequiredMainI18n;
 function requireMainI18n() {
@@ -20038,6 +20038,14 @@ function requireMain() {
   const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeTheme, Tray, Menu: TrayMenu, globalShortcut, powerSaveBlocker, shell } = require$$1;
   const { join, dirname, resolve } = require$$1$2;
   const { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } = require$$2;
+  const os = require$$3;
+  if (!process.env.OPENSHADOW_HOME) {
+    process.env.OPENSHADOW_HOME = join(os.homedir(), ".openshadow");
+  }
+  if (!process.env.SHADOW_HOME) {
+    process.env.SHADOW_HOME = process.env.OPENSHADOW_HOME;
+  }
+  mkdirSync(process.env.OPENSHADOW_HOME, { recursive: true });
   const { createThemeController } = requireThemeController();
   const { setIpcSenderValidator, wrapIpcHandler, wrapIpcOn } = requireIpcWrapper();
   const { createServerManager } = requireServerManager();
@@ -20102,6 +20110,8 @@ function requireMain() {
     }
     return framelessWindowOpts();
   }
+  let wizardCompleting = false;
+  let suppressWindowAllClosed = false;
   const _hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || "", ".openshadow");
   const CONFIG_PATH = join(_hanakoHome, "config.json");
   function readConfig() {
@@ -20135,7 +20145,7 @@ function requireMain() {
   function isWizardCompleted() {
     return readConfig().wizard && readConfig().wizard.completed === true;
   }
-  const { API_PROVIDER_PRESETS: API_PROVIDER_PRESETS2 } = require$$15;
+  const { API_PROVIDER_PRESETS: API_PROVIDER_PRESETS2 } = require$$16;
   const PROVIDER_MODELS = {
     openai: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1-mini", "o3-mini"],
     anthropic: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-sonnet-4-20250514"],
@@ -20277,6 +20287,10 @@ function requireMain() {
     await wizardWindow.loadFile(htmlPath);
     console.log("[wizard] loaded HTML from", htmlPath);
     wizardWindow.on("close", (e) => {
+      if (wizardCompleting) {
+        wizardWindow = null;
+        return;
+      }
       if (!isWizardCompleted()) {
         const choice = dialog.showMessageBoxSync(wizardWindow, {
           type: "question",
@@ -20590,6 +20604,122 @@ function requireMain() {
       }
     });
   }
+  async function pushWizardConfigToServer() {
+    let port = serverManager2.getPort();
+    let token = serverManager2.getToken();
+    if (!port) {
+      console.log("[main] waiting for server to be ready...");
+      for (let i = 0; i < 75 && !port; i++) {
+        await new Promise((r) => setTimeout(r, 200));
+        port = serverManager2.getPort();
+        token = serverManager2.getToken();
+      }
+    }
+    if (port) {
+      console.log(`[main] server ready on port ${port}, pushing config`);
+      const cfg = readConfig();
+      const providersObj = {};
+      if (Array.isArray(cfg.providers)) {
+        for (const p of cfg.providers) {
+          if (!p || !p.id) continue;
+          providersObj[p.id] = {
+            base_url: p.baseUrl || p.base_url || p.url || "",
+            api_key: p.apiKey || p.api_key || "",
+            api: p.api || (p.type === "anthropic" ? "anthropic-messages" : p.type === "gemini" ? "google-generative-ai" : "openai-completions"),
+            models: Array.isArray(p.models) ? p.models : [],
+            display_name: p.name || p.display_name || p.id
+          };
+        }
+      }
+      const engineModels = {};
+      if (cfg.models && typeof cfg.models === "object") {
+        for (const [role, ref] of Object.entries(cfg.models)) {
+          if (typeof ref === "string" && ref.includes("::")) {
+            const sepIdx = ref.indexOf("::");
+            const provider = ref.slice(0, sepIdx);
+            const id = ref.slice(sepIdx + 2);
+            const engineRole = role === "main" ? "chat" : role === "small" ? "utility" : role === "large" ? "utility_large" : role;
+            engineModels[engineRole] = { id, provider };
+          } else if (typeof ref === "object" && ref !== null && ref.id) {
+            engineModels[role] = ref;
+          }
+        }
+      }
+      console.log("[main] converted models:", JSON.stringify(engineModels));
+      const url = `http://127.0.0.1:${port}/api/config`;
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const putBody = {
+        providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
+        models: Object.keys(engineModels).length > 0 ? engineModels : cfg.models,
+        wizard: cfg.wizard,
+        ui: cfg.ui,
+        user: cfg.user,
+        memory: cfg.memory,
+        theme: cfg.theme,
+        security: cfg.security
+      };
+      let pushedOk = false;
+      for (let attempt = 1; attempt <= 3 && !pushedOk; attempt++) {
+        try {
+          const res = await fetch(url, {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(putBody),
+            signal: AbortSignal.timeout(1e4)
+          });
+          console.log(`[main] PUT /api/config → ${res.status} (attempt ${attempt})`);
+          if (res.ok) pushedOk = true;
+        } catch (e) {
+          console.warn(`[main] PUT /api/config failed (attempt ${attempt}):`, e.message);
+        }
+        if (!pushedOk && attempt < 3) {
+          await new Promise((r) => setTimeout(r, 800));
+          continue;
+        }
+        try {
+          const mRes = await fetch(`http://127.0.0.1:${port}/api/models`, { headers, signal: AbortSignal.timeout(1e4) });
+          const mData = await mRes.json().catch(() => ({}));
+          const models = Array.isArray(mData) ? mData : mData.models || [];
+          const chatModel = engineModels.chat;
+          const currentModel = models.find((m) => m.isCurrent);
+          const targetHit = chatModel && models.some((m) => m.id === chatModel.id && m.provider === chatModel.provider);
+          if (chatModel && (!targetHit || !currentModel || currentModel.id !== chatModel.id || currentModel.provider !== chatModel.provider)) {
+            console.warn(`[main] model not effective after push (attempt ${attempt}), falling back to POST /api/models/set`);
+            const setRes = await fetch(`http://127.0.0.1:${port}/api/models/set`, {
+              method: "POST",
+              headers,
+              body: JSON.stringify({ modelId: chatModel.id, provider: chatModel.provider }),
+              signal: AbortSignal.timeout(1e4)
+            });
+            console.log(`[main] POST /api/models/set → ${setRes.status}`);
+            if (setRes.ok) pushedOk = true;
+          } else if (chatModel) {
+            pushedOk = true;
+          }
+        } catch (e) {
+          console.warn(`[main] verify models failed (attempt ${attempt}):`, e.message);
+        }
+      }
+      if (!pushedOk) console.error("[main] config push did NOT take effect after retries — model may not be configured");
+      try {
+        const setupRes = await fetch(`http://127.0.0.1:${port}/api/preferences/setup-complete`, {
+          method: "POST",
+          headers,
+          signal: AbortSignal.timeout(1e4)
+        });
+        console.log(`[main] POST /api/preferences/setup-complete → ${setupRes.status}`);
+        const setupBody = await setupRes.json().catch(() => ({}));
+        if (!setupBody.setupComplete) {
+          console.warn("[main] setup-complete response did not confirm setupComplete=true");
+        }
+      } catch (e) {
+        console.warn("[main] setup-complete error:", e.message);
+      }
+    } else {
+      console.warn("[main] server not ready after 15s, config push skipped");
+    }
+  }
   function createMainWindow() {
     if (mainWindow && !mainWindow.isDestroyed()) return mainWindow;
     const saved = loadWindowState();
@@ -20628,6 +20758,12 @@ function requireMain() {
         console.log("Main window shown");
       }
     });
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
+        mainWindow.show();
+        console.warn("[main] window force-shown (ready-to-show fallback after 8s)");
+      }
+    }, 8e3);
     if (isDev) {
       const http = require$$4$1;
       const devUrl = new URL(VITE_DEV_URL);
@@ -20751,7 +20887,7 @@ function requireMain() {
   }
   const serverManager2 = createServerManager({
     app,
-    lynnHome: process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow"),
+    lynnHome: process.env.OPENSHADOW_HOME || join(process.env.APPDATA || os.homedir(), ".openshadow"),
     dirname: __dirname,
     execPath: process.execPath,
     platform: process.platform,
@@ -20779,7 +20915,7 @@ function requireMain() {
   });
   const fileWatchRegistry2 = createFileWatchRegistry({
     watch: (filePath, callback) => {
-      const watcher = require$$17.watch(filePath, {
+      const watcher = require$$18.watch(filePath, {
         ignoreInitial: true,
         atomic: true,
         awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 }
@@ -20818,7 +20954,7 @@ function requireMain() {
   }
   const workspaceWatchRegistry2 = createWorkspaceWatchRegistry({
     watch: (rootPath, callback) => {
-      const watcher = require$$17.watch(rootPath, {
+      const watcher = require$$18.watch(rootPath, {
         ignoreInitial: true,
         atomic: true,
         awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
@@ -20947,7 +21083,6 @@ function requireMain() {
     } catch (err) {
       console.warn("[main] failed to install media permission handler:", err.message);
     }
-    await runWizardWindow();
     if (isWizardCompleted()) {
       createMainWindow();
       try {
@@ -20973,71 +21108,42 @@ function requireMain() {
       } catch (err) {
         console.warn("[main] failed to init notification controller:", err.message);
       }
+      pushWizardConfigToServer().catch((e) => console.warn("[main] startup config push failed:", e.message));
     } else {
       console.log("[main] waiting for wizard to complete…");
-      wrapIpcOn("wizard:done-signal", async () => {
-        console.log("[main] wizard done");
-        if (wizardWindow) wizardWindow.close();
-        wizardWindow = null;
-        try {
-          const cfg = readConfig();
-          const info = readServerInfo();
-          if (info && info.port) {
-            const providersObj = {};
-            if (Array.isArray(cfg.providers)) {
-              for (const p of cfg.providers) {
-                if (!p || !p.id) continue;
-                providersObj[p.id] = {
-                  base_url: p.baseUrl || p.base_url || p.url || "",
-                  api_key: p.apiKey || p.api_key || "",
-                  api: p.api || p.type === "anthropic" ? "anthropic-messages" : p.type === "gemini" ? "google-generative-ai" : "openai-completions",
-                  models: Array.isArray(p.models) ? p.models : [],
-                  display_name: p.name || p.display_name || p.id
-                };
-              }
-            }
-            const url = `http://127.0.0.1:${info.port}/api/config`;
-            const headers = { "Content-Type": "application/json" };
-            if (info.token) headers["Authorization"] = `Bearer ${info.token}`;
-            const res = await fetch(url, {
-              method: "PUT",
-              headers,
-              body: JSON.stringify({
-                providers: Object.keys(providersObj).length > 0 ? providersObj : cfg.providers,
-                models: cfg.models,
-                wizard: cfg.wizard,
-                ui: cfg.ui,
-                user: cfg.user,
-                memory: cfg.memory,
-                theme: cfg.theme,
-                security: cfg.security
-              })
-            });
-            if (!res.ok) {
-              console.warn("[main] PUT /api/config failed:", res.status);
-            } else {
-              console.log("[main] PUT /api/config succeeded, server models ready");
-            }
-          } else {
-            console.warn("[main] server-info.json not available, skipping config push");
-          }
-        } catch (e) {
-          console.warn("[main] PUT /api/config error:", e.message);
-        }
-        createMainWindow();
-        try {
-          const hanakoHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
-          markGpuStartupReady({ hanakoHome: hanakoHome2, phase: "main-window-created" });
-        } catch {
-        }
-        const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
-        initAutoUpdater(mainWindow, { hanakoHome });
-        checkForUpdatesAuto();
-        initQuickChat();
-      });
+      await runWizardWindow();
     }
+    wrapIpcOn("wizard:done-signal", async () => {
+      console.log("[main] wizard done");
+      wizardCompleting = true;
+      suppressWindowAllClosed = true;
+      if (wizardWindow) wizardWindow.close();
+      wizardWindow = null;
+      try {
+        await pushWizardConfigToServer();
+      } catch (e) {
+        console.warn("[main] PUT /api/config error:", e.message);
+      }
+      try {
+        createMainWindow();
+      } catch (e) {
+        console.error("[main] createMainWindow failed after wizard:", e.message);
+      } finally {
+        suppressWindowAllClosed = false;
+      }
+      try {
+        const hanakoHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+        markGpuStartupReady({ hanakoHome: hanakoHome2, phase: "main-window-created" });
+      } catch {
+      }
+      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+      initAutoUpdater(mainWindow, { hanakoHome });
+      checkForUpdatesAuto();
+      initQuickChat();
+    });
   });
   app.on("window-all-closed", () => {
+    if (suppressWindowAllClosed) return;
     if (!trayIcon) {
       app.quit();
     }

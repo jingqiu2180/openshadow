@@ -1,6 +1,6 @@
 {
   "name": "openshadow",
-  "version": "0.3.38",
+  "version": "0.3.39",
   "description": "OpenShadow — Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.",
   "type": "module",
   "author": {
@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "tsx watch start.ts",
     "dev:web": "node scripts/dev-web.js",
-    "build": "vite build --config vite.config.server.js && node scripts/copy-desktop-assets.js && node scripts/copy-server-deps.js",
+    "build": "vite build --config vite.config.server.js && node scripts/copy-desktop-assets.js && node scripts/_copy-deps.cjs",
     "build:standalone": "node scripts/build-server.mjs",
     "start": "node dist-server-bundle/index.js",
     "test": "vitest",
@@ -28,7 +28,7 @@
     "electron:build": "npm run desktop:build && npm run build && npm run electron && electron-builder --dir",
     "electron:dist": "npm run build && npm run desktop:build && npm run electron && electron-builder",
     "pack": "npm run electron:build",
-    "dist:win": "npm run electron:build && electron-builder --win nsis --publish never",
+    "dist:win": "node scripts/kill-stale-servers.cjs && npm run desktop:build && npm run build && npm run electron:main && npm run electron:preload && node scripts/copy-desktop-assets.js && electron-builder --dir && electron-builder --win nsis --publish never",
     "dist:linux": "npm run electron:build && electron-builder --linux AppImage deb --publish never",
     "dist:mac": "npm run electron:build && cross-env SKIP_NOTARIZE=true electron-builder --mac dmg zip --publish never",
     "dist:all": "npm run electron:build && cross-env SKIP_NOTARIZE=true electron-builder -mwl --publish never",
@@ -45,6 +45,7 @@
     "appId": "com.openshadow.app",
     "productName": "OpenShadow",
     "asar": true,
+    "afterPack": "./scripts/fix-modules.cjs",
     "asarUnpack": [
       "desktop/wizard/preload.js"
     ],
@@ -63,16 +64,11 @@
       "desktop/src/**/*.{html,icns,ico,png,svg,json}",
       "desktop/src/assets/**",
       "package.json",
+      "dist-server-bundle/**",
       "!packages/**",
-      "!**/node_modules/**",
-      "desktop/wizard/**",
-      "node_modules/ws/**"
+      "desktop/wizard/**"
     ],
     "extraResources": [
-      {
-        "from": "dist",
-        "to": "server"
-      },
       {
         "from": "dist-server-bundle",
         "to": "server-bundle"
@@ -80,6 +76,11 @@
       {
         "from": "desktop/src/assets",
         "to": "assets"
+      },
+      {
+        "from": "lib",
+        "to": "lib",
+        "filter": ["**/*.{yaml,json,md}", "identity-templates/**", "ishiki-templates/**", "public-ishiki-templates/**", "yuan/**"]
       }
     ],
     "mac": {
@@ -137,7 +138,7 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": false,
+      "allowToChangeInstallationDirectory": true,
       "shortcutName": "OpenShadow",
       "include": "build/installer.nsh",
       "installerIcon": "desktop/src/icon.ico",
