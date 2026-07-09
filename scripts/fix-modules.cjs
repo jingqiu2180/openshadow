@@ -87,14 +87,17 @@ exports.default = async function (context) {
   if (platformName === "mac") {
     const computerUseHelper = path.join(resourcesDir, "computer-use", "macos", "hana-computer-use-helper");
     if (!fs.existsSync(computerUseHelper)) {
-      throw new Error(
-        `[fix-modules] Computer Use helper missing from macOS app resources: ${computerUseHelper}. ` +
-        "Run scripts/build-computer-use-helper.mjs before electron-builder.",
+      // 本仓库没有 build-computer-use-helper.mjs，CI 不会产出该 helper。
+      // 缺失时仅让 Computer Use 特性在运行时降级，不阻塞打包，否则 macOS 腿必挂。
+      console.warn(
+        `[fix-modules] WARNING: Computer Use helper not found at ${computerUseHelper}. ` +
+          "Computer Use feature will be unavailable at runtime. Skipping (non-fatal).",
       );
-    }
-    const mode = fs.statSync(computerUseHelper).mode;
-    if ((mode & 0o111) === 0) {
-      throw new Error(`[fix-modules] Computer Use helper is not executable: ${computerUseHelper}`);
+    } else {
+      const mode = fs.statSync(computerUseHelper).mode;
+      if ((mode & 0o111) === 0) {
+        throw new Error(`[fix-modules] Computer Use helper is not executable: ${computerUseHelper}`);
+      }
     }
   }
   const serverDir = path.join(resourcesDir, "server-bundle");

@@ -1,6 +1,6 @@
 {
   "name": "openshadow",
-  "version": "0.3.39",
+  "version": "0.3.40",
   "description": "OpenShadow — Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.",
   "type": "module",
   "author": {
@@ -93,13 +93,7 @@
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "desktop/entitlements.mac.plist",
-      "entitlementsInherit": "desktop/entitlements.mac.plist",
-      "extraResources": [
-        {
-          "from": "dist-server/mac-arm64",
-          "to": "server"
-        }
-      ]
+      "entitlementsInherit": "desktop/entitlements.mac.plist"
     },
     "dmg": {
       "title": "OpenShadow",
@@ -128,13 +122,7 @@
       "icon": "desktop/src/icon.ico",
       "executableName": "OpenShadow",
       "artifactName": "${productName}-${version}-Windows-${arch}.${ext}",
-      "requestedExecutionLevel": "asInvoker",
-      "extraResources": [
-        {
-          "from": "dist-server/win-x64",
-          "to": "server"
-        }
-      ]
+      "requestedExecutionLevel": "asInvoker"
     },
     "nsis": {
       "oneClick": false,
@@ -152,13 +140,7 @@
       "maintainer": "jingqiu2180 <jingqiu2180@users.noreply.github.com>",
       "category": "Utility",
       "icon": "desktop/src/icon.png",
-      "artifactName": "${productName}-${version}-Linux-${arch}.${ext}",
-      "extraResources": [
-        {
-          "from": "dist-server/linux-x64",
-          "to": "server"
-        }
-      ]
+      "artifactName": "${productName}-${version}-Linux-${arch}.${ext}"
     }
   },
   "dependencies": {
