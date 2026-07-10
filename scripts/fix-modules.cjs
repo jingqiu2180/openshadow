@@ -90,6 +90,49 @@ function cleanBinLinks(dir, boundary) {
   return removed;
 }
 
+// 剔除 server-bundle/node_modules 中的 devDependencies。
+// 整拷根 node_modules 后，根 package.json 里声明的 devDependencies（vite / electron /
+// typescript / esbuild / @types/* / vitest / @electron/* 等，运行时完全不需要）仍被
+// 一并拷了进来，使 server-bundle 体积膨胀到 ~1.3GB / 安装解压 ~965MB。Windows Defender
+// 实时防护逐个扫描这些海量小文件会把 NSIS 安装拖到“假死”。这里在整拷后把 devDep 顶层
+// 目录删掉，大幅瘦身；运行时需要的生产依赖闭包（ws / hono / @mariozechner/* /
+// partial-json / better-sqlite3 / node-pty …）全部保留，server 仍能正常启动。
+function pruneDevDependencies(serverDir, rootPackageJsonPath, opts = {}) {
+  let rootPkg;
+  try {
+    rootPkg = JSON.parse(fs.readFileSync(rootPackageJsonPath, "utf-8"));
+  } catch {
+    return; // 读不到根 package.json 就跳过，不阻塞打包
+  }
+  const devDeps = Object.keys(rootPkg.devDependencies || {});
+  if (devDeps.length === 0) return;
+  const target = path.join(serverDir, "node_modules");
+  const log = typeof opts.log === "function" ? opts.log : console.log;
+  let removed = 0;
+  for (const dep of devDeps) {
+    const p = path.join(target, dep);
+    if (fs.existsSync(p)) {
+      fs.rmSync(p, { recursive: true, force: true });
+      removed++;
+    }
+  }
+  // 清理被删 dev 包遗留的 .bin 软链（相对指向已删文件 → dangling）
+  const topBin = path.join(target, ".bin");
+  if (fs.existsSync(topBin)) {
+    for (const b of fs.readdirSync(topBin, { withFileTypes: true })) {
+      if (!b.isSymbolicLink()) continue;
+      const bp = path.join(topBin, b.name);
+      try {
+        const t = fs.readlinkSync(bp);
+        if (!fs.existsSync(path.resolve(topBin, t))) fs.unlinkSync(bp);
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+  log(`[fix-modules] 剔除 ${removed} 个 devDependencies（减小包体积，加速安装/更新）`);
+}
+
 // 从项目根已完整安装好的 node_modules 整拷进 server-bundle/node_modules。
 // 这是经过本地验证（junction 到完整 node_modules 后 server 正常返回 health 200）
 // 的最稳妥方案：server 以 ESM 直接 `node resources/server-bundle/index.js` 运行，
@@ -98,7 +141,8 @@ function cleanBinLinks(dir, boundary) {
 // 闭包不全时漏装传递依赖（如 @mariozechner/pi-ai → partial-json、或 _copy-deps.cjs
 // 未收录的 indirect 依赖），导致 server 启动即 ERR_MODULE_NOT_FOUND 崩溃
 // （server 未就绪 → 模型配置无法推送 → 首页“模型未生效 / server 未就绪”）。
-// 整拷根 node_modules 保证 100% 完整、可复现，且 native addon 已针对本平台编译。
+// 整拷根 node_modules 保证 100% 完整、可复现，且 native addon 已针对本平台编译；
+// 随后 pruneDevDependencies 剔除 devDep 大幅瘦身（见上）。
 function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {}) {
   const target = path.join(serverDir, "node_modules");
   const log = typeof opts.log === "function" ? opts.log : console.log;
@@ -112,6 +156,9 @@ function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {
     fs.cpSync(src, dest, { recursive: true });
   }
   log(`[fix-modules] 重建 server node_modules → ${target}（整拷根 node_modules，共 ${entries.length} 个顶层条目）`);
+
+  // 剔除 devDependencies 瘦身（关键：避免安装包过大导致 NSIS 解压被 Defender 拖死）
+  pruneDevDependencies(serverDir, path.resolve(__dirname, "..", "package.json"), opts);
 
   // 关键依赖兜底校验：防止漏装导致 server 启动即崩
   const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json", "ws", "hono"];
@@ -264,3 +311,4 @@ exports.default = async function (context) {
 exports.SERVER_NODE_MODULE_REQUIRED_FILES = SERVER_NODE_MODULE_REQUIRED_FILES;
 exports.assertBundledServerNodeModulesReady = assertBundledServerNodeModulesReady;
 exports.copyBundledServerNodeModules = copyBundledServerNodeModules;
+exports.pruneDevDependencies = pruneDevDependencies;
