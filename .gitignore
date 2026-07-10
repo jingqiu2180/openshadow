@@ -36,3 +36,7 @@ agents/*/sessions/
 checkpoints/
 node_modules/
 dist/
+
+# Build output (installer .exe, packaged app.asar, win-unpacked) — never commit.
+# Accidentally committing these bloated the repo by ~1.2 GB (see v0.3.43).
+release/
