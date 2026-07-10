@@ -1,0 +1,5 @@
+Two-file split with a deliberate ESM-to-CJS boundary:
+- `hana-runtime-paths.cjs` is the single CommonJS module that owns all filesystem logic — home-directory expansion (`~`), resolution of `.hanako` → `.pi` → `agent|project`, env injection via `PI_CODING_AGENT_DIR`, and `fs.mkdirSync(..., { recursive: true })` to ensure those directories exist. It exposes a flat object of pure functions plus the `PI_SDK_AGENT_DIR_ENV` constant.
+- `hana-runtime-paths.ts` is an ESM re-export shim that imports the CJS file and re-exports its members so callers can stay in ESM without importing `.cjs` directly.
+- `hana-root.ts` is independent of the CJS layer; it resolves the repository/project root by walking up from `import.meta.url` (with `fileURLToPath`) and falls back to the `HANA_ROOT` env var, exposing both the resolved `HANA_ROOT` and a `fromRoot(...segments)` helper.
+Dependency direction is one-way: TS consumers import the TS shim, which delegates to the CJS implementation; `hana-root.ts` has no dependency on the CJS module.

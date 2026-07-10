@@ -1,0 +1,3 @@
+- Shared constants and schemas live under `shared/` and are imported by both Electron main and Node worker codepaths without side effects.
+- Runtime stateful services under `lib/` (ActivityHub, TaskRegistry, stores) persist changes atomically via `../shared/safe-fs.js`'s `atomicWriteSync`.
+- Cross-process contracts (errors, workspace scope, provider auth, model refs) are declared once in `shared/` and re-exported to all consumers instead of duplicated.

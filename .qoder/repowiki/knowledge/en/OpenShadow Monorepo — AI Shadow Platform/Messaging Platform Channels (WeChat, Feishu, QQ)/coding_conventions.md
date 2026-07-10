@@ -1,0 +1,3 @@
+- Every channel exposes two factories — `createXxxChannel(agent)` returning a Hono app and `createXxxServer(agent, port)` returning a minimal `{ fetch, port, start }` object — so the same routes can be mounted inside a larger server or run standalone.
+- Webhook handlers follow a fixed pipeline: parse JSON body, validate `schema`/`msgtype`, skip empty content, call `agent.chat([ { role: 'user', content }, ], userId)`, log the first 200 chars of the reply, and return either the platform-native response or a `{ code: 0 }` ack.
+- Per-channel request shapes are declared as exported TypeScript interfaces named `<Platform>Message` and used together with `as <Platform>Message` casts on `c.req.json()` rather than runtime validation.

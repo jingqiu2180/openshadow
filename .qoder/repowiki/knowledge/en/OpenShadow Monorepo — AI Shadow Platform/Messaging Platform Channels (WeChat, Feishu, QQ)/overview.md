@@ -1,0 +1,1 @@
+Pluggable Hono-based webhook channels that accept inbound messages from WeChat Official/Enterprise accounts, Feishu, and QQ Open Platform and forward them to the core Agent.

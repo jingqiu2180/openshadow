@@ -1,0 +1,12 @@
+schema_version: 1
+module_path: shared_libs/shared_security_logging
+title: Shared Security & Safe I/O Utilities
+scope:
+    - shared/log-redactor.ts
+    - shared/log-redactor.cjs
+    - shared/secret-custody.ts
+    - shared/safe-fs.ts
+    - shared/safe-parse.ts
+source_files: []
+depends_on: []
+related_to: []

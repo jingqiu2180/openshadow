@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "schemaVersion": 1,
+      "requestId": "llm_mraa5zvb_1",
+      "startedAt": "2026-07-07T06:41:10.871Z",
+      "endedAt": "2026-07-07T06:41:14.609Z",
+      "durationMs": 3738,
+      "status": "ok",
+      "source": {
+        "subsystem": "memory",
+        "operation": "compile_week",
+        "surface": "system",
+        "trigger": "daily"
+      },
+      "attribution": {
+        "kind": "memory",
+        "agentId": "rem-default"
+      },
+      "metadata": null,
+      "model": {
+        "provider": "minimax-token-plan",
+        "modelId": "MiniMax-M3",
+        "api": "openai-completions"
+      },
+      "usage": {
+        "costTotal": 0,
+        "input": {
+          "totalTokens": 2757,
+          "uncachedTokens": 14
+        },
+        "output": {
+          "totalTokens": 140,
+          "reasoningTokens": null
+        },
+        "cache": {
+          "readTokens": 2743,
+          "writeTokens": 0,
+          "missTokens": null,
+          "hit": true,
+          "created": false,
+          "hitRatio": 0.9949220166848023,
+          "support": "reported"
+        },
+        "totalTokens": 2897
+      },
+      "rawUsageShape": "completion_tokens,prompt_tokens,prompt_tokens_details,total_characters,total_tokens",
+      "error": null
+    }
+  ]
+}

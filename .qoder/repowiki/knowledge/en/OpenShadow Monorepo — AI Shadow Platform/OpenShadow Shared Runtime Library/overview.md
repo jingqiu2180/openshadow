@@ -1,0 +1,1 @@
+Cross-process shared library providing runtime primitives, persistence helpers, and cross-boundary contracts consumed by the Electron main process, Node workers, and plugin host.

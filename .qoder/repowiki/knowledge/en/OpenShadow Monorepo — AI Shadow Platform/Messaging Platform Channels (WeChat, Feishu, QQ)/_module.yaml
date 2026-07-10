@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: channels
+title: Messaging Platform Channels (WeChat, Feishu, QQ)
+scope:
+    - channels/
+source_files: []
+depends_on: []
+related_to: []

@@ -1,0 +1,10 @@
+schema_version: 1
+module_path: shared_libs/runtime_model_registry
+title: Runtime Model Registry & Defaults
+scope:
+    - lib/default-models.json
+    - lib/known-models.json
+    - lib/known-model-fallbacks.json
+source_files: []
+depends_on: []
+related_to: []

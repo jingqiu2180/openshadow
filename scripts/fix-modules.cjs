@@ -133,32 +133,56 @@ function pruneDevDependencies(serverDir, rootPackageJsonPath, opts = {}) {
   log(`[fix-modules] 剔除 ${removed} 个 devDependencies（减小包体积，加速安装/更新）`);
 }
 
-// 从项目根已完整安装好的 node_modules 整拷进 server-bundle/node_modules。
-// 这是经过本地验证（junction 到完整 node_modules 后 server 正常返回 health 200）
-// 的最稳妥方案：server 以 ESM 直接 `node resources/server-bundle/index.js` 运行，
-// 任意 bare import（hono / partial-json / ws / @mariozechner/* 等）都必须能在
-// server-bundle/node_modules 解析。仅按 server-bundle/package.json 声明拷贝会在依赖
-// 闭包不全时漏装传递依赖（如 @mariozechner/pi-ai → partial-json、或 _copy-deps.cjs
-// 未收录的 indirect 依赖），导致 server 启动即 ERR_MODULE_NOT_FOUND 崩溃
-// （server 未就绪 → 模型配置无法推送 → 首页“模型未生效 / server 未就绪”）。
-// 整拷根 node_modules 保证 100% 完整、可复现，且 native addon 已针对本平台编译；
-// 随后 pruneDevDependencies 剔除 devDep 大幅瘦身（见上）。
+// 从项目根已完整安装好的 node_modules 中，只拷贝 server-bundle/package.json 声明的
+// 【依赖闭包】（由 _copy-deps.cjs 生成：server externals + 完整传递依赖，已排除
+// devDependencies）对应的包目录，整拷进 server-bundle/node_modules。
+//
+// 为什么只拷闭包而非整拷根 node_modules（重要，v0.3.42 踩过的坑）：
+//  - 根 node_modules 含 900+ 顶层包 / ~1.3GB，整拷后安装包需解压 ~965MB 海量小文件，
+//    Windows Defender 实时防护逐文件扫描会把 NSIS 安装拖到“假死”（v0.3.42 实测装 16+ 分钟）。
+//  - server 只 import 约 20 个顶层 specifier，其传递闭包 = dist-server-bundle/package.json
+//    声明的 451 个包。已校验这 451 个包全部存在于根 node_modules 顶层（none missing），
+//    只拷这 451 个即可 100% 完整、可复现，且 native addon 已针对本平台编译，同时体积砍半、
+//    安装/自动更新大幅提速（Defender 扫描文件数骤降）。
+//
+// 健壮性：若某闭包包在根 node_modules 顶层缺失（lock 漂移等极少情况），自动回退整拷根
+// node_modules 并告警，保证不发布残缺包。
 function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {}) {
   const target = path.join(serverDir, "node_modules");
   const log = typeof opts.log === "function" ? opts.log : console.log;
   fs.rmSync(target, { recursive: true, force: true });
   fs.mkdirSync(target, { recursive: true });
 
-  const entries = fs.readdirSync(projectModules, { withFileTypes: true });
-  for (const entry of entries) {
-    const src = path.join(projectModules, entry.name);
-    const dest = path.join(target, entry.name);
-    fs.cpSync(src, dest, { recursive: true });
-  }
-  log(`[fix-modules] 重建 server node_modules → ${target}（整拷根 node_modules，共 ${entries.length} 个顶层条目）`);
+  const serverPkg = JSON.parse(fs.readFileSync(path.join(serverDir, "package.json"), "utf-8"));
+  const needed = Object.keys(serverPkg.dependencies || {});
 
-  // 剔除 devDependencies 瘦身（关键：避免安装包过大导致 NSIS 解压被 Defender 拖死）
-  pruneDevDependencies(serverDir, path.resolve(__dirname, "..", "package.json"), opts);
+  const fullCopyFallback = () => {
+    log("[fix-modules] 闭包拷贝不完整 → 回退整拷根 node_modules");
+    const entries = fs.readdirSync(projectModules, { withFileTypes: true });
+    for (const entry of entries) {
+      fs.cpSync(path.join(projectModules, entry.name), path.join(target, entry.name), { recursive: true });
+    }
+    pruneDevDependencies(serverDir, path.resolve(__dirname, "..", "package.json"), opts);
+  };
+
+  let missing = [];
+  for (const dep of needed) {
+    const src = path.join(projectModules, dep);
+    if (fs.existsSync(src)) {
+      fs.cpSync(src, path.join(target, dep), { recursive: true });
+    } else {
+      missing.push(dep);
+    }
+  }
+  if (missing.length > 0) {
+    log(
+      `[fix-modules] 闭包中 ${missing.length} 个包在根 node_modules 顶层缺失: ` +
+        `${missing.slice(0, 10).join(", ")}${missing.length > 10 ? " …" : ""}`,
+    );
+    fullCopyFallback();
+  } else {
+    log(`[fix-modules] 重建 server node_modules → ${target}（按闭包拷贝 ${needed.length} 个包）`);
+  }
 
   // 关键依赖兜底校验：防止漏装导致 server 启动即崩
   const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json", "ws", "hono"];
@@ -211,8 +235,10 @@ exports.default = async function (context) {
 
   // 关键修复：不再在 server-bundle 内 npm install（CI 缓存不全时
   // `--prefer-offline` 只会装上缓存里残留的少数包，导致 server 启动即
-  // ERR_MODULE_NOT_FOUND 崩溃）。改为直接从项目根已完整安装好的 node_modules
-  // 复制 server-bundle/package.json 声明的全部依赖（含 native addon）。
+  // ERR_MODULE_NOT_FOUND 崩溃）。改为从项目根已完整安装好的 node_modules
+  // 只拷贝 server-bundle/package.json 声明的依赖闭包（_copy-deps.cjs 计算的
+  // server externals + 完整传递依赖，已排除 devDependencies）——既 100% 完整，
+  // 又比整拷根 node_modules 体量砍半，避免 NSIS 解压被 Defender 拖死。
   const serverPkgPath = path.join(serverDir, "package.json");
   if (fs.existsSync(serverPkgPath)) {
     rebuildServerNodeModulesFromProject(serverDir, localModules);
@@ -312,3 +338,4 @@ exports.SERVER_NODE_MODULE_REQUIRED_FILES = SERVER_NODE_MODULE_REQUIRED_FILES;
 exports.assertBundledServerNodeModulesReady = assertBundledServerNodeModulesReady;
 exports.copyBundledServerNodeModules = copyBundledServerNodeModules;
 exports.pruneDevDependencies = pruneDevDependencies;
+exports.rebuildServerNodeModulesFromProject = rebuildServerNodeModulesFromProject;

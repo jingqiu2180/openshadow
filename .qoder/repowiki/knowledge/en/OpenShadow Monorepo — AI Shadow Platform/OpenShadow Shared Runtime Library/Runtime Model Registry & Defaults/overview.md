@@ -1,0 +1,1 @@
+Static JSON registries that declare per-provider default model lists, full model capability metadata, and cross-provider fallback entries consumed at runtime by the model-sync pipeline.

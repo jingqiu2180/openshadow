@@ -1,0 +1,1 @@
+Shared runtime primitives for the OpenShadow host: in-memory activity broadcast, plugin task/schedule registry with persistence, server-side i18n, logical-day helpers, and per-process debug logging.

@@ -1,0 +1,3 @@
+- Path resolution helpers are pure functions that take an explicit `hanakoHome` argument rather than reading a global, making them testable and composable.
+- Environment variables are declared as named constants (`PI_SDK_AGENT_DIR_ENV`, `HANA_ROOT`) and consumed through dedicated setters (`configureProcessPiSdkEnv`, `withHanaPiSdkEnv`) instead of direct `process.env` writes scattered across callers.
+- The module splits ESM entry points (`*.ts`) from Node-native/CJS implementations (`*.cjs`) and uses a thin re-export shim to keep downstream code ESM-only.

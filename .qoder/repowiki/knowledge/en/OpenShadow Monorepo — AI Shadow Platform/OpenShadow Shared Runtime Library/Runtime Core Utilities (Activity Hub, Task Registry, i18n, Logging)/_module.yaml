@@ -1,0 +1,14 @@
+schema_version: 1
+module_path: shared_libs/runtime_core
+title: Runtime Core Utilities (Activity Hub, Task Registry, i18n, Logging)
+scope:
+    - lib/activity-hub.ts
+    - lib/task-registry.ts
+    - lib/i18n.ts
+    - lib/time-utils.ts
+    - lib/theme-registry.cjs
+    - lib/debug-log.ts
+    - lib/log-redactor.ts
+source_files: []
+depends_on: []
+related_to: []

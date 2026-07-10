@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "startup": {
+    "status": "ready",
+    "phase": "main-window-created",
+    "platform": "win32",
+    "readyAt": "2026-07-08T07:38:15.175Z",
+    "updatedAt": "2026-07-08T07:38:15.175Z"
+  }
+}

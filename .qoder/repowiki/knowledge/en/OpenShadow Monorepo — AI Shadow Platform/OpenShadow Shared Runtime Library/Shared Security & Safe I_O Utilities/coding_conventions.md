@@ -1,0 +1,4 @@
+- Every potentially-throwing operation is wrapped in try/catch that reports via `errorBus.report(new AppError(code, { cause: err, context }))` and returns a caller-provided fallback rather than rethrowing.
+- Secret-sensitive object keys are matched against a centralized pattern set (`DEFAULT_SECRET_KEYS` or the `SENSITIVE_OBJECT_KEY_RE` regex) instead of ad-hoc string comparisons.
+- Values that have already been masked are represented by the sentinel string `MASKED_SECRET` so callers can distinguish "newly provided secret" from "keep existing secret" during patch resolution.
+- Public APIs accept a `fallback` parameter (defaulting to `''`, `null`, or `[]`) so callers control recovery semantics when parsing or filesystem operations fail.

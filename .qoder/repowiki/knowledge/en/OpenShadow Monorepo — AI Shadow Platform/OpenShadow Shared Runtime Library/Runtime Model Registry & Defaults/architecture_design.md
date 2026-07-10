@@ -1,0 +1,6 @@
+Three flat JSON documents form a layered registry with no code inside this scope:
+- `default-models.json`: provider-keyed arrays of recommended model IDs (e.g. `openai`, `anthropic`, `dashscope`), sourced from each provider plugin's `builtinModels` and augmented with known-model variants; providers without fixed builtins (`volcengine`, `ollama`, `openrouter`, `openai-codex-oauth`) are intentionally omitted.
+- `known-models.json`: canonical model reference table keyed by `provider → modelId`; each entry declares capabilities (`context`, `maxOutput`, `image`, `video`, `reasoning`, `xhigh`, `quirks`, `toolUse`, `visionCapabilities`). This is the authoritative source queried by `model-sync.js`.
+- `known-model-fallbacks.json`: best-effort baseline for unknown/custom providers — used when a provider partition lookup misses, but never overrides provider-specific `known-models.json` entries or user-supplied fields.
+
+The three files are data-only; consumers resolve a model by first looking it up in the provider-scoped `known-models.json`, then falling back to `known-model-fallbacks.json`. The `_comment` headers document the merge order and schema defaults.

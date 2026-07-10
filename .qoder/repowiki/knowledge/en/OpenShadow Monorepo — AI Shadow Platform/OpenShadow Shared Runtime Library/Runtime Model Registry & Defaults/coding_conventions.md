@@ -1,0 +1,5 @@
+- Every JSON file begins with a `_comment` top-level key documenting its role, merge precedence, and schema defaults rather than using external docs.
+- Model capability flags are kept as explicit booleans (`image`, `video`, `reasoning`, `xhigh`) instead of relying on presence/absence, so defaults are documented in comments and remain stable across edits.
+- Vision-capability quirks are grouped under a `visionCapabilities` object with fixed sub-keys (`grounding`, `boxes`, `points`, `coordinateSpace`, `boxOrder`, `outputFormat`, `groundingMode`) repeated verbatim across entries.
+- Provider-scoped entries use lowercase kebab-case keys (`dashscope`, `dashscope-coding`, `zhipu-coding`) while model IDs retain their upstream casing (`qwen3.6-plus`, `gpt-4o`, `MiniMax-M3`).
+- Quirks are expressed as string arrays (e.g. `["enable_thinking"]`) rather than boolean flags, allowing multiple orthogonal behaviors per model.

@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: shared_libs
+title: OpenShadow Shared Runtime Library
+scope:
+    - lib/
+    - shared/
+source_files: []
+depends_on: []
+related_to: []

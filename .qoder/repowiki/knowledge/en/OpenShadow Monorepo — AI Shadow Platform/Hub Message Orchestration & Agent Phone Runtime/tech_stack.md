@@ -1,0 +1,1 @@
+Node.js ESM modules; event bus uses `Map`/`Set` indexes rather than a library; agent sessions are created via `lib/pi-sdk`'s `createAgentSession` + `SessionManager`; scheduling via `lib/desk/heartbeat.js` and `lib/desk/cron-scheduler.js`.

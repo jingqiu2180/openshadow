@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "serverId": "server_61dfbca4-1b84-4a6d-b3a9-a27d053980c9",
+  "serverNodeId": "server_61dfbca4-1b84-4a6d-b3a9-a27d053980c9",
+  "nodeKind": "local",
+  "transport": "loopback",
+  "execution": {
+    "kind": "local_process"
+  },
+  "label": "Local Hana",
+  "createdAt": "2026-07-07T08:53:07.096Z",
+  "updatedAt": "2026-07-07T08:53:07.096Z"
+}

@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: hub_orchestrator
+title: Hub Message Orchestration & Agent Phone Runtime
+scope:
+    - hub/
+source_files: []
+depends_on: []
+related_to: []

@@ -529,9 +529,7 @@ function renderProgress() {
 }
 
 function updateNavState() {
-  const valid = state._validation[state.step]?.() ?? true
   $('#backBtn').disabled = state.step === 1
-  $('#nextBtn').disabled = !valid
   $('#nextBtn').textContent = state.step === state.total ? t('finish') : t('next')
   $('#stepIndicator').textContent = t('stepIndicator')(state.step, state.total)
   $('#langPill').textContent = ({ 'zh-CN': '中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' })[state.ui.language]

@@ -1,0 +1,5 @@
+- Public APIs return shallow clones of internal state (`structuredClone` or spread) so callers cannot mutate the in-memory Map-backed records.
+- Input normalization helpers (`assertText`, `normalizeStatus`, `normalizeProgress`, `pickStr`, `pickNum`) validate and coerce raw inputs before they enter persistent state, throwing descriptive errors on unknown values.
+- Every mutating method (`register/update/complete/fail/cancel/schedule/unschedule`) delegates to a private `_persist()` that serializes the current state to disk, keeping memory and file in sync.
+- Module-scoped logger instances are created once via `createModuleLogger("module-name")` and used consistently for both console output and the per-process file log.
+- Locale resolution maps any incoming BCP-47 string to a fixed key set (zh/zh-TW/ja/ko/en) via `resolveKey`, with English always preloaded as the fallback bundle.

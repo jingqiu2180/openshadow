@@ -1,0 +1,5 @@
+- Each sub-module exposes a class whose constructor takes `{ hub }` and stores it as `_hub`, accessing the engine through `this._hub.engine` rather than importing it directly.
+- Background activities record state transitions through `_recordPhoneActivity(agentId, conversationId, state, summary, details)` which calls both `hub.agentPhoneActivities.record` and `recordAgentPhoneActivity` on disk.
+- All outbound notifications go through `this._hub.eventBus.emit({ type, ...payload }, null)` instead of direct callbacks, keeping routers decoupled from transport.
+- Request handlers registered on the EventBus follow the `(type, handler) => unhandle` pattern and may return `EventBus.SKIP` to let later handlers try first.
+- Prompt guidance strings are built with `getLocale().startsWith('zh')` branches producing parallel zh/en variants rather than i18n lookups at call sites.

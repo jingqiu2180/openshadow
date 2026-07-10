@@ -1,0 +1,1 @@
+In-process message hub that routes owner/guest/bridge traffic into HanaEngine, runs scheduled heartbeats and cron jobs, and drives agent phone sessions for channel and DM delivery.

@@ -1,0 +1,718 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: en-US
+branch: master
+nodes_managed: true
+exported_at: "2026-07-08T09:00:34Z"
+modules:
+    "":
+        dir_name: OpenShadow Monorepo — AI Shadow Platform
+        title: OpenShadow Monorepo — AI Shadow Platform
+        scope:
+            - README.md
+            - package.json
+            - tsconfig.json
+            - vite.config.ts
+            - vitest.config.ts
+            - playwright.config.ts
+            - .gitignore
+            - config.yaml
+            - config.example.yaml
+            - added-models.yaml
+            - models.json
+            - auth.json
+            - devices.json
+            - provider-catalog.json
+            - server-network.json
+            - server-node.json
+            - studio-mounts.json
+            - studios.json
+            - users.json
+            - usage-ledger.json
+            - window-state.json
+            - E2E-MANUAL-CHECKLIST.md
+            - all-results.txt
+            - auto-fix-server.py
+            - copy-assets.py
+            - copy-components.js
+            - device-credentials.json
+            - diagnose-output.txt
+            - fix-all-js-imports.py
+            - fix-imports.py
+            - fix-js-imports.py
+            - fix-missing-modules.sh
+            - fix-missing-v2.py
+            - fix-missing.py
+            - fix-server-deps.py
+            - fix-shared-imports.py
+            - models-cache.json
+            - open-app.mjs
+            - package-lock.json
+            - pairing-sessions.json
+            - playwright.functional.config.ts
+            - run-send-test.mjs
+            - start.ts
+            - test-comprehensive.mjs
+            - test-result.json
+            - test-v2.mjs
+            - tsconfig.build.json
+            - vite.config.main.js
+            - vite.config.preload.js
+            - vite.config.server.js
+            - vite.config.theme.js
+            - vitest.setup.ts
+            - web-smoke-test.mjs
+        source_files: []
+        children:
+            - agent_data
+            - build_scripts
+            - channels
+            - core_engine
+            - data_storage
+            - desktop_app
+            - docs
+            - hub_orchestrator
+            - locales
+            - plugins
+            - server_api
+            - shared_libs
+            - tests
+            - yuan_personas
+        depends_on: []
+        related_to: []
+    agent_data:
+        dir_name: Agent & User Persistent Data Store
+        title: Agent & User Persistent Data Store
+        scope:
+            - agents/
+            - user/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    build_scripts:
+        dir_name: Build, Packaging & Dev-Server Orchestration Scripts
+        title: Build, Packaging & Dev-Server Orchestration Scripts
+        scope:
+            - scripts/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    channels:
+        dir_name: Messaging Platform Channels (WeChat, Feishu, QQ)
+        title: Messaging Platform Channels (WeChat, Feishu, QQ)
+        scope:
+            - channels/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_engine:
+        dir_name: OpenShadow Core Engine
+        title: OpenShadow Core Engine
+        scope:
+            - core/
+        source_files: []
+        children:
+            - core_engine/engine_orchestration
+            - core_engine/media_runtime
+            - core_engine/provider_infrastructure
+            - core_engine/session_lifecycle
+            - core_engine/shared_core_services
+            - core_engine/speech_recognition
+        depends_on: []
+        related_to: []
+    core_engine/engine_orchestration:
+        dir_name: Core Engine & Agent Orchestration
+        title: Core Engine & Agent Orchestration
+        scope:
+            - core/engine.ts
+            - core/agent-manager.ts
+            - core/chat-engine.ts
+            - core/config-coordinator.ts
+            - core/channel-manager.ts
+            - core/bridge-session-manager.ts
+            - core/model-manager.ts
+            - core/preferences-manager.ts
+            - core/skill-manager.ts
+            - core/dispatcher.ts
+            - core/planner.ts
+            - core/coder.ts
+            - core/desk.ts
+            - core/team.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_engine/media_runtime:
+        dir_name: Vision Auxiliary & Native Media Context Pipeline
+        title: Vision Auxiliary & Native Media Context Pipeline
+        scope:
+            - core/current-turn-native-media.ts
+            - core/vision-bridge.ts
+            - core/vision-context-injector.ts
+            - core/vision-prepare.ts
+            - core/visual-context-pipeline.ts
+            - core/vision-auxiliary-policy.ts
+            - core/model-image-preprocess.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_engine/provider_infrastructure:
+        dir_name: Provider Registry & Catalog Infrastructure
+        title: Provider Registry & Catalog Infrastructure
+        scope:
+            - core/provider-registry.ts
+            - core/provider-catalog.ts
+            - core/provider-auth-migration.ts
+            - core/provider-media-config.ts
+            - core/provider-media-serializer.ts
+            - core/provider-prompt-patches.ts
+            - core/migrate-providers.ts
+            - core/local-provider-plugin-store.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_engine/session_lifecycle:
+        dir_name: Session Lifecycle & Persistence Core
+        title: Session Lifecycle & Persistence Core
+        scope:
+            - core/session-coordinator.ts
+            - core/session-manager.ts
+            - core/session-store.ts
+            - core/session-compactor.ts
+            - core/session-teardown.ts
+            - core/session-health.ts
+            - core/session-defaults.ts
+            - core/session-permission-mode.ts
+            - core/session-thinking-level.ts
+            - core/session-turn-actions.ts
+            - core/session-turn-context.ts
+            - core/session-inline-media-prune.ts
+            - core/session-capability-drift.ts
+            - core/session-jsonl-file.ts
+            - core/session-prompt-snapshot.ts
+            - core/session-list-projection-cache.ts
+            - core/session-project-catalog-store.ts
+            - core/web-session-store.ts
+            - core/session-cache-snapshot.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_engine/shared_core_services:
+        dir_name: Core Shared Services & Cross-Cutting Concerns
+        title: Core Shared Services & Cross-Cutting Concerns
+        scope:
+            - core/events.ts
+            - core/event-bus.ts
+            - core/logger.ts
+            - core/debug-log.ts
+            - core/log-redactor.ts
+            - core/i18n.ts
+            - core/metrics.ts
+            - core/security-principal.ts
+            - core/server-auth.ts
+            - core/server-identity.ts
+            - core/server-network-config.ts
+            - core/server-runtime-context.ts
+            - core/llm-client.ts
+            - core/llm-utils.ts
+            - core/llm-request-policy.ts
+            - core/output-length-contract.ts
+            - core/message-sanitizer.ts
+            - core/message-utils.ts
+            - core/compaction-utils.ts
+            - core/first-run.ts
+            - core/fresh-import.ts
+            - core/migrations.ts
+            - core/grant-registry.ts
+            - core/device-registry.ts
+            - core/yuan-registry.ts
+            - core/tool-availability.ts
+            - core/tool-registry.ts
+            - core/tool-snapshot-repair.ts
+            - core/execution-boundary.ts
+            - core/remote-execution-boundary.ts
+            - core/execution-router.ts
+            - core/execution-lease-registry.ts
+            - core/execution-lease-service.ts
+            - core/resource-access-service.ts
+            - core/resource-service.ts
+            - core/resource-ticket-service.ts
+            - core/notify-delivery.ts
+            - core/notify-store.ts
+            - core/pinned-memory-store.ts
+            - core/experience-store.ts
+            - core/workspace-instruction-files.ts
+            - core/subagent-tool.ts
+            - core/subagent-run-store.ts
+            - core/subagent-thread-store.ts
+            - core/plugin-config.ts
+            - core/plugin-context.ts
+            - core/plugin-manager.ts
+            - core/plugin-dev-service.ts
+            - core/plugin-dev-tools.ts
+            - core/plugin-asset-session-service.ts
+            - core/plugin-iframe-ticket-service.ts
+            - core/plugin-route-request-context.ts
+            - core/plugin-surface-session-service.ts
+            - core/studio-cron-service.ts
+            - core/studio-mounts.ts
+            - core/scheduler.ts
+            - core/security-audit-log.ts
+            - core/capability-policy.ts
+            - core/agent.ts
+            - core/skills.ts
+            - core/slash-command-dispatcher.ts
+            - core/slash-command-registry.ts
+            - core/execution-lease-registry.ts
+            - core/execution-lease-service.ts
+            - core/remote-execution-boundary.ts
+            - core/execution-router.ts
+            - core/execution-boundary.ts
+            - core/llm-client.ts
+            - core/llm-utils.ts
+            - core/llm-request-policy.ts
+            - core/output-length-contract.ts
+            - core/message-sanitizer.ts
+            - core/message-utils.ts
+            - core/compaction-utils.ts
+            - core/first-run.ts
+            - core/fresh-import.ts
+            - core/migrations.ts
+            - core/grant-registry.ts
+            - core/device-registry.ts
+            - core/yuan-registry.ts
+            - core/tool-availability.ts
+            - core/tool-registry.ts
+            - core/tool-snapshot-repair.ts
+            - core/resource-access-service.ts
+            - core/resource-service.ts
+            - core/resource-ticket-service.ts
+            - core/notify-delivery.ts
+            - core/notify-store.ts
+            - core/pinned-memory-store.ts
+            - core/experience-store.ts
+            - core/workspace-instruction-files.ts
+            - core/subagent-tool.ts
+            - core/subagent-run-store.ts
+            - core/subagent-thread-store.ts
+            - core/plugin-config.ts
+            - core/plugin-context.ts
+            - core/plugin-manager.ts
+            - core/plugin-dev-service.ts
+            - core/plugin-dev-tools.ts
+            - core/plugin-asset-session-service.ts
+            - core/plugin-iframe-ticket-service.ts
+            - core/plugin-route-request-context.ts
+            - core/plugin-surface-session-service.ts
+            - core/studio-cron-service.ts
+            - core/studio-mounts.ts
+            - core/scheduler.ts
+            - core/security-audit-log.ts
+            - core/capability-policy.ts
+            - core/agent.ts
+            - core/skills.ts
+            - core/slash-command-dispatcher.ts
+            - core/slash-command-registry.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_engine/speech_recognition:
+        dir_name: Speech Recognition & Local Audio I_O
+        title: Speech Recognition & Local Audio I/O
+        scope:
+            - core/speech-recognition-service.ts
+            - core/stt.ts
+            - core/tts.ts
+            - core/speech-recognition/adapters.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    data_storage:
+        dir_name: SQLite Schema & Migration Backups
+        title: SQLite Schema & Migration Backups
+        scope:
+            - db/
+            - migration-backups/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    desktop_app:
+        dir_name: OpenShadow Desktop Electron App
+        title: OpenShadow Desktop Electron App
+        scope:
+            - desktop/
+        source_files: []
+        children:
+            - desktop_app/electron_main_process
+        depends_on: []
+        related_to: []
+    desktop_app/electron_main_process:
+        dir_name: Electron Main Process & Preload Bridge
+        title: Electron Main Process & Preload Bridge
+        scope:
+            - desktop/main.ts
+            - desktop/preload.cjs
+            - desktop/preload.js
+            - desktop/app-menu.cjs
+            - desktop/bootstrap.cjs
+            - desktop/browser-agent.cjs
+            - desktop/browser-url-guard.cjs
+            - desktop/desktop-access-policy.cjs
+            - desktop/editor-window-controller.cjs
+            - desktop/file-text-io.cjs
+            - desktop/file-watch-adapter.cjs
+            - desktop/file-watch-path.cjs
+            - desktop/file-watch-registry.cjs
+            - desktop/index.html
+            - desktop/ipc-wrapper.cjs
+            - desktop/keep-awake.cjs
+            - desktop/login-item-settings.cjs
+            - desktop/main-i18n.cjs
+            - desktop/main.bundle.cjs
+            - desktop/main.cjs
+            - desktop/notification-controller.cjs
+            - desktop/preload.bundle.cjs
+            - desktop/server-manager.cjs
+            - desktop/settings-window-controller.cjs
+            - desktop/theme-controller.cjs
+            - desktop/workspace-watch-registry.cjs
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    docs:
+        dir_name: Project Planning & Openhanako Alignment Documentation
+        title: Project Planning & Openhanako Alignment Documentation
+        scope:
+            - docs/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    hub_orchestrator:
+        dir_name: Hub Message Orchestration & Agent Phone Runtime
+        title: Hub Message Orchestration & Agent Phone Runtime
+        scope:
+            - hub/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    locales:
+        dir_name: Application Localization Resources (i18n JSON)
+        title: Application Localization Resources (i18n JSON)
+        scope:
+            - locales/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    plugins:
+        dir_name: Plugin Ecosystem (Tools, Routes & Provider Plugins)
+        title: Plugin Ecosystem (Tools, Routes & Provider Plugins)
+        scope:
+            - plugins/
+            - provider-plugins/
+        source_files: []
+        children:
+            - plugins/provider_extensions
+        depends_on: []
+        related_to: []
+    plugins/provider_extensions:
+        dir_name: AI Provider Plugins (GLM & Qwen)
+        title: AI Provider Plugins (GLM & Qwen)
+        scope:
+            - provider-plugins/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    server_api:
+        dir_name: OpenShadow Server — HTTP + WebSocket API Surface
+        title: OpenShadow Server — HTTP + WebSocket API Surface
+        scope:
+            - server/
+        source_files: []
+        children:
+            - server_api/app_core
+            - server_api/bootstrap_and_cli
+            - server_api/websocket
+        depends_on: []
+        related_to: []
+    server_api/app_core:
+        dir_name: App Events, Session Stream Store & Task Bus Adapters
+        title: App Events, Session Stream Store & Task Bus Adapters
+        scope:
+            - server/app-events.ts
+            - server/session-stream-store.ts
+            - server/task-bus-handlers.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    server_api/bootstrap_and_cli:
+        dir_name: Server Bootstrap & CLI Entry Points
+        title: Server Bootstrap & CLI Entry Points
+        scope:
+            - server/main.ts
+            - server/index.ts
+            - server/cli.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    server_api/websocket:
+        dir_name: WebSocket Transport & Protocol Layer
+        title: WebSocket Transport & Protocol Layer
+        scope:
+            - server/ws.ts
+            - server/ws-scope.ts
+            - server/ws-protocol.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs:
+        dir_name: OpenShadow Shared Runtime Library
+        title: OpenShadow Shared Runtime Library
+        scope:
+            - lib/
+            - shared/
+        source_files: []
+        children:
+            - shared_libs/deferred_results
+            - shared_libs/plugin_format
+            - shared_libs/runtime_core
+            - shared_libs/runtime_file_io
+            - shared_libs/runtime_model_registry
+            - shared_libs/runtime_plugin_host
+            - shared_libs/shared_config
+            - shared_libs/shared_errors_bus
+            - shared_libs/shared_hana
+            - shared_libs/shared_media_types
+            - shared_libs/shared_models
+            - shared_libs/shared_net
+            - shared_libs/shared_security_logging
+            - shared_libs/shared_ui_prefs
+            - shared_libs/shared_workspace
+        depends_on: []
+        related_to: []
+    shared_libs/deferred_results:
+        dir_name: Deferred Background Task Result Coordination
+        title: Deferred Background Task Result Coordination
+        scope:
+            - lib/deferred-result-coordinator.ts
+            - lib/deferred-result-notification.ts
+            - lib/deferred-result-payload.ts
+            - lib/deferred-result-store.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/plugin_format:
+        dir_name: Plugin Format, Versioning & Marketplace Index Utilities
+        title: Plugin Format, Versioning & Marketplace Index Utilities
+        scope:
+            - lib/plugin-format-guard.ts
+            - lib/plugin-install-backups.ts
+            - lib/plugin-install-records.ts
+            - lib/plugin-marketplace.ts
+            - lib/plugin-versioning.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/runtime_core:
+        dir_name: Runtime Core Utilities (Activity Hub, Task Registry, i18n, Logging)
+        title: Runtime Core Utilities (Activity Hub, Task Registry, i18n, Logging)
+        scope:
+            - lib/activity-hub.ts
+            - lib/task-registry.ts
+            - lib/i18n.ts
+            - lib/time-utils.ts
+            - lib/theme-registry.cjs
+            - lib/debug-log.ts
+            - lib/log-redactor.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/runtime_file_io:
+        dir_name: Runtime File I_O Helpers (ZIP, MIME, Metadata)
+        title: Runtime File I/O Helpers (ZIP, MIME, Metadata)
+        scope:
+            - lib/file-metadata.ts
+            - lib/extract-zip.ts
+            - lib/zip-writer.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/runtime_model_registry:
+        dir_name: Runtime Model Registry & Defaults
+        title: Runtime Model Registry & Defaults
+        scope:
+            - lib/default-models.json
+            - lib/known-models.json
+            - lib/known-model-fallbacks.json
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/runtime_plugin_host:
+        dir_name: Runtime Plugin Host — Subagent & Approval Persistence Layer
+        title: Runtime Plugin Host — Subagent & Approval Persistence Layer
+        scope:
+            - lib/subagent-executor-metadata.ts
+            - lib/subagent-run-store.ts
+            - lib/subagent-thread-store.ts
+            - lib/user-profile-store.ts
+            - lib/workflow-activity-store.ts
+            - lib/approval-gateway.ts
+            - lib/confirm-store.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/shared_config:
+        dir_name: Configuration Schema, Scope Splitting & Default Workspace
+        title: Configuration Schema, Scope Splitting & Default Workspace
+        scope:
+            - shared/config-schema.ts
+            - shared/config-scope.ts
+            - shared/default-workspace.ts
+            - shared/default-workspace-constants.ts
+            - shared/experiments-schema.ts
+            - shared/migrate-config-scope.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/shared_errors_bus:
+        dir_name: Shared Error Model & Studio Access Contract
+        title: Shared Error Model & Studio Access Contract
+        scope:
+            - shared/errors.ts
+            - shared/error-bus.ts
+            - shared/studio-access-contract.ts
+            - shared/access-scope-profiles.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/shared_hana:
+        dir_name: Hana Runtime Path Resolution
+        title: Hana Runtime Path Resolution
+        scope:
+            - shared/hana-root.ts
+            - shared/hana-runtime-paths.ts
+            - shared/hana-runtime-paths.cjs
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/shared_media_types:
+        dir_name: Shared Media Type & Tool Category Constants
+        title: Shared Media Type & Tool Category Constants
+        scope:
+            - shared/audio-mime.ts
+            - shared/image-mime.ts
+            - shared/video-mime.ts
+            - shared/tool-categories.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/shared_models:
+        dir_name: Shared Model Reference, Capabilities & Provider Auth Helpers
+        title: Shared Model Reference, Capabilities & Provider Auth Helpers
+        scope:
+            - shared/model-ref.ts
+            - shared/model-capabilities.ts
+            - shared/known-models.ts
+            - shared/provider-auth.ts
+            - shared/provider-model-validation.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/shared_net:
+        dir_name: Shared Network Utilities & Proxy Configuration
+        title: Shared Network Utilities & Proxy Configuration
+        scope:
+            - shared/net-utils.ts
+            - shared/network-proxy.ts
+            - shared/network-proxy.cjs
+            - shared/retry.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/shared_security_logging:
+        dir_name: Shared Security & Safe I_O Utilities
+        title: Shared Security & Safe I/O Utilities
+        scope:
+            - shared/log-redactor.ts
+            - shared/log-redactor.cjs
+            - shared/secret-custody.ts
+            - shared/safe-fs.ts
+            - shared/safe-parse.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/shared_ui_prefs:
+        dir_name: Shared UI Preferences & Visual Config
+        title: Shared UI Preferences & Visual Config
+        scope:
+            - shared/browser-preferences.ts
+            - shared/notification-preferences.ts
+            - shared/quick-chat-preferences.ts
+            - shared/sidebar-ui-state.ts
+            - shared/yuan-visuals.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    shared_libs/shared_workspace:
+        dir_name: Shared Workspace Utilities (History, Scope, UI State, Output Paths)
+        title: Shared Workspace Utilities (History, Scope, UI State, Output Paths)
+        scope:
+            - shared/workspace-history.ts
+            - shared/workspace-output.ts
+            - shared/workspace-output.cjs
+            - shared/workspace-persistence-gc.ts
+            - shared/workspace-scope.ts
+            - shared/workspace-ui-state.ts
+            - shared/workspace-skill-paths.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    tests:
+        dir_name: Test Suite (Unit, Functional & E2E)
+        title: Test Suite (Unit, Functional & E2E)
+        scope:
+            - tests/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    yuan_personas:
+        dir_name: Yuan Persona System (Rem, Butter, Hanako, Kong, Ming)
+        title: Yuan Persona System (Rem, Butter, Hanako, Kong, Ming)
+        scope:
+            - yuan/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []

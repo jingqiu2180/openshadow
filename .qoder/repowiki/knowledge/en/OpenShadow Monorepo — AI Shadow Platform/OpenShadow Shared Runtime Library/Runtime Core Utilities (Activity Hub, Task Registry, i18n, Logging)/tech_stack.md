@@ -1,0 +1,1 @@
+Node.js built-ins only (`fs`, `path`, `os`, `setTimeout`); no external runtime dependencies. Persistence uses plain JSON files written atomically via `shared/safe-fs.js`'s `atomicWriteSync`.

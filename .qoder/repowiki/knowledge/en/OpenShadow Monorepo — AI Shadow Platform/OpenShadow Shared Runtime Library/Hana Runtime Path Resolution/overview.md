@@ -1,0 +1,1 @@
+Resolves the Hana project root and Hanako/PI SDK directory layout at runtime, providing path helpers and environment setup for the PI coding agent.

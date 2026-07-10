@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "defaultUserId": "user_c715b0c5-01ff-44f4-974b-0161b8338601",
+  "users": [
+    {
+      "userId": "user_c715b0c5-01ff-44f4-974b-0161b8338601",
+      "kind": "legacy_owner",
+      "displayName": "Local User",
+      "profileSource": "legacy_user_profile",
+      "createdAt": "2026-07-07T08:53:07.096Z",
+      "updatedAt": "2026-07-07T08:53:07.096Z"
+    }
+  ],
+  "createdAt": "2026-07-07T08:53:07.096Z",
+  "updatedAt": "2026-07-07T08:53:07.096Z"
+}
