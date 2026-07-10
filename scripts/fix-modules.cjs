@@ -133,56 +133,34 @@ function pruneDevDependencies(serverDir, rootPackageJsonPath, opts = {}) {
   log(`[fix-modules] 剔除 ${removed} 个 devDependencies（减小包体积，加速安装/更新）`);
 }
 
-// 从项目根已完整安装好的 node_modules 中，只拷贝 server-bundle/package.json 声明的
-// 【依赖闭包】（由 _copy-deps.cjs 生成：server externals + 完整传递依赖，已排除
-// devDependencies）对应的包目录，整拷进 server-bundle/node_modules。
+// 整拷项目根【完整】node_modules 进 server-bundle/node_modules。
 //
-// 为什么只拷闭包而非整拷根 node_modules（重要，v0.3.42 踩过的坑）：
-//  - 根 node_modules 含 900+ 顶层包 / ~1.3GB，整拷后安装包需解压 ~965MB 海量小文件，
-//    Windows Defender 实时防护逐文件扫描会把 NSIS 安装拖到“假死”（v0.3.42 实测装 16+ 分钟）。
-//  - server 只 import 约 20 个顶层 specifier，其传递闭包 = dist-server-bundle/package.json
-//    声明的 451 个包。已校验这 451 个包全部存在于根 node_modules 顶层（none missing），
-//    只拷这 451 个即可 100% 完整、可复现，且 native addon 已针对本平台编译，同时体积砍半、
-//    安装/自动更新大幅提速（Defender 扫描文件数骤降）。
-//
-// 健壮性：若某闭包包在根 node_modules 顶层缺失（lock 漂移等极少情况），自动回退整拷根
-// node_modules 并告警，保证不发布残缺包。
+// 为什么整拷而非“闭包瘦身”（v0.3.43 初版踩坑）：
+//  - 闭包（dist-server-bundle/package.json 声明的依赖）会漏掉 server 实际 import 的
+//    传递依赖（如 hono 在 server-bundle/package.json 未声明 → 闭包漏拷 → server 启动即崩）。
+//    静默漏依赖比“安装包稍大”危险得多，所以宁可整拷保完整。
+//  - 整拷后用 pruneDevDependencies 剔除根 devDependencies（vite/electron/typescript/
+//    esbuild/@types/*/vitest/@electron/* 等运行时完全不需要），体积大幅砍小，
+//    显著降低 NSIS 解压被 Windows Defender 逐文件扫描拖死的风险（v0.3.42 实测装 16+ 分钟）。
+//  - native addon（better-sqlite3/node-pty）随整拷一并就位，已针对本平台编译。
 function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {}) {
   const target = path.join(serverDir, "node_modules");
   const log = typeof opts.log === "function" ? opts.log : console.log;
   fs.rmSync(target, { recursive: true, force: true });
   fs.mkdirSync(target, { recursive: true });
 
-  const serverPkg = JSON.parse(fs.readFileSync(path.join(serverDir, "package.json"), "utf-8"));
-  const needed = Object.keys(serverPkg.dependencies || {});
-
-  const fullCopyFallback = () => {
-    log("[fix-modules] 闭包拷贝不完整 → 回退整拷根 node_modules");
-    const entries = fs.readdirSync(projectModules, { withFileTypes: true });
-    for (const entry of entries) {
-      fs.cpSync(path.join(projectModules, entry.name), path.join(target, entry.name), { recursive: true });
-    }
-    pruneDevDependencies(serverDir, path.resolve(__dirname, "..", "package.json"), opts);
-  };
-
-  let missing = [];
-  for (const dep of needed) {
-    const src = path.join(projectModules, dep);
-    if (fs.existsSync(src)) {
-      fs.cpSync(src, path.join(target, dep), { recursive: true });
-    } else {
-      missing.push(dep);
-    }
-  }
-  if (missing.length > 0) {
-    log(
-      `[fix-modules] 闭包中 ${missing.length} 个包在根 node_modules 顶层缺失: ` +
-        `${missing.slice(0, 10).join(", ")}${missing.length > 10 ? " …" : ""}`,
+  // 整拷根 node_modules 全部顶层条目（保留嵌套 node_modules = 完整传递依赖闭包）
+  const entries = fs.readdirSync(projectModules, { withFileTypes: true });
+  for (const entry of entries) {
+    fs.cpSync(
+      path.join(projectModules, entry.name),
+      path.join(target, entry.name),
+      { recursive: true },
     );
-    fullCopyFallback();
-  } else {
-    log(`[fix-modules] 重建 server node_modules → ${target}（按闭包拷贝 ${needed.length} 个包）`);
   }
+  // 剔除 devDependencies 瘦身（不阻塞：读不到根 package.json 就跳过）
+  pruneDevDependencies(serverDir, path.resolve(__dirname, "..", "package.json"), opts);
+  log(`[fix-modules] 重建 server node_modules → ${target}（整拷根 node_modules + 剔除 devDependencies）`);
 
   // 关键依赖兜底校验：防止漏装导致 server 启动即崩
   const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json", "ws", "hono"];
