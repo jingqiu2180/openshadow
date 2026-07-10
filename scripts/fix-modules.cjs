@@ -67,6 +67,66 @@ function copyBundledServerNodeModules(serverDir, serverBuildModules, opts = {}) 
   log(`[fix-modules] 重建 server node_modules → ${serverNodeModules}`);
 }
 
+// 清理 node_modules 中指向 bundle 外部的 .bin 符号链接（codesign 会报错 / 运行时 dangling）。
+// boundary 为 bundle 根目录：绝对路径且不在 boundary 内的 .bin 软链会被删除。
+// 抽成模块级函数，供 server-bundle 与 dist app 两处复用。返回删除的符号链接数量。
+function cleanBinLinks(dir, boundary) {
+  let removed = 0;
+  let entries;
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return removed; }
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isSymbolicLink()) {
+      const linkTarget = fs.readlinkSync(full);
+      if (path.isAbsolute(linkTarget) && boundary && !linkTarget.startsWith(boundary)) {
+        fs.unlinkSync(full);
+        removed++;
+      }
+    } else if (entry.isDirectory() && entry.name !== ".bin") {
+      const binDir = path.join(full, "node_modules", ".bin");
+      if (fs.existsSync(binDir)) removed += cleanBinLinks(binDir, boundary);
+    }
+  }
+  return removed;
+}
+
+// 从项目根已完整安装好的 node_modules 整拷进 server-bundle/node_modules。
+// 这是经过本地验证（junction 到完整 node_modules 后 server 正常返回 health 200）
+// 的最稳妥方案：server 以 ESM 直接 `node resources/server-bundle/index.js` 运行，
+// 任意 bare import（hono / partial-json / ws / @mariozechner/* 等）都必须能在
+// server-bundle/node_modules 解析。仅按 server-bundle/package.json 声明拷贝会在依赖
+// 闭包不全时漏装传递依赖（如 @mariozechner/pi-ai → partial-json、或 _copy-deps.cjs
+// 未收录的 indirect 依赖），导致 server 启动即 ERR_MODULE_NOT_FOUND 崩溃
+// （server 未就绪 → 模型配置无法推送 → 首页“模型未生效 / server 未就绪”）。
+// 整拷根 node_modules 保证 100% 完整、可复现，且 native addon 已针对本平台编译。
+function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {}) {
+  const target = path.join(serverDir, "node_modules");
+  const log = typeof opts.log === "function" ? opts.log : console.log;
+  fs.rmSync(target, { recursive: true, force: true });
+  fs.mkdirSync(target, { recursive: true });
+
+  const entries = fs.readdirSync(projectModules, { withFileTypes: true });
+  for (const entry of entries) {
+    const src = path.join(projectModules, entry.name);
+    const dest = path.join(target, entry.name);
+    fs.cpSync(src, dest, { recursive: true });
+  }
+  log(`[fix-modules] 重建 server node_modules → ${target}（整拷根 node_modules，共 ${entries.length} 个顶层条目）`);
+
+  // 关键依赖兜底校验：防止漏装导致 server 启动即崩
+  const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json", "ws", "hono"];
+  const stillMissing = requiredServerDeps.filter(
+    (p) => !fs.existsSync(path.join(target, p, "package.json")),
+  );
+  if (stillMissing.length > 0) {
+    throw new Error(`[fix-modules] server-bundle 缺少关键依赖: ${stillMissing.join(", ")}`);
+  }
+
+  // 清理指向 bundle 外部的 .bin 符号链接（codesign / 运行时 dangling）
+  const topBin = path.join(target, ".bin");
+  if (fs.existsSync(topBin)) cleanBinLinks(topBin, serverDir);
+}
+
 exports.default = async function (context) {
   const platformName = context.packager.platform.name;
   const arch = context.arch === 1 ? "x64" : context.arch === 3 ? "arm64" : "x64";
@@ -102,37 +162,13 @@ exports.default = async function (context) {
   }
   const serverDir = path.join(resourcesDir, "server-bundle");
 
-  // 对齐 openhanako：在打包后的 resources/server-bundle/ 中 npm install
-  // 自动处理所有传递依赖、精确版本、native addon 编译
+  // 关键修复：不再在 server-bundle 内 npm install（CI 缓存不全时
+  // `--prefer-offline` 只会装上缓存里残留的少数包，导致 server 启动即
+  // ERR_MODULE_NOT_FOUND 崩溃）。改为直接从项目根已完整安装好的 node_modules
+  // 复制 server-bundle/package.json 声明的全部依赖（含 native addon）。
   const serverPkgPath = path.join(serverDir, "package.json");
   if (fs.existsSync(serverPkgPath)) {
-    console.log("[fix-modules] npm install in server-bundle...");
-    try {
-      const { execSync } = require("child_process");
-      execSync("npm install --omit=dev --no-audit --no-fund --prefer-offline", {
-        cwd: serverDir,
-        stdio: "inherit",
-        env: { ...process.env, NODE_ENV: "production" },
-      });
-      console.log("[fix-modules] server-bundle deps installed");
-    } catch (err) {
-      console.error("[fix-modules] npm install failed:", err.message);
-      throw err;
-    }
-
-    // 关键传递依赖校验：防止漏装导致 server 启动即崩
-    // （如 @mariozechner/pi-ai → partial-json），进而首页拉不到 API。
-    const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json"];
-    const missingServerDeps = requiredServerDeps.filter(
-      (p) => !fs.existsSync(path.join(serverDir, "node_modules", p, "package.json")),
-    );
-    if (missingServerDeps.length > 0) {
-      throw new Error(
-        `[fix-modules] server-bundle 缺少关键依赖: ${missingServerDeps.join(", ")}。` +
-          " 这通常是因为打包环境离线/缓存不完整导致 npm install 漏装传递依赖。" +
-          " 请在联网环境重新构建，或检查 npm registry 可达性。",
-      );
-    }
+    rebuildServerNodeModulesFromProject(serverDir, localModules);
 
     // 修补 @mariozechner/* 包的 package.json `exports`：
     // 这些包（如 pi-coding-agent 0.70.2）的 exports 字段未声明打包 bundle
@@ -212,34 +248,12 @@ exports.default = async function (context) {
     console.log(`[fix-modules] 补全了 ${copied} 个缺失的生产依赖`);
   }
 
-  // 清理 node_modules 中指向 bundle 外部的 .bin 符号链接（codesign 会报错）
-  let removedLinks = 0;
-  function cleanBinLinks(dir) {
-    let entries;
-    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
-    for (const entry of entries) {
-      const full = path.join(dir, entry.name);
-      if (entry.isSymbolicLink()) {
-        const target = fs.readlinkSync(full);
-        if (path.isAbsolute(target) && !target.startsWith(appDir)) {
-          fs.unlinkSync(full);
-          removedLinks++;
-        }
-      } else if (entry.isDirectory() && entry.name !== ".bin") {
-        // 递归进 node_modules 子目录，但跳过非 node_modules 的深层目录
-        const binDir = path.join(full, "node_modules", ".bin");
-        if (fs.existsSync(binDir)) cleanBinLinks(binDir);
-      }
-    }
-  }
-
-  // 扫描顶层和嵌套的 .bin 目录
-  const topBin = path.join(distModules, ".bin");
-  if (fs.existsSync(topBin)) cleanBinLinks(topBin);
+  // 清理 app node_modules 中指向 bundle 外部的 .bin 符号链接（codesign 会报错）
+  const removedLinks = cleanBinLinks(path.join(distModules, ".bin"), appDir);
   for (const entry of fs.readdirSync(distModules, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     const nested = path.join(distModules, entry.name, "node_modules", ".bin");
-    if (fs.existsSync(nested)) cleanBinLinks(nested);
+    if (fs.existsSync(nested)) removedLinks += cleanBinLinks(nested, appDir);
   }
 
   if (removedLinks > 0) {

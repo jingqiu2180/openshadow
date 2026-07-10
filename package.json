@@ -1,6 +1,6 @@
 {
   "name": "openshadow",
-  "version": "0.3.40",
+  "version": "0.3.42",
   "description": "OpenShadow — Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.",
   "type": "module",
   "author": {
@@ -126,7 +126,6 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
       "shortcutName": "OpenShadow",
       "include": "build/installer.nsh",
       "installerIcon": "desktop/src/icon.ico",
