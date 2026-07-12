@@ -161,13 +161,26 @@ function copyLegacyFiles(): Plugin {
       const srcDir = resolve(PROJECT_ROOT, 'src')
       const outDir = OUT_DIR
 
-      const dirs = ['lib', 'modules', 'locales', 'themes']
+      const dirs = ['lib', 'modules', 'locales', 'themes', 'assets']
+      const files = ['styles.css', 'animations.css']
       for (const dir of dirs) {
         const src = resolve(srcDir, dir)
         const dest = resolve(outDir, dir)
         if (existsSync(src)) {
           cpSync(src, dest, { recursive: true })
           console.log(`[copyLegacy] ${dir}/ → dist-renderer/${dir}/`)
+        } else {
+          console.warn(`[copyLegacy] ${src} not found, skipping`)
+        }
+      }
+
+      // 独立样式/动画文件（onboarding.html 以 <link> 形式引用，需作为独立文件存在）
+      for (const file of files) {
+        const src = resolve(srcDir, file)
+        const dest = resolve(outDir, file)
+        if (existsSync(src)) {
+          cpSync(src, dest)
+          console.log(`[copyLegacy] ${file} → dist-renderer/${file}`)
         } else {
           console.warn(`[copyLegacy] ${src} not found, skipping`)
         }
@@ -194,6 +207,8 @@ export default defineConfig({
         index: resolve(ROOT, 'index.html'),
         'quick-chat': resolve(ROOT, 'quick-chat.html'),
         'editor-window': resolve(ROOT, 'editor-window.html'),
+        // React Onboarding（openHanako 风格首次启动向导）
+        onboarding: resolve(ROOT, 'onboarding.html'),
       },
     },
   },

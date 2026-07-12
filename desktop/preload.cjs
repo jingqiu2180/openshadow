@@ -9,6 +9,7 @@
 //   - windowMinimize / windowMaximize / windowClose
 
 const { contextBridge, ipcRenderer, shell } = require('electron')
+const { pathToFileURL } = require('url')
 
 // platform API (兼容 platform.js 的检查)
 const platformApi = {
@@ -71,10 +72,25 @@ const platformApi = {
     ipcRenderer.on('settings-changed', handler)
     return () => { ipcRenderer.removeListener('settings-changed', handler) }
   },
+
+  // ─── Onboarding（React 向导）桥接 ───────────────────────
+  // 向导完成：主进程标记 wizard.completed 并打开主窗口
+  onboardingComplete: () => ipcRenderer.invoke('onboarding-complete'),
+  // 欢迎页预填：语言 / 助手名
+  getSplashInfo: () => ipcRenderer.invoke('get-splash-info'),
+  // 欢迎页头像本地路径（agent 角色）
+  getAvatarPath: (role) => ipcRenderer.invoke('get-avatar-path', role),
+  // 本地文件路径 → file:// URL（OnboardingApp 用 window.platform.getFileUrl 显示头像）
+  getFileUrl: (filePath) => {
+    try { return pathToFileURL(filePath).toString() } catch { return '' }
+  },
 }
 
 // 注入 window.hana（兼容 platform.js）
 contextBridge.exposeInMainWorld('hana', platformApi)
+
+// 注入 window.platform 作为 platformApi 别名（兼容 onboarding 中 window.platform.getFileUrl 等调用）
+contextBridge.exposeInMainWorld('platform', platformApi)
 
 // 注入 window.__REM_API__
 contextBridge.exposeInMainWorld('__REM_API__', {

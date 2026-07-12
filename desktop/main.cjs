@@ -38,6 +38,8 @@ const { grantWebContentsAccess, canReadPath, canWritePath, isSetupComplete } = r
 const { createEditorWindowController } = require('./editor-window-controller.cjs')
 // Browser Agent Controller (WebContentsView)
 const { createBrowserAgentController } = require('./browser-agent.cjs')
+// Onboarding 完成桥接（React 向导 → 标记 wizard.completed + 打开主窗口）
+const { completeOnboardingAndOpenMain } = require('./src/shared/onboarding-completion.cjs')
 
 const isDev = !app.isPackaged
 const VITE_DEV_URL = process.env.VITE_DEV_URL || 'http://localhost:5280'
@@ -284,21 +286,19 @@ setIpcSenderValidator((channel, event) => isTrustedAppWebContents(event?.sender,
 async function runWizardWindow() {
   if (isWizardCompleted()) return
 
-  // asar:true 时 preload 必须指向真实文件系统路径（asar 解包后）
-  const preloadPath = app.isPackaged
-    ? join(dirname(app.getAppPath()), 'app.asar.unpacked', 'desktop', 'wizard', 'preload.js')
-    : join(app.getAppPath(), 'desktop', 'wizard', 'preload.js')
-  console.log('[wizard] preload path:', preloadPath, '| exists:', existsSync(preloadPath))
+  // React Onboarding 入口用标准 preload（暴露 window.hana / window.platform 桥接）
+  const preloadPath = join(__dirname, 'preload.bundle.cjs')
+  console.log('[onboarding] preload path:', preloadPath, '| exists:', existsSync(preloadPath))
 
   wizardWindow = new BrowserWindow({
-    width: 760,
-    height: 640,
-    minWidth: 640,
-    minHeight: 520,
-    title: 'OpenShadow 启动向导',
+    width: 560,
+    height: 780,
     resizable: false,
     minimizable: false,
     maximizable: false,
+    title: 'OpenShadow 启动向导',
+    backgroundColor: '#F8F4ED', // warm-paper 浅色，避免白屏闪烁
+    show: false,
     webPreferences: {
       preload: preloadPath,
       nodeIntegration: false,
@@ -306,24 +306,28 @@ async function runWizardWindow() {
       sandbox: false,
       webSecurity: false,
     },
-    backgroundColor: '#faf8f5',
-    show: false,
+    ...titleBarOpts({ x: 16, y: 16 }),
   })
 
   wizardWindow.once('ready-to-show', () => {
     wizardWindow && wizardWindow.show()
-    console.log('[wizard] window shown')
+    console.log('[onboarding] window shown')
   })
 
-  const htmlPath = app.isPackaged
-    ? join(app.getAppPath(), 'desktop', 'wizard', 'index.html')
-    : join(__dirname, 'wizard', 'index.html')
-  console.log('[wizard] html path:', htmlPath)
-  await wizardWindow.loadFile(htmlPath)
-  console.log('[wizard] loaded HTML from', htmlPath)
+  // 加载 React Onboarding（vite 构建产物 dist-renderer/onboarding.html）
+  if (!app.isPackaged && process.env.VITE_DEV_URL) {
+    await wizardWindow.loadURL(`${process.env.VITE_DEV_URL}/onboarding.html`)
+    console.log('[onboarding] loaded from Vite dev server')
+  } else {
+    const exePath = app.getAppPath()
+    const htmlPath = join(exePath, 'desktop', 'dist-renderer', 'onboarding.html')
+    console.log('[onboarding] html path:', htmlPath, '| exists:', existsSync(htmlPath))
+    await wizardWindow.loadFile(htmlPath)
+    console.log('[onboarding] loaded HTML from', htmlPath)
+  }
 
   wizardWindow.on('close', (e) => {
-    // wizardCompleting=true 表示 wizard:done-signal 主动关闭，不弹对话框
+    // wizardCompleting=true 表示 onboarding-complete 主动关闭，不弹对话框
     if (wizardCompleting) {
       wizardWindow = null
       return
@@ -353,6 +357,68 @@ function registerIpcHandlers() {
   wrapIpcHandler('server:get-info', () => {
     const info = readServerInfo()
     return { port: info?.port || null, token: info?.token || null }
+  })
+
+  // ─── React Onboarding 桥接 ───────────────────────────────
+  // 向导完成：标记 wizard.completed 并打开主窗口（与 vanilla wizard:done-signal 等效）
+  wrapIpcHandler('onboarding-complete', async () => {
+    console.log('[onboarding] complete signal received')
+    wizardCompleting = true
+    suppressWindowAllClosed = true
+    try {
+      if (wizardWindow && !wizardWindow.isDestroyed()) {
+        wizardWindow.close()
+      }
+      wizardWindow = null
+      const port = serverManager.getPort()
+      const token = serverManager.getToken()
+      await completeOnboardingAndOpenMain({
+        serverPort: port,
+        serverToken: token,
+        createMainWindow,
+      })
+      // 持久化 wizard.completed，避免下次启动重复弹向导
+      // （React 向导只调 preferences/setup-complete 写 preferences.setupComplete，不碰 wizard.completed）
+      const cfg = readConfig()
+      cfg.wizard = cfg.wizard || {}
+      cfg.wizard.completed = true
+      cfg.wizard.completedAt = new Date().toISOString()
+      writeConfig(cfg)
+      console.log('[onboarding] wizard.completed = true persisted')
+    } catch (e) {
+      console.error('[onboarding] complete failed:', e.message)
+    } finally {
+      suppressWindowAllClosed = false
+    }
+  })
+
+  // 欢迎页预填信息：语言 / 助手名（失败回落默认）
+  wrapIpcHandler('get-splash-info', () => {
+    try {
+      const cfg = readConfig()
+      const user = (cfg.user && cfg.user.name) || 'Shadow'
+      const locale = (cfg.ui && cfg.ui.language) || 'zh-CN'
+      return { agentName: user, locale, yuan: 'hanako' }
+    } catch {
+      return { agentName: 'Shadow', locale: 'zh-CN', yuan: 'hanako' }
+    }
+  })
+
+  // 欢迎页头像本地路径（agent 角色），用于显示默认助手头像
+  wrapIpcHandler('get-avatar-path', (_event, role) => {
+    if (role !== 'agent' && role !== 'user') return null
+    try {
+      const candidates = [
+        join(process.resourcesPath, 'assets', 'Hanako.png'),
+        join(process.resourcesPath, 'assets', 'hanako.png'),
+      ]
+      for (const p of candidates) {
+        if (existsSync(p)) return p
+      }
+      return null
+    } catch {
+      return null
+    }
   })
 
   wrapIpcHandler('wizard:get-config', () => {

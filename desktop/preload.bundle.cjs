@@ -1,5 +1,6 @@
 "use strict";
 const require$$0 = require("electron");
+const require$$1 = require("url");
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
@@ -9,6 +10,7 @@ function requirePreload() {
   if (hasRequiredPreload) return preload$1;
   hasRequiredPreload = 1;
   const { contextBridge, ipcRenderer, shell } = require$$0;
+  const { pathToFileURL } = require$$1;
   const platformApi = {
     // 服务器连接 — 从主进程读取真实 port/token（server-info.json），不再硬编码 3000
     // 主进程 server-manager 启动真实 server 后写入 server-info.json 并发送 server:ready 事件
@@ -78,9 +80,25 @@ function requirePreload() {
       return () => {
         ipcRenderer.removeListener("settings-changed", handler);
       };
+    },
+    // ─── Onboarding（React 向导）桥接 ───────────────────────
+    // 向导完成：主进程标记 wizard.completed 并打开主窗口
+    onboardingComplete: () => ipcRenderer.invoke("onboarding-complete"),
+    // 欢迎页预填：语言 / 助手名
+    getSplashInfo: () => ipcRenderer.invoke("get-splash-info"),
+    // 欢迎页头像本地路径（agent 角色）
+    getAvatarPath: (role) => ipcRenderer.invoke("get-avatar-path", role),
+    // 本地文件路径 → file:// URL（OnboardingApp 用 window.platform.getFileUrl 显示头像）
+    getFileUrl: (filePath) => {
+      try {
+        return pathToFileURL(filePath).toString();
+      } catch {
+        return "";
+      }
     }
   };
   contextBridge.exposeInMainWorld("hana", platformApi);
+  contextBridge.exposeInMainWorld("platform", platformApi);
   contextBridge.exposeInMainWorld("__REM_API__", {
     // Screenshot
     screenshotCapture: (displayId) => ipcRenderer.invoke("screenshot:capture", displayId),

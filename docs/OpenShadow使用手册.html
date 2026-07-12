@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenShadow 使用手册</title>
+<style>
+  :root{
+    --bg:#fbf7f0; --card:#fffdf9; --ink:#2b2620; --muted:#7a7163;
+    --accent:#b9692e; --accent2:#3a7d6e; --line:#e7ddcd; --warn:#a8431f; --ok:#2f7d4f;
+    --code:#f3ece0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.75;font-size:15px}
+  .wrap{display:flex;min-height:100vh}
+  nav{position:sticky;top:0;align-self:flex-start;height:100vh;overflow:auto;width:270px;
+      background:var(--card);border-right:1px solid var(--line);padding:22px 14px}
+  nav h2{font-size:13px;color:var(--muted);margin:14px 0 6px;letter-spacing:.04em}
+  nav a{display:block;color:var(--ink);text-decoration:none;padding:5px 9px;border-radius:8px;font-size:13.5px}
+  nav a:hover{background:#f1e8da}
+  nav .sub a{padding-left:22px;color:var(--muted);font-size:12.5px}
+  main{flex:1;max-width:900px;margin:0 auto;padding:40px 48px 120px}
+  h1{font-size:30px;margin:0 0 6px}
+  .tag{display:inline-block;background:var(--accent2);color:#fff;font-size:11px;
+       padding:2px 9px;border-radius:999px;vertical-align:middle;margin-left:8px}
+  h2{font-size:22px;margin:44px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:17px;margin:24px 0 6px;color:var(--accent)}
+  h4{font-size:15px;margin:16px 0 4px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  code{background:var(--code);padding:2px 6px;border-radius:5px;font-size:13px;
+       font-family:"SFMono-Regular",Consolas,Menlo,monospace}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+        padding:14px 18px;margin:14px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .warn{border-left:4px solid var(--warn);background:#fdf3ee}
+  .ok{border-left:4px solid var(--ok);background:#eefaf1}
+  .tip{border-left:4px solid var(--accent);background:#fbf2e8}
+  .kbd{background:#efe7d8;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;
+       padding:1px 7px;font-size:13px;font-family:Consolas,monospace}
+  .path{font-family:Consolas,monospace;font-size:13px;background:var(--code);padding:3px 8px;border-radius:6px}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#f3ebdd}
+  .beta{background:#f3ead8;color:#8a5a1e;font-size:11px;padding:1px 7px;border-radius:6px;margin-left:6px}
+  .foot{color:var(--muted);font-size:13px;margin-top:60px;border-top:1px solid var(--line);padding-top:16px}
+  b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <h2>目录</h2>
+  <a href="#intro">1. 这是什么</a>
+  <a href="#install">2. 安装与首次启动</a>
+  <a href="#ui">3. 主界面导览</a>
+  <a href="#providers">4. 配置供应商与模型</a>
+  <a href="#agents">5. 助手（Agent）与我</a>
+  <a href="#channels">6. 频道（Channels）</a>
+  <a href="#jian">7. 笺（jian）与自动巡检</a>
+  <a href="#desk">8. 工作台与文件</a>
+  <a href="#sessions">9. 会话管理</a>
+  <a href="#settings">10. 设置中心详解</a>
+  <div class="sub">
+    <a href="#s-agent">助手 / 我</a>
+    <a href="#s-interface">界面</a>
+    <a href="#s-general">通用</a>
+    <a href="#s-browser">浏览器</a>
+    <a href="#s-work">工作台</a>
+    <a href="#s-skills">技能</a>
+    <a href="#s-bridge">桥接</a>
+    <a href="#s-media">媒体</a>
+    <a href="#s-sharing">共享</a>
+    <a href="#s-access">访问</a>
+    <a href="#s-plugins">插件</a>
+    <a href="#s-experiments">实验</a>
+    <a href="#s-security">安全</a>
+    <a href="#s-about">关于</a>
+  </div>
+  <a href="#security">11. 安全与沙箱</a>
+  <a href="#tray">12. 托盘与快捷键</a>
+  <a href="#faq">13. 已知问题与避坑</a>
+  <a href="#config">14. 配置与排障</a>
+</nav>
+<main>
+  <h1>OpenShadow 使用手册 <span class="tag">v0.3.45+</span></h1>
+  <p style="color:var(--muted)">一份写给最终用户的实用指南 —— 不需要会编程也能看懂。基于当前已发布的 0.3.45 版本编写，覆盖全部 16 个设置标签与频道协作系统。</p>
+
+  <div class="card ok">
+    <b>一句话定位：</b>OpenShadow 是一个常驻你电脑的 AI 助手。它既能像聊天机器人一样对话、读文件、改代码、跑命令、上网，也能在频道里和多人协作、在你离开时按你贴的"笺"指令默默干活。
+  </div>
+
+  <h2 id="intro">1. 这是什么</h2>
+  <p>OpenShadow 是一个"桌面版 AI 工作搭档"。和普通网页聊天机器人的区别：</p>
+  <ul>
+    <li><b>能真正操作你的电脑</b>：读/写文件、执行命令、搜索代码、列目录 —— 都在你授权的工作区内。</li>
+    <li><b>能上网、能生成图片/视频</b>：配置好相应服务后，助手可直接浏览网页、产出多模态内容。</li>
+    <li><b>频道协作</b>：内置类似群聊的空间，你可建频道、拉成员，<b>AI 助手作为参与者加入</b>一起讨论。</li>
+    <li><b>后台自动工作</b>：贴一张"笺(jian)"便签，关掉窗口它也会继续做，做完汇报。</li>
+    <li><b>多助手、多模型</b>：可同时养多个性格不同的 Agent，各自有记忆、各自对接不同大模型。</li>
+  </ul>
+
+  <h2 id="install">2. 安装与首次启动</h2>
+  <h3>安装</h3>
+  <p>下载 <code>OpenShadow-*.Windows-x64.exe</code> 双击安装，默认装到：</p>
+  <p><span class="path">C:\Users\你的用户名\AppData\Local\Programs\OpenShadow</span></p>
+  <div class="card warn">
+    <b>安装过程可能"看起来卡住"</b>：Windows Defender 会对 500MB 左右的安装包逐文件扫描，可能要等 15–20 分钟。只要任务管理器里安装进程还在、C 盘没报错，就耐心等，<b>不要反复点</b>。
+  </div>
+  <h3>首次启动向导</h3>
+  <p>第一次打开会弹出<b>设置向导</b>，引导你完成：欢迎 → 选择供应商/填 API Key → 选择模型 → 选择工作台目录 → 完成。</p>
+  <ul>
+    <li>"下一步"按钮在 0.3.44 之后<b>全程可点、始终推进</b>；没填完的字段会留到「设置」里补，不会卡死。</li>
+    <li>向导里选的<b>工作台目录</b>从 0.3.45 起会真正生效（此前版本会回退成默认目录，是个 bug，已修）。</li>
+  </ul>
+  <div class="card tip">
+    <b>想重新跑一次向导？</b> 关闭所有 OpenShadow 窗口（含右下角托盘图标），打开配置文件
+    <span class="path">%USERPROFILE%\.openshadow\config.json</span>，把 <code>"completed": true</code> 改成 <code>false</code>，再启动即可。
+  </div>
+
+  <h2 id="ui">3. 主界面导览</h2>
+  <p>主窗口大致分几块：</p>
+  <table>
+    <tr><th>区域</th><th>作用</th></tr>
+    <tr><td>左侧边栏</td><td>会话列表（历史对话）、<b>频道</b>列表（DM/群聊，见第 6 节）、新建对话、桥接、动态（activity）。可折叠。</td></tr>
+    <tr><td>中间聊天区</td><td>和当前助手对话。底部有<b>模型选择下拉框</b>和输入框。</td></tr>
+    <tr><td>顶部标签栏</td><td>在「对话 / 频道 / 插件」等视图间切换。</td></tr>
+    <tr><td>右上角 ⚙ 按钮</td><td><b>真正的设置入口</b> → 打开设置弹窗（见第 10 节）。</td></tr>
+    <tr><td>顶部"书桌"开关</td><td>打开<b>笺（jian）侧栏</b>，写异步指令便签（见第 7 节）。</td></tr>
+  </table>
+  <div class="card warn">
+    <b>注意：不要用右下角托盘图标的"设置"。</b> 在旧版本里，托盘的"设置"窗口是<b>空白的（已知 bug）</b>。所有设置请从<b>主聊天窗右上角的 ⚙ 齿轮</b>进入。
+  </div>
+
+  <h2 id="providers">4. 配置供应商与模型</h2>
+  <p>这是最容易卡住新人的地方，重点讲。</p>
+  <h3>下拉框的数据从哪来？</h3>
+  <div class="card tip">
+    聊天窗口右下角的"模型选择"下拉框，<b>完全来自你在设置里配置的供应商</b>。没有配置供应商 → 下拉框显示"未配置模型"，为空。
+  </div>
+  <p>配置链路：</p>
+  <ol>
+    <li>打开 ⚙ 设置 → <b>供应商（Providers）</b> 标签。</li>
+    <li>从内置预设里挑一个（如 MiniMax、DeepSeek、硅基流动…），填入你自己的 <b>API Key</b> 和要用的模型。</li>
+    <li>保存后，模型才会出现在聊天下拉框里。</li>
+  </ol>
+  <h3>内置 32 个供应商预设（0.3.44 起）</h3>
+  <p>软件自带 32 个常见供应商模板（MiniMax、DeepSeek、Qwen、智谱 GLM、Kimi、百度千帆、腾讯混元、火山方舟、硅基流动、Groq、Mistral、StepFun 等）。<b>预设只给模板，不含 Key</b> —— 因为软件是分发给团队、每人填自己的 Key 用的。</p>
+  <h3>供应商标签里还能配什么？</h3>
+  <ul>
+    <li><b>API Key / 令牌</b>：各供应商的密钥。</li>
+    <li><b>模型</b>：主模型 / 小模型 / 大模型（main/small/large）分别指定，可设 Base URL、上下文长度、思考强度（reasoning effort）。</li>
+    <li><b>联网搜索</b>：接入 Tavily / Brave / Serper / AnySearch 等搜索服务，让助手能联网查资料。</li>
+  </ul>
+  <h3>显示名是怎么来的？</h3>
+  <p>你在配置里写的是模型 ID（如 <code>MiniMax-M3</code>），界面会翻译成易读名 <b>"MiniMax M3"</b>。这很正常。</p>
+  <div class="card ok">
+    <b>快捷改法（高级）：</b> 也可直接编辑配置文件 <span class="path">%USERPROFILE%\.openshadow\config.json</span> 的 <code>providers</code> 数组，把 <code>models.main</code> 改成 <code>供应商id::模型名</code>，保存后重启生效。
+  </div>
+
+  <h2 id="agents">5. 助手（Agent）与我</h2>
+  <p>OpenShadow 支持<b>多个助手并行</b>，每个有独立记忆、性格和工作台。</p>
+  <ul>
+    <li>打开 ⚙ 设置 → <b>助手（Agent）</b> 标签：配置助手的人设、角色、头像、记忆（"源/yuan"）。可切换 / 新建 / 编辑助手。</li>
+    <li>内置人格预设有 <b>Hanako、Butter、Ming、Kong</b> 等（各有不同风格），创建时可选用。</li>
+    <li><b>我（Me）</b> 标签：填写<b>你自己的个人资料 / 自我介绍</b>，让助手更了解你，回答更贴合。</li>
+  </ul>
+  <p>侧边栏切换会话时，实际上也是在切换"当前由哪个助手服务"。</p>
+
+  <h2 id="channels">6. 频道（Channels）<span class="beta">Beta</span></h2>
+  <p>频道是一个<b>内置的群聊 / 协作空间</b>，类似 Slack、Discord 的频道机制，而且 <b>AI 助手会作为参与者加入</b>。</p>
+  <h3>在哪里？</h3>
+  <ul>
+    <li>左侧边栏有一个<b>频道区块</b>（标注 Beta），分 <b>DM（私聊）</b> 和 <b>Group（群聊）</b> 两个列表。</li>
+    <li>顶部标签栏可切到「<b>频道</b>」视图。</li>
+    <li>首次使用需<b>开启频道开关</b>（会弹一次确认提示），开启后加载频道列表。</li>
+  </ul>
+  <h3>怎么用？</h3>
+  <ol>
+    <li>点频道区块的「<b>＋ 新建</b>」按钮 → 弹出<b>创建频道</b>窗口 → 填名称创建群聊频道。</li>
+    <li>在频道里：有<b>消息流</b>、<b>成员列表</b>、<b>输入框</b>，和群聊一样用。</li>
+    <li><b>AI 助手是频道成员</b>：右侧栏有「<b>Agent 设置</b>」和「<b>Agent 动态</b>」两个面板，可配置它在该频道的角色与查看它的活动。</li>
+    <li>可发起 <b>DM 私聊</b>（一对一频道）。</li>
+    <li>频道有<b>未读红点</b>提示，部分频道可设为<b>只读</b>。</li>
+  </ol>
+  <div class="card tip">
+    <b>用途示例</b>：把助手拉进"本周需求评审"群，大家在频道里@它查代码、写方案；或一个人开多个频道按主题分工作业，每个频道配不同的助手人格。
+  </div>
+
+  <h2 id="jian">7. 笺（jian）与自动巡检</h2>
+  <p>这是 OpenShadow 区别于普通聊天机器人的灵魂功能。</p>
+  <h3>什么是"笺"？</h3>
+  <p>"笺"(jiān) 是一张<b>指令便签</b>：你在任意文件夹里放一个 <code>jian.md</code> 文件，写下要它做的事。助手在<b>后台自动巡检</b>时会扫到这张笺并读取执行，不必一直开着聊天窗口。可以理解为：你到处贴便利贴，助手按路线巡店时逐张处理。</p>
+  <h3>怎么用？</h3>
+  <ol>
+    <li>点主窗口顶部的 <b>"书桌" 开关</b>（侧边栏标为"书桌"，打开的是<b>笺</b>面板），展开笺侧栏。</li>
+    <li>在任意工作台目录下新建一个 <code>jian.md</code> 文件，里面写指令（例如"整理这个文件夹里的图片，按日期归类"）。</li>
+    <li>助手按<b>心跳/定时（cron）</b>扫描工作区，读到 jian.md 就执行，并实时更新任务状态。</li>
+  </ol>
+  <div class="card tip">
+    适合场景：你下班前贴一张笺"明天早上把本周日志汇总成一份报告"，第二天回来报告已经在桌上了。你甚至<b>不需要打开聊天窗</b>。巡检的开关与频率在 ⚙ 设置 → <b>工作台 → 巡检</b> 里配置。
+  </div>
+
+  <h2 id="desk">8. 工作台与文件</h2>
+  <p>每个助手有一个"工作台（Desk）"工作目录，是它读写的<b>主战场</b>。</p>
+  <ul>
+    <li>可在 ⚙ 设置 → <b>工作台（Work）→ 工作台目录</b> 查看 / 切换当前工作台目录。</li>
+    <li>工作台里可以拖文件、预览资源、贴笺（jian.md），助手在巡检时会读取这些素材。</li>
+    <li>支持注入 <code>AGENTS.md</code> / <code>CLAUDE.md</code> 之类的"项目说明"文件，让助手自动了解该目录的规范。</li>
+    <li><b>0.3.45 修复</b>：向导里选的工作台目录现在会真正设为激活工作台，不再是默认的 <code>Desktop\OH-WorkSpace</code>。</li>
+  </ul>
+
+  <h2 id="sessions">9. 会话管理</h2>
+  <ul>
+    <li>左侧边栏列出所有对话历史，可<b>搜索、归档、恢复</b>。</li>
+    <li>对话里可以<b>引用(quote)</b>某条消息，把上下文带入后续讨论。</li>
+    <li>不同助手的会话<b>互相独立</b>，记忆不串。</li>
+  </ul>
+
+  <h2 id="settings">10. 设置中心详解（16 个标签）</h2>
+  <p>点右上角 ⚙ 打开设置弹窗，左侧是一列标签。下面逐个说明它们干什么。搜索框支持中英文关键词（如"代理""theme"）快速定位。</p>
+
+  <h3 id="s-agent">助手（Agent）/ 我（Me）</h3>
+  <ul>
+    <li><b>助手</b>：配置 AI 的<b>人设、角色、头像、记忆（源）</b>。新建/切换助手都在这里。</li>
+    <li><b>我</b>：填写<b>你自己的资料/自我介绍</b>，让助手更懂你。</li>
+  </ul>
+
+  <h3 id="s-interface">界面（Interface）</h3>
+  <ul>
+    <li><b>主题</b>：浅色 / 深色 / 纸张纹理（paper texture）。</li>
+    <li><b>字体</b>：正文字体、Markdown 字体（宋体/黑体等）。</li>
+    <li><b>语言与时区</b>：界面语言、时区、地区。</li>
+    <li><b>快捷键</b>：查看/自定义键盘快捷键，含<b>语音快捷键</b>。</li>
+  </ul>
+
+  <h3 id="s-general">通用（General）</h3>
+  <ul>
+    <li><b>启动</b>：开机自启、保持后台运行、锁屏行为。</li>
+    <li><b>快速聊天</b>：小窗快速唤起、是否保留输入框内容。</li>
+    <li><b>通知</b>：轮次完成提醒等。</li>
+  </ul>
+
+  <h3 id="s-browser">浏览器（Browser）</h3>
+  <ul>
+    <li><b>Cookie / 站点数据</b>：管理并清除助手上网用的 Cookie。</li>
+    <li><b>助手上网行为</b>：控制助手打开网页时用新标签页还是当前标签页等。</li>
+  </ul>
+
+  <h3 id="s-work">工作台（Work）</h3>
+  <ul>
+    <li><b>工作台目录</b>：设置默认工作目录，并可注入 <code>AGENTS.md</code>/<code>CLAUDE.md</code> 项目说明。</li>
+    <li><b>巡检（心跳）</b>：配置后台自动任务的开关、频率与权限 —— 也就是第 7 节"笺"自动执行的引擎。</li>
+  </ul>
+
+  <h3 id="s-skills">技能（Skills）</h3>
+  <p>安装与管理<b>技能包</b>（可复用的能力模块，如特定流程、工具）。让助手掌握新本领。</p>
+
+  <h3 id="s-bridge">桥接（Bridge）</h3>
+  <p>把 OpenShadow 接到<b>外部社交平台</b>（微信、Telegram 等），让你在手机/别处也能通过聊天驱动助手。</p>
+
+  <h3 id="s-media">媒体（Media）</h3>
+  <ul>
+    <li><b>图片生成</b>、<b>视频生成</b>：接入对应服务后，助手可产出图像/视频。</li>
+    <li><b>语音识别 / 转录</b>：语音转文字能力配置。</li>
+  </ul>
+
+  <h3 id="s-sharing">共享（Sharing）</h3>
+  <p>对话的<b>分享</b>设置：截图、生成分享卡片、<b>水印</b>等。</p>
+
+  <h3 id="s-access">访问（Access）</h3>
+  <p>让你从<b>手机 / 局域网 / 远程</b>访问本机助手：PWA、端口、<b>二维码</b>等。方便手机端随时用。</p>
+
+  <h3 id="s-plugins">插件（Plugins）</h3>
+  <p><b>插件市场</b>与已装插件管理，含开发工具与"完全访问"开关（给插件更高权限）。</p>
+
+  <h3 id="s-experiments">实验（Experiments）</h3>
+  <p>Beta / 预览功能开关，例如 <b>电脑使用（Computer Use）</b> 等前沿能力。按需开启。</p>
+
+  <h3 id="s-security">安全（Security）</h3>
+  <ul>
+    <li><b>沙盒</b>：联网沙盒、文件备份、<b>归档对话</b>管理。</li>
+    <li><b>网络代理</b>：HTTP/SOCKS 代理或直连设置（访问境外模型时常需要）。</li>
+  </ul>
+
+  <h3 id="s-about">关于（About）</h3>
+  <p>查看<b>版本号、检查更新、许可证</b>信息。</p>
+
+  <h2 id="security">11. 安全与沙箱</h2>
+  <p>OpenShadow 有<b>双层沙箱</b>：应用层路径守卫 + 系统级隔离。默认只允许访问你显式授权的工作区目录。</p>
+  <ul>
+    <li>设置 → <b>安全（Security）</b> 里可管理"允许访问的目录白名单（workspaceRoots）"。</li>
+    <li>向导里选的工作台目录会自动加入白名单。</li>
+    <li>助手<b>越权访问白名单外的路径会被拒绝</b> —— 这是保护，不是 bug。</li>
+  </ul>
+
+  <h2 id="tray">12. 托盘与快捷键</h2>
+  <ul>
+    <li>窗口关闭后软件常驻<b>右下角托盘</b>（单实例，重复双击不会开多个）。</li>
+    <li>托盘图标右键可退出；但如前所述，托盘的"设置"窗口在旧版本是空白的，设置请走 ⚙。</li>
+    <li>常见快捷键：<span class="kbd">Ctrl/Cmd + K</span> 类全局操作、<span class="kbd">Esc</span> 关闭弹窗（具体以界面提示为准）。</li>
+  </ul>
+
+  <h2 id="faq">13. 已知问题与避坑</h2>
+  <table>
+    <tr><th>现象</th><th>说明 / 处理</th></tr>
+    <tr><td>托盘"设置"点开是空白页</td><td>已知 bug（旧版本）。改用主聊天窗右上角 <b>⚙</b>。</td></tr>
+    <tr><td>助手头像显示成"碎图"</td><td>0.3.44 已修复资源路径，升级到 0.3.44+ 即正常。</td></tr>
+    <tr><td>向导选的工作台不生效，进了默认目录</td><td>0.3.45 已修复，升级后即可。</td></tr>
+    <tr><td>模型下拉框是空的</td><td>还没配供应商。去 ⚙ → 供应商，填 Key 并选模型。</td></tr>
+    <tr><td>安装进度长时间不动</td><td>多半是 Defender 扫描，等 15–20 分钟，别反复点。</td></tr>
+    <tr><td>升级时反复弹"是否删除用户数据"</td><td>旧版卸载项残留所致。彻底退出进程并清理后重装即可（详见第 14 节）。</td></tr>
+    <tr><td>频道列表不显示</td><td>需在侧边栏频道区块<b>开启频道开关</b>（首次会弹确认）。Beta 功能。</td></tr>
+  </table>
+
+  <h2 id="config">14. 配置与排障</h2>
+  <h3>配置文件位置</h3>
+  <p><span class="path">C:\Users\你的用户名\.openshadow\config.json</span></p>
+  <p>所有设置（供应商、模型、工作台、助手、向导完成标志、频道开关等）都在这。重装软件<b>不会删除</b>它，所以你的配置和 Key 都保得住。</p>
+  <h3>常用排障</h3>
+  <ul>
+    <li><b>软件没反应 / 卡住</b>：先彻底退出（包括托盘图标右键退出），再重开。Electron 是单实例，老进程可能还占着。</li>
+    <li><b>想重置向导</b>：把 <code>wizard.completed</code> 改为 <code>false</code> 后重启。</li>
+    <li><b>升级卸载框死循环</b>：结束安装进程，删除注册表
+      <span class="path">HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall</span>
+      下 OpenShadow 的旧卸载项，再重装即判定为全新安装。</li>
+    <li><b>日志</b>：异常时可看安装目录下的 <code>logs/</code> 或系统 <code>%TEMP%</code> 相关日志辅助定位。</li>
+  </ul>
+
+  <div class="foot">
+    本手册依据 OpenShadow 0.3.45 实际功能编写，覆盖：向导、供应商/模型、助手、频道（Beta）、笺与自动巡检、工作台、会话、全部 16 个设置标签、安全沙箱、技能/插件/桥接、托盘与已知问题。如后续版本界面有调整，以软件内实际为准。
+  </div>
+</main>
+</div>
+</body>
+</html>
