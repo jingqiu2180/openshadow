@@ -136,6 +136,11 @@ export class ConfigCoordinator {
     const explicit = this.getExplicitHomeFolder(agentId);
     if (explicit) return explicit;
 
+    // 向导/全局设置的默认工作台（app 级 config.desk.home_folder）优先于内置兜底目录，
+    // 这样向导里选的工作区会成为激活工作台，而不是落到 ~/Desktop/OH-WorkSpace。
+    const appHome = this._d.getAppConfig?.()?.desk?.home_folder;
+    if (typeof appHome === 'string' && appHome.trim()) return appHome.trim();
+
     // 显式默认工作区，避免把整个桌面暴露成工作目录。
     // 不从别的 agent 继承 home_folder；跨 agent fallback 会让状态归属变成隐式焦点推导。
     return resolveDefaultWorkspacePath();

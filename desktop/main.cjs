@@ -382,6 +382,9 @@ function registerIpcHandlers() {
       if (payload.security && payload.security.workspaceRoots) {
         merged.security = Object.assign({}, cfg.security || {}, { workspaceRoots: payload.security.workspaceRoots })
       }
+      if (payload.desk && payload.desk.home_folder) {
+        merged.desk = Object.assign({}, cfg.desk || {}, { home_folder: payload.desk.home_folder })
+      }
       writeConfig(merged)
       console.log('[wizard] config saved to', CONFIG_PATH)
       // 通知所有 BrowserWindow（main + wizard）配置已更新

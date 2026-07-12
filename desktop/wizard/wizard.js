@@ -570,6 +570,7 @@ async function finish() {
       },
       theme: 'warm-paper',
       security: { workspaceRoots: state.workspace.folders },
+      desk: { home_folder: state.workspace.folders[0] || null },
     }
     console.log('[wizard] calling saveConfig...')
     const saveResult = await window.wizard.saveConfig(cfg)

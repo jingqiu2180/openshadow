@@ -383,6 +383,7 @@ export class HanaEngine {
       emitEvent: (e, sp) => this._emitEvent(e, sp),
       emitDevLog: (t, l) => this.emitDevLog(t, l),
       getCurrentModel: () => this.currentModel?.name,
+      getAppConfig: () => this.config,
     });
 
     this._visionBridge = new VisionBridge({
