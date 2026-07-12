@@ -54,10 +54,6 @@ export async function hanaFetch(
   }
 }
 
-/** 根据 yuan 类型返回 fallback 头像路径 */
-export function yuanFallbackAvatar(yuan?: string): string {
-  const t = window.t || ((k: string) => k);
-  const types = (t('yuan.types') || {}) as Record<string, { avatar?: string }>;
-  const entry = types[yuan || 'hanako'];
-  return `assets/${entry?.avatar || 'Hanako.png'}`;
-}
+// 修正：复用 agent-helpers 的 Vite 资源 import（dev/build/asar 三模式路径都正确），
+// 避免原先返回相对路径 `assets/*.png` 在渲染进程里解析成 404 导致设置/助手头像碎图。
+export { yuanFallbackAvatar } from '../utils/agent-helpers';
