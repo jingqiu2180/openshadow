@@ -564,7 +564,7 @@ var hasRequiredSettingsWindowController;
 function requireSettingsWindowController() {
   if (hasRequiredSettingsWindowController) return settingsWindowController;
   hasRequiredSettingsWindowController = 1;
-  const { BrowserWindow } = require$$1;
+  const { BrowserWindow, app } = require$$1;
   const { join } = require$$1$2;
   const { existsSync } = require$$2;
   let settingsWindow = null;
@@ -599,10 +599,10 @@ function requireSettingsWindowController() {
       }
     });
     if (isDev) {
-      settingsWindow.loadURL(viteDevUrl + "/settings");
+      settingsWindow.loadURL(viteDevUrl + "/settings.html");
     } else {
-      const htmlPath = join(process.cwd(), "desktop", "dist-renderer", "index.html");
-      settingsWindow.loadFile(htmlPath, { hash: "settings" });
+      const htmlPath = join(app.getAppPath(), "desktop", "dist-renderer", "settings.html");
+      settingsWindow.loadFile(htmlPath);
     }
     settingsWindow.on("closed", () => {
       settingsWindow = null;

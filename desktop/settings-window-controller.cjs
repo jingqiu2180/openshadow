@@ -2,7 +2,7 @@
 // OpenShadow Settings Window Controller
 // 管理设置窗口的创建、显示、隐藏
 
-const { BrowserWindow } = require('electron')
+const { BrowserWindow, app } = require('electron')
 const { join } = require('path')
 const { existsSync } = require('fs')
 
@@ -43,10 +43,12 @@ function createSettingsWindow({ mainWindow, preloadPath, iconPath, isDev, viteDe
 
   // 加载设置页面
   if (isDev) {
-    settingsWindow.loadURL(viteDevUrl + '/settings')
+    settingsWindow.loadURL(viteDevUrl + '/settings.html')
   } else {
-    const htmlPath = join(process.cwd(), 'desktop', 'dist-renderer', 'index.html')
-    settingsWindow.loadFile(htmlPath, { hash: 'settings' })
+    // 生产环境：dist-renderer 位于 app.asar 内，必须用 app.getAppPath() 定位，
+    // 不能用 process.cwd()（那是安装根目录，路径不存在 → 白屏）。
+    const htmlPath = join(app.getAppPath(), 'desktop', 'dist-renderer', 'settings.html')
+    settingsWindow.loadFile(htmlPath)
   }
 
   settingsWindow.on('closed', () => {

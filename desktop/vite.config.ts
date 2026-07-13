@@ -209,6 +209,8 @@ export default defineConfig({
         'editor-window': resolve(ROOT, 'editor-window.html'),
         // React Onboarding（openHanako 风格首次启动向导）
         onboarding: resolve(ROOT, 'onboarding.html'),
+        // 独立设置窗口（托盘“设置”打开，与 openHanako 同款全页设置）
+        settings: resolve(ROOT, 'settings.html'),
       },
     },
   },
