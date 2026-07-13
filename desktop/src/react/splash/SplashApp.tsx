@@ -7,12 +7,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { getYuanVisual } from '../../../../shared/yuan-visuals.ts';
+import { yuanFallbackAvatar } from '../utils/agent-helpers';
 
 const DEFAULT_NAME = 'Shadow';
 const DEFAULT_VISUAL = getYuanVisual('hanako');
 
 export function SplashApp() {
-  const [avatarSrc, setAvatarSrc] = useState('assets/Hanako.png');
+  const [avatarSrc, setAvatarSrc] = useState(yuanFallbackAvatar());
   const [text, setText] = useState('');
   const [switching, setSwitching] = useState(false);
   const [symbol, setSymbol] = useState(DEFAULT_VISUAL.symbol);
@@ -46,10 +47,10 @@ export function SplashApp() {
           if (base) {
             setAvatarSrc(`${base}?t=${Date.now()}`);
           } else if (splashInfo?.yuan) {
-            setAvatarSrc(`assets/${getYuanVisual(splashInfo.yuan).avatar}`);
+            setAvatarSrc(yuanFallbackAvatar(splashInfo.yuan));
           }
         } else if (splashInfo?.yuan) {
-          setAvatarSrc(`assets/${getYuanVisual(splashInfo.yuan).avatar}`);
+          setAvatarSrc(yuanFallbackAvatar(splashInfo.yuan));
         }
 
         if (splashInfo?.agentName) name = splashInfo.agentName;

@@ -6,6 +6,7 @@ import { switchToAgent } from '../actions';
 import { Overlay } from '../../ui';
 import styles from '../Settings.module.css';
 import { CharacterCardPreviewOverlay, type CharacterCardPlan } from './CharacterCardPreviewOverlay';
+import { yuanFallbackAvatar } from '../../utils/agent-helpers';
 
 export function AgentCreateOverlay() {
   const showToast = useSettingsStore(s => s.showToast);
@@ -152,7 +153,7 @@ export function AgentCreateOverlay() {
                   disabled={creating || planning}
                   onClick={() => setYuan(key)}
                 >
-                  <img className="yuan-chip-avatar" src={`assets/${meta.avatar || 'Hanako.png'}`} draggable={false} />
+                  <img className="yuan-chip-avatar" src={yuanFallbackAvatar(key)} draggable={false} />
                   <div className="yuan-chip-info">
                     <span className="yuan-chip-name">{key}</span>
                     <span className="yuan-chip-desc">{meta.label || ''}</span>

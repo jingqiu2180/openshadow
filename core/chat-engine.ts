@@ -61,6 +61,11 @@ import { TerminalSessionManager } from './terminal/terminal-session-manager.js'
 import { join } from 'path'
 import path from 'path'
 
+// 统一解析 OpenShadow 主目录：优先环境变量，回退 cwd（单一真相源，避免 CLI/standalone 模式 cwd 不同导致配置错位）
+function resolveShadowHome(): string {
+  return process.env.OPENSHADOW_HOME || process.env.SHADOW_HOME || path.join(process.cwd(), '.openshadow')
+}
+
 // 模块级 terminal manager（由 buildToolRegistry 创建）
 let _terminalManager: TerminalSessionManager | null = null
 
@@ -528,8 +533,8 @@ export class ChatEngine {
     // ─── openhanako 对齐工具（轻量实现）─────────────
     // Channel 工具（频道聊天）
     try {
-      const _channelsDir = path.join(process.cwd(), '.openshadow', 'channels')
-      const _agentsDir = path.join(process.cwd(), '.openshadow', 'agents')
+      const _channelsDir = path.join(resolveShadowHome(), 'channels')
+      const _agentsDir = path.join(resolveShadowHome(), 'agents')
       const _agentId = (this as any).agentId || 'main'
       const _channelDeps = {
         agentId: _agentId,
@@ -562,7 +567,7 @@ export class ChatEngine {
 
     // DM 工具（私信）
     try {
-      const _agentsDir = path.join(process.cwd(), '.openshadow', 'agents')
+      const _agentsDir = path.join(resolveShadowHome(), 'agents')
       const _agentId = (this as any).agentId || 'main'
       const _dmDeps = {
         agentId: _agentId,

@@ -18,12 +18,6 @@ const destDir = resolve(root, 'dist', 'desktop')
 
 mkdirSync(destDir, { recursive: true })
 
-// Main desktop entry
-const srcMain = resolve(root, 'desktop', 'index.html')
-const destMain = resolve(destDir, 'index.html')
-cpSync(srcMain, destMain)
-console.log('Copied desktop/index.html -> dist/desktop/index.html')
-
 // Wizard assets (Stage 1b) — copy entire directory
 const srcWizard = resolve(root, 'desktop', 'wizard')
 const destWizard = resolve(destDir, 'wizard')
