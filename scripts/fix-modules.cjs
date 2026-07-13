@@ -168,6 +168,89 @@ function pruneDesktopOnlyProdDeps(serverDir, opts = {}) {
   }
 }
 
+// 闭包反推删除（更彻底、更稳的瘦身，替代/补充硬编码名单）：
+// server-bundle/package.json 的 dependencies 是 _copy-deps.cjs 基于 vite external +
+// 完整传递依赖算出的「server 运行时真正需要的全部包」。任何【顶层不在该闭包里】的包
+// （mermaid / vite / esbuild / playwright / electron-winstaller / app-builder-lib /
+// @cypress / @electron-internal / @tiptap / @codemirror / 以及 CI 整拷根 node_modules
+// 带进来的所有死重）都是 server 永不 import 的，删掉零功能风险。
+// 相比硬编码名单（pruneDesktopOnlyProdDeps 只列 11 个包，覆盖不全，会漏 vite/esbuild/
+// playwright 等构建/E2E 死重），此法自动覆盖任何未来新增的死重包。
+// 已通过无头启动 server + /api/health 200 双重验证（详见 0.4.1 验证记录）。
+//
+// SAFE_KEEP：即使不在闭包，也强制保留的动态加载 provider SDK（防误删按需 import 的包）。
+// 这些包在闭包内本就存在，此处为双保险；不会额外保留大量死重，因为它们本就在闭包中。
+const SERVER_DYNAMIC_SAFE_KEEP = new Set([
+  "@mariozechner", "@anthropic-ai", "@google", "@mistralai",
+  "@larksuiteoapi", "@aws-sdk", "openai", "node-telegram-bot-api", "google-auth-library",
+]);
+
+function pruneByClosure(serverDir, opts = {}) {
+  const serverPkgPath = path.join(serverDir, "package.json");
+  let closure;
+  try {
+    closure = new Set(
+      Object.keys(JSON.parse(fs.readFileSync(serverPkgPath, "utf-8")).dependencies || {}),
+    );
+  } catch {
+    console.warn(
+      "[fix-modules] 无法读取 server 依赖闭包，跳过闭包反推删除（fallback 到硬编码 prune）",
+    );
+    return;
+  }
+  if (closure.size === 0) return;
+  const target = path.join(serverDir, "node_modules");
+  if (!fs.existsSync(target)) return;
+  const log = typeof opts.log === "function" ? opts.log : console.log;
+  const isSafeKeep = (dep) => {
+    if (SERVER_DYNAMIC_SAFE_KEEP.has(dep)) return true;
+    const scope = dep.startsWith("@") ? dep.split("/")[0] : null;
+    return scope ? SERVER_DYNAMIC_SAFE_KEEP.has(scope) : false;
+  };
+  let removed = 0;
+  let savedBytes = 0;
+  for (const name of fs.readdirSync(target)) {
+    if (name === ".bin") continue; // .bin 由后续清理逻辑处理
+    const full = path.join(target, name);
+    if (name.startsWith("@")) {
+      // @scope 目录：遍历子包逐个判断
+      let inners;
+      try { inners = fs.readdirSync(full); } catch { continue; }
+      for (const inner of inners) {
+        const dep = `${name}/${inner}`;
+        if (closure.has(dep) || isSafeKeep(dep)) continue;
+        const p = path.join(full, inner);
+        try { savedBytes += duBytes(p); } catch { /* ignore */ }
+        try { fs.rmSync(p, { recursive: true, force: true }); removed++; } catch { /* ignore */ }
+      }
+      // 清掉已空的 scope 目录
+      try { if (fs.readdirSync(full).length === 0) fs.rmSync(full, { recursive: true, force: true }); } catch { /* ignore */ }
+    } else {
+      if (closure.has(name) || isSafeKeep(name)) continue;
+      try { savedBytes += duBytes(full); } catch { /* ignore */ }
+      try { fs.rmSync(full, { recursive: true, force: true }); removed++; } catch { /* ignore */ }
+    }
+  }
+  // 清理被删包遗留的 .bin 悬空软链
+  const topBin = path.join(target, ".bin");
+  if (fs.existsSync(topBin)) {
+    for (const b of fs.readdirSync(topBin, { withFileTypes: true })) {
+      if (!b.isSymbolicLink()) continue;
+      const bp = path.join(topBin, b.name);
+      try {
+        const t = fs.readlinkSync(bp);
+        if (!fs.existsSync(path.resolve(topBin, t))) fs.unlinkSync(bp);
+      } catch { /* ignore */ }
+    }
+  }
+  if (removed > 0) {
+    log(
+      `[fix-modules] 闭包反推删除 ${removed} 个不在 server 依赖闭包内的包` +
+      `（省 ~${(savedBytes / 1024 / 1024).toFixed(0)}MB）`,
+    );
+  }
+}
+
 function pruneDevDependencies(serverDir, rootPackageJsonPath, opts = {}) {
   let rootPkg;
   try {
@@ -235,9 +318,13 @@ function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {
   }
   // 剔除 devDependencies 瘦身（不阻塞：读不到根 package.json 就跳过）
   pruneDevDependencies(serverDir, path.resolve(__dirname, "..", "package.json"), opts);
-  // 额外剔除 server 永不 import 的桌面生产依赖（保守裁剪，进一步瘦身）
+  // 额外剔除 server 永不 import 的桌面生产依赖（保守裁剪名单，进一步瘦身）
   pruneDesktopOnlyProdDeps(serverDir, opts);
-  log(`[fix-modules] 重建 server node_modules → ${target}（整拷根 node_modules + 剔除 devDependencies + 剔除桌面生产依赖）`);
+  // 闭包反推删除：删掉所有不在 server 依赖闭包内的包（最彻底，自动覆盖任何死重，
+  // 无需维护硬编码名单）。server-bundle/package.json 的 dependencies 闭包 = server
+  // 运行时真正需要的全部包，闭包外皆死重。经无头启动 /api/health 200 验证零风险。
+  pruneByClosure(serverDir, opts);
+  log(`[fix-modules] 重建 server node_modules → ${target}（整拷根 node_modules + 闭包反推删除死重）`);
 
   // 关键依赖兜底校验：防止漏装导致 server 启动即崩
   const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json", "ws", "hono"];
@@ -394,4 +481,5 @@ exports.assertBundledServerNodeModulesReady = assertBundledServerNodeModulesRead
 exports.copyBundledServerNodeModules = copyBundledServerNodeModules;
 exports.pruneDevDependencies = pruneDevDependencies;
 exports.pruneDesktopOnlyProdDeps = pruneDesktopOnlyProdDeps;
+exports.pruneByClosure = pruneByClosure;
 exports.rebuildServerNodeModulesFromProject = rebuildServerNodeModulesFromProject;
