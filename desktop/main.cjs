@@ -359,6 +359,12 @@ function registerIpcHandlers() {
     return { port: info?.port || null, token: info?.token || null }
   })
 
+  // 热重启 server（渲染进程触发）
+  wrapIpcHandler('server:restart', async () => {
+    await serverManager.restart('ipc')
+    return { ok: true, port: serverManager.getPort() }
+  })
+
   // ─── React Onboarding 桥接 ───────────────────────────────
   // 向导完成：标记 wizard.completed 并打开主窗口（与 vanilla wizard:done-signal 等效）
   wrapIpcHandler('onboarding-complete', async () => {
@@ -1031,6 +1037,11 @@ app.on('second-instance', () => {
   }
 })
 
+// ─── 注入版本号（供 server-info.json 版本字段 + 版本复用比对）───
+if (!process.env.SHADOW_VERSION) {
+  process.env.SHADOW_VERSION = app.getVersion()
+}
+
 // ─── Power Save Blocker ─────────────────────────────────────
 let wakeLockId = null
 const WINDOW_STATE_PATH = join(process.cwd(), 'window-state.json')
@@ -1417,6 +1428,12 @@ function createTray() {
             viteDevUrl: VITE_DEV_URL,
           })
           if (win) win.show()
+        },
+      },
+      {
+        label: '重启服务',
+        click: () => {
+          void serverManager.restart('tray-menu')
         },
       },
       { type: 'separator' },

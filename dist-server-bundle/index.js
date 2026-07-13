@@ -79976,8 +79976,8 @@ async function zCe() {
   console.log("[shadow] ensureFirstRun...");
   try {
     Vwe(ei, zC), console.log("[shadow] ensureFirstRun done");
-  } catch (h) {
-    console.error("[shadow] ensureFirstRun failed (non-fatal, continuing):", h?.message || h);
+  } catch (g) {
+    console.error("[shadow] ensureFirstRun failed (non-fatal, continuing):", g?.message || g);
   }
   const e = new Wwe({
     hanakoHome: ei,
@@ -79986,28 +79986,28 @@ async function zCe() {
   });
   console.log("[shadow] Initializing engine...");
   try {
-    await e.init((h) => console.log("[engine]", h)), console.log("[shadow] Engine initialized (providers/models from disk via ensureFirstRun)");
-  } catch (h) {
-    console.error("[shadow] engine.init() failed:", h.message);
+    await e.init((g) => console.log("[engine]", g)), console.log("[shadow] Engine initialized (providers/models from disk via ensureFirstRun)");
+  } catch (g) {
+    console.error("[shadow] engine.init() failed:", g.message);
   }
   let t;
   try {
     t = new HIe({ engine: e }), console.log("[shadow] Hub created");
-  } catch (h) {
-    console.warn("[shadow] Hub creation failed, using dummy:", h.message), t = {
-      subscribe(g) {
+  } catch (g) {
+    console.warn("[shadow] Hub creation failed, using dummy:", g.message), t = {
+      subscribe(_) {
         return () => {
         };
       },
-      publish(g) {
+      publish(_) {
       },
-      emit(g) {
+      emit(_) {
       },
-      on(g, _) {
+      on(_, b) {
         return () => {
         };
       },
-      off(g, _) {
+      off(_, b) {
       },
       async pauseForAgentSwitch() {
       },
@@ -80034,28 +80034,28 @@ async function zCe() {
     hanakoHome: e.hanakoHome,
     appVersion: e.appVersion,
     getRuntimeContext: () => e._runtimeContext
-  })), Fe.route("/api", A0e(e)), Fe.route("/api", yTe(e, t)), Fe.route("/api", LTe(e, {})), Fe.route("/api", nCe(e)), Fe.route("/api", sCe(e)), Fe.route("/api", iCe(e)), Fe.route("/api", MCe(e)), Fe.route("/api", $Ce(e)), Fe.get("/api/session-permission-mode", async (h) => h.json({
+  })), Fe.route("/api", A0e(e)), Fe.route("/api", yTe(e, t)), Fe.route("/api", LTe(e, {})), Fe.route("/api", nCe(e)), Fe.route("/api", sCe(e)), Fe.route("/api", iCe(e)), Fe.route("/api", MCe(e)), Fe.route("/api", $Ce(e)), Fe.get("/api/session-permission-mode", async (g) => g.json({
     mode: e.permissionMode || "operate",
     accessMode: e.accessMode || "operate",
     defaultMode: e.getSessionPermissionModeDefault?.() || "ask"
-  })), Fe.post("/api/session-permission-mode", async (h) => {
-    const { mode: g } = await h.req.json().catch(() => ({}));
-    return e.setSessionPermissionMode?.(g), h.json({ ok: !0, mode: g });
+  })), Fe.post("/api/session-permission-mode", async (g) => {
+    const { mode: _ } = await g.req.json().catch(() => ({}));
+    return e.setSessionPermissionMode?.(_), g.json({ ok: !0, mode: _ });
   }), Fe.route("/api", OCe({
     hanakoHome: e.hanakoHome,
     authService: { verify: async () => null, getUser: () => null }
-  })), Fe.get("/api/agent/status", (h) => h.json({ connected: !1 }));
+  })), Fe.get("/api/agent/status", (g) => g.json({ connected: !1 }));
   const s = m.join(process.cwd(), "locales");
-  Fe.get("/locales/:file", (h) => {
-    const g = h.req.param("file");
-    if (g.includes("..") || g.includes("/") || g.includes("\\"))
-      return h.text("Forbidden", 403);
-    const _ = m.join(s, g);
+  Fe.get("/locales/:file", (g) => {
+    const _ = g.req.param("file");
+    if (_.includes("..") || _.includes("/") || _.includes("\\"))
+      return g.text("Forbidden", 403);
+    const b = m.join(s, _);
     try {
-      const b = zs.readFileSync(_, "utf-8"), I = JSON.parse(b);
-      return h.json(I);
+      const I = zs.readFileSync(b, "utf-8"), E = JSON.parse(I);
+      return g.json(E);
     } catch {
-      return h.text("Not Found", 404);
+      return g.text("Not Found", 404);
     }
   });
   const i = Number(process.env.SHADOW_PORT ?? process.env.PORT ?? 3e3), o = f2({
@@ -80068,50 +80068,50 @@ async function zCe() {
     console.warn("[shadow] WebSocket support not available");
   }
   console.log(`🚀 Server running on http://localhost:${i}`), console.log("📡 37 business routes mounted");
-  const a = await import("crypto"), c = process.env.SHADOW_TOKEN || a.randomBytes(16).toString("hex");
+  const a = await import("crypto"), c = process.env.SHADOW_TOKEN || a.randomBytes(16).toString("hex"), l = process.env.SHADOW_VERSION || "0.0.0";
   try {
     zs.mkdirSync(ei, { recursive: !0 });
   } catch {
   }
-  const l = m.join(ei, "server-info.json");
-  let u = i;
-  const d = o?.server ?? o;
+  const u = m.join(ei, "server-info.json");
+  let d = i;
+  const f = o?.server ?? o;
   try {
-    const h = d?.address?.();
-    h && typeof h == "object" && h.port && (u = h.port);
+    const g = f?.address?.();
+    g && typeof g == "object" && g.port && (d = g.port);
   } catch {
   }
-  zs.writeFileSync(l, JSON.stringify({
+  zs.writeFileSync(u, JSON.stringify({
     pid: process.pid,
-    port: u,
+    port: d,
     host: "127.0.0.1",
     token: c,
-    version: "0.3.12"
+    version: l
   }));
   try {
-    zs.chmodSync(l, 384);
+    zs.chmodSync(u, 384);
   } catch {
   }
-  console.log(`[shadow] server-info.json written: port=${u}, pid=${process.pid}`);
-  let f = null;
-  Fe.post("/api/shutdown", async (h) => f ? h.json({ ok: !0, message: "shutdown already in progress" }) : (f = (async () => {
+  console.log(`[shadow] server-info.json written: port=${d}, pid=${process.pid}`);
+  let p = null;
+  Fe.post("/api/shutdown", async (g) => p ? g.json({ ok: !0, message: "shutdown already in progress" }) : (p = (async () => {
     console.log("[shadow] Shutdown requested via /api/shutdown");
     try {
-      zs.unlinkSync(l);
+      zs.unlinkSync(u);
     } catch {
     }
     process.exit(0);
-  })(), h.json({ ok: !0 })));
-  const p = () => {
+  })(), g.json({ ok: !0 })));
+  const h = () => {
     try {
-      zs.unlinkSync(l);
+      zs.unlinkSync(u);
     } catch {
     }
   };
   process.on("SIGINT", () => {
-    p(), process.exit(0);
+    h(), process.exit(0);
   }), process.on("SIGTERM", () => {
-    p(), process.exit(0);
+    h(), process.exit(0);
   });
 }
 zCe().catch((e) => {

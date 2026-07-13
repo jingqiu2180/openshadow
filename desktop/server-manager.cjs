@@ -167,26 +167,38 @@ function createServerManager(deps) {
       existingInfo = JSON.parse(fs.readFileSync(serverInfoPath, 'utf-8'))
     } catch {}
 
+    const currentVersion = process.env.SHADOW_VERSION || ''
     if (existingInfo && existingInfo.pid && isPidAlive(existingInfo.pid)) {
-      // PID 存活，尝试 health check
-      try {
-        const res = await fetch(`http://127.0.0.1:${existingInfo.port}/api/health`, {
-          headers: { Authorization: `Bearer ${existingInfo.token}` },
-          signal: AbortSignal.timeout(2000),
-        })
-        if (res.ok) {
-          console.log(`[server] Reusing existing server on port ${existingInfo.port}`)
-          state.port = existingInfo.port
-          state.token = existingInfo.token
-          state.reusedPid = existingInfo.pid
-          onServerReady({ port: state.port, token: state.token, reused: true })
-          return
-        }
-      } catch {
-        // health check failed, kill old server
-        console.log(`[server] Old server (PID ${existingInfo.pid}) not responding, killing...`)
-        try { process.kill(existingInfo.pid, 0) } catch {}
+      // 版本比对：旧 server 版本与当前不一致时，强制杀掉旧进程后 respawn（根治 stale server）
+      const versionMismatch =
+        !!existingInfo.version && !!currentVersion &&
+        existingInfo.version !== currentVersion
+
+      if (versionMismatch) {
+        console.log(`[server] Stale server (PID ${existingInfo.pid}, version ${existingInfo.version}) != current ${currentVersion}, killing...`)
+        try { process.kill(existingInfo.pid, 'SIGTERM') } catch {}
         try { fs.unlinkSync(serverInfoPath) } catch {}
+      } else {
+        // 版本一致（或旧 server 无 version 字段），尝试 health check 复用
+        try {
+          const res = await fetch(`http://127.0.0.1:${existingInfo.port}/api/health`, {
+            headers: { Authorization: `Bearer ${existingInfo.token}` },
+            signal: AbortSignal.timeout(2000),
+          })
+          if (res.ok) {
+            console.log(`[server] Reusing existing server on port ${existingInfo.port}`)
+            state.port = existingInfo.port
+            state.token = existingInfo.token
+            state.reusedPid = existingInfo.pid
+            onServerReady({ port: state.port, token: state.token, reused: true })
+            return
+          }
+        } catch {
+          // health check failed, kill old server（原 process.kill(pid,0) 仅探活不杀，改为 SIGTERM）
+          console.log(`[server] Old server (PID ${existingInfo.pid}) not responding, killing...`)
+          try { process.kill(existingInfo.pid, 'SIGTERM') } catch {}
+          try { fs.unlinkSync(serverInfoPath) } catch {}
+        }
       }
     }
 
@@ -199,6 +211,7 @@ function createServerManager(deps) {
       ...env,
       OPENSHADOW_HOME: shadowHome,
       SHADOW_HOME: shadowHome,         // P0: server 端读的是 SHADOW_HOME，必须同步设置
+      SHADOW_VERSION: process.env.SHADOW_VERSION || '',
     }
 
     const launch = resolveServerLaunch()
@@ -391,14 +404,34 @@ function createServerManager(deps) {
             signal: AbortSignal.timeout(2000),
           })
         }
-      } catch {
-        try { process.kill(pid, 0) } catch {}
-      }
+      } catch {}
+      // 兜底：无论 HTTP 是否成功，确保进程被真正终止（原 process.kill(pid,0) 仅探活不杀）
+      try {
+        if (isPidAlive(pid)) process.kill(pid, 'SIGTERM')
+      } catch {}
       state.reusedPid = null
       return true
     }
 
     return false
+  }
+
+  // 热重启 server（托盘"重启服务" / IPC 触发）
+  async function restart(reason = 'manual') {
+    console.log(`[server] Restart requested (${reason})`)
+    state.heartbeatRestarting = true
+    await shutdown()
+    state.heartbeatRestarting = false
+    state.isQuitting = false
+    state.process = null
+    state.reusedPid = null
+    state.startedAt = 0
+    state.restartAttempts = 0
+    stopHeartbeat()
+    await start()
+    monitor()
+    startHeartbeat()
+    onServerRestarted()
   }
 
   return {
@@ -407,6 +440,7 @@ function createServerManager(deps) {
     startHeartbeat,
     stopHeartbeat,
     shutdown,
+    restart,
     getPort: () => state.port,
     getToken: () => state.token,
     getLogs: () => state.logs,

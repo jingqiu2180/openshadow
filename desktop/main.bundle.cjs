@@ -325,29 +325,43 @@ function requireServerManager() {
         existingInfo = JSON.parse(fs2.readFileSync(serverInfoPath, "utf-8"));
       } catch {
       }
+      const currentVersion = process.env.SHADOW_VERSION || "";
       if (existingInfo && existingInfo.pid && isPidAlive(existingInfo.pid)) {
-        try {
-          const res = await fetch2(`http://127.0.0.1:${existingInfo.port}/api/health`, {
-            headers: { Authorization: `Bearer ${existingInfo.token}` },
-            signal: AbortSignal.timeout(2e3)
-          });
-          if (res.ok) {
-            console.log(`[server] Reusing existing server on port ${existingInfo.port}`);
-            state.port = existingInfo.port;
-            state.token = existingInfo.token;
-            state.reusedPid = existingInfo.pid;
-            onServerReady({ port: state.port, token: state.token, reused: true });
-            return;
-          }
-        } catch {
-          console.log(`[server] Old server (PID ${existingInfo.pid}) not responding, killing...`);
+        const versionMismatch = !!existingInfo.version && !!currentVersion && existingInfo.version !== currentVersion;
+        if (versionMismatch) {
+          console.log(`[server] Stale server (PID ${existingInfo.pid}, version ${existingInfo.version}) != current ${currentVersion}, killing...`);
           try {
-            process.kill(existingInfo.pid, 0);
+            process.kill(existingInfo.pid, "SIGTERM");
           } catch {
           }
           try {
             fs2.unlinkSync(serverInfoPath);
           } catch {
+          }
+        } else {
+          try {
+            const res = await fetch2(`http://127.0.0.1:${existingInfo.port}/api/health`, {
+              headers: { Authorization: `Bearer ${existingInfo.token}` },
+              signal: AbortSignal.timeout(2e3)
+            });
+            if (res.ok) {
+              console.log(`[server] Reusing existing server on port ${existingInfo.port}`);
+              state.port = existingInfo.port;
+              state.token = existingInfo.token;
+              state.reusedPid = existingInfo.pid;
+              onServerReady({ port: state.port, token: state.token, reused: true });
+              return;
+            }
+          } catch {
+            console.log(`[server] Old server (PID ${existingInfo.pid}) not responding, killing...`);
+            try {
+              process.kill(existingInfo.pid, "SIGTERM");
+            } catch {
+            }
+            try {
+              fs2.unlinkSync(serverInfoPath);
+            } catch {
+            }
           }
         }
       }
@@ -357,8 +371,9 @@ function requireServerManager() {
       const serverEnv = {
         ...env,
         OPENSHADOW_HOME: shadowHome,
-        SHADOW_HOME: shadowHome
+        SHADOW_HOME: shadowHome,
         // P0: server 端读的是 SHADOW_HOME，必须同步设置
+        SHADOW_VERSION: process.env.SHADOW_VERSION || ""
       };
       const launch = resolveServerLaunch();
       const serverBin = launch.serverBin;
@@ -527,15 +542,31 @@ function requireServerManager() {
             });
           }
         } catch {
-          try {
-            process.kill(pid, 0);
-          } catch {
-          }
+        }
+        try {
+          if (isPidAlive(pid)) process.kill(pid, "SIGTERM");
+        } catch {
         }
         state.reusedPid = null;
         return true;
       }
       return false;
+    }
+    async function restart(reason = "manual") {
+      console.log(`[server] Restart requested (${reason})`);
+      state.heartbeatRestarting = true;
+      await shutdown();
+      state.heartbeatRestarting = false;
+      state.isQuitting = false;
+      state.process = null;
+      state.reusedPid = null;
+      state.startedAt = 0;
+      state.restartAttempts = 0;
+      stopHeartbeat();
+      await start();
+      monitor();
+      startHeartbeat();
+      onServerRestarted();
     }
     return {
       start,
@@ -543,6 +574,7 @@ function requireServerManager() {
       startHeartbeat,
       stopHeartbeat,
       shutdown,
+      restart,
       getPort: () => state.port,
       getToken: () => state.token,
       getLogs: () => state.logs,
@@ -20392,6 +20424,10 @@ function requireMain() {
       const info = readServerInfo();
       return { port: info?.port || null, token: info?.token || null };
     });
+    wrapIpcHandler("server:restart", async () => {
+      await serverManager2.restart("ipc");
+      return { ok: true, port: serverManager2.getPort() };
+    });
     wrapIpcHandler("onboarding-complete", async () => {
       console.log("[onboarding] complete signal received");
       wizardCompleting = true;
@@ -20970,6 +21006,9 @@ function requireMain() {
       mainWindow.focus();
     }
   });
+  if (!process.env.SHADOW_VERSION) {
+    process.env.SHADOW_VERSION = app.getVersion();
+  }
   let wakeLockId = null;
   const WINDOW_STATE_PATH = join(process.cwd(), "window-state.json");
   function setWakeLock(active) {
@@ -21311,6 +21350,12 @@ function requireMain() {
               viteDevUrl: VITE_DEV_URL
             });
             if (win) win.show();
+          }
+        },
+        {
+          label: "重启服务",
+          click: () => {
+            void serverManager2.restart("tray-menu");
           }
         },
         { type: "separator" },

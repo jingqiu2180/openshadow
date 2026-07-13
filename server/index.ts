@@ -277,6 +277,7 @@ async function start() {
   // ═══ 写 server-info.json（供 Electron / dev-web 发现 server）═══
   const crypto = await import('crypto')
   const token = process.env.SHADOW_TOKEN || crypto.randomBytes(16).toString('hex')
+  const appVersion = process.env.SHADOW_VERSION || '0.0.0'
   // shadowHome 已在模块顶部解析并写入 process.env.SHADOW_HOME
   try { fsSync.mkdirSync(shadowHome, { recursive: true }) } catch {}
   const serverInfoPath = path.join(shadowHome, 'server-info.json')
@@ -293,7 +294,7 @@ async function start() {
     port: actualPort,
     host: '127.0.0.1',
     token,
-    version: '0.3.12',
+    version: appVersion,
   }))
   try { fsSync.chmodSync(serverInfoPath, 0o600) } catch {}
   console.log(`[shadow] server-info.json written: port=${actualPort}, pid=${process.pid}`)
