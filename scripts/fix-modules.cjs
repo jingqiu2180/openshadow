@@ -97,6 +97,77 @@ function cleanBinLinks(dir, boundary) {
 // 实时防护逐个扫描这些海量小文件会把 NSIS 安装拖到“假死”。这里在整拷后把 devDep 顶层
 // 目录删掉，大幅瘦身；运行时需要的生产依赖闭包（ws / hono / @mariozechner/* /
 // partial-json / better-sqlite3 / node-pty …）全部保留，server 仍能正常启动。
+// 递归目录体积（字节）
+function duBytes(p) {
+  let total = 0;
+  let st;
+  try { st = fs.statSync(p); } catch { return 0; }
+  if (st.isDirectory()) {
+    let entries;
+    try { entries = fs.readdirSync(p, { withFileTypes: true }); } catch { return 0; }
+    for (const e of entries) {
+      total += duBytes(path.join(p, e.name));
+    }
+  } else {
+    total += st.size;
+  }
+  return total;
+}
+
+// server 永不 import 的「桌面 / 渲染层」生产依赖。
+// 整拷根 node_modules 后，这些包在 server-bundle 里纯属死重且体积不小
+// （mermaid 65MB / @tiptap 8MB / @codemirror 7MB / react-dom 8MB 等）。
+// 它们在渲染进程自己的 node_modules 中照常保留，server 运行时完全用不到，可安全剔除。
+// 仅裁剪「确定不服务 server」的包；动态加载的 provider SDK（openai / @mariozechner/* /
+// @larksuiteoapi/* / node-telegram-bot-api / 等）一律保留，避免漏依赖导致 server 启动即崩。
+const SERVER_UNUSED_DESKTOP_PROD_DEPS = [
+  "react",
+  "react-dom",
+  "react-markdown",
+  "remark-gfm",
+  "codemirror",
+  "@codemirror",   // 作用域：整删 @codemirror/* 目录
+  "@tiptap",       // 作用域：整删 @tiptap/* 目录
+  "mermaid",
+  "motion",
+  "zustand",
+  "electron-updater",
+];
+
+// 从 server-bundle/node_modules 中剔除 server 不用的桌面生产依赖（非阻塞：逐包 try/catch）。
+function pruneDesktopOnlyProdDeps(serverDir, opts = {}) {
+  const target = path.join(serverDir, "node_modules");
+  if (!fs.existsSync(target)) return;
+  const log = typeof opts.log === "function" ? opts.log : console.log;
+  let removed = 0;
+  let savedBytes = 0;
+  for (const dep of SERVER_UNUSED_DESKTOP_PROD_DEPS) {
+    const isScope = dep.startsWith("@") && !dep.includes("/");
+    if (isScope) {
+      const scopeDir = path.join(target, dep);
+      if (fs.existsSync(scopeDir)) {
+        for (const inner of fs.readdirSync(scopeDir)) {
+          const p = path.join(scopeDir, inner);
+          try { savedBytes += duBytes(p); } catch { /* ignore */ }
+          try { fs.rmSync(p, { recursive: true, force: true }); removed++; } catch { /* ignore */ }
+        }
+      }
+      continue;
+    }
+    const p = path.join(target, dep);
+    if (fs.existsSync(p)) {
+      try { savedBytes += duBytes(p); } catch { /* ignore */ }
+      try { fs.rmSync(p, { recursive: true, force: true }); removed++; } catch { /* ignore */ }
+    }
+  }
+  if (removed > 0) {
+    log(
+      `[fix-modules] 剔除 ${removed} 个 server 不用的桌面生产依赖` +
+      `（省 ~${(savedBytes / 1024 / 1024).toFixed(0)}MB，server-bundle 瘦身后仍经启动校验）`,
+    );
+  }
+}
+
 function pruneDevDependencies(serverDir, rootPackageJsonPath, opts = {}) {
   let rootPkg;
   try {
@@ -133,7 +204,7 @@ function pruneDevDependencies(serverDir, rootPackageJsonPath, opts = {}) {
   log(`[fix-modules] 剔除 ${removed} 个 devDependencies（减小包体积，加速安装/更新）`);
 }
 
-// 整拷项目根【完整】node_modules 进 server-bundle/node_modules。
+// 整拷项目根【完整】node_modules 进 server-bundle/node_modules，再做两级瘦身：
 //
 // 为什么整拷而非“闭包瘦身”（v0.3.43 初版踩坑）：
 //  - 闭包（dist-server-bundle/package.json 声明的依赖）会漏掉 server 实际 import 的
@@ -142,6 +213,10 @@ function pruneDevDependencies(serverDir, rootPackageJsonPath, opts = {}) {
 //  - 整拷后用 pruneDevDependencies 剔除根 devDependencies（vite/electron/typescript/
 //    esbuild/@types/*/vitest/@electron/* 等运行时完全不需要），体积大幅砍小，
 //    显著降低 NSIS 解压被 Windows Defender 逐文件扫描拖死的风险（v0.3.42 实测装 16+ 分钟）。
+//  - 再用 pruneDesktopOnlyProdDeps 剔除「server 永不 import」的桌面生产依赖
+//    （react/@codemirror/@tiptap/mermaid/motion/zustand/electron-updater 等，浏览器端
+//    渲染/编辑器/状态库），它们在渲染进程自己的 node_modules 中保留，server 运行时完全
+//    用不到。裁剪名单经静态扫描（server bundle 对这批包 0 引用）+ 无头启动校验双重确认。
 //  - native addon（better-sqlite3/node-pty）随整拷一并就位，已针对本平台编译。
 function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {}) {
   const target = path.join(serverDir, "node_modules");
@@ -160,7 +235,9 @@ function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {
   }
   // 剔除 devDependencies 瘦身（不阻塞：读不到根 package.json 就跳过）
   pruneDevDependencies(serverDir, path.resolve(__dirname, "..", "package.json"), opts);
-  log(`[fix-modules] 重建 server node_modules → ${target}（整拷根 node_modules + 剔除 devDependencies）`);
+  // 额外剔除 server 永不 import 的桌面生产依赖（保守裁剪，进一步瘦身）
+  pruneDesktopOnlyProdDeps(serverDir, opts);
+  log(`[fix-modules] 重建 server node_modules → ${target}（整拷根 node_modules + 剔除 devDependencies + 剔除桌面生产依赖）`);
 
   // 关键依赖兜底校验：防止漏装导致 server 启动即崩
   const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json", "ws", "hono"];
@@ -316,4 +393,5 @@ exports.SERVER_NODE_MODULE_REQUIRED_FILES = SERVER_NODE_MODULE_REQUIRED_FILES;
 exports.assertBundledServerNodeModulesReady = assertBundledServerNodeModulesReady;
 exports.copyBundledServerNodeModules = copyBundledServerNodeModules;
 exports.pruneDevDependencies = pruneDevDependencies;
+exports.pruneDesktopOnlyProdDeps = pruneDesktopOnlyProdDeps;
 exports.rebuildServerNodeModulesFromProject = rebuildServerNodeModulesFromProject;
