@@ -1115,6 +1115,12 @@ const serverManager = createServerManager({
   },
   onServerRestarted: ({ port, token }) => {
     console.log('[main] Server restarted on port', port)
+    // 通知渲染进程重新连接（preload 暴露 onServerRestarted 监听 'server-restarted'）
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) {
+        win.webContents.send('server-restarted', { port, token })
+      }
+    }
   },
   writeCrashLog: (msg) => {
     try {

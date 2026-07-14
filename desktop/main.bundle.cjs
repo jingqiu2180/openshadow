@@ -552,6 +552,34 @@ function requireServerManager() {
       }
       return false;
     }
+    async function forceKillStaleServer() {
+      const serverInfoPath = path.join(lynnHome || path.join(require$$3.homedir(), ".openshadow"), "server-info.json");
+      let info = null;
+      try {
+        info = JSON.parse(fs2.readFileSync(serverInfoPath, "utf-8"));
+      } catch {
+      }
+      if (info && info.pid && isPidAlive(info.pid)) {
+        try {
+          process.kill(info.pid, "SIGTERM");
+        } catch {
+        }
+        const deadline = Date.now() + 5e3;
+        while (Date.now() < deadline && isPidAlive(info.pid)) {
+          await new Promise((r) => setTimeout(r, 200));
+        }
+        if (isPidAlive(info.pid)) {
+          try {
+            process.kill(info.pid, "SIGKILL");
+          } catch {
+          }
+        }
+      }
+      try {
+        fs2.unlinkSync(serverInfoPath);
+      } catch {
+      }
+    }
     async function restart(reason = "manual") {
       console.log(`[server] Restart requested (${reason})`);
       state.heartbeatRestarting = true;
@@ -563,10 +591,11 @@ function requireServerManager() {
       state.startedAt = 0;
       state.restartAttempts = 0;
       stopHeartbeat();
+      await forceKillStaleServer();
       await start();
       monitor();
       startHeartbeat();
-      onServerRestarted();
+      onServerRestarted({ port: state.port, token: state.token });
     }
     return {
       start,
@@ -21075,6 +21104,11 @@ function requireMain() {
     },
     onServerRestarted: ({ port, token }) => {
       console.log("[main] Server restarted on port", port);
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed()) {
+          win.webContents.send("server-restarted", { port, token });
+        }
+      }
     },
     writeCrashLog: (msg) => {
       try {

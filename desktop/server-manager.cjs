@@ -416,6 +416,25 @@ function createServerManager(deps) {
     return false
   }
 
+  // 强制清掉 stale server（来自 server-info.json），确保后续 start() 不会复用旧进程。
+  // 否则在「复用旧 server」场景下点击重启会被 start() 的复用逻辑接管，等于没重启。
+  async function forceKillStaleServer() {
+    const serverInfoPath = path.join(lynnHome || path.join(require('os').homedir(), '.openshadow'), 'server-info.json')
+    let info = null
+    try { info = JSON.parse(fs.readFileSync(serverInfoPath, 'utf-8')) } catch {}
+    if (info && info.pid && isPidAlive(info.pid)) {
+      try { process.kill(info.pid, 'SIGTERM') } catch {}
+      const deadline = Date.now() + 5000
+      while (Date.now() < deadline && isPidAlive(info.pid)) {
+        await new Promise((r) => setTimeout(r, 200))
+      }
+      if (isPidAlive(info.pid)) {
+        try { process.kill(info.pid, 'SIGKILL') } catch {}
+      }
+    }
+    try { fs.unlinkSync(serverInfoPath) } catch {}
+  }
+
   // 热重启 server（托盘"重启服务" / IPC 触发）
   async function restart(reason = 'manual') {
     console.log(`[server] Restart requested (${reason})`)
@@ -428,10 +447,12 @@ function createServerManager(deps) {
     state.startedAt = 0
     state.restartAttempts = 0
     stopHeartbeat()
+    // 关键：先彻底干掉旧 server，避免 start() 复用 stale 进程导致「重启无效」
+    await forceKillStaleServer()
     await start()
     monitor()
     startHeartbeat()
-    onServerRestarted()
+    onServerRestarted({ port: state.port, token: state.token })
   }
 
   return {
