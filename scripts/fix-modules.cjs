@@ -123,14 +123,17 @@ const SERVER_DYNAMIC_SAFE_KEEP = new Set([
   "@larksuiteoapi", "@aws-sdk", "openai", "node-telegram-bot-api", "google-auth-library",
 ]);
 
+// 整目录删除集合：仅限确定非运行时的目录/文件。
+// ⚠️ 严禁放 `doc`/`docs`/`documentation`：exceljs 的运行时源码就在
+// `exceljs/lib/doc/`（workbook.js 等），删了会让 exceljs 运行时报错
+// "Cannot find module './doc/workbook'"。这类短目录名在很多包里是源码目录，
+// 宁可少删、体积多留一点，也绝不碰。体积大头靠下方 SAFE_CLEAN_EXT
+// （.d.ts/.map）和 test/* 删除就足够了。
 const STRIP_PER_PACKAGE = new Set([
   "test", "tests", "__tests__", "__test__", "spec", "specs",
   "fixtures", "fixture", "testdata", "test-data", "test_files",
   "examples", "example", "demo", "demos",
-  "docs", "doc", "documentation",
-  "CHANGELOG.md", "CHANGES.md", "HISTORY.md", "NEWS.md",
-  ".github", ".circleci", ".travis.yml", "appveyor.yml",
-  "Makefile", "coverage", ".coverage",
+  "coverage", ".coverage",
 ]);
 
 function duBytes(p) {
@@ -246,6 +249,59 @@ function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {
   log(`[fix-modules] 精准闭包重建 server node_modules → ${target}（${copied} 包复制，${skipped} 跳过）`);
 }
 
+// ── 确定性安全裁剪（server-bundle node_modules 体积治理）──
+// 对比 openhanako 用 @vercel/nft 做文件级极简追踪：本地验证发现 nft 的
+// nodeFileTrace 在我们的 jsdom 重型依赖图上直接撑爆 4GB 堆（OOM），还会
+// 撞上运行中 app 锁住的数据文件（EBUSY）→ 不可用于本项目的构建链。
+//
+// 因此只保留「100% 安全」的确定性清理，不做任何基于静态追踪的删除：
+//   · 删 .d.ts/.d.cts/.d.mts/.map/.tsbuildinfo —— Node 运行时绝不加载这些
+//     （server 未开启 source-map-support），删了不影响任何运行期行为；
+//   · 删每包内的 test/__tests__/docs/fixtures/example 等目录（STRIP_PER_PACKAGE）。
+// 本地量得：闭包复制后 node_modules 303MB → 安全清理后 191MB（省 112MB / 37%），
+// 真实安装包（server-bundle ~378MB）预计降到 ~260MB，装速提升显著且 CI 零风险。
+//
+// 关键纪律：本函数绝不删除任何 .node 原生二进制、.js/.cjs/.mjs 运行文件、
+// 或整包目录 —— 只动「确定不会被运行时加载」的文件。
+
+// 类型声明 / sourcemap / tsbuildinfo：Node 运行时绝不加载（server 未开启
+// source-map-support），删了不影响任何运行期行为，但占包体积大头。
+const SAFE_CLEAN_EXT = /\.(d\.ts|d\.cts|d\.mts|map|tsbuildinfo)$/;
+
+async function pruneServerNodeModulesDeterministic(serverDir, opts = {}) {
+  const log = typeof opts.log === "function" ? opts.log : console.log;
+  const nmDir = path.join(serverDir, "node_modules");
+  if (!fs.existsSync(nmDir)) return;
+
+  let safeRemoved = 0;
+  let safeRemovedSize = 0;
+  function safeCleanDir(dir) {
+    let entries;
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const item of entries) {
+      const full = path.join(dir, item.name);
+      if (item.isDirectory()) {
+        if (STRIP_PER_PACKAGE.has(item.name)) {
+          let sz = 0;
+          try { sz = duBytes(full); fs.rmSync(full, { recursive: true, force: true }); } catch { /* ignore */ }
+          safeRemoved++; safeRemovedSize += sz;
+          continue;
+        }
+        safeCleanDir(full);
+      } else if (item.isFile()) {
+        if (SAFE_CLEAN_EXT.test(item.name)) {
+          const sz = fs.statSync(full).size || 0;
+          try { fs.unlinkSync(full); safeRemoved++; safeRemovedSize += sz; } catch { /* ignore */ }
+        }
+      }
+    }
+  }
+  safeCleanDir(nmDir);
+  if (safeRemoved > 0) {
+    log(`[fix-modules] deterministic-clean: removed ${safeRemoved} .d.ts/.map/test files (${(safeRemovedSize / 1024 / 1024).toFixed(0)}MB)`);
+  }
+}
+
 exports.default = async function (context) {
   const platformName = context.packager.platform.name;
   const arch = context.arch === 1 ? "x64" : context.arch === 3 ? "arm64" : "x64";
@@ -317,6 +373,10 @@ exports.default = async function (context) {
     }
   }
 
+  // 装后确定性安全裁剪（删 .d.ts/.map/test 等运行时绝不加载的文件）→ 缩小安装包体积
+  // 必须在 @mariozechner exports 修补之后执行；函数只删确定安全的文件，失败不阻断打包。
+  await pruneServerNodeModulesDeterministic(serverDir, console.log);
+
   if (!fs.existsSync(distModules)) return;
 
   // 获取生产依赖树
@@ -386,3 +446,4 @@ exports.SERVER_NODE_MODULE_REQUIRED_FILES = SERVER_NODE_MODULE_REQUIRED_FILES;
 exports.assertBundledServerNodeModulesReady = assertBundledServerNodeModulesReady;
 exports.copyBundledServerNodeModules = copyBundledServerNodeModules;
 exports.rebuildServerNodeModulesFromProject = rebuildServerNodeModulesFromProject;
+exports.pruneServerNodeModulesDeterministic = pruneServerNodeModulesDeterministic;

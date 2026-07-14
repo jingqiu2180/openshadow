@@ -20,6 +20,16 @@
   DeleteRegKey HKEY_CURRENT_USER "${UNINSTALL_REGISTRY_KEY}"
   DeleteRegKey HKEY_LOCAL_MACHINE "${UNINSTALL_REGISTRY_KEY}"
   ClearErrors
+
+  ; 【升级稳定性修复（0.4.4）】安装前强制杀掉正在运行的旧版 OpenShadow 进程。
+  ; 旧版主进程(electron GUI) 与 server 子进程都叫 OpenShadow.exe，且常驻托盘占用
+  ; 安装目录文件 → NSIS 替换文件失败 → 静默回滚成旧版（曾反复踩坑，需手动解包绕过）。
+  ; 用精确文件名 OpenShadow.exe（不带通配），避免误杀安装程序自身
+  ; （安装程序命名为 "OpenShadow Setup.exe" / "OpenShadow-0.4.x-Windows Setup.exe"，
+  ; 精确匹配 OpenShadow.exe 不会命中带空格的安装程序进程）。
+  ; openshadow-server.exe 为预留的独立 server 二进制（当前未启用），一并清理。
+  nsExec::ExecToLog 'taskkill /IM OpenShadow.exe /F'
+  nsExec::ExecToLog 'taskkill /IM openshadow-server.exe /F'
 !macroend
 
 !macro customInstall
