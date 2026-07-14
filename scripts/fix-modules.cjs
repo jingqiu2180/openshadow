@@ -327,7 +327,9 @@ function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {
   log(`[fix-modules] 重建 server node_modules → ${target}（整拷根 node_modules + 闭包反推删除死重）`);
 
   // 关键依赖兜底校验：防止漏装导致 server 启动即崩
-  const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json", "ws", "hono"];
+  // 注意：hono / @hono/node-server / @hono/node-ws 已被 vite 内联进 index.js，
+  // 不在 vite external 列表 → 运行时不需要 node_modules/hono → 不在此列表。
+  const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json", "ws"];
   const stillMissing = requiredServerDeps.filter(
     (p) => !fs.existsSync(path.join(target, p, "package.json")),
   );
