@@ -34,11 +34,10 @@ jobs:
       - name: Run bridge contract + ghost-global guard tests
         run: npm run test:bridge && npm run test:contract
 
-      # 全量单测套件：当前非阻塞（continue-on-error），仅提供可见性。
-      # 套件现有 19 个历史红测试 + tsc 328 错误待逐批修复，修完后再翻成硬门禁。
-      - name: Run unit test suite (non-blocking, visibility)
-        run: npm run test:unit
-        continue-on-error: true
+      # 全量单测套件：硬门禁。--no-file-parallelism 消除并行负载下的 flaky
+      #（DeskSection 等 fake-timer+async 在并行时竞争超时）；实测串行全量 1521 全绿。
+      - name: Run unit test suite (hard gate)
+        run: npm run test:unit -- --no-file-parallelism
 
       - name: Typecheck (non-blocking, visibility)
         run: npm run typecheck
@@ -76,11 +75,10 @@ jobs:
       - name: Run bridge contract + ghost-global guard tests
         run: npm run test:bridge && npm run test:contract
 
-      # 全量单测套件：当前非阻塞（continue-on-error），仅提供可见性。
-      # 套件现有 19 个历史红测试 + tsc 328 错误待逐批修复，修完后再翻成硬门禁。
-      - name: Run unit test suite (non-blocking, visibility)
-        run: npm run test:unit
-        continue-on-error: true
+      # 全量单测套件：硬门禁。--no-file-parallelism 消除并行负载下的 flaky
+      #（DeskSection 等 fake-timer+async 在并行时竞争超时）；实测串行全量 1521 全绿。
+      - name: Run unit test suite (hard gate)
+        run: npm run test:unit -- --no-file-parallelism
 
       - name: Typecheck (non-blocking, visibility)
         run: npm run typecheck
@@ -125,11 +123,10 @@ jobs:
       - name: Run bridge contract + ghost-global guard tests
         run: npm run test:bridge && npm run test:contract
 
-      # 全量单测套件：当前非阻塞（continue-on-error），仅提供可见性。
-      # 套件现有 19 个历史红测试 + tsc 328 错误待逐批修复，修完后再翻成硬门禁。
-      - name: Run unit test suite (non-blocking, visibility)
-        run: npm run test:unit
-        continue-on-error: true
+      # 全量单测套件：硬门禁。--no-file-parallelism 消除并行负载下的 flaky
+      #（DeskSection 等 fake-timer+async 在并行时竞争超时）；实测串行全量 1521 全绿。
+      - name: Run unit test suite (hard gate)
+        run: npm run test:unit -- --no-file-parallelism
 
       - name: Typecheck (non-blocking, visibility)
         run: npm run typecheck
