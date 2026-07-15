@@ -259,7 +259,7 @@ describe('InputArea media send', () => {
     window.platform = {
       readFileBase64: vi.fn(async () => 'IMAGE_BASE64'),
     } as unknown as typeof window.platform;
-    delete (window as unknown as { openshadow?: unknown }).openshadow;
+    delete (window as unknown as { shadow?: unknown }).shadow;
   });
 
   it('sends pasted image bytes through the platform API when window.shadow is unavailable', async () => {

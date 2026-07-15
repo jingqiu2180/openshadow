@@ -250,7 +250,7 @@ describe('InputArea status stack', () => {
   beforeEach(() => {
     seedLayeredInputState();
     window.platform = {} as typeof window.platform;
-    delete (window as unknown as { openshadow?: unknown }).openshadow;
+    delete (window as unknown as { shadow?: unknown }).shadow;
   });
 
   afterEach(() => {

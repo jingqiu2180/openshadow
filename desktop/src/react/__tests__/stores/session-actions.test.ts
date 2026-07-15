@@ -272,7 +272,7 @@ function jsonResponse(body: unknown, ok = true): Response {
     Object.keys(mockState).forEach(k => delete mockState[k]);
     Object.assign(mockState, initialStateFactory());
     Object.assign(mockState, { workspaceDeskStateByRoot: {} as Record<string, unknown> });
-    (globalThis.window as unknown as { openshadow?: unknown }).openshadow = {};
+    (globalThis.window as unknown as { shadow?: unknown }).shadow = {};
     installStoreMethods();
     mockFetch.mockReset();
     mockClearChat.mockReset();

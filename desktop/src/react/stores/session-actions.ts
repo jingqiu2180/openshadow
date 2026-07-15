@@ -46,7 +46,7 @@ function isAbortError(err: unknown): boolean {
 }
 
 function isDesktopShell(): boolean {
-  return typeof window !== 'undefined' && !!(window as unknown as { openshadow?: unknown }).openshadow;
+  return typeof window !== 'undefined' && !!(window as unknown as { shadow?: unknown }).shadow;
 }
 
 function shouldRestoreInputFocus(path: string | null): boolean {
