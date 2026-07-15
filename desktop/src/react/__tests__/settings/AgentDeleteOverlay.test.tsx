@@ -18,7 +18,7 @@ vi.mock('../../settings/store', () => ({
 }));
 
 vi.mock('../../settings/api', () => ({
-  hanaFetch: vi.fn(),
+  openshadowFetch: vi.fn(),
 }));
 
 vi.mock('../../settings/actions', () => ({

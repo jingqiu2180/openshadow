@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const fetchMock = vi.fn();
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: (...args: unknown[]) => fetchMock(...args),
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: (...args: unknown[]) => fetchMock(...args),
 }));
 
 function jsonResponse(body: unknown): Response {

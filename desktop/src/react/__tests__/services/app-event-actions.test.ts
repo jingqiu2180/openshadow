@@ -25,8 +25,8 @@ vi.mock('../../stores', () => ({
   },
 }));
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: mockHanaFetch,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: mockHanaFetch,
 }));
 
 vi.mock('../../stores/agent-actions', () => ({

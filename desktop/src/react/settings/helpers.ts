@@ -2,7 +2,7 @@
  * Settings 共享工具函数
  */
 import { useSettingsStore } from './store';
-import { hanaFetch } from './api';
+import { openshadowFetch } from './api';
 import registry from '../../shared/theme-registry';
 import { lookupReferenceModelMeta } from '../utils/model-metadata';
 import { API_PROVIDER_PRESETS, getProviderPresetLabel } from '../utils/provider-presets';
@@ -78,7 +78,7 @@ export async function autoSaveConfig(
   const store = useSettingsStore.getState();
   try {
     const agentId = store.getSettingsAgentId();
-    const res = await hanaFetch(`/api/agents/${agentId}/config`, {
+    const res = await openshadowFetch(`/api/agents/${agentId}/config`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(partial),
@@ -87,7 +87,7 @@ export async function autoSaveConfig(
     if (data.error) throw new Error(data.error);
     if (!opts.silent) store.showToast(t('settings.autoSaved'), 'success');
     // 刷新 config 快照，保留 _identity / _ishiki / _userProfile
-    const cfgRes = await hanaFetch(`/api/agents/${agentId}/config`);
+    const cfgRes = await openshadowFetch(`/api/agents/${agentId}/config`);
     const newConfig = await cfgRes.json();
     const prev = useSettingsStore.getState().settingsConfig || {};
     for (const k of ['_identity', '_ishiki', '_publicIshiki', '_userProfile', '_experience']) {
@@ -99,7 +99,7 @@ export async function autoSaveConfig(
     try {
       const { useStore } = await import('../stores');
       const { loadModels } = await import('../utils/ui-helpers');
-      const modelsRes = await hanaFetch('/api/models');
+      const modelsRes = await openshadowFetch('/api/models');
       const modelsData = await modelsRes.json();
       const models = (modelsData.models || []) as Array<{ id: string; name?: string; provider?: string; isCurrent?: boolean }>;
       const currentModelObj = models.find((m) => m.isCurrent);
@@ -126,7 +126,7 @@ export async function autoSaveGlobalModels(
 ) {
   const store = useSettingsStore.getState();
   try {
-    const res = await hanaFetch('/api/preferences/models', {
+    const res = await openshadowFetch('/api/preferences/models', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(partial),
@@ -134,7 +134,7 @@ export async function autoSaveGlobalModels(
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     if (!opts.silent) store.showToast(t('settings.autoSaved'), 'success');
-    const refreshRes = await hanaFetch('/api/preferences/models');
+    const refreshRes = await openshadowFetch('/api/preferences/models');
     const newGlobal = await refreshRes.json();
     useSettingsStore.setState({ globalModelsConfig: newGlobal });
   } catch (err: any) {
@@ -149,7 +149,7 @@ export function savePins() {
     const store = useSettingsStore.getState();
     try {
       const agentId = store.getSettingsAgentId();
-      const res = await hanaFetch(`/api/agents/${agentId}/pinned`, {
+      const res = await openshadowFetch(`/api/agents/${agentId}/pinned`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pins: store.currentPins }),

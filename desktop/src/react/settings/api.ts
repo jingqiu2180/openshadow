@@ -11,21 +11,21 @@ import {
 
 const DEFAULT_TIMEOUT = 30_000;
 
-export function hanaUrl(path: string): string {
+export function openshadowUrl(path: string): string {
   const connection = requireServerConnection(
     useSettingsStore.getState(),
-    `settings hanaUrl ${path}: server connection not ready`,
+    `settings openshadowUrl ${path}: server connection not ready`,
   );
   return buildConnectionUrl(connection, path, { includeTokenQuery: true });
 }
 
-export async function hanaFetch(
+export async function openshadowFetch(
   path: string,
   opts: RequestInit & { timeout?: number } = {},
 ): Promise<Response> {
   const connection = requireServerConnection(
     useSettingsStore.getState(),
-    `settings hanaFetch ${path}: server connection not ready`,
+    `settings openshadowFetch ${path}: server connection not ready`,
   );
   const headers = appendConnectionAuth(connection, opts.headers);
 
@@ -46,7 +46,7 @@ export async function hanaFetch(
       signal: controller.signal,
     });
     if (!res.ok) {
-      throw new Error(`hanaFetch ${path}: ${res.status} ${res.statusText}`);
+      throw new Error(`openshadowFetch ${path}: ${res.status} ${res.statusText}`);
     }
     return res;
   } finally {

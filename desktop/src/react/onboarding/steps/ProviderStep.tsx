@@ -29,14 +29,14 @@ const EyeOffIcon = () => (
 
 interface ProviderStepProps {
   preview: boolean;
-  hanaFetch: HanaFetch;
+  openshadowFetch: HanaFetch;
   goToStep: (index: number) => void;
   showError: (msg: string) => void;
   onProviderReady: (providerName: string, providerUrl: string, providerApi: string, apiKey: string) => void;
 }
 
 export function ProviderStep({
-  preview, hanaFetch, goToStep, showError, onProviderReady,
+  preview, openshadowFetch, goToStep, showError, onProviderReady,
 }: ProviderStepProps) {
   // ── Provider state ──
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
@@ -129,7 +129,7 @@ export function ProviderStep({
     }
     setTestStatus({ type: 'loading', text: t('onboarding.provider.testing') });
     try {
-      const result = await testConnection({ hanaFetch, providerUrl, providerApi, apiKey });
+      const result = await testConnection({ openshadowFetch, providerUrl, providerApi, apiKey });
       if (result.ok) {
         setTestStatus({ type: 'success', text: result.text });
         setConnectionTested(true);
@@ -142,21 +142,21 @@ export function ProviderStep({
       setTestStatus({ type: 'error', text: msg });
       setConnectionTested(false);
     }
-  }, [preview, hanaFetch, providerUrl, providerApi, apiKey]);
+  }, [preview, openshadowFetch, providerUrl, providerApi, apiKey]);
 
   // ── Next ──
   const onNext = useCallback(async () => {
     if (preview) { goToStep(3); return; }
     if (!connectionTested) return;
     try {
-      await saveProviderAction({ hanaFetch, providerName, providerUrl, apiKey, providerApi });
+      await saveProviderAction({ openshadowFetch, providerName, providerUrl, apiKey, providerApi });
       onProviderReady(providerName, providerUrl, providerApi, apiKey);
       goToStep(3);
     } catch (err) {
       console.error('[onboarding] save provider failed:', err);
       showError(t('onboarding.provider.testFailed'));
     }
-  }, [preview, connectionTested, hanaFetch, providerName, providerUrl, apiKey, providerApi, goToStep, showError, onProviderReady]);
+  }, [preview, connectionTested, openshadowFetch, providerName, providerUrl, apiKey, providerApi, goToStep, showError, onProviderReady]);
 
   return (
     <StepContainer>

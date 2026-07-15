@@ -10,14 +10,14 @@ import { useSettingsStore } from '../../settings/store';
 
 type MockResponse = { json: () => Promise<unknown> };
 
-const hanaFetchMock = vi.fn(async (_url: string, _opts?: RequestInit): Promise<MockResponse> => ({
+const openshadowFetchMock = vi.fn(async (_url: string, _opts?: RequestInit): Promise<MockResponse> => ({
   json: async () => ({ models: [] }),
 }));
 const showInFinderMock = vi.fn();
 
 vi.mock('../../settings/api', () => ({
-  hanaFetch: (url: string, opts?: RequestInit) => hanaFetchMock(url, opts),
-  hanaUrl: (path: string) => path,
+  openshadowFetch: (url: string, opts?: RequestInit) => openshadowFetchMock(url, opts),
+  openshadowUrl: (path: string) => path,
   yuanFallbackAvatar: (yuan: string) => `/fallback-${yuan}.png`,
 }));
 
@@ -106,7 +106,7 @@ vi.mock('../../settings/tabs/agent/AgentExperience', () => ({
 
 describe('AgentTab settings agent selection', () => {
   beforeEach(() => {
-    hanaFetchMock.mockImplementation(async (_url: string, _opts?: RequestInit): Promise<MockResponse> => ({
+    openshadowFetchMock.mockImplementation(async (_url: string, _opts?: RequestInit): Promise<MockResponse> => ({
       json: async () => ({ models: [] }),
     }));
     showInFinderMock.mockReset();
@@ -160,7 +160,7 @@ describe('AgentTab settings agent selection', () => {
   });
 
   it('shows the provider icon in the selected agent chat model trigger', async () => {
-    hanaFetchMock.mockImplementation(async (_url: string, _opts?: RequestInit): Promise<MockResponse> => ({
+    openshadowFetchMock.mockImplementation(async (_url: string, _opts?: RequestInit): Promise<MockResponse> => ({
       json: async () => ({
         models: [{ id: 'glm-5.2', name: 'GLM-5.2', provider: 'zhipu-coding' }],
       }),
@@ -181,7 +181,7 @@ describe('AgentTab settings agent selection', () => {
   });
 
   it('confirms character-card export from the live preview overlay', async () => {
-    hanaFetchMock.mockImplementation(async (url: string, _opts?: RequestInit): Promise<MockResponse> => {
+    openshadowFetchMock.mockImplementation(async (url: string, _opts?: RequestInit): Promise<MockResponse> => {
       if (url === '/api/models') return { json: async () => ({ models: [] }) };
       if (url === '/api/character-cards/export/preview') {
         return {
@@ -230,7 +230,7 @@ describe('AgentTab settings agent selection', () => {
       await Promise.resolve();
     });
 
-    const exportCall = hanaFetchMock.mock.calls.find((call) => {
+    const exportCall = openshadowFetchMock.mock.calls.find((call) => {
       const [url, opts] = call as [string, RequestInit | undefined];
       return url === '/api/character-cards/export' && opts?.method === 'POST';
     }) as [string, RequestInit | undefined] | undefined;
@@ -255,7 +255,7 @@ describe('AgentTab settings agent selection', () => {
       await Promise.resolve();
     });
 
-    const cfgCall = hanaFetchMock.mock.calls.find((call) => {
+    const cfgCall = openshadowFetchMock.mock.calls.find((call) => {
       const [url, opts] = call as [string, RequestInit | undefined];
       return url === '/api/agents/hana/config' && opts?.method === 'PUT';
     }) as [string, RequestInit | undefined] | undefined;
@@ -280,11 +280,11 @@ describe('AgentTab settings agent selection', () => {
       await Promise.resolve();
     });
 
-    const cfgCall = hanaFetchMock.mock.calls.find((call) => {
+    const cfgCall = openshadowFetchMock.mock.calls.find((call) => {
       const [url, opts] = call as [string, RequestInit | undefined];
       return url === '/api/agents/hana/config' && opts?.method === 'PUT';
     }) as [string, RequestInit | undefined] | undefined;
-    const identityCall = hanaFetchMock.mock.calls.find((call) => {
+    const identityCall = openshadowFetchMock.mock.calls.find((call) => {
       const [url, opts] = call as [string, RequestInit | undefined];
       return url === '/api/agents/hana/identity' && opts?.method === 'PUT';
     });
@@ -309,7 +309,7 @@ describe('AgentTab settings agent selection', () => {
       await Promise.resolve();
     });
 
-    const cfgCall = hanaFetchMock.mock.calls.find((call) => {
+    const cfgCall = openshadowFetchMock.mock.calls.find((call) => {
       const [url, opts] = call as [string, RequestInit | undefined];
       return url === '/api/agents/hana/config' && opts?.method === 'PUT';
     });

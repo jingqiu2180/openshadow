@@ -13,7 +13,7 @@ import { StepContainer } from '../onboarding-ui';
 
 interface ModelStepProps {
   preview: boolean;
-  hanaFetch: HanaFetch;
+  openshadowFetch: HanaFetch;
   providerName: string;
   providerUrl: string;
   providerApi: string;
@@ -60,7 +60,7 @@ function boolFromMeta(value: unknown): boolean | undefined {
 }
 
 export function ModelStep({
-  preview, hanaFetch, providerName, providerUrl, providerApi, apiKey,
+  preview, openshadowFetch, providerName, providerUrl, providerApi, apiKey,
   goToStep, showError,
 }: ModelStepProps) {
   const [fetchedModels, setFetchedModels] = useState<DiscoveredModel[]>([]);
@@ -94,7 +94,7 @@ export function ModelStep({
 
       setModelLoading(t('onboarding.model.loading'));
       try {
-        const result = await loadModelsAction({ hanaFetch, providerName, providerUrl, providerApi, apiKey });
+        const result = await loadModelsAction({ openshadowFetch, providerName, providerUrl, providerApi, apiKey });
         if (result.error) {
           setModelLoading(result.error);
           return;
@@ -112,7 +112,7 @@ export function ModelStep({
       }
     };
     doLoad();
-  }, [preview, hanaFetch, providerName, providerUrl, providerApi, apiKey]);
+  }, [preview, openshadowFetch, providerName, providerUrl, providerApi, apiKey]);
 
   const addedModelIds = new Set(addedModels.map(model => model.id));
   const availableModels = fetchedModels.filter(model => !addedModelIds.has(model.id));
@@ -244,7 +244,7 @@ export function ModelStep({
     if (!canContinue) return;
     try {
       await saveModelAction({
-        hanaFetch, selectedModel, providerName,
+        openshadowFetch, selectedModel, providerName,
         addedModels: addedModels.map(toSavedModelEntry),
         selectedUtility, selectedUtilityLarge,
       });
@@ -253,7 +253,7 @@ export function ModelStep({
       console.error('[onboarding] save model failed:', err);
       showError(t('onboarding.error'));
     }
-  }, [preview, canContinue, hanaFetch, selectedModel, providerName, addedModels, selectedUtility, selectedUtilityLarge, goToStep, showError]);
+  }, [preview, canContinue, openshadowFetch, selectedModel, providerName, addedModels, selectedUtility, selectedUtilityLarge, goToStep, showError]);
 
   return (
     <StepContainer>

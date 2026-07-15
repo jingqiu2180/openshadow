@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../stores';
 import { fetchConfig } from '../hooks/use-config';
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 import { useI18n } from '../hooks/use-i18n';
 import { renderMarkdown } from '../utils/markdown';
 import { findOpenToolIndex, toolCallFromStartEvent, toolCallIdFromEvent } from '../utils/tool-call-identity';
@@ -770,7 +770,7 @@ export function ChannelAgentSettingsPanel() {
 
   useEffect(() => {
     if (models.length > 0) return;
-    void hanaFetch('/api/models')
+    void openshadowFetch('/api/models')
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data?.models) useStore.setState({ models: data.models });

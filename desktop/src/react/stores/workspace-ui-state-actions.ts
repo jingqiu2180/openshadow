@@ -1,4 +1,4 @@
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 import { hasServerConnection } from '../services/server-connection';
 import type { PreviewItem, RightWorkspaceTab } from '../types';
 import { readFileForPreviewType } from '../utils/preview-file-content';
@@ -129,7 +129,7 @@ export async function loadPersistedWorkspaceUiState(root: string): Promise<Persi
   const state = useStore.getState();
   if (!normalized || !hasServerConnection(state)) return null;
   try {
-    const res = await hanaFetch(workspaceUiStateUrl(normalized));
+    const res = await openshadowFetch(workspaceUiStateUrl(normalized));
     const data = await res.json().catch(() => null);
     return data?.state && typeof data.state === 'object' ? data.state as PersistedWorkspaceUiState : null;
   } catch (err) {
@@ -196,7 +196,7 @@ export async function persistCurrentWorkspaceUiStateNow(root?: string | null): P
 async function persistWorkspaceUiState(root: string, state: PersistedWorkspaceUiState): Promise<void> {
   const surface = resolveWorkspaceUiSurface();
   try {
-    await hanaFetch('/api/preferences/workspace-ui-state', {
+    await openshadowFetch('/api/preferences/workspace-ui-state', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ workspace: root, surface, state }),

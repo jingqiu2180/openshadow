@@ -10,7 +10,7 @@ import { StepContainer, Multiline } from '../onboarding-ui';
 
 interface LocaleStepProps {
   preview: boolean;
-  hanaFetch: HanaFetch;
+  openshadowFetch: HanaFetch;
   avatarSrc: string;
   initialLocale: string;
   goToStep: (index: number) => void;
@@ -20,7 +20,7 @@ interface LocaleStepProps {
 }
 
 export function LocaleStep({
-  preview, hanaFetch, avatarSrc, initialLocale,
+  preview, openshadowFetch, avatarSrc, initialLocale,
   goToStep, showError, onLocaleChange, onConnectLanServer,
 }: LocaleStepProps) {
   const [locale, setLocale] = useState(initialLocale);
@@ -38,13 +38,13 @@ export function LocaleStep({
   const onNext = useCallback(async () => {
     if (!preview) {
       try {
-        await saveLocale(hanaFetch, locale);
+        await saveLocale(openshadowFetch, locale);
       } catch (err) {
         console.error('[onboarding] save locale failed:', err);
       }
     }
     goToStep(1);
-  }, [preview, hanaFetch, locale, goToStep]);
+  }, [preview, openshadowFetch, locale, goToStep]);
 
   const connectExistingServer = useCallback(async () => {
     if (!serverUrl.trim() || !serverKey.trim() || connecting) return;

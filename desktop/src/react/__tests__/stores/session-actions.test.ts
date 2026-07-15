@@ -93,9 +93,9 @@ vi.mock('../../stores', () => ({
   },
 }));
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: vi.fn(),
-  hanaUrl: (p: string) => p,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: vi.fn(),
+  openshadowUrl: (p: string) => p,
 }));
 
 vi.mock('../../utils/history-builder', () => ({
@@ -251,14 +251,14 @@ function installStoreMethods() {
   s.setDeskJianContent = vi.fn((content: string | null) => { mockState.deskJianContent = content; });
 }
 
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 import { clearChat } from '../../stores/agent-actions';
 import { loadDeskFiles } from '../../stores/desk-actions';
 import { bumpMessageLiveVersion, clearMessageLiveVersion } from '../../stores/message-live-version';
 import { archiveSession, completeSessionTodos, continueDeletedAgentSession, createNewSession, dismissSessionCapabilityDrift, ensureSession, loadMessages, loadSessions, pinSession, reconcileCurrentSessionMessages, refreshSessionCapabilities, switchSession } from '../../stores/session-actions';
 import { snapshotStreamBuffer } from '../../stores/stream-invalidator';
 
-const mockFetch = vi.mocked(hanaFetch);
+const mockFetch = vi.mocked(openshadowFetch);
 const mockClearChat = vi.mocked(clearChat);
 const mockLoadDeskFiles = vi.mocked(loadDeskFiles);
 const mockSnapshot = vi.mocked(snapshotStreamBuffer);

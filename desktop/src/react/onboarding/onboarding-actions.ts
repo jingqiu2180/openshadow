@@ -10,7 +10,7 @@ export type HanaFetch = (path: string, opts?: RequestInit) => Promise<Response>;
 // ── Test connection ──
 
 interface TestConnectionParams {
-  hanaFetch: HanaFetch;
+  openshadowFetch: HanaFetch;
   providerUrl: string;
   providerApi: string;
   apiKey: string;
@@ -21,8 +21,8 @@ export interface TestResult {
   text: string;
 }
 
-export async function testConnection({ hanaFetch, providerUrl, providerApi, apiKey }: TestConnectionParams): Promise<TestResult> {
-  const res = await hanaFetch('/api/providers/test', {
+export async function testConnection({ openshadowFetch, providerUrl, providerApi, apiKey }: TestConnectionParams): Promise<TestResult> {
+  const res = await openshadowFetch('/api/providers/test', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -41,15 +41,15 @@ export async function testConnection({ hanaFetch, providerUrl, providerApi, apiK
 // ── Save provider ──
 
 interface SaveProviderParams {
-  hanaFetch: HanaFetch;
+  openshadowFetch: HanaFetch;
   providerName: string;
   providerUrl: string;
   apiKey: string;
   providerApi: string;
 }
 
-export async function saveProvider({ hanaFetch, providerName, providerUrl, apiKey, providerApi }: SaveProviderParams): Promise<void> {
-  await hanaFetch(`/api/agents/${AGENT_ID}/config`, {
+export async function saveProvider({ openshadowFetch, providerName, providerUrl, apiKey, providerApi }: SaveProviderParams): Promise<void> {
+  await openshadowFetch(`/api/agents/${AGENT_ID}/config`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -68,7 +68,7 @@ export async function saveProvider({ hanaFetch, providerName, providerUrl, apiKe
 // ── Load models ──
 
 interface LoadModelsParams {
-  hanaFetch: HanaFetch;
+  openshadowFetch: HanaFetch;
   providerName: string;
   providerUrl: string;
   providerApi: string;
@@ -87,8 +87,8 @@ export interface LoadModelsResult {
   error?: string;
 }
 
-export async function loadModels({ hanaFetch, providerName, providerUrl, providerApi, apiKey }: LoadModelsParams): Promise<LoadModelsResult> {
-  const res = await hanaFetch('/api/providers/fetch-models', {
+export async function loadModels({ openshadowFetch, providerName, providerUrl, providerApi, apiKey }: LoadModelsParams): Promise<LoadModelsResult> {
+  const res = await openshadowFetch('/api/providers/fetch-models', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -120,7 +120,7 @@ export interface AddedModelObject {
 export type AddedModelEntry = string | AddedModelObject;
 
 interface SaveModelParams {
-  hanaFetch: HanaFetch;
+  openshadowFetch: HanaFetch;
   selectedModel: string;
   providerName: string;
   addedModels: AddedModelEntry[];
@@ -141,9 +141,9 @@ function compactModelEntry(entry: AddedModelEntry): AddedModelEntry {
   return Object.keys(next).length === 1 ? next.id : next;
 }
 
-export async function saveModel({ hanaFetch, selectedModel, providerName, addedModels, selectedUtility, selectedUtilityLarge }: SaveModelParams): Promise<void> {
+export async function saveModel({ openshadowFetch, selectedModel, providerName, addedModels, selectedUtility, selectedUtilityLarge }: SaveModelParams): Promise<void> {
   // Save chat model
-  await hanaFetch(`/api/agents/${AGENT_ID}/config`, {
+  await openshadowFetch(`/api/agents/${AGENT_ID}/config`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ models: { chat: { id: selectedModel, provider: providerName } } }),
@@ -151,7 +151,7 @@ export async function saveModel({ hanaFetch, selectedModel, providerName, addedM
 
   // Save only the user's explicit Added Models selection to provider.
   const modelEntries = addedModels.map(compactModelEntry);
-  await hanaFetch(`/api/agents/${AGENT_ID}/config`, {
+  await openshadowFetch(`/api/agents/${AGENT_ID}/config`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -164,7 +164,7 @@ export async function saveModel({ hanaFetch, selectedModel, providerName, addedM
     const utilityModels: Record<string, { id: string; provider: string }> = {};
     if (selectedUtility) utilityModels.utility = { id: selectedUtility, provider: providerName };
     if (selectedUtilityLarge) utilityModels.utility_large = { id: selectedUtilityLarge, provider: providerName };
-    await hanaFetch('/api/preferences/models', {
+    await openshadowFetch('/api/preferences/models', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ models: utilityModels }),
@@ -174,8 +174,8 @@ export async function saveModel({ hanaFetch, selectedModel, providerName, addedM
 
 // ── Save locale ──
 
-export async function saveLocale(hanaFetch: HanaFetch, locale: string): Promise<void> {
-  await hanaFetch(`/api/agents/${AGENT_ID}/config`, {
+export async function saveLocale(openshadowFetch: HanaFetch, locale: string): Promise<void> {
+  await openshadowFetch(`/api/agents/${AGENT_ID}/config`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ locale }),
@@ -185,14 +185,14 @@ export async function saveLocale(hanaFetch: HanaFetch, locale: string): Promise<
 // ── Save identity ──
 
 interface SaveOnboardingIdentityParams {
-  hanaFetch: HanaFetch;
+  openshadowFetch: HanaFetch;
   userName: string;
   agentName: string;
   memoryEnabled: boolean;
 }
 
 export async function saveOnboardingIdentity({
-  hanaFetch,
+  openshadowFetch,
   userName,
   agentName,
   memoryEnabled,
@@ -208,7 +208,7 @@ export async function saveOnboardingIdentity({
     body.agent = { name: trimmedAgentName };
   }
 
-  await hanaFetch(`/api/agents/${AGENT_ID}/config`, {
+  await openshadowFetch(`/api/agents/${AGENT_ID}/config`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -219,8 +219,8 @@ export async function saveOnboardingIdentity({
   });
 }
 
-export async function saveUserName(hanaFetch: HanaFetch, name: string): Promise<void> {
-  await hanaFetch(`/api/agents/${AGENT_ID}/config`, {
+export async function saveUserName(openshadowFetch: HanaFetch, name: string): Promise<void> {
+  await openshadowFetch(`/api/agents/${AGENT_ID}/config`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ user: { name } }),
@@ -229,35 +229,35 @@ export async function saveUserName(hanaFetch: HanaFetch, name: string): Promise<
 
 // ── Workspace ──
 
-export async function loadDefaultWorkspace(hanaFetch: HanaFetch): Promise<string> {
-  const res = await hanaFetch('/api/config/default-workspace');
+export async function loadDefaultWorkspace(openshadowFetch: HanaFetch): Promise<string> {
+  const res = await openshadowFetch('/api/config/default-workspace');
   const data = await res.json();
   if (data.error) throw new Error(data.error);
   return data.path || '';
 }
 
-async function ensureDefaultWorkspace(hanaFetch: HanaFetch): Promise<string> {
-  const res = await hanaFetch('/api/config/default-workspace', { method: 'POST' });
+async function ensureDefaultWorkspace(openshadowFetch: HanaFetch): Promise<string> {
+  const res = await openshadowFetch('/api/config/default-workspace', { method: 'POST' });
   const data = await res.json();
   if (data.error) throw new Error(data.error);
   return data.path || '';
 }
 
 interface SaveWorkspaceParams {
-  hanaFetch: HanaFetch;
+  openshadowFetch: HanaFetch;
   workspacePath: string;
   defaultPath: string;
 }
 
-export async function saveWorkspace({ hanaFetch, workspacePath, defaultPath }: SaveWorkspaceParams): Promise<void> {
+export async function saveWorkspace({ openshadowFetch, workspacePath, defaultPath }: SaveWorkspaceParams): Promise<void> {
   const selected = workspacePath.trim();
   if (!selected) throw new Error('workspacePath is required');
 
   if (selected === defaultPath) {
-    await ensureDefaultWorkspace(hanaFetch);
+    await ensureDefaultWorkspace(openshadowFetch);
   }
 
-  await hanaFetch(`/api/agents/${AGENT_ID}/config`, {
+  await openshadowFetch(`/api/agents/${AGENT_ID}/config`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

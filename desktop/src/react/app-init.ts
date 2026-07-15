@@ -2,13 +2,13 @@
  * app-init.ts — 应用初始化逻辑（纯函数，非 React 组件）
  *
  * 从 App.tsx 提取。包含：
- * - __hanaLog 日志上报
+ * - __openshadowLog 日志上报
  * - 全局错误 / unhandled rejection 监听
  * - initApp() 主初始化流程
  */
 
 import { useStore } from './stores';
-import { hanaFetch } from './hooks/use-hana-fetch';
+import { openshadowFetch } from './hooks/use-openshadow-fetch';
 import { applyAgentIdentity, loadAgents, loadAvatars } from './stores/agent-actions';
 import { loadSessions, switchSession } from './stores/session-actions';
 import { initSessionProjectCatalog } from './stores/session-project-actions';
@@ -71,16 +71,16 @@ async function loadInitialI18n(): Promise<void> {
 
 function markRendererLaunch(event: string, details?: unknown) {
   if (details === undefined) {
-    console.info(`[hana-launch] ${event}`);
+    console.info(`[openshadow-launch] ${event}`);
   } else {
-    console.info(`[hana-launch] ${event}`, details);
+    console.info(`[openshadow-launch] ${event}`, details);
   }
 }
 
-// ── __hanaLog：前端日志上报 ──
-window.__hanaLog = function (level: string, module: string, message: string) {
+// ── __openshadowLog：前端日志上报 ──
+window.__openshadowLog = function (level: string, module: string, message: string) {
   if (!hasServerConnection(useStore.getState())) return;
-  hanaFetch('/api/log', {
+  openshadowFetch('/api/log', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ level, module, message }),
@@ -247,8 +247,8 @@ export async function initApp(): Promise<void> {
   // 2. 并行获取 health + config
   try {
     const [healthRes, configRes] = await Promise.all([
-      hanaFetch('/api/health'),
-      hanaFetch('/api/config'),
+      openshadowFetch('/api/health'),
+      openshadowFetch('/api/config'),
     ]);
     const healthData = await healthRes.json();
     const configData = await configRes.json();
@@ -316,7 +316,7 @@ export async function initApp(): Promise<void> {
 
   // 14. 任务计划 badge 初始值
   try {
-    const res = await hanaFetch('/api/desk/cron');
+    const res = await openshadowFetch('/api/desk/cron');
     const data = await res.json();
     const count = (data.jobs || []).length;
     useStore.setState({ automationCount: count });
@@ -324,7 +324,7 @@ export async function initApp(): Promise<void> {
 
   // 15. Bridge 状态指示点（启动时就查一次，不等用户打开面板）
   try {
-    const res = await hanaFetch('/api/bridge/status');
+    const res = await openshadowFetch('/api/bridge/status');
     const data = await res.json();
     const anyConnected = data.telegram?.status === 'connected' || data.feishu?.status === 'connected' || data.qq?.status === 'connected' || data.wechat?.status === 'connected' || data.whatsapp?.status === 'connected';
     useStore.setState({ bridgeDotConnected: anyConnected });
@@ -360,7 +360,7 @@ export async function initApp(): Promise<void> {
   });
 
   // 21. Skill Viewer overlay（主进程 / 设置窗口 → 渲染进程）
-  window.hana?.onShowSkillViewer?.((data: any) => {
+  window.openshadow?.onShowSkillViewer?.((data: any) => {
     useStore.setState({ skillViewerData: data });
   });
 
@@ -370,14 +370,14 @@ export async function initApp(): Promise<void> {
 }
 
 async function loadIdentityForActiveConnection(connection: ServerConnection): Promise<ServerConnection> {
-  const identityRes = await hanaFetch('/api/server/identity');
+  const identityRes = await openshadowFetch('/api/server/identity');
   const identityData = await identityRes.json();
   return mergeServerIdentity(connection, identityData);
 }
 
 async function refreshDeviceWebSession(connection: ServerConnection): Promise<void> {
   if (connection.credentialKind !== 'device_credential' || !connection.token) return;
-  await hanaFetch('/api/web-auth/login', {
+  await openshadowFetch('/api/web-auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -390,7 +390,7 @@ async function waitForServerHealth(timeoutMs = 30000): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
-      const res = await hanaFetch('/api/health');
+      const res = await openshadowFetch('/api/health');
       if (res.ok) return true;
     } catch {
       /* server 还没好，继续等 */

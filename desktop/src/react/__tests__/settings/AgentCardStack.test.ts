@@ -13,8 +13,8 @@ vi.mock('../../settings/store', () => ({
 }));
 
 vi.mock('../../settings/api', () => ({
-  hanaFetch: vi.fn(),
-  hanaUrl: (path: string) => path,
+  openshadowFetch: vi.fn(),
+  openshadowUrl: (path: string) => path,
   yuanFallbackAvatar: (yuan?: string) => `fallback:${yuan || 'hanako'}`,
 }));
 

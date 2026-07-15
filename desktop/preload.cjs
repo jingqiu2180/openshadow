@@ -2,7 +2,7 @@
 // Preload script for the OpenShadow main window (CJS).
 // Exposes safe IPC bridges to the renderer via contextBridge.
 //
-// Bridges exposed on window.hana and window.__REM_API__:
+// Bridges exposed on window.openshadow and window.__REM_API__:
 //   - screenshotCapture / screenshotCaptureWindow
 //   - browserCreate / browserNavigate / browserScreenshot / etc.
 //   - selectFolder / selectFiles / readFile / writeFile
@@ -101,8 +101,8 @@ const platformApi = {
   },
 }
 
-// 注入 window.hana（兼容 platform.js）
-contextBridge.exposeInMainWorld('hana', platformApi)
+// 注入 window.openshadow（兼容 platform.js）
+contextBridge.exposeInMainWorld('openshadow', platformApi)
 
 // 注入 window.platform 作为 platformApi 别名（兼容 onboarding 中 window.platform.getFileUrl 等调用）
 contextBridge.exposeInMainWorld('platform', platformApi)

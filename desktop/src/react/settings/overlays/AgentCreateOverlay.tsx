@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSettingsStore } from '../store';
-import { hanaFetch } from '../api';
+import { openshadowFetch } from '../api';
 import { t } from '../helpers';
 import { switchToAgent } from '../actions';
 import { Overlay } from '../../ui';
@@ -48,7 +48,7 @@ export function AgentCreateOverlay() {
 
     setCreating(true);
     try {
-      const res = await hanaFetch('/api/agents', {
+      const res = await openshadowFetch('/api/agents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: trimmed, yuan }),
@@ -71,7 +71,7 @@ export function AgentCreateOverlay() {
     try {
       const form = new FormData();
       form.append('file', file);
-      const res = await hanaFetch('/api/character-cards/plan', {
+      const res = await openshadowFetch('/api/character-cards/plan', {
         method: 'POST',
         body: form,
         timeout: 90_000,
@@ -93,7 +93,7 @@ export function AgentCreateOverlay() {
     if (!cardPlan?.token || creating) return;
     setCreating(true);
     try {
-      const res = await hanaFetch('/api/character-cards/import', {
+      const res = await openshadowFetch('/api/character-cards/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: cardPlan.token, importMemory }),

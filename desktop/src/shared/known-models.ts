@@ -9,7 +9,7 @@
  * 避免 import 时阻塞模块加载链。
  */
 import { readFileSync } from "fs";
-import { fromRoot } from './hana-root';
+import { fromRoot } from './openshadow-root';
 
 let _raw = null;
 let _fallbacks = null;

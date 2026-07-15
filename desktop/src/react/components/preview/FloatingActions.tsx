@@ -7,7 +7,7 @@ import {
   dispatchCoverNotice,
   requestMarkdownCoverGeneration,
 } from '../../utils/markdown-cover-generation';
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 import { useI18n } from '../../hooks/use-i18n';
 import { Tooltip } from '../../ui';
 import { extOfName, inferKindByExt } from '../../utils/file-kind';
@@ -191,7 +191,7 @@ export function FloatingActions({
       return;
     }
     let cancelled = false;
-    hanaFetch('/api/desk/beautify/status')
+    openshadowFetch('/api/desk/beautify/status')
       .then((res) => res.json())
       .then((data) => {
         if (!cancelled) setCoverStatus(data || null);

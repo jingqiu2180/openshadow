@@ -2,10 +2,10 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useStore } from '../../stores';
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: vi.fn(),
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: vi.fn(),
 }));
 
 describe('MainContent app file drag attachments', () => {
@@ -43,7 +43,7 @@ describe('MainContent app file drag attachments', () => {
   });
 
   it('attaches workspace files dragged from a native-root mount directly by absolute path', async () => {
-    vi.mocked(hanaFetch).mockClear();
+    vi.mocked(openshadowFetch).mockClear();
     useStore.setState({
       currentTab: 'chat',
       deskBasePath: 'studio:mount_docs',
@@ -70,7 +70,7 @@ describe('MainContent app file drag attachments', () => {
       name: 'report.md',
       isDirectory: false,
     }]);
-    expect(hanaFetch).not.toHaveBeenCalled();
+    expect(openshadowFetch).not.toHaveBeenCalled();
   });
 
   it('does not attach dragged files to the chat input while viewing channels', async () => {
@@ -95,7 +95,7 @@ describe('MainContent app file drag attachments', () => {
 
     expect(useStore.getState().attachedFiles).toEqual([]);
     expect(useStore.getState().attachedFilesBySession['/sessions/main.jsonl']).toBeUndefined();
-    expect(hanaFetch).not.toHaveBeenCalled();
+    expect(openshadowFetch).not.toHaveBeenCalled();
     expect(addToast).toHaveBeenCalledWith('channel.filesUnsupported', 'error');
   });
 });

@@ -1,4 +1,4 @@
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 import registry from '../../shared/theme-registry';
 import { refreshPreviewItemsFromFile } from './preview-file-refresh';
 import {
@@ -30,7 +30,7 @@ export async function requestMarkdownCoverGeneration({
   executorAgentId?: string;
   userGuidance?: string;
 } & MarkdownCoverTargetInput): Promise<{ ok: true; activity?: unknown } | { ok: false; error: string }> {
-  const res = await hanaFetch('/api/desk/beautify/cover', {
+  const res = await openshadowFetch('/api/desk/beautify/cover', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -54,7 +54,7 @@ export async function applyMarkdownCoverImage({
   image,
 }: MarkdownCoverTargetInput & MarkdownCoverImageInput): Promise<{ ok: true; cover?: unknown } | { ok: false; error: string }> {
   const targetInput = { filePath, target } as MarkdownCoverTargetInput;
-  const res = await hanaFetch('/api/desk/beautify/cover/apply', {
+  const res = await openshadowFetch('/api/desk/beautify/cover/apply', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -78,7 +78,7 @@ export async function applyMarkdownCoverPreset({
   presetId: string;
 }): Promise<{ ok: true; cover?: unknown } | { ok: false; error: string }> {
   const targetInput = { filePath, target } as MarkdownCoverTargetInput;
-  const res = await hanaFetch('/api/desk/beautify/cover/preset/apply', {
+  const res = await openshadowFetch('/api/desk/beautify/cover/preset/apply', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

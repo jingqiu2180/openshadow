@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useStore } from '../stores';
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 
 import { renderMarkdownPreview } from '../utils/markdown';
 import { useMermaidDiagrams } from '../hooks/use-mermaid-diagrams';
@@ -59,7 +59,7 @@ export function SkillViewerOverlay() {
   useEffect(() => {
     if (!data) return;
     (async () => {
-      const hana = window.hana;
+      const hana = window.openshadow;
       const items = await hana?.listSkillFiles?.(data.baseDir) as TreeItem[] | undefined;
       setFiles(items || []);
       const mdPath = data.filePath || (data.baseDir + '/SKILL.md');
@@ -71,7 +71,7 @@ export function SkillViewerOverlay() {
   async function loadFile(filePath: string, name: string) {
     setActiveFile(filePath);
     setFileName(name);
-    const text = await window.hana?.readSkillFile?.(filePath);
+    const text = await window.openshadow?.readSkillFile?.(filePath);
     setContent(text ?? null);
   }
 
@@ -83,7 +83,7 @@ export function SkillViewerOverlay() {
         showToast(`${t('skillViewer.installFailed')}no current agent`);
         return;
       }
-      const res = await hanaFetch(`/api/skills/install?agentId=${encodeURIComponent(agentId)}`, {
+      const res = await openshadowFetch(`/api/skills/install?agentId=${encodeURIComponent(agentId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

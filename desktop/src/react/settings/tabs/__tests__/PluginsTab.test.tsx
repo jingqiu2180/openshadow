@@ -7,10 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { useSettingsStore } from '../../store';
 
-const hanaFetch = vi.fn();
+const openshadowFetch = vi.fn();
 
 vi.mock('../../api', () => ({
-  hanaFetch: (...args: unknown[]) => hanaFetch(...args),
+  openshadowFetch: (...args: unknown[]) => openshadowFetch(...args),
 }));
 
 function jsonResponse(body: unknown): Response {
@@ -20,7 +20,7 @@ function jsonResponse(body: unknown): Response {
 describe('PluginsTab settings switches', () => {
   beforeEach(() => {
     vi.resetModules();
-    hanaFetch.mockResolvedValue(jsonResponse([]));
+    openshadowFetch.mockResolvedValue(jsonResponse([]));
     window.t = ((key: string) => key) as typeof window.t;
     window.platform = {
       selectFile: vi.fn(),
@@ -39,7 +39,7 @@ describe('PluginsTab settings switches', () => {
 
   afterEach(() => {
     cleanup();
-    hanaFetch.mockReset();
+    openshadowFetch.mockReset();
     vi.unstubAllGlobals();
     useSettingsStore.setState({
       pluginAllowFullAccess: undefined,

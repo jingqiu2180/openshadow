@@ -8,10 +8,10 @@ function jsonResponse(body: unknown): Response {
 
 describe('onboarding saveModel', () => {
   it('persists only models the user explicitly added to the provider', async () => {
-    const hanaFetch = vi.fn<HanaFetch>(async () => jsonResponse({ ok: true }));
+    const openshadowFetch = vi.fn<HanaFetch>(async () => jsonResponse({ ok: true }));
 
     await saveModel({
-      hanaFetch,
+      openshadowFetch,
       providerName: 'deepseek',
       selectedModel: 'deepseek-v4-pro',
       selectedUtility: 'deepseek-v4-flash',
@@ -29,7 +29,7 @@ describe('onboarding saveModel', () => {
       addedModels: Array<string | { id: string; name?: string }>;
     });
 
-    const providerSaveCall = hanaFetch.mock.calls.find(([path, options]) => {
+    const providerSaveCall = openshadowFetch.mock.calls.find(([path, options]) => {
       const body = JSON.parse(String(options?.body));
       return path === '/api/agents/hanako/config' && body.providers;
     });
@@ -45,16 +45,16 @@ describe('onboarding saveModel', () => {
 
 describe('onboarding saveOnboardingIdentity', () => {
   it('persists user name, optional agent name, and the memory master switch together', async () => {
-    const hanaFetch = vi.fn<HanaFetch>(async () => jsonResponse({ ok: true }));
+    const openshadowFetch = vi.fn<HanaFetch>(async () => jsonResponse({ ok: true }));
 
     await saveOnboardingIdentity({
-      hanaFetch,
+      openshadowFetch,
       userName: '  测试用户  ',
       agentName: '  小花  ',
       memoryEnabled: true,
     });
 
-    expect(hanaFetch).toHaveBeenCalledWith('/api/agents/hanako/config', {
+    expect(openshadowFetch).toHaveBeenCalledWith('/api/agents/hanako/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -66,16 +66,16 @@ describe('onboarding saveOnboardingIdentity', () => {
   });
 
   it('keeps the current agent name when the agent name input is left blank', async () => {
-    const hanaFetch = vi.fn<HanaFetch>(async () => jsonResponse({ ok: true }));
+    const openshadowFetch = vi.fn<HanaFetch>(async () => jsonResponse({ ok: true }));
 
     await saveOnboardingIdentity({
-      hanaFetch,
+      openshadowFetch,
       userName: '测试用户',
       agentName: '   ',
       memoryEnabled: false,
     });
 
-    const body = JSON.parse(String(hanaFetch.mock.calls[0][1]?.body));
+    const body = JSON.parse(String(openshadowFetch.mock.calls[0][1]?.body));
     expect(body).toEqual({
       user: { name: '测试用户' },
       memory: { enabled: false },
@@ -85,18 +85,18 @@ describe('onboarding saveOnboardingIdentity', () => {
 
 describe('onboarding saveWorkspace', () => {
   it('creates the default workspace before saving the agent desk config', async () => {
-    const hanaFetch = vi.fn<HanaFetch>(async () => jsonResponse({ ok: true }));
+    const openshadowFetch = vi.fn<HanaFetch>(async () => jsonResponse({ ok: true }));
 
     await saveWorkspace({
-      hanaFetch,
+      openshadowFetch,
       workspacePath: '/Users/test/Desktop/OH-WorkSpace',
       defaultPath: '/Users/test/Desktop/OH-WorkSpace',
     });
 
-    expect(hanaFetch).toHaveBeenNthCalledWith(1, '/api/config/default-workspace', {
+    expect(openshadowFetch).toHaveBeenNthCalledWith(1, '/api/config/default-workspace', {
       method: 'POST',
     });
-    expect(hanaFetch).toHaveBeenNthCalledWith(2, '/api/agents/hanako/config', {
+    expect(openshadowFetch).toHaveBeenNthCalledWith(2, '/api/agents/hanako/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

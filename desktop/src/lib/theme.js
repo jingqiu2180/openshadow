@@ -8,8 +8,8 @@
  */
 
 (function () {
-  var themeKey = 'hana.theme';
-  var textureKey = 'hana-paper-texture';
+  var themeKey = 'openshadow.theme';
+  var textureKey = 'openshadow-paper-texture';
   var fontKey = 'hana-font-serif';
 
   // 旧主题 ID 到新 ID 的映射（兼容 legacy 代码）

@@ -40,7 +40,7 @@ describe('ProviderStep', () => {
     render(
       <ProviderStep
         preview={false}
-        hanaFetch={vi.fn()}
+        openshadowFetch={vi.fn()}
         goToStep={goToStep}
         showError={vi.fn()}
         onProviderReady={onProviderReady}

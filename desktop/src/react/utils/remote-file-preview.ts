@@ -6,7 +6,7 @@ import type {
 } from '../types';
 import type { DeskFile } from '../types';
 import type { FileRef } from '../types/file-ref';
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 import { openPreview, upsertPreviewItem } from '../stores/preview-actions';
 import { useStore } from '../stores';
 import { resolveServerConnection } from '../services/server-connection';
@@ -126,7 +126,7 @@ async function blobToBase64(blob: Blob): Promise<string> {
 }
 
 async function readContentForPreview(contentPath: string, previewType: string): Promise<string> {
-  const res = await hanaFetch(contentPath);
+  const res = await openshadowFetch(contentPath);
   if (BINARY_PREVIEW_TYPES.has(previewType)) {
     return blobToBase64(await res.blob());
   }
@@ -191,7 +191,7 @@ export async function saveRemoteWorkbenchContent(
   expectedVersion?: FileVersion | null,
 ): Promise<VersionedWriteResult> {
   const normalized = normalizeWorkbenchContentRef(ref);
-  const res = await hanaFetch('/api/workbench/actions', {
+  const res = await openshadowFetch('/api/workbench/actions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

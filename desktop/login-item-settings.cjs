@@ -1,4 +1,4 @@
-const START_AT_LOGIN_ARG = "--hana-start-at-login";
+const START_AT_LOGIN_ARG = "--openshadow-start-at-login";
 
 function isAutoLaunchSupported(platform) {
   return platform === "darwin" || platform === "win32";

@@ -3,7 +3,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSettingsStore } from '../../store';
-import { hanaFetch } from '../../api';
+import { openshadowFetch } from '../../api';
 import { loadSettingsConfig, updateSettingsSnapshot } from '../../actions';
 import { t } from '../../helpers';
 import type { BridgePermissionMode, KnownUser } from './BridgeWidgets';
@@ -134,7 +134,7 @@ export function useBridgeState() {
       return;
     }
     const ac = new AbortController();
-    hanaFetch(`/api/agents/${selectedAgentId}/public-ishiki`, { signal: ac.signal })
+    openshadowFetch(`/api/agents/${selectedAgentId}/public-ishiki`, { signal: ac.signal })
       .then(r => r.json())
       .then(data => { setPublicIshiki(data.content || ''); setPublicIshikiOriginal(data.content || ''); })
       .catch(err => { if (err?.name !== 'AbortError') console.warn('[bridge] fetch public-ishiki failed:', err); });
@@ -145,7 +145,7 @@ export function useBridgeState() {
     const agentId = selectedAgentId;
     if (!agentId || publicIshiki === publicIshikiOriginal) return;
     try {
-      await hanaFetch(`/api/agents/${agentId}/public-ishiki`, {
+      await openshadowFetch(`/api/agents/${agentId}/public-ishiki`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: publicIshiki }),
@@ -164,7 +164,7 @@ export function useBridgeState() {
     try {
       const agentId = selectedAgentIdRef.current;
       const query = agentId ? `?agentId=${encodeURIComponent(agentId)}` : '';
-      const res = await hanaFetch(`/api/bridge/status${query}`, signal ? { signal } : undefined);
+      const res = await openshadowFetch(`/api/bridge/status${query}`, signal ? { signal } : undefined);
       const data = await res.json();
       if (signal?.aborted) return;
       applyStatus(normalizeBridgeStatus(data));
@@ -196,7 +196,7 @@ export function useBridgeState() {
     const agentId = selectedAgentId;
     try {
       const agentQuery = agentId ? `?agentId=${encodeURIComponent(agentId)}` : '';
-      await hanaFetch(`/api/bridge/config${agentQuery}`, {
+      await openshadowFetch(`/api/bridge/config${agentQuery}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ platform: plat, credentials, enabled }),
@@ -214,7 +214,7 @@ export function useBridgeState() {
     const agentId = selectedAgentId;
     try {
       const agentQuery = agentId ? `?agentId=${encodeURIComponent(agentId)}` : '';
-      const res = await hanaFetch(`/api/bridge/test${agentQuery}`, {
+      const res = await openshadowFetch(`/api/bridge/test${agentQuery}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ platform: plat, credentials }),
@@ -237,7 +237,7 @@ export function useBridgeState() {
     const agentId = selectedAgentId;
     try {
       const agentQuery = agentId ? `?agentId=${encodeURIComponent(agentId)}` : '';
-      await hanaFetch(`/api/bridge/owner${agentQuery}`, {
+      await openshadowFetch(`/api/bridge/owner${agentQuery}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ platform: plat, userId: userId || null }),
@@ -251,7 +251,7 @@ export function useBridgeState() {
   const saveGlobalSettings = async (partial: { permissionMode?: BridgePermissionMode; readOnly?: boolean; receiptEnabled?: boolean; richStreamingEnabled?: boolean }) => {
     setGlobalSettingsSaving(true);
     try {
-      const res = await hanaFetch('/api/bridge/settings', {
+      const res = await openshadowFetch('/api/bridge/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(partial),

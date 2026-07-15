@@ -11,7 +11,7 @@ import type { ChatListItem } from '../../stores/chat-types';
 import { RightWorkspacePanel } from '../../components/right-workspace/RightWorkspacePanel';
 import { openFilePreview } from '../../utils/file-preview';
 import { openMediaViewerForRef } from '../../utils/open-media-viewer';
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 
 vi.mock('../../utils/file-preview', () => ({
   openFilePreview: vi.fn(async () => undefined),
@@ -21,8 +21,8 @@ vi.mock('../../utils/open-media-viewer', () => ({
   openMediaViewerForRef: vi.fn(),
 }));
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: vi.fn(),
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: vi.fn(),
 }));
 
 // 整列卡片栈的兄弟卡（Activity / Session 状态）各有独立测试；这里聚焦 desk 卡 tab
@@ -128,8 +128,8 @@ describe('RightWorkspacePanel', () => {
     window.t = ((key: string) => tMap[key] || key) as typeof window.t;
     vi.mocked(openFilePreview).mockClear();
     vi.mocked(openMediaViewerForRef).mockClear();
-    vi.mocked(hanaFetch).mockReset();
-    vi.mocked(hanaFetch).mockImplementation(async () => jsonResponse({ sessions: [] }));
+    vi.mocked(openshadowFetch).mockReset();
+    vi.mocked(openshadowFetch).mockImplementation(async () => jsonResponse({ sessions: [] }));
     document.documentElement.removeAttribute('data-platform');
     window.platform = {
       openFolder: () => undefined,
@@ -679,7 +679,7 @@ describe('RightWorkspacePanel', () => {
 
   it('sends session files to an existing Bridge target from the context submenu', async () => {
     const sendBodies: unknown[] = [];
-    vi.mocked(hanaFetch).mockImplementation(async (path, init) => {
+    vi.mocked(openshadowFetch).mockImplementation(async (path, init) => {
       if (path.startsWith('/api/bridge/sessions?platform=feishu')) {
         return jsonResponse({
           sessions: [{ sessionKey: 'fs_1', chatId: 'oc_chat', displayName: '小群' }],
@@ -726,7 +726,7 @@ describe('RightWorkspacePanel', () => {
         },
       ]);
     });
-    expect(hanaFetch).toHaveBeenCalledWith('/api/bridge/send-media?agentId=hana', expect.objectContaining({
+    expect(openshadowFetch).toHaveBeenCalledWith('/api/bridge/send-media?agentId=hana', expect.objectContaining({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     }));
@@ -816,7 +816,7 @@ describe('RightWorkspacePanel', () => {
       });
       await vi.advanceTimersByTimeAsync(850);
 
-      const saveCall = vi.mocked(hanaFetch).mock.calls.find(([url, init]) => (
+      const saveCall = vi.mocked(openshadowFetch).mock.calls.find(([url, init]) => (
         url === '/api/desk/jian' && init && typeof init === 'object' && init.method === 'POST'
       ));
       expect(saveCall).toBeTruthy();

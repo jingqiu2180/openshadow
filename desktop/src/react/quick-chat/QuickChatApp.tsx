@@ -237,8 +237,8 @@ export function QuickChatApp() {
     async function bootstrap() {
       try {
         const [serverPort, serverToken] = await Promise.all([
-          window.hana?.getServerPort?.(),
-          window.hana?.getServerToken?.(),
+          window.openshadow?.getServerPort?.(),
+          window.openshadow?.getServerToken?.(),
         ]);
         const local = createLocalServerConnection({ serverPort, serverToken });
         if (!local) throw new Error('server connection unavailable');
@@ -358,11 +358,11 @@ export function QuickChatApp() {
     setSending(false);
     setError(null);
     lastResizeRef.current = null;
-    window.hana?.quickChatResize?.('compact');
+    window.openshadow?.quickChatResize?.('compact');
   }, []);
 
   useEffect(() => {
-    const dispose = window.hana?.onQuickChatShown?.(() => {
+    const dispose = window.openshadow?.onQuickChatShown?.(() => {
       textareaRef.current?.focus();
       void (async () => {
         const runtime = await refreshQuickChatRuntimeState({
@@ -549,7 +549,7 @@ export function QuickChatApp() {
       }));
       setDraft('');
       setAttachments([]);
-      window.hana?.quickChatResize?.('chat');
+      window.openshadow?.quickChatResize?.('chat');
 
       const ws = ensureSocket();
       const sendPayload = () => ws.send(JSON.stringify({
@@ -599,12 +599,12 @@ export function QuickChatApp() {
   const openFullSession = useCallback(() => {
     if (!sessionPathRef.current) return;
     markHidden();
-    window.hana?.quickChatOpenSession?.(sessionPathRef.current);
+    window.openshadow?.quickChatOpenSession?.(sessionPathRef.current);
   }, [markHidden]);
 
   const closeQuickChat = useCallback(() => {
     markHidden();
-    window.hana?.quickChatHide?.();
+    window.openshadow?.quickChatHide?.();
   }, [markHidden]);
 
   const canSend = (!!draft.trim() || attachments.length > 0) && !sending && !isStreaming && !!connection;
@@ -627,7 +627,7 @@ export function QuickChatApp() {
     const previous = lastResizeRef.current;
     if (previous && previous.mode === mode && Math.abs(previous.height - height) < 2) return;
     lastResizeRef.current = { mode, height };
-    window.hana?.quickChatResize?.({ mode, height });
+    window.openshadow?.quickChatResize?.({ mode, height });
   }, [attachments.length, displayError, draft, expanded, sessionItems, isStreaming]);
 
   useQuickChatAutoScroll({

@@ -1,5 +1,5 @@
 import { useStore } from '../stores';
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 import { applyAgentIdentity, loadAgents } from '../stores/agent-actions';
 import { loadSessions, switchSession } from '../stores/session-actions';
 import { loadModels } from '../utils/ui-helpers';
@@ -137,7 +137,7 @@ export function handleAppEvent(type: string, data: any = {}, options: AppEventOp
       useStore.setState({ thinkingLevel: 'auto' });
 
       // Reload automation count and clear activities
-      hanaFetch('/api/desk/cron').then(r => r.json()).then((d: any) => {
+      openshadowFetch('/api/desk/cron').then(r => r.json()).then((d: any) => {
         if (myVersion !== _agentSwitchVersion) return; // stale
         useStore.setState({ automationCount: d.jobs?.length || 0 });
       }).catch(() => {});

@@ -8,13 +8,13 @@
 const fs = require('fs')
 const path = require('path')
 
-function createMainI18n({ hanakoHome, localesDir }) {
+function createMainI18n({ openShadowHome, localesDir }) {
   let locale = 'zh-CN'
   let dict = {}
 
   function load() {
     try {
-      const configPath = path.join(hanakoHome, 'config.json')
+      const configPath = path.join(openShadowHome, 'config.json')
       if (fs.existsSync(configPath)) {
         const cfg = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
         locale = (cfg.ui && cfg.ui.language) || process.env.LC_MESSAGES || 'zh-CN'

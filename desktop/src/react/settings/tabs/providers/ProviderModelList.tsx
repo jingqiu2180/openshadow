@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useSettingsStore, type ProviderSummary } from '../../store';
-import { hanaFetch } from '../../api';
+import { openshadowFetch } from '../../api';
 import { invalidateConfigCache } from '../../../hooks/use-config';
 import { t, formatContext, lookupModelMeta } from '../../helpers';
 import { useAnchoredDropdown } from '../../hooks/useAnchoredDropdown';
@@ -63,7 +63,7 @@ export function ProviderModelList({ providerId, summary, onRefresh }: {
 
   const loadDiscoveredModels = async () => {
     try {
-      const res = await hanaFetch(`/api/providers/${encodeURIComponent(providerId)}/discovered-models`);
+      const res = await openshadowFetch(`/api/providers/${encodeURIComponent(providerId)}/discovered-models`);
       const data = await res.json();
       setDiscoveredModels(data.models || []);
     } catch {
@@ -86,7 +86,7 @@ export function ProviderModelList({ providerId, summary, onRefresh }: {
   const addModelToProvider = async (mid: string) => {
     if (currentModelIds.includes(mid)) return;
     try {
-      await hanaFetch('/api/config', {
+      await openshadowFetch('/api/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ providers: { [providerId]: { models: [...rawModels, mid] } } }),
@@ -102,7 +102,7 @@ export function ProviderModelList({ providerId, summary, onRefresh }: {
   const removeModelFromProvider = async (mid: string) => {
     try {
       const next = rawModels.filter((m: any) => (typeof m === 'object' ? m.id : m) !== mid);
-      await hanaFetch('/api/config', {
+      await openshadowFetch('/api/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ providers: { [providerId]: { models: next } } }),
@@ -120,7 +120,7 @@ export function ProviderModelList({ providerId, summary, onRefresh }: {
     if (!id) return;
     try {
       if (summary.supports_oauth) {
-        const res = await hanaFetch(`/api/auth/oauth/${providerId}/custom-models`, {
+        const res = await openshadowFetch(`/api/auth/oauth/${providerId}/custom-models`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ modelId: id }),
@@ -128,7 +128,7 @@ export function ProviderModelList({ providerId, summary, onRefresh }: {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
       } else {
-        await hanaFetch('/api/config', {
+        await openshadowFetch('/api/config', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ providers: { [providerId]: { models: [...rawModels, id] } } }),
@@ -155,7 +155,7 @@ export function ProviderModelList({ providerId, summary, onRefresh }: {
   const fetchModels = async (btn: HTMLButtonElement | null) => {
     if (btn) btn.classList.add(styles['spinning']);
     try {
-      const res = await hanaFetch('/api/providers/fetch-models', {
+      const res = await openshadowFetch('/api/providers/fetch-models', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: providerId, base_url: summary.base_url, api: summary.api }),

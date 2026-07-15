@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { hanaFetch } from './use-hana-fetch';
+import { openshadowFetch } from './use-openshadow-fetch';
 
 interface ConfigCacheEntry {
   data: any;
@@ -33,7 +33,7 @@ export async function fetchConfig(options: FetchConfigOptions = {}): Promise<any
   const key = normalizeCacheKey(options.cacheKey);
   const cached = configCache.get(key);
   if (!options.force && cached && Date.now() - cached.time < STALE_MS) return cached.data;
-  const res = await hanaFetch('/api/config');
+  const res = await openshadowFetch('/api/config');
   const data = await res.json();
   configCache.set(key, { data, time: Date.now() });
   return data;

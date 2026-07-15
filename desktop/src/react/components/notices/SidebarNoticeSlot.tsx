@@ -126,7 +126,7 @@ export function SidebarNoticeSlot() {
   return (
     <SidebarUpdateNoticeCard
       state={updateState}
-      onInstall={() => window.hana?.autoUpdateInstall?.()}
+      onInstall={() => window.openshadow?.autoUpdateInstall?.()}
     />
   );
 }

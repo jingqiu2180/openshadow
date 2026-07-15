@@ -10,12 +10,12 @@ import { clearAppFileDragPayload, writeAppFileDragPayload } from '../../utils/ap
 import type { PlatformApi } from '../../types';
 
 const mocks = vi.hoisted(() => ({
-  hanaFetch: vi.fn(),
+  openshadowFetch: vi.fn(),
   refreshPreviewItemsFromFile: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: mocks.hanaFetch,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: mocks.openshadowFetch,
 }));
 
 vi.mock('../../utils/preview-file-refresh', () => ({
@@ -83,8 +83,8 @@ describe('PreviewEditor markdown cover drop', () => {
       unwatchFile: vi.fn(async () => true),
       onFileChanged: vi.fn(),
     } as unknown as PlatformApi;
-    mocks.hanaFetch.mockReset();
-    mocks.hanaFetch.mockResolvedValue(new Response(JSON.stringify({
+    mocks.openshadowFetch.mockReset();
+    mocks.openshadowFetch.mockResolvedValue(new Response(JSON.stringify({
       ok: true,
       cover: { image: '文本附件/demo-cover.png' },
     }), {
@@ -129,7 +129,7 @@ describe('PreviewEditor markdown cover drop', () => {
     fireEvent.drop(cover!, { dataTransfer });
 
     await waitFor(() => {
-      expect(mocks.hanaFetch).toHaveBeenCalledWith('/api/desk/beautify/cover/apply', expect.objectContaining({
+      expect(mocks.openshadowFetch).toHaveBeenCalledWith('/api/desk/beautify/cover/apply', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
           filePath: '/tmp/workspace/demo.md',
@@ -174,7 +174,7 @@ describe('PreviewEditor markdown cover drop', () => {
     await waitFor(() => {
       expect(window.platform?.copyFile).toHaveBeenCalled();
     });
-    expect(mocks.hanaFetch).not.toHaveBeenCalled();
+    expect(mocks.openshadowFetch).not.toHaveBeenCalled();
     expect(ref.current?.getView()?.state.doc.toString()).toContain('![cover-source](<文本附件/cover-source-');
   });
 
@@ -203,7 +203,7 @@ describe('PreviewEditor markdown cover drop', () => {
     editorDom!.dispatchEvent(editorDragEvent('drop', dataTransfer, 12));
 
     await waitFor(() => {
-      expect(mocks.hanaFetch).toHaveBeenCalledWith('/api/desk/beautify/cover/apply', expect.objectContaining({
+      expect(mocks.openshadowFetch).toHaveBeenCalledWith('/api/desk/beautify/cover/apply', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
           filePath: '/tmp/workspace/demo.md',

@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockHanaFetch = vi.fn();
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: mockHanaFetch,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: mockHanaFetch,
 }));
 
 describe('remote file preview workbench refs', () => {

@@ -1,5 +1,5 @@
 (function installConnectionCsp() {
-  var STORAGE_KEY = "hana-server-connections-v1";
+  var STORAGE_KEY = "openshadow-server-connections-v1";
   var BASE_CSP = {
     "default-src": ["'self'"],
     "connect-src": ["'self'", "ws://127.0.0.1:*", "http://127.0.0.1:*"],

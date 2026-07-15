@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { AutoUpdateState } from '../types';
 
 function devWebPreviewState(): AutoUpdateState | null {
-  if (!window.__HANA_DEV_WEB__) return null;
+  if (!window.__OPEN_SHADOW_DEV_WEB__) return null;
   const params = new URLSearchParams(window.location.search);
   if (params.get('hana_update_preview') !== 'downloaded') return null;
   return {
@@ -29,7 +29,7 @@ export function useAutoUpdateState(): AutoUpdateState | null {
 
     let alive = true;
 
-    window.hana?.autoUpdateState?.()
+    window.openshadow?.autoUpdateState?.()
       .then((nextState) => {
         if (alive && nextState) {
           setState(nextState);
@@ -37,7 +37,7 @@ export function useAutoUpdateState(): AutoUpdateState | null {
       })
       .catch(() => {});
 
-    const unsubscribe = window.hana?.onAutoUpdateState?.((nextState) => {
+    const unsubscribe = window.openshadow?.onAutoUpdateState?.((nextState) => {
       setState(nextState);
     });
 

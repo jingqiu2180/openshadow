@@ -4,12 +4,12 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AssistantMessage } from '../../components/chat/AssistantMessage';
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 import { useStore } from '../../stores';
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })),
-  hanaUrl: (path: string) => `http://127.0.0.1:3210${path}`,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })),
+  openshadowUrl: (path: string) => `http://127.0.0.1:3210${path}`,
 }));
 
 vi.mock('../../utils/screenshot', () => ({
@@ -64,8 +64,8 @@ describe('AssistantMessage automation suggestion card', () => {
       streamingSessions: [],
       selectedMessageIdsBySession: {},
     } as never);
-    vi.mocked(hanaFetch).mockReset();
-    vi.mocked(hanaFetch).mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    vi.mocked(openshadowFetch).mockReset();
+    vi.mocked(openshadowFetch).mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
   });
 
   afterEach(() => {
@@ -93,11 +93,11 @@ describe('AssistantMessage automation suggestion card', () => {
     fireEvent.click(screen.getByRole('button', { name: 'automation.confirmCreate' }));
 
     await waitFor(() => {
-      expect(hanaFetch).toHaveBeenCalledWith('/api/desk/cron', expect.objectContaining({
+      expect(openshadowFetch).toHaveBeenCalledWith('/api/desk/cron', expect.objectContaining({
         method: 'POST',
       }));
     });
-    expect(hanaFetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/confirm/'), expect.anything());
+    expect(openshadowFetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/confirm/'), expect.anything());
   });
 
   it('submits the selected Agent identity from the draft card', async () => {
@@ -117,7 +117,7 @@ describe('AssistantMessage automation suggestion card', () => {
     fireEvent.click(screen.getByRole('button', { name: 'automation.confirmCreate' }));
 
     await waitFor(() => {
-      const deskCronCall = vi.mocked(hanaFetch).mock.calls.find(([url]) => url === '/api/desk/cron');
+      const deskCronCall = vi.mocked(openshadowFetch).mock.calls.find(([url]) => url === '/api/desk/cron');
       expect(deskCronCall).toBeTruthy();
       const body = JSON.parse((deskCronCall?.[1] as RequestInit).body as string);
       expect(body.actorAgentId).toBe('maomao');

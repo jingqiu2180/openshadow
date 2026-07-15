@@ -4,12 +4,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 import { PlanModeButton } from '../../components/input/PlanModeButton';
 import { useStore } from '../../stores';
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: vi.fn(),
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: vi.fn(),
 }));
 
 vi.mock('../../hooks/use-i18n', () => ({
@@ -29,17 +29,17 @@ describe('PlanModeButton', () => {
   });
 
   it('opens a menu and marks permission changes from the pending new-session surface explicitly', async () => {
-    vi.mocked(hanaFetch).mockResolvedValueOnce(jsonResponse({ mode: 'auto' }));
+    vi.mocked(openshadowFetch).mockResolvedValueOnce(jsonResponse({ mode: 'auto' }));
     useStore.setState({ pendingNewSession: true } as never);
     const onChange = vi.fn();
 
     render(<PlanModeButton mode="ask" onChange={onChange} />);
     fireEvent.click(screen.getByRole('button', { name: 'input.askMode' }));
-    expect(hanaFetch).not.toHaveBeenCalled();
+    expect(openshadowFetch).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'input.autoMode' }));
 
     await waitFor(() => {
-      expect(hanaFetch).toHaveBeenCalledWith('/api/session-permission-mode', expect.objectContaining({
+      expect(openshadowFetch).toHaveBeenCalledWith('/api/session-permission-mode', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ mode: 'auto', pendingNewSession: true, persistDefault: true }),
       }));
@@ -48,7 +48,7 @@ describe('PlanModeButton', () => {
   });
 
   it('targets the active session when changing an existing conversation permission mode', async () => {
-    vi.mocked(hanaFetch).mockResolvedValueOnce(jsonResponse({ mode: 'operate' }));
+    vi.mocked(openshadowFetch).mockResolvedValueOnce(jsonResponse({ mode: 'operate' }));
     useStore.setState({
       currentSessionPath: '/tmp/hana-session.jsonl',
       pendingNewSession: false,
@@ -60,7 +60,7 @@ describe('PlanModeButton', () => {
     fireEvent.click(screen.getByRole('button', { name: 'input.operateMode' }));
 
     await waitFor(() => {
-      expect(hanaFetch).toHaveBeenCalledWith('/api/session-permission-mode', expect.objectContaining({
+      expect(openshadowFetch).toHaveBeenCalledWith('/api/session-permission-mode', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
           mode: 'operate',

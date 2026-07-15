@@ -39,8 +39,8 @@ vi.mock('../stores', () => ({
   },
 }));
 
-vi.mock('../hooks/use-hana-fetch', () => ({
-  hanaFetch: mockHanaFetch,
+vi.mock('../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: mockHanaFetch,
 }));
 
 vi.mock('../stores/agent-actions', () => ({
@@ -257,7 +257,7 @@ describe('initApp bridge indicator', () => {
         listeners[type].push(cb);
       }),
       localStorage: {
-        getItem: vi.fn((key: string) => key === 'hana-server-connections-v1' ? persistedLanConnectionJson() : null),
+        getItem: vi.fn((key: string) => key === 'openshadow-server-connections-v1' ? persistedLanConnectionJson() : null),
         setItem: vi.fn(),
         removeItem: vi.fn(),
       },

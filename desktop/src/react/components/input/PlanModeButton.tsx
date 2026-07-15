@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 import { useI18n } from '../../hooks/use-i18n';
 import { useStore } from '../../stores';
 import styles from './InputArea.module.css';
@@ -78,7 +78,7 @@ export function PlanModeButton({ mode, onChange, locked = false }: {
         ...(pendingNewSession ? { persistDefault: true } : {}),
         ...(sessionPath ? { sessionPath } : {}),
       };
-      const res = await hanaFetch('/api/session-permission-mode', {
+      const res = await openshadowFetch('/api/session-permission-mode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

@@ -7,16 +7,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const hanaFetchMock = vi.fn();
+const openshadowFetchMock = vi.fn();
 const switchSessionMock = vi.fn();
 const archiveSessionMock = vi.fn();
 const renameSessionMock = vi.fn();
 const pinSessionMock = vi.fn();
 const createNewSessionMock = vi.fn();
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: (...args: unknown[]) => hanaFetchMock(...args),
-  hanaUrl: (p: string) => p,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: (...args: unknown[]) => openshadowFetchMock(...args),
+  openshadowUrl: (p: string) => p,
 }));
 
 vi.mock('../../stores/session-actions', () => ({
@@ -125,7 +125,7 @@ describe('SessionList context menu', () => {
       if (key === 'yuan.types') return {};
       return key;
     }) as typeof globalThis.t;
-    hanaFetchMock.mockImplementation(async (url: string) => {
+    openshadowFetchMock.mockImplementation(async (url: string) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/browser/sessions') return jsonResponse({});
       if (url.startsWith('/api/sessions/summary')) {
@@ -161,7 +161,7 @@ describe('SessionList context menu', () => {
 
     fireEvent.click(screen.getByText('摘要'));
     expect(screen.queryByTestId('session-summary-card')).not.toBeInTheDocument();
-    expect(hanaFetchMock).not.toHaveBeenCalledWith(
+    expect(openshadowFetchMock).not.toHaveBeenCalledWith(
       '/api/sessions/summary?path=%2Ftmp%2Fagents%2Fhana%2Fsessions%2Fno-summary.jsonl',
     );
   });
@@ -178,7 +178,7 @@ describe('SessionList context menu', () => {
     expect(screen.getByText('摘要')).toBeInTheDocument();
     expect(menu?.querySelector('.context-menu-divider')).toBeNull();
     expect(screen.queryByTestId('session-summary-card')).not.toBeInTheDocument();
-    expect(hanaFetchMock).not.toHaveBeenCalledWith(
+    expect(openshadowFetchMock).not.toHaveBeenCalledWith(
       '/api/sessions/summary?path=%2Ftmp%2Fagents%2Fhana%2Fsessions%2Fwith-summary.jsonl',
     );
 
@@ -186,7 +186,7 @@ describe('SessionList context menu', () => {
 
     expect(await screen.findByTestId('session-summary-card')).toHaveAttribute('data-scrollable', 'true');
     expect(await screen.findByText(/用户在做记忆系统/)).toBeInTheDocument();
-    expect(hanaFetchMock).toHaveBeenCalledWith(
+    expect(openshadowFetchMock).toHaveBeenCalledWith(
       '/api/sessions/summary?path=%2Ftmp%2Fagents%2Fhana%2Fsessions%2Fwith-summary.jsonl',
     );
   });
@@ -223,7 +223,7 @@ describe('SessionList context menu', () => {
       },
     };
     let closed = false;
-    hanaFetchMock.mockImplementation(async (url: string) => {
+    openshadowFetchMock.mockImplementation(async (url: string) => {
       if (url === '/api/browser/session-states') return jsonResponse(closed ? {} : browserStates);
       if (url === '/api/browser/close-session') {
         closed = true;
@@ -238,7 +238,7 @@ describe('SessionList context menu', () => {
     fireEvent.click(closeBadge);
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/browser/close-session', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/browser/close-session', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ sessionPath: '/tmp/agents/hana/sessions/with-summary.jsonl' }),
       }));
@@ -250,7 +250,7 @@ describe('SessionList context menu', () => {
   });
 
   it('shows title search results first and then content results', async () => {
-    hanaFetchMock.mockImplementation(async (url: string) => {
+    openshadowFetchMock.mockImplementation(async (url: string) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url.includes('phase=title')) {
         return jsonResponse({
@@ -295,7 +295,7 @@ describe('SessionList context menu', () => {
     expect(await screen.findByText('聊天记录搜索')).toBeInTheDocument();
     expect(await screen.findByText(/和其他 Agent 的聊天记录/)).toBeInTheDocument();
 
-    const searchCalls = hanaFetchMock.mock.calls
+    const searchCalls = openshadowFetchMock.mock.calls
       .map(([url]) => String(url))
       .filter(url => url.startsWith('/api/sessions/search'));
     expect(searchCalls[0]).toContain('phase=title');
@@ -425,7 +425,7 @@ describe('SessionList context menu', () => {
 
   it('switches views through one Codex-like sort menu on the section heading', async () => {
     makeSessionsToday();
-    hanaFetchMock.mockImplementation(async (url: string) => {
+    openshadowFetchMock.mockImplementation(async (url: string) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({ catalog: { folders: [], projects: [] } });
@@ -451,7 +451,7 @@ describe('SessionList context menu', () => {
   });
 
   it('keeps the sort menu on an empty today heading when today has no sessions', async () => {
-    hanaFetchMock.mockImplementation(async (url: string) => {
+    openshadowFetchMock.mockImplementation(async (url: string) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({ catalog: { folders: [], projects: [] } });
@@ -468,7 +468,7 @@ describe('SessionList context menu', () => {
 
   it('creates a project directly through the project heading button', async () => {
     makeSessionsToday();
-    hanaFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+    openshadowFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({ catalog: { folders: [], projects: [] } });
@@ -489,7 +489,7 @@ describe('SessionList context menu', () => {
     fireEvent.click(screen.getByText('sidebar.projects.createAction'));
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/session-projects/projects', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/session-projects/projects', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ name: 'Created Project', folderId: null }),
       }));
@@ -500,7 +500,7 @@ describe('SessionList context menu', () => {
 
   it('renames a project from the project row context menu', async () => {
     makeSessionsToday();
-    hanaFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+    openshadowFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({
@@ -527,7 +527,7 @@ describe('SessionList context menu', () => {
     fireEvent.click(screen.getByText('sidebar.projects.save'));
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/session-projects/projects/project-root', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/session-projects/projects/project-root', expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify({ name: 'Renamed Project' }),
       }));
@@ -552,7 +552,7 @@ describe('SessionList context menu', () => {
         hasSummary: false,
       }],
     });
-    hanaFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+    openshadowFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({
@@ -579,7 +579,7 @@ describe('SessionList context menu', () => {
     fireEvent.click(await screen.findByText('sidebar.projects.deleteProject'));
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/session-projects/projects/project-root', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/session-projects/projects/project-root', expect.objectContaining({
         method: 'DELETE',
       }));
       expect(useStore.getState().sessions[0].projectId).toBe('cwd:');
@@ -603,7 +603,7 @@ describe('SessionList context menu', () => {
         hasSummary: false,
       }],
     });
-    hanaFetchMock.mockImplementation(async (url: string) => {
+    openshadowFetchMock.mockImplementation(async (url: string) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({
@@ -645,7 +645,7 @@ describe('SessionList context menu', () => {
         hasSummary: false,
       }],
     });
-    hanaFetchMock.mockImplementation(async (url: string) => {
+    openshadowFetchMock.mockImplementation(async (url: string) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({ catalog: { folders: [], projects: [] } });
@@ -682,7 +682,7 @@ describe('SessionList context menu', () => {
         hasSummary: false,
       })),
     });
-    hanaFetchMock.mockImplementation(async (url: string) => {
+    openshadowFetchMock.mockImplementation(async (url: string) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({
@@ -708,7 +708,7 @@ describe('SessionList context menu', () => {
     fireEvent.click(await screen.findByText('sidebar.projects.showMore'));
     await waitFor(() => {
       expect(screen.getByText('Project item 6')).toBeInTheDocument();
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/preferences/sidebar-ui', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/preferences/sidebar-ui', expect.objectContaining({
         method: 'PUT',
         body: JSON.stringify({
           projectView: {
@@ -739,7 +739,7 @@ describe('SessionList context menu', () => {
         },
       ],
     });
-    hanaFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+    openshadowFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({
@@ -768,7 +768,7 @@ describe('SessionList context menu', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Project item 1')).toBeInTheDocument();
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/preferences/sidebar-ui', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/preferences/sidebar-ui', expect.objectContaining({
         method: 'PUT',
         body: JSON.stringify({
           projectView: {
@@ -799,7 +799,7 @@ describe('SessionList context menu', () => {
         },
       ],
     });
-    hanaFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+    openshadowFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({
@@ -826,7 +826,7 @@ describe('SessionList context menu', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Child Project')).toBeInTheDocument();
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/preferences/sidebar-ui', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/preferences/sidebar-ui', expect.objectContaining({
         method: 'PUT',
         body: JSON.stringify({
           projectView: {
@@ -841,7 +841,7 @@ describe('SessionList context menu', () => {
 
   it('assigns a session when dragged onto a project row', async () => {
     makeSessionsToday();
-    hanaFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+    openshadowFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({
@@ -866,7 +866,7 @@ describe('SessionList context menu', () => {
     fireEvent.drop(await screen.findByText('Custom Project'), { dataTransfer });
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/session-projects/session-assignment', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/session-projects/session-assignment', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
           sessionPath: '/tmp/agents/hana/sessions/with-summary.jsonl',
@@ -878,7 +878,7 @@ describe('SessionList context menu', () => {
 
   it('reorders projects when a project is dragged onto another project at the same level', async () => {
     makeSessionsToday();
-    hanaFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+    openshadowFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({
@@ -915,7 +915,7 @@ describe('SessionList context menu', () => {
     fireEvent.drop(await screen.findByText('First Project'), { dataTransfer });
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/session-projects/projects/reorder', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/session-projects/projects/reorder', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ folderId: null, projectIds: ['project-second', 'project-first', 'cwd:%2Ftmp%2Fproject'] }),
       }));
@@ -954,7 +954,7 @@ describe('SessionList context menu', () => {
     const alphaId = 'cwd:%2Ftmp%2Falpha-project';
     const betaId = 'cwd:%2Ftmp%2Fbeta-project';
     makeSessionsToday();
-    hanaFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+    openshadowFetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
       if (url === '/api/browser/session-states') return jsonResponse({});
       if (url === '/api/session-projects') {
         return jsonResponse({ catalog: { folders: [], projects: [] } });
@@ -988,15 +988,15 @@ describe('SessionList context menu', () => {
     fireEvent.drop(await screen.findByText('beta-project'), { dataTransfer });
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith(`/api/session-projects/projects/${encodeURIComponent(alphaId)}`, expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith(`/api/session-projects/projects/${encodeURIComponent(alphaId)}`, expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify({ name: 'alpha-project', folderId: null }),
       }));
-      expect(hanaFetchMock).toHaveBeenCalledWith(`/api/session-projects/projects/${encodeURIComponent(betaId)}`, expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith(`/api/session-projects/projects/${encodeURIComponent(betaId)}`, expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify({ name: 'beta-project', folderId: null }),
       }));
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/session-projects/projects/reorder', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/session-projects/projects/reorder', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ folderId: null, projectIds: [alphaId, betaId] }),
       }));

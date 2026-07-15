@@ -1,6 +1,6 @@
 {
   "name": "openshadow",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "OpenShadow — Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.",
   "type": "module",
   "author": {
@@ -80,7 +80,13 @@
       {
         "from": "lib",
         "to": "lib",
-        "filter": ["**/*.{yaml,json,md}", "identity-templates/**", "ishiki-templates/**", "public-ishiki-templates/**", "yuan/**"]
+        "filter": [
+          "**/*.{yaml,json,md}",
+          "identity-templates/**",
+          "ishiki-templates/**",
+          "public-ishiki-templates/**",
+          "yuan/**"
+        ]
       }
     ],
     "mac": {

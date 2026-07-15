@@ -8,9 +8,9 @@ import { AssistantMessage } from '../../components/chat/AssistantMessage';
 import { UserMessage } from '../../components/chat/UserMessage';
 import { useStore } from '../../stores';
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: vi.fn(async () => new Response('{}', { status: 200 })),
-  hanaUrl: (path: string) => `http://127.0.0.1:3210${path}`,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: vi.fn(async () => new Response('{}', { status: 200 })),
+  openshadowUrl: (path: string) => `http://127.0.0.1:3210${path}`,
 }));
 
 vi.mock('../../utils/screenshot', () => ({

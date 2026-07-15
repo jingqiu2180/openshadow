@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from 'react';
-import { hanaFetch } from './use-hana-fetch';
+import { openshadowFetch } from './use-openshadow-fetch';
 import { useStore } from '../stores';
 import { getSkillIcon } from '../utils/skill-icons';
 import type { SlashItem } from '../components/input/slash-commands';
@@ -30,7 +30,7 @@ export function useSkillSlashItems({ enabled = true }: { enabled?: boolean } = {
       return;
     }
     let cancelled = false;
-    hanaFetch(`/api/skills?agentId=${encodeURIComponent(agentId)}&runtime=1`)
+    openshadowFetch(`/api/skills?agentId=${encodeURIComponent(agentId)}&runtime=1`)
       .then(r => r.json())
       .then(data => {
         if (!cancelled && data.skills) setSkills(data.skills);

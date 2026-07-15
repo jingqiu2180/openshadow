@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- API 响应 JSON + Record<string, any> patch 对象 */
 
 import { useStore } from './index';
-import { hanaFetch, hanaUrl } from '../hooks/use-hana-fetch';
+import { openshadowFetch, openshadowUrl } from '../hooks/use-openshadow-fetch';
 import { closePreview } from './preview-actions';
 
 declare function t(key: string, vars?: Record<string, string>): any;
@@ -55,7 +55,7 @@ export async function applyAgentIdentity(opts: any = {}): Promise<void> {
   const tasks: Promise<any>[] = [];
   if (avatars) {
     tasks.push(
-      hanaFetch('/api/health').then(r => r.json()).then(d => loadAvatars(d.avatars)).catch(() => loadAvatars()),
+      openshadowFetch('/api/health').then(r => r.json()).then(d => loadAvatars(d.avatars)).catch(() => loadAvatars()),
     );
   }
   if (agents) tasks.push(loadAgents());
@@ -66,7 +66,7 @@ export async function applyAgentIdentity(opts: any = {}): Promise<void> {
 
 export async function loadAgents(): Promise<void> {
   try {
-    const res = await hanaFetch('/api/agents');
+    const res = await openshadowFetch('/api/agents');
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
@@ -102,7 +102,7 @@ export function loadAvatars(avatarsInfo?: Record<string, boolean>): void {
   for (const role of ['agent', 'user'] as const) {
     const hasAvatar = avatarsInfo?.[role] ?? false;
     if (hasAvatar) {
-      const url = hanaUrl(`/api/avatar/${role}?t=${ts}`);
+      const url = openshadowUrl(`/api/avatar/${role}?t=${ts}`);
       if (role === 'agent') patch.agentAvatarUrl = url;
       else patch.userAvatarUrl = url;
     } else {

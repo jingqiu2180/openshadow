@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from '../../stores';
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 import { isWebRuntime } from '../../utils/platform-runtime';
 import type { CwdSkillInfo } from '../../stores/desk-slice';
 import css from './Desk.module.css';
@@ -37,7 +37,7 @@ async function loadCwdSkills() {
   }
   if (s.selectedAgentId) params.set('agentId', s.selectedAgentId);
   try {
-    const res = await hanaFetch(
+    const res = await openshadowFetch(
       `/api/desk/skills?${params}`,
     );
     const data = await res.json();
@@ -133,7 +133,7 @@ export function DeskCwdSkillsPanel() {
   const deleteSkill = useCallback(async (skill: CwdSkillInfo) => {
     if (!skill.baseDir) return;
     try {
-      await hanaFetch('/api/desk/delete-skill', {
+      await openshadowFetch('/api/desk/delete-skill', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -162,7 +162,7 @@ export function DeskCwdSkillsPanel() {
       try {
         const s = useStore.getState();
         const contentBase64 = filePath ? null : await fileToBase64(file);
-        const res = await hanaFetch('/api/desk/install-skill', {
+        const res = await openshadowFetch('/api/desk/install-skill', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

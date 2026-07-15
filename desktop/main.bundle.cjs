@@ -15935,14 +15935,14 @@ function requireAutoUpdater() {
   const CHECK_INTERVAL = 4 * 60 * 60 * 1e3;
   let _mainWindow = null;
   let _setIsUpdating = null;
-  let _hanakoHome = null;
+  let _openShadowHome = null;
   let _checkTimer = null;
   let _ipcHandlersRegistered = false;
   let _updaterConfigured = false;
   let _installPromise = null;
   function isAutoCheckEnabled() {
     try {
-      const prefsPath = path.join(_hanakoHome || "", "user", "preferences.json");
+      const prefsPath = path.join(_openShadowHome || "", "user", "preferences.json");
       const prefs = JSON.parse(fs2.readFileSync(prefsPath, "utf-8"));
       return prefs.auto_check_updates !== false;
     } catch {
@@ -15968,9 +15968,9 @@ function requireAutoUpdater() {
       console.log(`[auto-updater] ${message}`);
     } catch {
     }
-    if (!_hanakoHome) return;
+    if (!_openShadowHome) return;
     try {
-      const logDir = path.join(_hanakoHome, "logs");
+      const logDir = path.join(_openShadowHome, "logs");
       fs2.mkdirSync(logDir, { recursive: true });
       fs2.appendFileSync(path.join(logDir, "auto-update.log"), line + "\n", "utf-8");
     } catch {
@@ -16076,7 +16076,7 @@ function requireAutoUpdater() {
     return app.getPath("exe").startsWith("/Volumes/");
   }
   async function cleanUpdateCache() {
-    const dataDir = _hanakoHome;
+    const dataDir = _openShadowHome;
     const versionFile = path.join(dataDir, "last-update-version");
     try {
       const wrongDir = path.join(require("os").homedir(), ".hanako-dev");
@@ -16253,11 +16253,11 @@ function requireAutoUpdater() {
   }
   function initAutoUpdater(mainWindow, {
     setIsUpdating,
-    hanakoHome
+    openShadowHome
   } = {}) {
     _mainWindow = mainWindow;
     _setIsUpdating = setIsUpdating;
-    _hanakoHome = hanakoHome;
+    _openShadowHome = openShadowHome;
     registerIpcHandlers();
     if (!app.isPackaged) return;
     if (isRunningFromDmg()) {
@@ -16656,26 +16656,26 @@ function requireGpuStartupPolicy() {
     fs2.writeFileSync(tmpPath, JSON.stringify(value, null, 2) + "\n", "utf-8");
     fs2.renameSync(tmpPath, filePath);
   }
-  function getGpuStartupStatePath(hanakoHome) {
-    return path.join(hanakoHome, STATE_FILE);
+  function getGpuStartupStatePath(openShadowHome) {
+    return path.join(openShadowHome, STATE_FILE);
   }
-  function getPreferencesPath(hanakoHome) {
-    return path.join(hanakoHome, PREFERENCES_FILE);
+  function getPreferencesPath(openShadowHome) {
+    return path.join(openShadowHome, PREFERENCES_FILE);
   }
-  function readState(hanakoHome) {
-    return readJson(getGpuStartupStatePath(hanakoHome), { version: STATE_VERSION });
+  function readState(openShadowHome) {
+    return readJson(getGpuStartupStatePath(openShadowHome), { version: STATE_VERSION });
   }
-  function writeState(hanakoHome, state) {
-    writeJson(getGpuStartupStatePath(hanakoHome), {
+  function writeState(openShadowHome, state) {
+    writeJson(getGpuStartupStatePath(openShadowHome), {
       ...state,
       version: STATE_VERSION
     });
   }
-  function readPreferences(hanakoHome) {
-    return readJson(getPreferencesPath(hanakoHome), {});
+  function readPreferences(openShadowHome) {
+    return readJson(getPreferencesPath(openShadowHome), {});
   }
-  function writePreferences(hanakoHome, prefs) {
-    writeJson(getPreferencesPath(hanakoHome), prefs);
+  function writePreferences(openShadowHome, prefs) {
+    writeJson(getPreferencesPath(openShadowHome), prefs);
   }
   function boolFromSetting(value, defaultValue) {
     if (typeof value === "boolean") return value;
@@ -16723,15 +16723,15 @@ function requireGpuStartupPolicy() {
       ...extra
     };
   }
-  function writeAutoGpuMode(hanakoHome, mode, {
+  function writeAutoGpuMode(openShadowHome, mode, {
     reason,
     previousMode,
     previousStartup,
     now
   } = {}) {
     const timestamp = nowIso(now);
-    const state = readState(hanakoHome);
-    writeState(hanakoHome, {
+    const state = readState(openShadowHome);
+    writeState(openShadowHome, {
       ...state,
       autoGpuMode: {
         mode,
@@ -16742,15 +16742,15 @@ function requireGpuStartupPolicy() {
       }
     });
   }
-  function migrateLegacyAutoSafeModePreference(hanakoHome, prefs, state, now) {
+  function migrateLegacyAutoSafeModePreference(openShadowHome, prefs, state, now) {
     if (prefs?.hardware_acceleration !== false) return null;
     const safeMode = state?.safeMode;
     if (!safeMode?.enabled) return null;
     if (!LEGACY_AUTO_SAFE_MODE_REASONS.has(safeMode.reason || "")) return null;
     const nextPrefs = { ...prefs };
     delete nextPrefs.hardware_acceleration;
-    writePreferences(hanakoHome, nextPrefs);
-    writeAutoGpuMode(hanakoHome, GPU_MODE_GPU_SANDBOX_COMPAT, {
+    writePreferences(openShadowHome, nextPrefs);
+    writeAutoGpuMode(openShadowHome, GPU_MODE_GPU_SANDBOX_COMPAT, {
       reason: "legacy-auto-safe-mode-migration",
       previousMode: GPU_MODE_SOFTWARE_SAFE,
       previousStartup: safeMode.previousStartup || null,
@@ -16874,14 +16874,14 @@ function requireGpuStartupPolicy() {
     return "none";
   }
   function resolveGpuStartupPolicy({
-    hanakoHome,
+    openShadowHome,
     platform = process.platform,
     argv = process.argv,
     env = process.env,
     now
   } = {}) {
-    if (!hanakoHome) throw new Error("resolveGpuStartupPolicy requires hanakoHome");
-    const prefs = readPreferences(hanakoHome);
+    if (!openShadowHome) throw new Error("resolveGpuStartupPolicy requires openShadowHome");
+    const prefs = readPreferences(openShadowHome);
     const explicitSafeMode = isExplicitSafeMode(argv, env);
     if (explicitSafeMode) {
       return policyForMode(GPU_MODE_SOFTWARE_SAFE, "explicit");
@@ -16901,15 +16901,15 @@ function requireGpuStartupPolicy() {
       return policyForMode(GPU_MODE_GPU_SANDBOX_COMPAT, "explicit");
     }
     const preferenceEnabled = boolFromSetting(prefs.hardware_acceleration, true);
-    const state = readState(hanakoHome);
-    const migratedLegacyPolicy = platform === "win32" ? migrateLegacyAutoSafeModePreference(hanakoHome, prefs, state, now) : null;
+    const state = readState(openShadowHome);
+    const migratedLegacyPolicy = platform === "win32" ? migrateLegacyAutoSafeModePreference(openShadowHome, prefs, state, now) : null;
     if (migratedLegacyPolicy) return migratedLegacyPolicy;
     const autoMode = platform === "win32" ? resolveStoredAutoGpuMode(state) : null;
     if (platform === "win32" && isGpuRecoveryIncompleteStartup(state)) {
       const fallbackMode = preferenceEnabled ? GPU_MODE_HARDWARE : GPU_MODE_SOFTWARE_SAFE;
       const previousMode = startupPolicyMode(state.startup, autoMode, fallbackMode);
       const nextMode = nextModeAfterGpuFailure(previousMode);
-      writeAutoGpuMode(hanakoHome, nextMode, {
+      writeAutoGpuMode(openShadowHome, nextMode, {
         reason: "previous-startup-incomplete",
         previousMode,
         previousStartup: state.startup,
@@ -17008,16 +17008,16 @@ function requireGpuStartupPolicy() {
     };
   }
   function markGpuStartupPending({
-    hanakoHome,
+    openShadowHome,
     platform = process.platform,
     phase = "electron-starting",
     startupId = `${Date.now()}-${process.pid}`,
     policy = null,
     now
   } = {}) {
-    if (!hanakoHome) throw new Error("markGpuStartupPending requires hanakoHome");
+    if (!openShadowHome) throw new Error("markGpuStartupPending requires openShadowHome");
     const timestamp = nowIso(now);
-    const state = readState(hanakoHome);
+    const state = readState(openShadowHome);
     const startupPolicy = sanitizeStartupPolicy(policy);
     const gpuRecovery = buildGpuRecoveryState(phase, null, timestamp);
     const next = {
@@ -17033,18 +17033,18 @@ function requireGpuStartupPolicy() {
         ...gpuRecovery ? { gpuRecovery } : {}
       }
     };
-    writeState(hanakoHome, next);
+    writeState(openShadowHome, next);
     return next.startup;
   }
   function markGpuStartupPhase({
-    hanakoHome,
+    openShadowHome,
     platform = process.platform,
     phase,
     startupId,
     now
   } = {}) {
-    if (!hanakoHome || !phase) return null;
-    const state = readState(hanakoHome);
+    if (!openShadowHome || !phase) return null;
+    const state = readState(openShadowHome);
     if (!state.startup || state.startup.status !== "pending") return null;
     if (startupId && state.startup.startupId && state.startup.startupId !== startupId) return null;
     const timestamp = nowIso(now);
@@ -17061,18 +17061,18 @@ function requireGpuStartupPolicy() {
     } else {
       delete state.startup.gpuRecovery;
     }
-    writeState(hanakoHome, state);
+    writeState(openShadowHome, state);
     return state.startup;
   }
   function markGpuStartupReady({
-    hanakoHome,
+    openShadowHome,
     platform = process.platform,
     phase = "app-ready",
     startupId,
     now
   } = {}) {
-    if (!hanakoHome) throw new Error("markGpuStartupReady requires hanakoHome");
-    const state = readState(hanakoHome);
+    if (!openShadowHome) throw new Error("markGpuStartupReady requires openShadowHome");
+    const state = readState(openShadowHome);
     const timestamp = nowIso(now);
     state.startup = {
       ...state.startup || {},
@@ -17083,18 +17083,18 @@ function requireGpuStartupPolicy() {
       readyAt: timestamp,
       updatedAt: timestamp
     };
-    writeState(hanakoHome, state);
+    writeState(openShadowHome, state);
     return state.startup;
   }
   function markGpuStartupFailed({
-    hanakoHome,
+    openShadowHome,
     platform = process.platform,
     reason,
     startupId,
     now
   } = {}) {
-    if (!hanakoHome) throw new Error("markGpuStartupFailed requires hanakoHome");
-    const state = readState(hanakoHome);
+    if (!openShadowHome) throw new Error("markGpuStartupFailed requires openShadowHome");
+    const state = readState(openShadowHome);
     const timestamp = nowIso(now);
     state.startup = {
       ...state.startup || {},
@@ -17105,7 +17105,7 @@ function requireGpuStartupPolicy() {
       failedAt: timestamp,
       updatedAt: timestamp
     };
-    writeState(hanakoHome, state);
+    writeState(openShadowHome, state);
     return state.startup;
   }
   function sanitizeGpuDetails(details = {}) {
@@ -17121,24 +17121,24 @@ function requireGpuStartupPolicy() {
     return details.type === "GPU" && GPU_FAILURE_REASONS.has(details.reason || "unknown");
   }
   function recordGpuChildProcessGone({
-    hanakoHome,
+    openShadowHome,
     platform = process.platform,
     policy = null,
     details,
     now
   } = {}) {
-    if (!hanakoHome || !isGpuChildProcessFailure(details)) return false;
+    if (!openShadowHome || !isGpuChildProcessFailure(details)) return false;
     const timestamp = nowIso(now);
     const crash = {
       ...sanitizeGpuDetails(details),
       platform,
       at: timestamp
     };
-    const state = readState(hanakoHome);
-    const prefs = readPreferences(hanakoHome);
+    const state = readState(openShadowHome);
+    const prefs = readPreferences(openShadowHome);
     const previousMode = currentPolicyMode(policy, prefs);
     const nextMode = nextModeAfterGpuFailure(previousMode);
-    writeState(hanakoHome, {
+    writeState(openShadowHome, {
       ...state,
       autoGpuMode: {
         mode: nextMode,
@@ -17151,14 +17151,14 @@ function requireGpuStartupPolicy() {
     return true;
   }
   function recordGpuInfoUpdate({
-    hanakoHome,
+    openShadowHome,
     platform = process.platform,
     featureStatus,
     now
   } = {}) {
-    if (!hanakoHome || !featureStatus || typeof featureStatus !== "object") return false;
-    const state = readState(hanakoHome);
-    writeState(hanakoHome, {
+    if (!openShadowHome || !featureStatus || typeof featureStatus !== "object") return false;
+    const state = readState(openShadowHome);
+    writeState(openShadowHome, {
       ...state,
       lastGpuFeatureStatus: {
         platform,
@@ -17168,11 +17168,11 @@ function requireGpuStartupPolicy() {
     });
     return true;
   }
-  function buildGpuStartupDiagnostics({ hanakoHome, policy, app } = {}) {
+  function buildGpuStartupDiagnostics({ openShadowHome, policy, app } = {}) {
     const items = [
       ``,
       `--- GPU Startup ---`,
-      `Hardware acceleration preference: ${readPreferences(hanakoHome).hardware_acceleration ?? "default"}`,
+      `Hardware acceleration preference: ${readPreferences(openShadowHome).hardware_acceleration ?? "default"}`,
       `Startup policy: ${policy?.reason || "unknown"}`,
       `Startup policy mode: ${policy?.mode || "unknown"}`,
       `GPU sandbox compatibility switches enabled: ${policy?.shouldApplyGpuSandboxCompatSwitches === true}`,
@@ -17194,10 +17194,10 @@ function requireGpuStartupPolicy() {
       }
     } catch {
     }
-    const state = readState(hanakoHome);
+    const state = readState(openShadowHome);
     items.push(`Incomplete startup classification: ${classifyIncompleteStartup(state)}`);
     items.push(`GPU sandbox diagnostic classification: ${classifyGpuSandboxDiagnostic(state, policy)}`);
-    items.push(`Unsafe no-sandbox note: only enabled by --hana-gpu-unsafe-no-sandbox for one diagnostic launch`);
+    items.push(`Unsafe no-sandbox note: only enabled by --openshadow-gpu-unsafe-no-sandbox for one diagnostic launch`);
     if (state.startup) items.push(`GPU startup marker: ${JSON.stringify(state.startup)}`);
     if (state.autoGpuMode) items.push(`GPU auto mode: ${JSON.stringify(state.autoGpuMode)}`);
     if (state.safeMode) items.push(`GPU safe mode: ${JSON.stringify(state.safeMode)}`);
@@ -19999,12 +19999,12 @@ function requireMainI18n() {
   hasRequiredMainI18n = 1;
   const fs2 = require$$2;
   const path = require$$1$2;
-  function createMainI18n({ hanakoHome, localesDir }) {
+  function createMainI18n({ openShadowHome, localesDir }) {
     let locale = "zh-CN";
     let dict = {};
     function load2() {
       try {
-        const configPath = path.join(hanakoHome, "config.json");
+        const configPath = path.join(openShadowHome, "config.json");
         if (fs2.existsSync(configPath)) {
           const cfg = JSON.parse(fs2.readFileSync(configPath, "utf-8"));
           locale = cfg.ui && cfg.ui.language || process.env.LC_MESSAGES || "zh-CN";
@@ -20198,13 +20198,13 @@ function requireMain() {
   }
   app.commandLine.appendSwitch("high-dpi-support", "1");
   (function applyGpuPolicy() {
-    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || "", ".openshadow");
+    const openShadowHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || "", ".openshadow");
     try {
-      const policy = resolveGpuStartupPolicy({ hanakoHome, platform: process.platform });
+      const policy = resolveGpuStartupPolicy({ openShadowHome, platform: process.platform });
       console.log(`[gpu-policy] mode=${policy.mode}, reason=${policy.reason}`);
       applyGpuStartupPolicy(app, policy);
       try {
-        markGpuStartupPending({ hanakoHome, phase: "electron-starting" });
+        markGpuStartupPending({ openShadowHome, phase: "electron-starting" });
       } catch {
       }
     } catch (err) {
@@ -20213,8 +20213,8 @@ function requireMain() {
   })();
   (function applyProxy() {
     try {
-      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || "", ".openshadow");
-      const config = readNetworkProxyConfig({ hanakoHome });
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || "", ".openshadow");
+      const config = readNetworkProxyConfig({ openShadowHome });
       if (config.mode !== "direct") {
         console.log(`[network-proxy] mode=${config.mode}`);
         applyNetworkProxy(app, config);
@@ -20244,8 +20244,8 @@ function requireMain() {
   }
   let wizardCompleting = false;
   let suppressWindowAllClosed = false;
-  const _hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || "", ".openshadow");
-  const CONFIG_PATH = join(_hanakoHome, "config.json");
+  const _openShadowHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || "", ".openshadow");
+  const CONFIG_PATH = join(_openShadowHome, "config.json");
   function readConfig() {
     if (!existsSync(CONFIG_PATH)) return { version: "0.1.0" };
     try {
@@ -20260,8 +20260,8 @@ function requireMain() {
   }
   function readServerInfo() {
     try {
-      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
-      const p = join(hanakoHome, "server-info.json");
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+      const p = join(openShadowHome, "server-info.json");
       if (!existsSync(p)) {
         return { port: null, token: null };
       }
@@ -21254,9 +21254,9 @@ function requireMain() {
     }
     try {
       const { createMainI18n } = requireMainI18n();
-      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || "", ".openshadow");
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || "", ".openshadow");
       const localesDir = join(__dirname, "src", "locales");
-      const { mt, reset: resetI18n } = createMainI18n({ hanakoHome, localesDir });
+      const { mt, reset: resetI18n } = createMainI18n({ openShadowHome, localesDir });
       globalThis.__mainI18nMt = mt;
       console.log("[main] i18n initialized");
     } catch (err) {
@@ -21295,12 +21295,12 @@ function requireMain() {
     if (isWizardCompleted()) {
       createMainWindow();
       try {
-        const hanakoHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
-        markGpuStartupReady({ hanakoHome: hanakoHome2, phase: "main-window-created" });
+        const openShadowHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+        markGpuStartupReady({ openShadowHome: openShadowHome2, phase: "main-window-created" });
       } catch {
       }
-      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
-      initAutoUpdater(mainWindow, { hanakoHome });
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+      initAutoUpdater(mainWindow, { openShadowHome });
       checkForUpdatesAuto();
       initQuickChat();
       try {
@@ -21341,12 +21341,12 @@ function requireMain() {
         suppressWindowAllClosed = false;
       }
       try {
-        const hanakoHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
-        markGpuStartupReady({ hanakoHome: hanakoHome2, phase: "main-window-created" });
+        const openShadowHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+        markGpuStartupReady({ openShadowHome: openShadowHome2, phase: "main-window-created" });
       } catch {
       }
-      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
-      initAutoUpdater(mainWindow, { hanakoHome });
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+      initAutoUpdater(mainWindow, { openShadowHome });
       checkForUpdatesAuto();
       initQuickChat();
     });

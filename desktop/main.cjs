@@ -13,7 +13,7 @@ const os = require('os')
 
 // ─── 统一数据目录（对齐 server 的 resolveShadowHome）──────────
 // Windows 上 process.env.APPDATA 指向 AppData\Roaming，与 server 的 os.homedir() 不一致。
-// 必须在所有项目 require() 和 hanakoHome / _hanakoHome 使用之前设置，确保桌面和服务器读写同一目录。
+// 必须在所有项目 require() 和 openShadowHome / _openShadowHome 使用之前设置，确保桌面和服务器读写同一目录。
 // 注意：desktop-access-policy.cjs 等模块在 require() 时即读取此 env，因此该块必须先于任何项目 require() 执行。
 if (!process.env.OPENSHADOW_HOME) {
   process.env.OPENSHADOW_HOME = join(os.homedir(), '.openshadow')
@@ -57,12 +57,12 @@ app.commandLine.appendSwitch('high-dpi-support', '1')
 // ─── GPU 启动策略（Windows 安全模式）──────────────────────────
 // 必须在 app.whenReady() 之前调用
 ;(function applyGpuPolicy() {
-  const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+  const openShadowHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
   try {
-    const policy = resolveGpuStartupPolicy({ hanakoHome, platform: process.platform })
+    const policy = resolveGpuStartupPolicy({ openShadowHome, platform: process.platform })
     console.log(`[gpu-policy] mode=${policy.mode}, reason=${policy.reason}`)
     applyGpuStartupPolicy(app, policy)
-    try { markGpuStartupPending({ hanakoHome, phase: 'electron-starting' }) } catch {}
+    try { markGpuStartupPending({ openShadowHome, phase: 'electron-starting' }) } catch {}
   } catch (err) {
     console.warn('[gpu-policy] failed to apply:', err.message)
   }
@@ -71,8 +71,8 @@ app.commandLine.appendSwitch('high-dpi-support', '1')
 // ─── Network Proxy 设置 ─────────────────────────────────────
 ;(function applyProxy() {
   try {
-    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
-    const config = readNetworkProxyConfig({ hanakoHome })
+    const openShadowHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+    const config = readNetworkProxyConfig({ openShadowHome })
     if (config.mode !== 'direct') {
       console.log(`[network-proxy] mode=${config.mode}`)
       applyNetworkProxy(app, config)
@@ -113,8 +113,8 @@ let suppressWindowAllClosed = false
 
 // ─── Self-contained config reader ────────────────────────────
 // 对齐 openhanako：配置写到用户数据目录，不写安装目录（避免 Program Files EPERM）
-const _hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
-const CONFIG_PATH = join(_hanakoHome, 'config.json')
+const _openShadowHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+const CONFIG_PATH = join(_openShadowHome, 'config.json')
 
 function readConfig() {
   if (!existsSync(CONFIG_PATH)) return { version: '0.1.0' }
@@ -134,8 +134,8 @@ function writeConfig(cfg) {
 // 如果文件不存在，返回默认值 { port: 3000, token: null }
 function readServerInfo() {
   try {
-    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
-    const p = join(hanakoHome, 'server-info.json')
+    const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+    const p = join(openShadowHome, 'server-info.json')
     if (!existsSync(p)) {
       // 文件不存在 = server 还没就绪。返回 null 端口，让渲染进程进入等待/轮询逻辑，
       // 而不是错误地用 3000（server 实际端口是动态的，3000 被占用时会换端口）。
@@ -286,7 +286,7 @@ setIpcSenderValidator((channel, event) => isTrustedAppWebContents(event?.sender,
 async function runWizardWindow() {
   if (isWizardCompleted()) return
 
-  // React Onboarding 入口用标准 preload（暴露 window.hana / window.platform 桥接）
+  // React Onboarding 入口用标准 preload（暴露 window.openshadow / window.platform 桥接）
   const preloadPath = join(__dirname, 'preload.bundle.cjs')
   console.log('[onboarding] preload path:', preloadPath, '| exists:', existsSync(preloadPath))
 
@@ -359,7 +359,7 @@ function registerIpcHandlers() {
     return { port: info?.port || null, token: info?.token || null }
   })
 
-  // 应用版本号（AboutTab.tsx 通过 window.hana.getAppVersion() 调用）
+  // 应用版本号（AboutTab.tsx 通过 window.openshadow.getAppVersion() 调用）
   wrapIpcHandler('app:get-version', () => {
     return app.getVersion()
   })
@@ -1278,9 +1278,9 @@ app.whenReady().then(async () => {
   // 先初始化主进程 i18n（菜单项需要翻译）
   try {
     const { createMainI18n } = require('./main-i18n.cjs')
-    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
+    const openShadowHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
     const localesDir = join(__dirname, 'src', 'locales')
-    const { mt, reset: resetI18n } = createMainI18n({ hanakoHome, localesDir })
+    const { mt, reset: resetI18n } = createMainI18n({ openShadowHome, localesDir })
     globalThis.__mainI18nMt = mt
     console.log('[main] i18n initialized')
   } catch (err) {
@@ -1329,12 +1329,12 @@ app.whenReady().then(async () => {
     createMainWindow()
     // 标记 GPU 启动完成
     try {
-      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
-      markGpuStartupReady({ hanakoHome, phase: 'main-window-created' })
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+      markGpuStartupReady({ openShadowHome, phase: 'main-window-created' })
     } catch {}
     // 初始化 Auto Updater（需要在 mainWindow 创建后）
-    const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
-    initAutoUpdater(mainWindow, { hanakoHome })
+    const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+    initAutoUpdater(mainWindow, { openShadowHome })
     checkForUpdatesAuto()
     // 初始化 Quick Chat 全局快捷键
     initQuickChat()
@@ -1385,12 +1385,12 @@ app.whenReady().then(async () => {
       }
       // 标记 GPU 启动完成
       try {
-        const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
-        markGpuStartupReady({ hanakoHome, phase: 'main-window-created' })
+        const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+        markGpuStartupReady({ openShadowHome, phase: 'main-window-created' })
       } catch {}
       // 初始化 Auto Updater
-      const hanakoHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
-      initAutoUpdater(mainWindow, { hanakoHome })
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+      initAutoUpdater(mainWindow, { openShadowHome })
       checkForUpdatesAuto()
       // 初始化 Quick Chat 全局快捷键
       initQuickChat()

@@ -309,7 +309,7 @@
 
 /* 助手消息 */
 .messageAssistant {
-    color: var(--hana-text);
+    color: var(--openshadow-text);
     font-size: 0.95rem;
     line-height: 1.75;
     word-break: break-word;
@@ -1054,7 +1054,7 @@
     cursor: default;
     font-size: 0.85rem;
     font-family: inherit;
-    color: var(--hana-text);
+    color: var(--openshadow-text);
     background: transparent;
     border: none;
     border-bottom: 1px solid var(--overlay-light, rgba(0,0,0,0.06));
@@ -1080,10 +1080,10 @@
 .settingsConfirmInput {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid var(--hana-border);
+    border: 1px solid var(--openshadow-border);
     border-radius: var(--radius-sm);
-    background: var(--hana-bg);
-    color: var(--hana-text);
+    background: var(--openshadow-bg);
+    color: var(--openshadow-text);
     font-size: 0.85rem;
     font-family: inherit;
     box-sizing: border-box;

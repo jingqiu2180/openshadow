@@ -9,9 +9,9 @@ import type { ChatMessage } from '../../stores/chat-types';
 
 const replayMock = vi.fn(async (_sessionPath: string, _message: unknown) => true);
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: vi.fn(async () => new Response('{}', { status: 200 })),
-  hanaUrl: (path: string) => `http://127.0.0.1:3210${path}`,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: vi.fn(async () => new Response('{}', { status: 200 })),
+  openshadowUrl: (path: string) => `http://127.0.0.1:3210${path}`,
 }));
 
 vi.mock('../../hooks/use-i18n', () => ({

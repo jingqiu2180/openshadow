@@ -30,7 +30,7 @@ vi.mock('../../actions', () => ({
 }));
 
 vi.mock('../../api', () => ({
-  hanaFetch: vi.fn(),
+  openshadowFetch: vi.fn(),
 }));
 
 vi.mock('../../../hooks/use-i18n', () => ({

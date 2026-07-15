@@ -111,7 +111,7 @@ function requirePreload() {
       };
     }
   };
-  contextBridge.exposeInMainWorld("hana", platformApi);
+  contextBridge.exposeInMainWorld("openshadow", platformApi);
   contextBridge.exposeInMainWorld("platform", platformApi);
   contextBridge.exposeInMainWorld("__REM_API__", {
     // Screenshot

@@ -10,12 +10,12 @@ import { StepContainer } from '../onboarding-ui';
 
 interface NameStepProps {
   preview: boolean;
-  hanaFetch: HanaFetch;
+  openshadowFetch: HanaFetch;
   goToStep: (index: number) => void;
   showError: (msg: string) => void;
 }
 
-export function NameStep({ preview, hanaFetch, goToStep, showError }: NameStepProps) {
+export function NameStep({ preview, openshadowFetch, goToStep, showError }: NameStepProps) {
   const [userName, setUserName] = useState('');
   const [agentName, setAgentName] = useState('');
   const [memoryEnabled, setMemoryEnabled] = useState(true);
@@ -26,7 +26,7 @@ export function NameStep({ preview, hanaFetch, goToStep, showError }: NameStepPr
     if (!trimmed) return;
     try {
       await saveOnboardingIdentity({
-        hanaFetch,
+        openshadowFetch,
         userName: trimmed,
         agentName,
         memoryEnabled,
@@ -36,7 +36,7 @@ export function NameStep({ preview, hanaFetch, goToStep, showError }: NameStepPr
       console.error('[onboarding] save identity failed:', err);
       showError(t('onboarding.error'));
     }
-  }, [preview, hanaFetch, userName, agentName, memoryEnabled, goToStep, showError]);
+  }, [preview, openshadowFetch, userName, agentName, memoryEnabled, goToStep, showError]);
 
   return (
     <StepContainer>

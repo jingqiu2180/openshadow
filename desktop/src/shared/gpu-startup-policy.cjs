@@ -56,31 +56,31 @@ function writeJson(filePath, value) {
   fs.renameSync(tmpPath, filePath);
 }
 
-function getGpuStartupStatePath(hanakoHome) {
-  return path.join(hanakoHome, STATE_FILE);
+function getGpuStartupStatePath(openShadowHome) {
+  return path.join(openShadowHome, STATE_FILE);
 }
 
-function getPreferencesPath(hanakoHome) {
-  return path.join(hanakoHome, PREFERENCES_FILE);
+function getPreferencesPath(openShadowHome) {
+  return path.join(openShadowHome, PREFERENCES_FILE);
 }
 
-function readState(hanakoHome) {
-  return readJson(getGpuStartupStatePath(hanakoHome), { version: STATE_VERSION });
+function readState(openShadowHome) {
+  return readJson(getGpuStartupStatePath(openShadowHome), { version: STATE_VERSION });
 }
 
-function writeState(hanakoHome, state) {
-  writeJson(getGpuStartupStatePath(hanakoHome), {
+function writeState(openShadowHome, state) {
+  writeJson(getGpuStartupStatePath(openShadowHome), {
     ...state,
     version: STATE_VERSION,
   });
 }
 
-function readPreferences(hanakoHome) {
-  return readJson(getPreferencesPath(hanakoHome), {});
+function readPreferences(openShadowHome) {
+  return readJson(getPreferencesPath(openShadowHome), {});
 }
 
-function writePreferences(hanakoHome, prefs) {
-  writeJson(getPreferencesPath(hanakoHome), prefs);
+function writePreferences(openShadowHome, prefs) {
+  writeJson(getPreferencesPath(openShadowHome), prefs);
 }
 
 function boolFromSetting(value, defaultValue) {
@@ -139,15 +139,15 @@ function policyForMode(mode, reason, extra = {}) {
   };
 }
 
-function writeAutoGpuMode(hanakoHome, mode, {
+function writeAutoGpuMode(openShadowHome, mode, {
   reason,
   previousMode,
   previousStartup,
   now,
 } = {}) {
   const timestamp = nowIso(now);
-  const state = readState(hanakoHome);
-  writeState(hanakoHome, {
+  const state = readState(openShadowHome);
+  writeState(openShadowHome, {
     ...state,
     autoGpuMode: {
       mode,
@@ -159,7 +159,7 @@ function writeAutoGpuMode(hanakoHome, mode, {
   });
 }
 
-function migrateLegacyAutoSafeModePreference(hanakoHome, prefs, state, now) {
+function migrateLegacyAutoSafeModePreference(openShadowHome, prefs, state, now) {
   if (prefs?.hardware_acceleration !== false) return null;
   const safeMode = state?.safeMode;
   if (!safeMode?.enabled) return null;
@@ -167,8 +167,8 @@ function migrateLegacyAutoSafeModePreference(hanakoHome, prefs, state, now) {
 
   const nextPrefs = { ...prefs };
   delete nextPrefs.hardware_acceleration;
-  writePreferences(hanakoHome, nextPrefs);
-  writeAutoGpuMode(hanakoHome, GPU_MODE_GPU_SANDBOX_COMPAT, {
+  writePreferences(openShadowHome, nextPrefs);
+  writeAutoGpuMode(openShadowHome, GPU_MODE_GPU_SANDBOX_COMPAT, {
     reason: "legacy-auto-safe-mode-migration",
     previousMode: GPU_MODE_SOFTWARE_SAFE,
     previousStartup: safeMode.previousStartup || null,
@@ -316,15 +316,15 @@ function classifyGpuSandboxDiagnostic(state, policy) {
 }
 
 function resolveGpuStartupPolicy({
-  hanakoHome,
+  openShadowHome,
   platform = process.platform,
   argv = process.argv,
   env = process.env,
   now,
 } = {}) {
-  if (!hanakoHome) throw new Error("resolveGpuStartupPolicy requires hanakoHome");
+  if (!openShadowHome) throw new Error("resolveGpuStartupPolicy requires openShadowHome");
 
-  const prefs = readPreferences(hanakoHome);
+  const prefs = readPreferences(openShadowHome);
   const explicitSafeMode = isExplicitSafeMode(argv, env);
   if (explicitSafeMode) {
     return policyForMode(GPU_MODE_SOFTWARE_SAFE, "explicit");
@@ -345,9 +345,9 @@ function resolveGpuStartupPolicy({
   }
 
   const preferenceEnabled = boolFromSetting(prefs.hardware_acceleration, true);
-  const state = readState(hanakoHome);
+  const state = readState(openShadowHome);
   const migratedLegacyPolicy = platform === "win32"
-    ? migrateLegacyAutoSafeModePreference(hanakoHome, prefs, state, now)
+    ? migrateLegacyAutoSafeModePreference(openShadowHome, prefs, state, now)
     : null;
   if (migratedLegacyPolicy) return migratedLegacyPolicy;
 
@@ -356,7 +356,7 @@ function resolveGpuStartupPolicy({
     const fallbackMode = preferenceEnabled ? GPU_MODE_HARDWARE : GPU_MODE_SOFTWARE_SAFE;
     const previousMode = startupPolicyMode(state.startup, autoMode, fallbackMode);
     const nextMode = nextModeAfterGpuFailure(previousMode);
-    writeAutoGpuMode(hanakoHome, nextMode, {
+    writeAutoGpuMode(openShadowHome, nextMode, {
       reason: "previous-startup-incomplete",
       previousMode,
       previousStartup: state.startup,
@@ -475,16 +475,16 @@ function applyGpuStartupPolicy(app, policy) {
 }
 
 function markGpuStartupPending({
-  hanakoHome,
+  openShadowHome,
   platform = process.platform,
   phase = "electron-starting",
   startupId = `${Date.now()}-${process.pid}`,
   policy = null,
   now,
 } = {}) {
-  if (!hanakoHome) throw new Error("markGpuStartupPending requires hanakoHome");
+  if (!openShadowHome) throw new Error("markGpuStartupPending requires openShadowHome");
   const timestamp = nowIso(now);
-  const state = readState(hanakoHome);
+  const state = readState(openShadowHome);
   const startupPolicy = sanitizeStartupPolicy(policy);
   const gpuRecovery = buildGpuRecoveryState(phase, null, timestamp);
   const next = {
@@ -500,19 +500,19 @@ function markGpuStartupPending({
       ...(gpuRecovery ? { gpuRecovery } : {}),
     },
   };
-  writeState(hanakoHome, next);
+  writeState(openShadowHome, next);
   return next.startup;
 }
 
 function markGpuStartupPhase({
-  hanakoHome,
+  openShadowHome,
   platform = process.platform,
   phase,
   startupId,
   now,
 } = {}) {
-  if (!hanakoHome || !phase) return null;
-  const state = readState(hanakoHome);
+  if (!openShadowHome || !phase) return null;
+  const state = readState(openShadowHome);
   if (!state.startup || state.startup.status !== "pending") return null;
   if (startupId && state.startup.startupId && state.startup.startupId !== startupId) return null;
   const timestamp = nowIso(now);
@@ -529,19 +529,19 @@ function markGpuStartupPhase({
   } else {
     delete state.startup.gpuRecovery;
   }
-  writeState(hanakoHome, state);
+  writeState(openShadowHome, state);
   return state.startup;
 }
 
 function markGpuStartupReady({
-  hanakoHome,
+  openShadowHome,
   platform = process.platform,
   phase = "app-ready",
   startupId,
   now,
 } = {}) {
-  if (!hanakoHome) throw new Error("markGpuStartupReady requires hanakoHome");
-  const state = readState(hanakoHome);
+  if (!openShadowHome) throw new Error("markGpuStartupReady requires openShadowHome");
+  const state = readState(openShadowHome);
   const timestamp = nowIso(now);
   state.startup = {
     ...(state.startup || {}),
@@ -552,19 +552,19 @@ function markGpuStartupReady({
     readyAt: timestamp,
     updatedAt: timestamp,
   };
-  writeState(hanakoHome, state);
+  writeState(openShadowHome, state);
   return state.startup;
 }
 
 function markGpuStartupFailed({
-  hanakoHome,
+  openShadowHome,
   platform = process.platform,
   reason,
   startupId,
   now,
 } = {}) {
-  if (!hanakoHome) throw new Error("markGpuStartupFailed requires hanakoHome");
-  const state = readState(hanakoHome);
+  if (!openShadowHome) throw new Error("markGpuStartupFailed requires openShadowHome");
+  const state = readState(openShadowHome);
   const timestamp = nowIso(now);
   state.startup = {
     ...(state.startup || {}),
@@ -575,7 +575,7 @@ function markGpuStartupFailed({
     failedAt: timestamp,
     updatedAt: timestamp,
   };
-  writeState(hanakoHome, state);
+  writeState(openShadowHome, state);
   return state.startup;
 }
 
@@ -594,24 +594,24 @@ function isGpuChildProcessFailure(details = {}) {
 }
 
 function recordGpuChildProcessGone({
-  hanakoHome,
+  openShadowHome,
   platform = process.platform,
   policy = null,
   details,
   now,
 } = {}) {
-  if (!hanakoHome || !isGpuChildProcessFailure(details)) return false;
+  if (!openShadowHome || !isGpuChildProcessFailure(details)) return false;
   const timestamp = nowIso(now);
   const crash = {
     ...sanitizeGpuDetails(details),
     platform,
     at: timestamp,
   };
-  const state = readState(hanakoHome);
-  const prefs = readPreferences(hanakoHome);
+  const state = readState(openShadowHome);
+  const prefs = readPreferences(openShadowHome);
   const previousMode = currentPolicyMode(policy, prefs);
   const nextMode = nextModeAfterGpuFailure(previousMode);
-  writeState(hanakoHome, {
+  writeState(openShadowHome, {
     ...state,
     autoGpuMode: {
       mode: nextMode,
@@ -625,14 +625,14 @@ function recordGpuChildProcessGone({
 }
 
 function recordGpuInfoUpdate({
-  hanakoHome,
+  openShadowHome,
   platform = process.platform,
   featureStatus,
   now,
 } = {}) {
-  if (!hanakoHome || !featureStatus || typeof featureStatus !== "object") return false;
-  const state = readState(hanakoHome);
-  writeState(hanakoHome, {
+  if (!openShadowHome || !featureStatus || typeof featureStatus !== "object") return false;
+  const state = readState(openShadowHome);
+  writeState(openShadowHome, {
     ...state,
     lastGpuFeatureStatus: {
       platform,
@@ -643,11 +643,11 @@ function recordGpuInfoUpdate({
   return true;
 }
 
-function buildGpuStartupDiagnostics({ hanakoHome, policy, app } = {}) {
+function buildGpuStartupDiagnostics({ openShadowHome, policy, app } = {}) {
   const items = [
     ``,
     `--- GPU Startup ---`,
-    `Hardware acceleration preference: ${readPreferences(hanakoHome).hardware_acceleration ?? "default"}`,
+    `Hardware acceleration preference: ${readPreferences(openShadowHome).hardware_acceleration ?? "default"}`,
     `Startup policy: ${policy?.reason || "unknown"}`,
     `Startup policy mode: ${policy?.mode || "unknown"}`,
     `GPU sandbox compatibility switches enabled: ${policy?.shouldApplyGpuSandboxCompatSwitches === true}`,
@@ -667,10 +667,10 @@ function buildGpuStartupDiagnostics({ hanakoHome, policy, app } = {}) {
       items.push(`GPU feature status: ${JSON.stringify(app.getGPUFeatureStatus())}`);
     }
   } catch {}
-  const state = readState(hanakoHome);
+  const state = readState(openShadowHome);
   items.push(`Incomplete startup classification: ${classifyIncompleteStartup(state)}`);
   items.push(`GPU sandbox diagnostic classification: ${classifyGpuSandboxDiagnostic(state, policy)}`);
-  items.push(`Unsafe no-sandbox note: only enabled by --hana-gpu-unsafe-no-sandbox for one diagnostic launch`);
+  items.push(`Unsafe no-sandbox note: only enabled by --openshadow-gpu-unsafe-no-sandbox for one diagnostic launch`);
   if (state.startup) items.push(`GPU startup marker: ${JSON.stringify(state.startup)}`);
   if (state.autoGpuMode) items.push(`GPU auto mode: ${JSON.stringify(state.autoGpuMode)}`);
   if (state.safeMode) items.push(`GPU safe mode: ${JSON.stringify(state.safeMode)}`);

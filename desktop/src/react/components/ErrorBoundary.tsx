@@ -48,7 +48,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('[ErrorBoundary]', error, info.componentStack);
-    window.__hanaLog?.('error', 'react', `${error.message}\n${info.componentStack}`);
+    window.__openshadowLog?.('error', 'react', `${error.message}\n${info.componentStack}`);
   }
 
   handleRetry = () => {

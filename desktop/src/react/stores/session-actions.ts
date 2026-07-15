@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- store partial patch + API 响应 JSON */
 
 import { useStore } from './index';
-import { hanaFetch, hanaUrl } from '../hooks/use-hana-fetch';
+import { openshadowFetch, openshadowUrl } from '../hooks/use-openshadow-fetch';
 import { buildItemsFromHistory } from '../utils/history-builder';
 import { migrateLegacyTodos } from '../utils/todo-compat';
 import { loadAvatars as loadAvatarsAction, clearChat as clearChatAction } from './agent-actions';
@@ -186,7 +186,7 @@ export async function loadMessages(forPath?: string): Promise<void> {
   // 的响应允许 apply initSession，stale 响应直接丢弃。
   const myVersion = useStore.getState().bumpLoadMessagesVersion(targetPath);
   try {
-    const res = await hanaFetch(`/api/sessions/messages?path=${encodeURIComponent(targetPath)}`);
+    const res = await openshadowFetch(`/api/sessions/messages?path=${encodeURIComponent(targetPath)}`);
     const data = await res.json();
     const latestVersion =
       useStore.getState()._loadMessagesVersion[targetPath] ?? 0;
@@ -251,7 +251,7 @@ export async function completeSessionTodos(sessionPath: string): Promise<boolean
   if (state.streamingSessions.includes(sessionPath)) return false;
 
   try {
-    await hanaFetch('/api/sessions/todos/complete', {
+    await openshadowFetch('/api/sessions/todos/complete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path: sessionPath }),
@@ -291,7 +291,7 @@ export async function loadMoreMessages(forPath?: string): Promise<void> {
   useStore.getState().setLoadingMore(targetPath, true);
   try {
     const before = session.oldestId ?? '';
-    const res = await hanaFetch(
+    const res = await openshadowFetch(
       `/api/sessions/messages?path=${encodeURIComponent(targetPath)}&before=${encodeURIComponent(before)}`,
     );
     const data = await res.json();
@@ -369,7 +369,7 @@ export function reconcileCurrentSessionMessages(reason = 'unknown'): Promise<voi
 
 export async function loadSessions(): Promise<void> {
   try {
-    const res = await hanaFetch('/api/sessions');
+    const res = await openshadowFetch('/api/sessions');
     const data = await res.json();
     const sessions = data || [];
 
@@ -418,7 +418,7 @@ export async function switchSession(path: string): Promise<void> {
   _switchAbortController = abortController;
 
   try {
-    const res = await hanaFetch('/api/sessions/switch', {
+    const res = await openshadowFetch('/api/sessions/switch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path, currentSessionPath: s.currentSessionPath }),
@@ -454,7 +454,7 @@ export async function switchSession(path: string): Promise<void> {
       agentPatch.currentAgentId = data.agentId;
       agentPatch.agentName = data.agentName || ag?.name || data.agentId;
       agentPatch.agentYuan = ag?.yuan || 'hanako';
-      agentPatch.agentAvatarUrl = ag?.hasAvatar ? hanaUrl(`/api/agents/${data.agentId}/avatar?t=${Date.now()}`) : null;
+      agentPatch.agentAvatarUrl = ag?.hasAvatar ? openshadowUrl(`/api/agents/${data.agentId}/avatar?t=${Date.now()}`) : null;
     }
 
     // 保存当前 session 的附件到 keyed store
@@ -699,7 +699,7 @@ export async function createNewSession(options: CreateNewSessionOptions = {}): P
   // 重置 context ring
   useStore.setState({ contextTokens: null, contextWindow: null, contextPercent: null });
   try {
-    const res = await hanaFetch('/api/session-permission-mode');
+    const res = await openshadowFetch('/api/session-permission-mode');
     const data = await res.json();
     const mode = data.defaultMode || data.mode || 'ask';
     if (isPendingNewSessionDraftView()) emitSessionPermissionMode(mode);
@@ -708,7 +708,7 @@ export async function createNewSession(options: CreateNewSessionOptions = {}): P
   }
 
   try {
-    const res = await hanaFetch('/api/session-thinking-level');
+    const res = await openshadowFetch('/api/session-thinking-level');
     const data = await res.json();
     if (data.thinkingLevel && isPendingNewSessionDraftView()) {
       useStore.getState().setThinkingLevel(data.thinkingLevel);
@@ -756,7 +756,7 @@ export async function ensureSession(): Promise<boolean> {
     }
     body.currentSessionPath = s.currentSessionPath;
 
-    const res = await hanaFetch('/api/sessions/new', {
+    const res = await openshadowFetch('/api/sessions/new', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -796,7 +796,7 @@ export async function ensureSession(): Promise<boolean> {
         patch.agentAvatarUrl = null;
         window.i18n.defaultName = data.agentName || s.agentName;
         // 异步刷新头像
-        hanaFetch('/api/health').then((r: Response) => r.json()).then((d: any) => {
+        openshadowFetch('/api/health').then((r: Response) => r.json()).then((d: any) => {
           loadAvatarsAction(d.avatars);
         }).catch(() => {
           loadAvatarsAction();
@@ -851,7 +851,7 @@ export async function ensureSession(): Promise<boolean> {
 
 export async function continueDeletedAgentSession(path: string): Promise<boolean> {
   try {
-    const res = await hanaFetch('/api/sessions/continue-deleted-agent', {
+    const res = await openshadowFetch('/api/sessions/continue-deleted-agent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path }),
@@ -880,7 +880,7 @@ export async function continueDeletedAgentSession(path: string): Promise<boolean
 
 export async function archiveSession(path: string): Promise<void> {
   try {
-    const res = await hanaFetch('/api/sessions/archive', {
+    const res = await openshadowFetch('/api/sessions/archive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path }),
@@ -931,7 +931,7 @@ export type RestoreResult = 'ok' | 'conflict' | 'error';
 
 export async function listArchivedSessions(): Promise<ArchivedSession[]> {
   try {
-    const res = await hanaFetch('/api/sessions/archived');
+    const res = await openshadowFetch('/api/sessions/archived');
     if (!res.ok) return [];
     return await res.json();
   } catch (err) {
@@ -942,7 +942,7 @@ export async function listArchivedSessions(): Promise<ArchivedSession[]> {
 
 export async function restoreSession(path: string): Promise<RestoreResult> {
   try {
-    const res = await hanaFetch('/api/sessions/restore', {
+    const res = await openshadowFetch('/api/sessions/restore', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path }),
@@ -958,7 +958,7 @@ export async function restoreSession(path: string): Promise<RestoreResult> {
 
 export async function deleteArchivedSession(path: string): Promise<boolean> {
   try {
-    const res = await hanaFetch('/api/sessions/archived/delete', {
+    const res = await openshadowFetch('/api/sessions/archived/delete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path }),
@@ -972,7 +972,7 @@ export async function deleteArchivedSession(path: string): Promise<boolean> {
 
 export async function cleanupArchivedSessions(maxAgeDays: 30 | 90): Promise<{ deleted: number }> {
   try {
-    const res = await hanaFetch('/api/sessions/cleanup', {
+    const res = await openshadowFetch('/api/sessions/cleanup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ maxAgeDays }),
@@ -992,7 +992,7 @@ export async function cleanupArchivedSessions(maxAgeDays: 30 | 90): Promise<{ de
 
 export async function renameSession(path: string, title: string): Promise<boolean> {
   try {
-    const res = await hanaFetch('/api/sessions/rename', {
+    const res = await openshadowFetch('/api/sessions/rename', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path, title }),
@@ -1020,7 +1020,7 @@ export async function renameSession(path: string, title: string): Promise<boolea
 
 export async function pinSession(path: string, pinned: boolean): Promise<boolean> {
   try {
-    const res = await hanaFetch('/api/sessions/pin', {
+    const res = await openshadowFetch('/api/sessions/pin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path, pinned }),
@@ -1055,7 +1055,7 @@ export async function dismissSessionCapabilityDrift(path: string, fingerprint: s
   const prevDrift = useStore.getState().capabilityDriftBySession[path] || null;
   useStore.getState().setSessionCapabilityDrift(path, null);
   try {
-    const res = await hanaFetch('/api/sessions/capability-drift/dismiss', {
+    const res = await openshadowFetch('/api/sessions/capability-drift/dismiss', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path, fingerprint }),
@@ -1079,12 +1079,12 @@ export async function refreshSessionCapabilities(path: string): Promise<boolean>
   if (store.capabilityRefreshingSessions.includes(path)) return false;
   store.setSessionCapabilityRefreshing(path, true);
   try {
-    const res = await hanaFetch('/api/sessions/fresh-compact', {
+    const res = await openshadowFetch('/api/sessions/fresh-compact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path }),
       // Fresh compact runs an LLM summarization over the whole conversation;
-      // long sessions routinely exceed the 30s hanaFetch default. A premature
+      // long sessions routinely exceed the 30s openshadowFetch default. A premature
       // abort here surfaces a false failure while the server keeps compacting.
       timeout: 180_000,
     });

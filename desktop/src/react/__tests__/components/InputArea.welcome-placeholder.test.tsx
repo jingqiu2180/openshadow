@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   editorOptions: undefined as undefined | { extensions?: Array<{ name?: string; options?: Record<string, unknown> }> },
   dispatch: vi.fn(),
   setMeta: vi.fn(),
-  hanaFetch: vi.fn(),
+  openshadowFetch: vi.fn(),
   wsSend: vi.fn(),
 }));
 
@@ -56,9 +56,9 @@ vi.mock('../../hooks/use-config', () => ({
   fetchConfig: vi.fn(async () => ({})),
 }));
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: (path: string, opts?: RequestInit) => mocks.hanaFetch(path, opts),
-  hanaUrl: (path: string) => `http://127.0.0.1:3210${path}`,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: (path: string, opts?: RequestInit) => mocks.openshadowFetch(path, opts),
+  openshadowUrl: (path: string) => `http://127.0.0.1:3210${path}`,
 }));
 
 vi.mock('../../stores/session-actions', () => ({
@@ -169,7 +169,7 @@ describe('InputArea welcome placeholder', () => {
     cleanup();
     vi.clearAllMocks();
     seedInputState();
-    mocks.hanaFetch.mockResolvedValue(new Response('{}', { status: 200 }));
+    mocks.openshadowFetch.mockResolvedValue(new Response('{}', { status: 200 }));
     window.platform = {} as typeof window.platform;
     delete (window as unknown as { hana?: unknown }).hana;
   });

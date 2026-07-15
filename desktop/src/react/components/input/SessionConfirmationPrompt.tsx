@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 import type { SessionConfirmationBlock } from '../../stores/chat-types';
 import { Tooltip } from '../../ui';
 import styles from './InputArea.module.css';
@@ -175,7 +175,7 @@ export function SessionConfirmationPrompt({ block, exiting = false }: SessionCon
     setMenuOpen(false);
     setSubmission({ confirmId: block.confirmId, action });
     try {
-      await hanaFetch(`/api/confirm/${block.confirmId}`, {
+      await openshadowFetch(`/api/confirm/${block.confirmId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),
@@ -193,7 +193,7 @@ export function SessionConfirmationPrompt({ block, exiting = false }: SessionCon
     setMenuOpen(false);
     setSwitchingMode(true);
     try {
-      const res = await hanaFetch('/api/session-permission-mode', {
+      const res = await openshadowFetch('/api/session-permission-mode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode: 'operate', currentSessionOnly: true }),

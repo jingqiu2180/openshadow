@@ -46,13 +46,13 @@ vi.mock('../../stores', () => ({
   },
 }));
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: vi.fn(),
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: vi.fn(),
 }));
 
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 
-const mockFetch = vi.mocked(hanaFetch);
+const mockFetch = vi.mocked(openshadowFetch);
 
 describe('channel-actions', () => {
   beforeEach(() => {

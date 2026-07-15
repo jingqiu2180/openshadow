@@ -11,13 +11,13 @@ import { SessionConfirmationPrompt } from '../../components/input/SessionConfirm
 import { handleServerMessage } from '../../services/ws-message-handler';
 import { useStore } from '../../stores';
 
-const hanaFetchMock = vi.fn<(path: string, opts?: RequestInit) => Promise<Response>>(
+const openshadowFetchMock = vi.fn<(path: string, opts?: RequestInit) => Promise<Response>>(
   async () => new Response('{}', { status: 200 }),
 );
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: (path: string, opts?: RequestInit) => hanaFetchMock(path, opts),
-  hanaUrl: (path: string) => `http://127.0.0.1:3210${path}`,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: (path: string, opts?: RequestInit) => openshadowFetchMock(path, opts),
+  openshadowUrl: (path: string) => `http://127.0.0.1:3210${path}`,
 }));
 
 vi.mock('@tiptap/react', () => ({
@@ -181,7 +181,7 @@ describe('computer app approval prompt', () => {
     fireEvent.click(screen.getByRole('button', { name: '同意' }));
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/confirm/confirm-computer-1', expect.objectContaining({
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/confirm/confirm-computer-1', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ action: 'confirmed' }),
       }));
@@ -214,7 +214,7 @@ describe('computer app approval prompt', () => {
     fireEvent.click(screen.getByRole('button', { name: '同意' }));
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/confirm/confirm-computer-1', expect.any(Object));
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/confirm/confirm-computer-1', expect.any(Object));
     });
     expect((screen.getByRole('button', { name: '同意' }) as HTMLButtonElement).disabled).toBe(true);
 
@@ -224,7 +224,7 @@ describe('computer app approval prompt', () => {
     fireEvent.click(screen.getByRole('button', { name: '同意' }));
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith('/api/confirm/confirm-computer-2', expect.any(Object));
+      expect(openshadowFetchMock).toHaveBeenCalledWith('/api/confirm/confirm-computer-2', expect.any(Object));
     });
   });
 
@@ -234,7 +234,7 @@ describe('computer app approval prompt', () => {
       permissionEvents.push((event as CustomEvent).detail || {});
     };
     window.addEventListener('hana-plan-mode', listener);
-    hanaFetchMock
+    openshadowFetchMock
       .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, mode: 'operate' }), { status: 200 }))
       .mockResolvedValueOnce(new Response('{}', { status: 200 }));
 
@@ -259,16 +259,16 @@ describe('computer app approval prompt', () => {
       fireEvent.click(screen.getByRole('menuitem', { name: '本对话不再询问' }));
 
       await waitFor(() => {
-        expect(hanaFetchMock).toHaveBeenCalledTimes(2);
+        expect(openshadowFetchMock).toHaveBeenCalledTimes(2);
       });
-      expect(hanaFetchMock.mock.calls[0]).toEqual([
+      expect(openshadowFetchMock.mock.calls[0]).toEqual([
         '/api/session-permission-mode',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({ mode: 'operate', currentSessionOnly: true }),
         }),
       ]);
-      expect(hanaFetchMock.mock.calls[1]).toEqual([
+      expect(openshadowFetchMock.mock.calls[1]).toEqual([
         '/api/confirm/confirm-tool-1',
         expect.objectContaining({
           method: 'POST',

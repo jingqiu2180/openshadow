@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../stores';
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 import { useI18n } from '../hooks/use-i18n';
 import { loadModels } from '../utils/ui-helpers';
 import {
@@ -174,7 +174,7 @@ function AgentChips({ agents, selectedId }: {
     }
     // 切换到该 agent 的 chat model
     if (agent?.chatModel?.id && agent.chatModel.provider) {
-      hanaFetch('/api/models/set', {
+      openshadowFetch('/api/models/set', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ modelId: agent.chatModel.id, provider: agent.chatModel.provider }),
@@ -313,7 +313,7 @@ function FolderPicker({
       });
       void activateWorkspaceDesk(homeFolder, { mountId: null });
       if (agent.chatModel?.id && agent.chatModel.provider) {
-        hanaFetch('/api/models/set', {
+        openshadowFetch('/api/models/set', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ modelId: agent.chatModel.id, provider: agent.chatModel.provider }),

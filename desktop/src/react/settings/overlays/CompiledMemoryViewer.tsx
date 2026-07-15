@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useSettingsStore } from '../store';
-import { hanaFetch } from '../api';
+import { openshadowFetch } from '../api';
 import { t } from '../helpers';
 import { renderMarkdown } from '../../utils/markdown';
 import { useMermaidDiagrams } from '../../hooks/use-mermaid-diagrams';
@@ -24,7 +24,7 @@ export function CompiledMemoryViewer() {
     setLoading(true);
     try {
       const aid = useSettingsStore.getState().getSettingsAgentId();
-      const res = await hanaFetch(`/api/memories/compiled?agentId=${aid}`);
+      const res = await openshadowFetch(`/api/memories/compiled?agentId=${aid}`);
       const data = await res.json();
       setContent(data.content || '');
     } catch (err: any) {
@@ -37,7 +37,7 @@ export function CompiledMemoryViewer() {
   const clearCompiled = async () => {
     try {
       const aid = useSettingsStore.getState().getSettingsAgentId();
-      await hanaFetch(`/api/memories/compiled?agentId=${aid}`, { method: 'DELETE' });
+      await openshadowFetch(`/api/memories/compiled?agentId=${aid}`, { method: 'DELETE' });
       setContent('');
       useSettingsStore.getState().showToast(t('settings.memory.compiledCleared'), 'success');
     } catch (err: any) {

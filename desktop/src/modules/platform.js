@@ -1,26 +1,26 @@
 /**
  * platform.js — 平台适配层
  *
- * Electron 环境：直接转发给 preload 注入的 window.hana（IPC）
+ * Electron 环境：直接转发给 preload 注入的 window.openshadow（IPC）
  * Web 环境：降级到 HTTP API + 浏览器原生 API
  *
- * 使用方式：所有前端代码调 platform.xxx()，不再直接碰 window.hana。
+ * 使用方式：所有前端代码调 platform.xxx()，不再直接碰 window.openshadow。
  */
 (function () {
-  // Electron 环境：检查 window.__REM_API__ 或 window.hana
-  if (window.__REM_API__ || window.hana) {
+  // Electron 环境：检查 window.__REM_API__ 或 window.openshadow
+  if (window.__REM_API__ || window.openshadow) {
     // 使用 Electron IPC 或默认配置
-    const isElectron = window.__REM_API__?.isElectron || window.hana?.isElectron || true;
-    const platform = window.__REM_API__?.platform || window.hana?.platform || 'win32';
+    const isElectron = window.__REM_API__?.isElectron || window.openshadow?.isElectron || true;
+    const platform = window.__REM_API__?.platform || window.openshadow?.platform || 'win32';
 
     window.platform = {
-      // 服务器连接（从 preload 注入的 window.hana 获取真实 port/token）
+      // 服务器连接（从 preload 注入的 window.openshadow 获取真实 port/token）
       getServerPort: async () => {
-        try { return await window.hana?.getServerPort?.() || null; }
+        try { return await window.openshadow?.getServerPort?.() || null; }
         catch { return null; }
       },
       getServerToken: async () => {
-        try { return await window.hana?.getServerToken?.() || null; }
+        try { return await window.openshadow?.getServerToken?.() || null; }
         catch { return null; }
       },
       onServerRestarted: (callback) => {
@@ -41,8 +41,8 @@
         if (window.__REM_API__?.onSettingsChanged) {
           return window.__REM_API__.onSettingsChanged(callback);
         }
-        if (window.hana?.onSettingsChanged) {
-          return window.hana.onSettingsChanged(callback);
+        if (window.openshadow?.onSettingsChanged) {
+          return window.openshadow.onSettingsChanged(callback);
         }
         return () => {};
       },
@@ -52,8 +52,8 @@
             window.__REM_API__.settingsChanged(type, data);
             return;
           }
-          if (typeof window.hana?.settingsChanged === 'function') {
-            window.hana.settingsChanged(type, data);
+          if (typeof window.openshadow?.settingsChanged === 'function') {
+            window.openshadow.settingsChanged(type, data);
           }
         } catch (e) {
           console.warn('[platform] settingsChanged failed:', e);
@@ -75,12 +75,12 @@
           if (typeof window.__REM_API__?.selectFolder === 'function') {
             return await window.__REM_API__.selectFolder();
           }
-          if (typeof window.hana?.selectFolder === 'function') {
-            return await window.hana.selectFolder();
+          if (typeof window.openshadow?.selectFolder === 'function') {
+            return await window.openshadow.selectFolder();
           }
           // 兼容旧版 hana.platform
-          if (typeof window.hana?.platform?.selectFolder === 'function') {
-            return await window.hana.platform.selectFolder();
+          if (typeof window.openshadow?.platform?.selectFolder === 'function') {
+            return await window.openshadow.platform.selectFolder();
           }
           return null;
         } catch (e) {
@@ -93,11 +93,11 @@
           if (typeof window.__REM_API__?.selectFiles === 'function') {
             return await window.__REM_API__.selectFiles();
           }
-          if (typeof window.hana?.selectFiles === 'function') {
-            return await window.hana.selectFiles();
+          if (typeof window.openshadow?.selectFiles === 'function') {
+            return await window.openshadow.selectFiles();
           }
-          if (typeof window.hana?.platform?.selectFiles === 'function') {
-            return await window.hana.platform.selectFiles();
+          if (typeof window.openshadow?.platform?.selectFiles === 'function') {
+            return await window.openshadow.platform.selectFiles();
           }
           return [];
         } catch (e) {
@@ -109,16 +109,16 @@
       // OS 集成
       openExternal: (url) => { try { window.open(url, "_blank"); } catch {} },
 
-      // 窗口控制 — 转发到 window.hana（preload 注入的 IPC 桥接）
-      windowMinimize: () => { try { window.hana?.windowMinimize?.(); } catch {} },
-      windowMaximize: () => { try { window.hana?.windowMaximize?.(); } catch {} },
-      windowClose: () => { try { window.hana?.windowClose?.(); } catch {} },
+      // 窗口控制 — 转发到 window.openshadow（preload 注入的 IPC 桥接）
+      windowMinimize: () => { try { window.openshadow?.windowMinimize?.(); } catch {} },
+      windowMaximize: () => { try { window.openshadow?.windowMaximize?.(); } catch {} },
+      windowClose: () => { try { window.openshadow?.windowClose?.(); } catch {} },
       windowIsMaximized: async () => {
-        try { return await window.hana?.windowIsMaximized?.() ?? false; } catch (e) { return false; }
+        try { return await window.openshadow?.windowIsMaximized?.() ?? false; } catch (e) { return false; }
       },
       onMaximizeChange: (callback) => {
         try {
-          const unsub = window.hana?.onMaximizeChange?.(callback);
+          const unsub = window.openshadow?.onMaximizeChange?.(callback);
           return unsub ?? (() => {});
         } catch (e) { return () => {}; }
       },
@@ -129,8 +129,8 @@
 
   // Web / 非 Electron 环境 — HTTP fallback
   const params = new URLSearchParams(location.search);
-  const devWeb = normalizeDevWebConfig(window.__HANA_DEV_WEB__);
-  const token = params.get("token") || localStorage.getItem("hana-token") || "";
+  const devWeb = normalizeDevWebConfig(window.__OPEN_SHADOW_DEV_WEB__);
+  const token = params.get("token") || localStorage.getItem("openshadow-token") || "";
   const baseUrl = devWeb.apiBaseUrl || `${location.protocol}//${location.host}`;
   const serverPort = devWeb.serverPort || safePortFromBaseUrl(baseUrl) || location.port || "3000";
 

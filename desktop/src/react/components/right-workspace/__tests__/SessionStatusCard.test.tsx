@@ -5,7 +5,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { SessionStatusCard } from '../SessionStatusCard';
-import { hanaFetch } from '../../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../../hooks/use-openshadow-fetch';
 
 const mockState: any = {
   currentSessionPath: null,
@@ -25,8 +25,8 @@ const mockState: any = {
 vi.mock('../../../stores', () => ({
   useStore: (selector: (s: any) => any) => selector(mockState),
 }));
-vi.mock('../../../hooks/use-hana-fetch', () => ({
-  hanaFetch: vi.fn(),
+vi.mock('../../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: vi.fn(),
 }));
 
 describe('SessionStatusCard', () => {
@@ -39,7 +39,7 @@ describe('SessionStatusCard', () => {
     mockState.sessionAuthorizedFoldersByPath = {};
     mockState.setSessionAuthorizedFolders.mockClear();
     mockState.addToast.mockClear();
-    vi.mocked(hanaFetch).mockReset();
+    vi.mocked(openshadowFetch).mockReset();
     (window as any).platform = {
       selectFolder: vi.fn(async () => '/Users/x/Assets'),
     };
@@ -74,7 +74,7 @@ describe('SessionStatusCard', () => {
 
   it('点击文件夹加号后把授权目录写回当前 session', async () => {
     mockState.currentSessionPath = '/s/a.jsonl';
-    vi.mocked(hanaFetch).mockResolvedValueOnce(new Response(JSON.stringify({
+    vi.mocked(openshadowFetch).mockResolvedValueOnce(new Response(JSON.stringify({
       ok: true,
       authorizedFolders: ['/Users/x/Assets'],
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
@@ -83,7 +83,7 @@ describe('SessionStatusCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'rightWorkspace.session.addAuthorizedFolder' }));
 
     await waitFor(() => {
-      expect(hanaFetch).toHaveBeenCalledWith('/api/sessions/authorized-folders', expect.objectContaining({
+      expect(openshadowFetch).toHaveBeenCalledWith('/api/sessions/authorized-folders', expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify({
           path: '/s/a.jsonl',

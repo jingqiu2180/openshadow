@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '../store';
-import { hanaFetch } from '../api';
+import { openshadowFetch } from '../api';
 import { t } from '../helpers';
 import { switchToAgent, loadSettingsConfig, loadAgents } from '../actions';
 import { Overlay } from '../../ui';
@@ -51,7 +51,7 @@ export function AgentDeleteOverlay() {
         if (!other) throw new Error(t('settings.agent.lastAgent'));
         await switchToAgent(other.id);
       }
-      const res = await hanaFetch(`/api/agents/${targetId}`, { method: 'DELETE' });
+      const res = await openshadowFetch(`/api/agents/${targetId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       close();

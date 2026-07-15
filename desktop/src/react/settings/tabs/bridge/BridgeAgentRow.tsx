@@ -5,7 +5,7 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { useSettingsStore } from '../../store';
-import { hanaUrl, yuanFallbackAvatar } from '../../api';
+import { openshadowUrl, yuanFallbackAvatar } from '../../api';
 
 interface BridgeAgentRowProps {
   value: string | null;
@@ -52,7 +52,7 @@ export function BridgeAgentRow({ value, onChange }: BridgeAgentRowProps) {
                   className="bridge-agent-row-avatar"
                   draggable={false}
                   src={agent.hasAvatar
-                    ? hanaUrl(`/api/agents/${agent.id}/avatar?t=${ts}`)
+                    ? openshadowUrl(`/api/agents/${agent.id}/avatar?t=${ts}`)
                     : yuanFallbackAvatar(agent.yuan || 'hanako')}
                   onError={(e) => {
                     const img = e.target as HTMLImageElement;

@@ -7,7 +7,7 @@
 import { type MouseEvent, useState } from 'react';
 import { Collapse } from '@/ui';
 import { useStore } from '../../stores';
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 import styles from './SessionStatusCard.module.css';
 import { workspaceDisplayName } from '../../../../../shared/workspace-history.ts';
 
@@ -74,7 +74,7 @@ export function SessionStatusCard() {
     if (!folder) return;
     setAddingFolder(true);
     try {
-      const res = await hanaFetch('/api/sessions/authorized-folders', {
+      const res = await openshadowFetch('/api/sessions/authorized-folders', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

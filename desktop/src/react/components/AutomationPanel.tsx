@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '../stores';
 import { usePanel } from '../hooks/use-panel';
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 import { AgentAvatar, resolveAgentDisplayInfo } from '../utils/agent-display';
 import fp from './FloatingPanels.module.css';
 import styles from './automation/AutomationPanel.module.css';
@@ -63,8 +63,8 @@ export function AutomationPanel() {
   const loadData = useCallback(async () => {
     try {
       const [cronRes, modelsRes] = await Promise.all([
-        hanaFetch('/api/desk/cron'),
-        hanaFetch('/api/models'),
+        openshadowFetch('/api/desk/cron'),
+        openshadowFetch('/api/models'),
       ]);
       const cronData = await cronRes.json();
       const modelsData = await modelsRes.json().catch(() => ({ models: [] }));
@@ -87,7 +87,7 @@ export function AutomationPanel() {
   const { visible, close } = usePanel('automation', loadData, [currentAgentId]);
 
   const toggleJob = useCallback(async (jobId: string) => {
-    await hanaFetch('/api/desk/cron', {
+    await openshadowFetch('/api/desk/cron', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'toggle', id: jobId }),
@@ -96,7 +96,7 @@ export function AutomationPanel() {
   }, [loadData]);
 
   const removeJob = useCallback(async (jobId: string) => {
-    await hanaFetch('/api/desk/cron', {
+    await openshadowFetch('/api/desk/cron', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'remove', id: jobId }),
@@ -105,7 +105,7 @@ export function AutomationPanel() {
   }, [loadData]);
 
   const updateJob = useCallback(async (jobId: string, fields: Record<string, unknown>) => {
-    await hanaFetch('/api/desk/cron', {
+    await openshadowFetch('/api/desk/cron', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'update', id: jobId, ...fields }),
@@ -124,7 +124,7 @@ export function AutomationPanel() {
     const cwd = deskWorkspaceMountId
       ? (currentSessionProjection?.cwd || null)
       : (deskBasePath || homeFolder || null);
-    const res = await hanaFetch('/api/desk/cron', {
+    const res = await openshadowFetch('/api/desk/cron', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

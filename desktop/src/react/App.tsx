@@ -72,15 +72,15 @@ function App() {
   const { side: floatSide, show: showFloat, scheduleHide: scheduleFloatHide, cancelHide: cancelFloatHide, hide: hideFloat } = useFloatSidebar();
 
   useEffect(() => {
-    console.info('[hana-launch] init-start');
+    console.info('[openshadow-launch] init-start');
     initApp()
       .then(() => {
-        console.info('[hana-launch] init-finished');
+        console.info('[openshadow-launch] init-finished');
       })
       .catch((err: unknown) => {
         console.error('[init] 初始化异常:', err);
-        console.error('[hana-launch] init-failed', err);
-        console.info('[hana-launch] app-ready', JSON.stringify({ reason: 'init-failed' }));
+        console.error('[openshadow-launch] init-failed', err);
+        console.info('[openshadow-launch] app-ready', JSON.stringify({ reason: 'init-failed' }));
         window.platform?.appReady?.();
       });
   }, []);

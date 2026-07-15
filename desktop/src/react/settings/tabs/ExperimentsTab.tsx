@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { hanaFetch } from '../api';
+import { openshadowFetch } from '../api';
 import { t } from '../helpers';
 import { updateSettingsSnapshot } from '../actions';
 import { useSettingsStore } from '../store';
@@ -196,7 +196,7 @@ function CacheSnapshotExperiment({ experiment, onValueChange }: {
 
   const loadObservation = async () => {
     if (!observationUrl) return;
-    const res = await hanaFetch(observationUrl);
+    const res = await openshadowFetch(observationUrl);
     const data = await res.json();
     setObservation(data.observation || null);
     setObservationLoaded(true);
@@ -223,7 +223,7 @@ function CacheSnapshotExperiment({ experiment, onValueChange }: {
 
   const clearObservation = async () => {
     if (!observationUrl) return;
-    await hanaFetch(observationUrl, { method: 'DELETE' });
+    await openshadowFetch(observationUrl, { method: 'DELETE' });
     setObservation(null);
   };
 
@@ -378,14 +378,14 @@ export function ExperimentsTab() {
       return undefined;
     }
     setLoading(true);
-    hanaFetch('/api/experiments')
+    openshadowFetch('/api/experiments')
       .then((res) => res.json())
       .then((data) => setExperiments(Array.isArray(data.experiments) ? data.experiments : []))
       .finally(() => setLoading(false));
   }, [snapshotExperiments]);
 
   const updateExperimentValue = async (id: string, value: unknown) => {
-    const res = await hanaFetch(`/api/experiments/${id}`, {
+    const res = await openshadowFetch(`/api/experiments/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ value }),

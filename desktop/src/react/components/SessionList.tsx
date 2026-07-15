@@ -9,7 +9,7 @@ import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } fro
 import { createPortal } from 'react-dom';
 import { Collapse } from '@/ui';
 import { useStore } from '../stores';
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 import { useI18n } from '../hooks/use-i18n';
 import { formatSessionDate } from '../utils/format';
 import { switchSession, archiveSession, renameSession, pinSession, createNewSession } from '../stores/session-actions';
@@ -271,7 +271,7 @@ function SessionListInner() {
       setBrowserSessions({});
       return;
     }
-    hanaFetch('/api/browser/session-states')
+    openshadowFetch('/api/browser/session-states')
       .then(r => r.json())
       .then(data => {
         if (!cancelled) setVisibleBrowserSessions(data);
@@ -299,7 +299,7 @@ function SessionListInner() {
     const timer = window.setTimeout(async () => {
       const encodedQuery = encodeURIComponent(searchQueryTrimmed);
       try {
-        const titleRes = await hanaFetch(`/api/sessions/search?q=${encodedQuery}&phase=title&limit=20`, {
+        const titleRes = await openshadowFetch(`/api/sessions/search?q=${encodedQuery}&phase=title&limit=20`, {
           signal: controller.signal,
           timeout: 12_000,
         });
@@ -308,7 +308,7 @@ function SessionListInner() {
         setTitleResults(normalizeSessionSearchResults(titleData));
         setSearchStatus('content');
 
-        const contentRes = await hanaFetch(`/api/sessions/search?q=${encodedQuery}&phase=content&limit=20`, {
+        const contentRes = await openshadowFetch(`/api/sessions/search?q=${encodedQuery}&phase=content&limit=20`, {
           signal: controller.signal,
           timeout: 12_000,
         });
@@ -344,7 +344,7 @@ function SessionListInner() {
     nextCollapsedFolderIds: Set<string>,
     nextShowAllProjectIds: Set<string>,
   ) => {
-    hanaFetch('/api/preferences/sidebar-ui', {
+    openshadowFetch('/api/preferences/sidebar-ui', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sidebarProjectViewPayload(
@@ -364,7 +364,7 @@ function SessionListInner() {
   useEffect(() => {
     if (viewMode !== 'project') return;
     let cancelled = false;
-    hanaFetch('/api/preferences/sidebar-ui')
+    openshadowFetch('/api/preferences/sidebar-ui')
       .then(res => res.json())
       .then(data => {
         if (cancelled) return;
@@ -395,7 +395,7 @@ function SessionListInner() {
       return next;
     });
     try {
-      const res = await hanaFetch('/api/browser/close-session', {
+      const res = await openshadowFetch('/api/browser/close-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionPath }),
@@ -1813,7 +1813,7 @@ const SessionSummaryPreviewCard = memo(function SessionSummaryPreviewCard({
 
     let cancelled = false;
     setSummaryState({ status: 'loading', text: null });
-    hanaFetch(`/api/sessions/summary?path=${encodeURIComponent(session.path)}`)
+    openshadowFetch(`/api/sessions/summary?path=${encodeURIComponent(session.path)}`)
       .then(res => res.json())
       .then((data: SessionSummaryResponse) => {
         if (cancelled) return;

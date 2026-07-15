@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '../store';
-import { hanaFetch } from '../api';
+import { openshadowFetch } from '../api';
 import { invalidateConfigCache } from '../../hooks/use-config';
 import { t } from '../helpers';
 import { loadSettingsConfig } from '../actions';
@@ -40,14 +40,14 @@ export function MeTab() {
 
       const requests: Promise<Response>[] = [];
       if (Object.keys(partial).length) {
-        requests.push(hanaFetch('/api/config', {
+        requests.push(openshadowFetch('/api/config', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(partial),
         }));
       }
       if (profileChanged) {
-        requests.push(hanaFetch('/api/user-profile', {
+        requests.push(openshadowFetch('/api/user-profile', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: userProfile }),

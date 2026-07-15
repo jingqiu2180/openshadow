@@ -159,7 +159,7 @@ describe('OnboardingApp locale switching', () => {
     fireEvent.click(screen.getByRole('button', { name: '连接' }));
 
     await waitFor(() => {
-      expect(window.hana.onboardingComplete).toHaveBeenCalledTimes(1);
+      expect(window.openshadow.onboardingComplete).toHaveBeenCalledTimes(1);
     });
     expect(fetchMock).toHaveBeenCalledWith('http://192.168.31.75:14500/api/web-auth/login', expect.objectContaining({
       credentials: 'include',

@@ -13,11 +13,11 @@ function normalizeForCompare(filePath) {
   return process.platform === "win32" ? resolved.toLowerCase() : resolved;
 }
 
-function getUserDataAppName(hanakoHome, defaultHome) {
-  if (normalizeForCompare(hanakoHome) === normalizeForCompare(defaultHome)) {
+function getUserDataAppName(openShadowHome, defaultHome) {
+  if (normalizeForCompare(openShadowHome) === normalizeForCompare(defaultHome)) {
     return "Shadow";
   }
-  const suffix = path.basename(hanakoHome).replace(/^\./, "");
+  const suffix = path.basename(openShadowHome).replace(/^\./, "");
   if (!suffix) return "Shadow";
   return suffix.charAt(0).toUpperCase() + suffix.slice(1);
 }
@@ -39,13 +39,13 @@ function focusExistingWindow(win) {
 }
 
 function configureClientSingleInstance(app, opts) {
-  const { hanakoHome, defaultHome, onSecondInstance } = opts;
-  const appName = getUserDataAppName(hanakoHome, defaultHome);
+  const { openShadowHome, defaultHome, onSecondInstance } = opts;
+  const appName = getUserDataAppName(openShadowHome, defaultHome);
   if (appName) {
     app.setPath("userData", path.join(app.getPath("appData"), appName));
   }
 
-  const gotLock = app.requestSingleInstanceLock({ hanakoHome });
+  const gotLock = app.requestSingleInstanceLock({ openShadowHome });
   if (!gotLock) {
     exitDuplicateClient(app);
     return false;

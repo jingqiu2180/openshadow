@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSettingsStore } from '../../store';
 import { t, autoSaveConfig, savePins } from '../../helpers';
-import { hanaFetch } from '../../api';
+import { openshadowFetch } from '../../api';
 import { PinItem } from './AgentPins';
 import { SettingsSection } from '../../components/SettingsSection';
 import { Toggle } from '../../widgets/Toggle';
@@ -125,7 +125,7 @@ export function MemorySection({ agentId, hasUtilityModel, memoryEnabled, current
     let active = true;
     setHealthError(null);
 
-    hanaFetch(`/api/memories/health?agentId=${encodeURIComponent(agentId)}`, {
+    openshadowFetch(`/api/memories/health?agentId=${encodeURIComponent(agentId)}`, {
       signal: controller.signal,
       timeout: 10_000,
     })

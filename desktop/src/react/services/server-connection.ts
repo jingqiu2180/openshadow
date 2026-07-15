@@ -84,7 +84,7 @@ export interface ServerConnectionSource {
 
 const LOCAL_CAPABILITIES = ['chat', 'resources', 'files', 'tools'];
 const REMOTE_FALLBACK_CAPABILITIES = ['chat'];
-const PERSISTED_CONNECTIONS_KEY = 'hana-server-connections-v1';
+const PERSISTED_CONNECTIONS_KEY = 'openshadow-server-connections-v1';
 
 interface ConnectionStorageLike {
   getItem(key: string): string | null;

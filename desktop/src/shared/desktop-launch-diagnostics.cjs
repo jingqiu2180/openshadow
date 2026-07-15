@@ -6,7 +6,7 @@ const MAX_ARRAY_LENGTH = 20;
 const MAX_OBJECT_KEYS = 40;
 
 function createDesktopLaunchDiagnostics({
-  hanakoHome,
+  openShadowHome,
   startupId,
   appVersion = "unknown",
   platform = process.platform,
@@ -14,8 +14,8 @@ function createDesktopLaunchDiagnostics({
   redactText = (value) => String(value),
   now = () => new Date().toISOString(),
 } = {}) {
-  if (!hanakoHome) throw new Error("hanakoHome required");
-  const dir = path.join(hanakoHome, "diagnostics", "desktop-launch");
+  if (!openShadowHome) throw new Error("openShadowHome required");
+  const dir = path.join(openShadowHome, "diagnostics", "desktop-launch");
   const rendererLogPath = path.join(dir, "renderer.log");
 
   const base = {

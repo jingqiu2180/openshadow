@@ -34,7 +34,7 @@ describe('NameStep', () => {
   });
 
   it('renders user and agent placeholders with memory enabled by default', () => {
-    render(<NameStep preview hanaFetch={vi.fn<HanaFetch>()} goToStep={vi.fn()} showError={vi.fn()} />);
+    render(<NameStep preview openshadowFetch={vi.fn<HanaFetch>()} goToStep={vi.fn()} showError={vi.fn()} />);
 
     expect(screen.getByPlaceholderText('你的名字')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('小花')).toBeInTheDocument();
@@ -43,10 +43,10 @@ describe('NameStep', () => {
   });
 
   it('saves identity and memory settings before moving to provider setup', async () => {
-    const hanaFetch = vi.fn<HanaFetch>(async () => ({ json: async () => ({ ok: true }) } as Response));
+    const openshadowFetch = vi.fn<HanaFetch>(async () => ({ json: async () => ({ ok: true }) } as Response));
     const goToStep = vi.fn();
 
-    render(<NameStep preview={false} hanaFetch={hanaFetch} goToStep={goToStep} showError={vi.fn()} />);
+    render(<NameStep preview={false} openshadowFetch={openshadowFetch} goToStep={goToStep} showError={vi.fn()} />);
     fireEvent.change(screen.getByPlaceholderText('你的名字'), { target: { value: '测试用户' } });
     fireEvent.change(screen.getByPlaceholderText('小花'), { target: { value: 'Hana' } });
     fireEvent.click(screen.getByRole('switch', { name: '记忆系统' }));
@@ -55,7 +55,7 @@ describe('NameStep', () => {
     await waitFor(() => {
       expect(goToStep).toHaveBeenCalledWith(2);
     });
-    const body = JSON.parse(String(hanaFetch.mock.calls[0][1]?.body));
+    const body = JSON.parse(String(openshadowFetch.mock.calls[0][1]?.body));
     expect(body).toEqual({
       user: { name: '测试用户' },
       agent: { name: 'Hana' },

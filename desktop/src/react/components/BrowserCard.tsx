@@ -8,7 +8,7 @@
 import { useCallback } from 'react';
 import { useStore } from '../stores';
 import { updateKeyed } from '../stores/create-keyed-slice';
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 import { useBrowserState } from '../stores/browser-slice';
 
 export function BrowserCard() {
@@ -28,7 +28,7 @@ export function BrowserCard() {
     }
     window.platform?.browserEmergencyStop?.();
     if (sessionPath) {
-      hanaFetch('/api/browser/close-session', {
+      openshadowFetch('/api/browser/close-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionPath }),

@@ -1,6 +1,6 @@
 import { useStore } from './index';
 import type { ChatMessage } from './chat-types';
-import { hanaFetch } from '../hooks/use-hana-fetch';
+import { openshadowFetch } from '../hooks/use-openshadow-fetch';
 import { collectUiContext } from '../utils/ui-context';
 
 export async function replayLatestUserMessage(
@@ -14,7 +14,7 @@ export async function replayLatestUserMessage(
     const state = useStore.getState();
     if (state.streamingSessions.includes(sessionPath)) return false;
 
-    await hanaFetch('/api/sessions/latest-user-message/replay', {
+    await openshadowFetch('/api/sessions/latest-user-message/replay', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({

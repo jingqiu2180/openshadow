@@ -24,7 +24,7 @@ const lazyScreenshot = () => import('../../utils/screenshot').then(m => m.takeSc
 import type { ChatMessage, ContentBlock } from '../../stores/chat-types';
 import { useStore } from '../../stores';
 import { selectSessionFiles } from '../../stores/selectors/file-refs';
-import { hanaFetch } from '../../hooks/use-hana-fetch';
+import { openshadowFetch } from '../../hooks/use-openshadow-fetch';
 import { openFilePreview, openSkillPreview } from '../../utils/file-preview';
 import { writeAppFileDragPayload, clearAppFileDragPayload } from '../../utils/app-file-drag';
 import { openMediaViewerForRef } from '../../utils/open-media-viewer';
@@ -351,7 +351,7 @@ const MediaGenerationBlock = memo(function MediaGenerationBlock({ block, session
     setRetrying(true);
     setRetryError('');
     try {
-      const res = await hanaFetch(`/api/media/tasks/${encodeURIComponent(viewBlock.taskId)}/retry`, {
+      const res = await openshadowFetch(`/api/media/tasks/${encodeURIComponent(viewBlock.taskId)}/retry`, {
         method: 'POST',
       });
       const data = await res.json().catch(() => null);
@@ -972,7 +972,7 @@ const CronConfirmBlock = memo(function CronConfirmBlock({ block, sessionPath }: 
   const submitDraftJob = async (editedJobData: Record<string, unknown>) => {
     const isUpdate = operation === 'update';
     const { id, ...fields } = editedJobData;
-    await hanaFetch('/api/desk/cron', {
+    await openshadowFetch('/api/desk/cron', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(isUpdate
@@ -987,7 +987,7 @@ const CronConfirmBlock = memo(function CronConfirmBlock({ block, sessionPath }: 
       if (isSuggestionCard) {
         await submitDraftJob(editedJobData);
       } else if (block.confirmId) {
-        await hanaFetch(`/api/confirm/${block.confirmId}`, {
+        await openshadowFetch(`/api/confirm/${block.confirmId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'confirmed', value: { jobData: editedJobData } }),
@@ -1007,7 +1007,7 @@ const CronConfirmBlock = memo(function CronConfirmBlock({ block, sessionPath }: 
     }
     if (block.confirmId) {
       try {
-        await hanaFetch(`/api/confirm/${block.confirmId}`, {
+        await openshadowFetch(`/api/confirm/${block.confirmId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'rejected' }),

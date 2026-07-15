@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSettingsStore } from '../store';
-import { hanaFetch, hanaUrl } from '../api';
+import { openshadowFetch, openshadowUrl } from '../api';
 import { t } from '../helpers';
 import { loadAgents } from '../actions';
 import { Overlay } from '../../ui';
@@ -165,7 +165,7 @@ async function uploadCroppedAvatar(role: string, dataUrl: string) {
       uploadUrl = `/api/avatar/${role}`;
     }
 
-    const res = await hanaFetch(uploadUrl, {
+    const res = await openshadowFetch(uploadUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: dataUrl }),
@@ -177,7 +177,7 @@ async function uploadCroppedAvatar(role: string, dataUrl: string) {
     if (role === 'agent') {
       await loadAgents();
     } else {
-      const url = hanaUrl(`/api/avatar/${role}?t=${ts}`);
+      const url = openshadowUrl(`/api/avatar/${role}?t=${ts}`);
       store.set({ userAvatarUrl: url });
     }
     store.showToast(t('settings.crop.updated'), 'success');

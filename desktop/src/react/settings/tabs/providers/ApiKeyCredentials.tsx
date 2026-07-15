@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSettingsStore, type ProviderSummary } from '../../store';
-import { hanaFetch } from '../../api';
+import { openshadowFetch } from '../../api';
 import { invalidateConfigCache } from '../../../hooks/use-config';
 import { t, API_FORMAT_OPTIONS } from '../../helpers';
 import { SelectWidget } from '@/ui';
@@ -42,7 +42,7 @@ async function resolveModelsForInitialSave(
   if (!shouldDiscoverModelsBeforeSave(providerId, plan.api, payload)) return payload;
 
   try {
-    const res = await hanaFetch('/api/providers/fetch-models', {
+    const res = await openshadowFetch('/api/providers/fetch-models', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -137,7 +137,7 @@ export function ApiKeyCredentials({ providerId, summary, providerConfig: _provid
       if (!headers) return;
       const includeHeaders = headersEdited || Object.keys(headers).length > 0;
       if (verify && plan.shouldVerify) {
-        const testRes = await hanaFetch('/api/providers/test', {
+        const testRes = await openshadowFetch('/api/providers/test', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: providerId, base_url: plan.effectiveUrl, api: plan.api, api_key: plan.key, headers }),
@@ -149,7 +149,7 @@ export function ApiKeyCredentials({ providerId, summary, providerConfig: _provid
         }
       }
       const payload = await resolveModelsForInitialSave(providerId, plan, headers, includeHeaders);
-      await hanaFetch('/api/config', {
+      await openshadowFetch('/api/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ providers: { [providerId]: payload } }),
@@ -172,7 +172,7 @@ export function ApiKeyCredentials({ providerId, summary, providerConfig: _provid
   const [connStatus, setConnStatus] = useState<'idle' | 'testing' | 'ok' | 'fail'>('idle');
 
   const revealSavedApiKey = async () => {
-    const res = await hanaFetch(`/api/providers/${encodeURIComponent(providerId)}/api-key`);
+    const res = await openshadowFetch(`/api/providers/${encodeURIComponent(providerId)}/api-key`);
     const data = await res.json();
     return typeof data.api_key === 'string' ? data.api_key : '';
   };
@@ -183,7 +183,7 @@ export function ApiKeyCredentials({ providerId, summary, providerConfig: _provid
     try {
       const headers = parseHeaders();
       if (!headers) return;
-      const testRes = await hanaFetch('/api/providers/test', {
+      const testRes = await openshadowFetch('/api/providers/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -253,7 +253,7 @@ export function ApiKeyCredentials({ providerId, summary, providerConfig: _provid
               const headers = parseHeaders();
               if (!headers) return;
               try {
-                await hanaFetch('/api/config', {
+                await openshadowFetch('/api/config', {
                   method: 'PUT',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ providers: { [providerId]: { headers } } }),
@@ -281,7 +281,7 @@ export function ApiKeyCredentials({ providerId, summary, providerConfig: _provid
               const trimmed = urlVal.trim();
               if (trimmed === derivedBaseUrl) { setUrlEdited(false); return; }
               try {
-                await hanaFetch('/api/config', {
+                await openshadowFetch('/api/config', {
                   method: 'PUT',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ providers: { [providerId]: { base_url: trimmed } } }),
@@ -308,7 +308,7 @@ export function ApiKeyCredentials({ providerId, summary, providerConfig: _provid
             onChange={async (val) => {
               if (isPresetSetup) return;
               try {
-                await hanaFetch('/api/config', {
+                await openshadowFetch('/api/config', {
                   method: 'PUT',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ providers: { [providerId]: { api: val } } }),

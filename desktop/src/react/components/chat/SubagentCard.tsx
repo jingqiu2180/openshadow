@@ -7,7 +7,7 @@
 
 import { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { subscribeStreamKey } from '../../services/stream-key-dispatcher';
-import { hanaUrl } from '../../hooks/use-hana-fetch';
+import { openshadowUrl } from '../../hooks/use-openshadow-fetch';
 import { useStore } from '../../stores';
 import { AgentAvatar, resolveAgentDisplayInfo } from '../../utils/agent-display';
 import { ChatResourceCard } from './ChatResourceCard';
@@ -102,7 +102,7 @@ export const SubagentCard = memo(function SubagentCard({ block }: SubagentCardPr
 
   const handleAbort = useCallback(async () => {
     try {
-      const res = await fetch(hanaUrl(`/api/task/${block.taskId}/abort`), { method: 'POST' });
+      const res = await fetch(openshadowUrl(`/api/task/${block.taskId}/abort`), { method: 'POST' });
       if (res.ok) {
         setStatus('aborted');
         setDisplay(t('subagentAborted'));

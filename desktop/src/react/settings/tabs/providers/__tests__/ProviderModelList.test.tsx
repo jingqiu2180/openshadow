@@ -8,12 +8,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import '@testing-library/jest-dom/vitest';
 
 const mocks = vi.hoisted(() => ({
-  hanaFetch: vi.fn(),
+  openshadowFetch: vi.fn(),
   lookupModelMeta: vi.fn((_id: unknown, _provider?: unknown): unknown => null),
 }));
 
 vi.mock('../../../api', () => ({
-  hanaFetch: (...args: unknown[]) => mocks.hanaFetch(...args),
+  openshadowFetch: (...args: unknown[]) => mocks.openshadowFetch(...args),
 }));
 
 vi.mock('../../../../hooks/use-config', () => ({
@@ -51,7 +51,7 @@ function rect(init: Partial<DOMRect>): DOMRect {
 describe('ProviderModelList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.hanaFetch.mockResolvedValue(jsonResponse({ models: [{ id: 'kimi-for-coding' }] }));
+    mocks.openshadowFetch.mockResolvedValue(jsonResponse({ models: [{ id: 'kimi-for-coding' }] }));
     mocks.lookupModelMeta.mockReturnValue(null);
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1200 });
     Object.defineProperty(window, 'innerHeight', { configurable: true, writable: true, value: 900 });
@@ -158,7 +158,7 @@ describe('ProviderModelList', () => {
 
   it('opens fetched models in the add-model dropdown so they can be enabled', async () => {
     const onRefresh = vi.fn(async () => {});
-    mocks.hanaFetch
+    mocks.openshadowFetch
       .mockResolvedValueOnce(jsonResponse({ models: [] }))
       .mockResolvedValueOnce(jsonResponse({ models: [{ id: 'kimi-new-model' }] }))
       .mockResolvedValueOnce(jsonResponse({ ok: true }));
@@ -189,7 +189,7 @@ describe('ProviderModelList', () => {
     const option = await screen.findByRole('button', { name: /kimi-new-model/ });
     fireEvent.click(option);
 
-    await waitFor(() => expect(mocks.hanaFetch).toHaveBeenCalledWith('/api/config', expect.objectContaining({
+    await waitFor(() => expect(mocks.openshadowFetch).toHaveBeenCalledWith('/api/config', expect.objectContaining({
       method: 'PUT',
       body: JSON.stringify({ providers: { 'kimi-coding': { models: ['kimi-new-model'] } } }),
     })));
@@ -198,7 +198,7 @@ describe('ProviderModelList', () => {
 
   it('does not serialize untouched capability defaults as explicit false overrides', async () => {
     const onRefresh = vi.fn(async () => {});
-    mocks.hanaFetch.mockResolvedValue(jsonResponse({ models: [] }));
+    mocks.openshadowFetch.mockResolvedValue(jsonResponse({ models: [] }));
     mocks.lookupModelMeta.mockImplementation((id: unknown, provider: unknown) => {
       expect(provider).toBe('mimo');
       if (id === 'mimo-v2.5-pro') {
@@ -238,7 +238,7 @@ describe('ProviderModelList', () => {
     fireEvent.click(screen.getByRole('button', { name: 'settings.api.save' }));
 
     await waitFor(() => {
-      const updateCall = mocks.hanaFetch.mock.calls.find(([url, options]) => (
+      const updateCall = mocks.openshadowFetch.mock.calls.find(([url, options]) => (
         String(url).includes('/api/providers/mimo/models/mimo-v2.5-pro')
         && options?.method === 'PUT'
       ));
@@ -251,7 +251,7 @@ describe('ProviderModelList', () => {
 
   it('serializes audio only after the user changes the audio capability toggle', async () => {
     const onRefresh = vi.fn(async () => {});
-    mocks.hanaFetch.mockResolvedValue(jsonResponse({ models: [] }));
+    mocks.openshadowFetch.mockResolvedValue(jsonResponse({ models: [] }));
     mocks.lookupModelMeta.mockImplementation((id: unknown, provider: unknown) => {
       expect(provider).toBe('mimo');
       if (id === 'mimo-v2.5-pro') {
@@ -292,7 +292,7 @@ describe('ProviderModelList', () => {
     fireEvent.click(screen.getByRole('button', { name: 'settings.api.save' }));
 
     await waitFor(() => {
-      const updateCall = mocks.hanaFetch.mock.calls.find(([url, options]) => (
+      const updateCall = mocks.openshadowFetch.mock.calls.find(([url, options]) => (
         String(url).includes('/api/providers/mimo/models/mimo-v2.5-pro')
         && options?.method === 'PUT'
       ));

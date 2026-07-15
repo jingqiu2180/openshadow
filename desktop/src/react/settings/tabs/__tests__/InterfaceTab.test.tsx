@@ -27,7 +27,7 @@ function setAppearanceGlobals() {
     document.body.classList.toggle('font-sans', !enabled);
   });
   (globalThis as AppearanceGlobals).setPaperTexture = vi.fn((enabled: boolean) => {
-    localStorage.setItem('hana-paper-texture', enabled ? '1' : '0');
+    localStorage.setItem('openshadow-paper-texture', enabled ? '1' : '0');
   });
 }
 
@@ -78,7 +78,7 @@ describe('InterfaceTab appearance state', () => {
 
   it('recomputes paper texture availability when the selected theme changes', () => {
     localStorage.setItem('hana-theme', registry.DEFAULT_THEME);
-    localStorage.setItem('hana-paper-texture', '1');
+    localStorage.setItem('openshadow-paper-texture', '1');
 
     render(React.createElement(InterfaceTab));
 

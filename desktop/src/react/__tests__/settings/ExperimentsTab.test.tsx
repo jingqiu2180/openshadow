@@ -7,7 +7,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const hanaFetchMock = vi.fn();
+const openshadowFetchMock = vi.fn();
 const showToastMock = vi.fn();
 
 function response(body: unknown): Response {
@@ -52,7 +52,7 @@ const observationPayload = {
 };
 
 vi.mock('../../settings/api', () => ({
-  hanaFetch: (url: string, opts?: RequestInit) => hanaFetchMock(url, opts),
+  openshadowFetch: (url: string, opts?: RequestInit) => openshadowFetchMock(url, opts),
 }));
 
 vi.mock('../../settings/helpers', () => ({
@@ -102,9 +102,9 @@ vi.mock('../../utils/markdown', () => ({
 
 describe('ExperimentsTab', () => {
   beforeEach(() => {
-    hanaFetchMock.mockReset();
+    openshadowFetchMock.mockReset();
     showToastMock.mockClear();
-    hanaFetchMock.mockImplementation(async (url: string, opts?: RequestInit) => {
+    openshadowFetchMock.mockImplementation(async (url: string, opts?: RequestInit) => {
       if (opts?.method === 'PATCH') {
         return response({ ok: true, value: JSON.parse(String(opts.body)).value });
       }
@@ -130,7 +130,7 @@ describe('ExperimentsTab', () => {
     fireEvent.click(main);
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith(
+      expect(openshadowFetchMock).toHaveBeenCalledWith(
         '/api/experiments/memory.cache_snapshot_reflection',
         expect.objectContaining({
           method: 'PATCH',
@@ -140,7 +140,7 @@ describe('ExperimentsTab', () => {
     });
     await waitFor(() => {
       expect(screen.getAllByText(/观察模式不会对正式记忆产生任何影响/)).toHaveLength(1);
-      expect(hanaFetchMock).toHaveBeenCalledWith(
+      expect(openshadowFetchMock).toHaveBeenCalledWith(
         '/api/experiments/memory/cache-snapshot-reflection/observation?agentId=primary',
         undefined,
       );
@@ -152,7 +152,7 @@ describe('ExperimentsTab', () => {
     fireEvent.click(observeOnly);
 
     await waitFor(() => {
-      expect(hanaFetchMock).toHaveBeenCalledWith(
+      expect(openshadowFetchMock).toHaveBeenCalledWith(
         '/api/experiments/memory.cache_snapshot_reflection',
         expect.objectContaining({
           method: 'PATCH',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useSettingsStore } from '../../store';
-import { hanaFetch } from '../../api';
+import { openshadowFetch } from '../../api';
 import { invalidateConfigCache } from '../../../hooks/use-config';
 import { t } from '../../helpers';
 import { useAnchoredDropdown } from '../../hooks/useAnchoredDropdown';
@@ -192,7 +192,7 @@ export function MediaProviderDetail({ providerId, provider, capability = 'imageG
   const addModel = async (modelId: string) => {
     try {
       const candidate = allModels.find(m => m.id === modelId) || { id: modelId };
-      await hanaFetch(`/api/media/${mediaRoute}/providers/${encodeURIComponent(providerId)}/models`, {
+      await openshadowFetch(`/api/media/${mediaRoute}/providers/${encodeURIComponent(providerId)}/models`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: candidate }),
@@ -208,7 +208,7 @@ export function MediaProviderDetail({ providerId, provider, capability = 'imageG
 
   const removeModel = async (modelId: string) => {
     try {
-      await hanaFetch(`/api/media/${mediaRoute}/providers/${encodeURIComponent(providerId)}/models/${encodeURIComponent(modelId)}`, {
+      await openshadowFetch(`/api/media/${mediaRoute}/providers/${encodeURIComponent(providerId)}/models/${encodeURIComponent(modelId)}`, {
         method: 'DELETE',
       });
       invalidateConfigCache();

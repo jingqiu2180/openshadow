@@ -77,7 +77,7 @@ export function TutorialStep({ preview, showError }: TutorialStepProps) {
     if (preview) { window.close(); return; }
     setFinishing(true);
     try {
-      await window.hana.onboardingComplete?.();
+      await window.openshadow.onboardingComplete?.();
     } catch (err) {
       console.error('[onboarding] complete failed:', err);
       showError(t('onboarding.error'));

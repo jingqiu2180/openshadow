@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   chainInserted: [] as unknown[],
   ensureSession: vi.fn(async () => true),
   loadSessions: vi.fn(),
-  hanaFetch: vi.fn(),
+  openshadowFetch: vi.fn(),
   wsSend: vi.fn(),
   editorFocus: vi.fn(),
 }));
@@ -92,9 +92,9 @@ vi.mock('../../hooks/use-config', () => ({
   fetchConfig: vi.fn(async () => ({})),
 }));
 
-vi.mock('../../hooks/use-hana-fetch', () => ({
-  hanaFetch: (path: string, opts?: RequestInit) => mocks.hanaFetch(path, opts),
-  hanaUrl: (path: string) => `http://127.0.0.1:3210${path}`,
+vi.mock('../../hooks/use-openshadow-fetch', () => ({
+  openshadowFetch: (path: string, opts?: RequestInit) => mocks.openshadowFetch(path, opts),
+  openshadowUrl: (path: string) => `http://127.0.0.1:3210${path}`,
 }));
 
 vi.mock('../../stores/session-actions', () => ({
@@ -279,7 +279,7 @@ describe('InputArea paste and slash menu behavior', () => {
       return true;
     });
     seedInputState();
-    mocks.hanaFetch.mockResolvedValue(new Response('{}', { status: 200 }));
+    mocks.openshadowFetch.mockResolvedValue(new Response('{}', { status: 200 }));
     window.platform = {} as typeof window.platform;
   });
 
@@ -438,11 +438,11 @@ describe('InputArea paste and slash menu behavior', () => {
         '/Users/hana/Desktop/report.pdf': 'report.pdf',
       });
     });
-    expect(mocks.hanaFetch).not.toHaveBeenCalledWith('/api/upload-blob', expect.anything());
+    expect(mocks.openshadowFetch).not.toHaveBeenCalledWith('/api/upload-blob', expect.anything());
   });
 
   it('registers pasted image blob uploads as path-backed attachments without base64Data', async () => {
-    mocks.hanaFetch.mockImplementation(async (path: string) => {
+    mocks.openshadowFetch.mockImplementation(async (path: string) => {
       if (path === '/api/upload-blob') {
         return new Response(JSON.stringify({
           uploads: [{
@@ -475,7 +475,7 @@ describe('InputArea paste and slash menu behavior', () => {
     expect(handled).toBe(true);
     expect(preventDefault).toHaveBeenCalledTimes(1);
     await waitFor(() => {
-      expect(mocks.hanaFetch).toHaveBeenCalledWith('/api/upload-blob', expect.objectContaining({
+      expect(mocks.openshadowFetch).toHaveBeenCalledWith('/api/upload-blob', expect.objectContaining({
         method: 'POST',
         body: expect.any(String),
       }));
@@ -493,7 +493,7 @@ describe('InputArea paste and slash menu behavior', () => {
 
   it('compresses oversized pasted images before upload-blob', async () => {
     installImageCompressionMocks();
-    mocks.hanaFetch.mockImplementation(async (path: string) => {
+    mocks.openshadowFetch.mockImplementation(async (path: string) => {
       if (path === '/api/upload-blob') {
         return new Response(JSON.stringify({
           uploads: [{
@@ -525,12 +525,12 @@ describe('InputArea paste and slash menu behavior', () => {
 
     expect(handled).toBe(true);
     await waitFor(() => {
-      expect(mocks.hanaFetch).toHaveBeenCalledWith('/api/upload-blob', expect.objectContaining({
+      expect(mocks.openshadowFetch).toHaveBeenCalledWith('/api/upload-blob', expect.objectContaining({
         method: 'POST',
         body: expect.any(String),
       }));
     });
-    const body = JSON.parse(String(mocks.hanaFetch.mock.calls.find(([path]) => path === '/api/upload-blob')?.[1]?.body));
+    const body = JSON.parse(String(mocks.openshadowFetch.mock.calls.find(([path]) => path === '/api/upload-blob')?.[1]?.body));
     expect(body).toMatchObject({
       name: 'input.pastedImage.jpg',
       mimeType: 'image/jpeg',
@@ -633,7 +633,7 @@ describe('InputArea paste and slash menu behavior', () => {
         isDirectory: false,
       }],
     };
-    mocks.hanaFetch.mockImplementation(async (path: string) => {
+    mocks.openshadowFetch.mockImplementation(async (path: string) => {
       if (path === '/api/upload-blob') {
         return new Response(JSON.stringify(uploadJson), { status: 200 });
       }
@@ -649,12 +649,12 @@ describe('InputArea paste and slash menu behavior', () => {
     fireEvent.change(input!, { target: { files: [file] } });
 
     await waitFor(() => {
-      expect(mocks.hanaFetch).toHaveBeenCalledWith('/api/upload-blob', expect.objectContaining({
+      expect(mocks.openshadowFetch).toHaveBeenCalledWith('/api/upload-blob', expect.objectContaining({
         method: 'POST',
         body: expect.any(String),
       }));
     });
-    const body = JSON.parse(String(mocks.hanaFetch.mock.calls.find(([path]) => path === '/api/upload-blob')?.[1]?.body));
+    const body = JSON.parse(String(mocks.openshadowFetch.mock.calls.find(([path]) => path === '/api/upload-blob')?.[1]?.body));
     expect(body).toMatchObject({
       name: 'mobile.png',
       mimeType: 'image/png',
@@ -681,7 +681,7 @@ describe('InputArea paste and slash menu behavior', () => {
         isDirectory: false,
       }],
     };
-    mocks.hanaFetch.mockImplementation(async (path: string) => {
+    mocks.openshadowFetch.mockImplementation(async (path: string) => {
       if (path === '/api/upload-blob') {
         return new Response(JSON.stringify(uploadJson), { status: 200 });
       }
@@ -697,12 +697,12 @@ describe('InputArea paste and slash menu behavior', () => {
     fireEvent.change(input!, { target: { files: [file] } });
 
     await waitFor(() => {
-      expect(mocks.hanaFetch).toHaveBeenCalledWith('/api/upload-blob', expect.objectContaining({
+      expect(mocks.openshadowFetch).toHaveBeenCalledWith('/api/upload-blob', expect.objectContaining({
         method: 'POST',
         body: expect.any(String),
       }));
     });
-    const body = JSON.parse(String(mocks.hanaFetch.mock.calls.find(([path]) => path === '/api/upload-blob')?.[1]?.body));
+    const body = JSON.parse(String(mocks.openshadowFetch.mock.calls.find(([path]) => path === '/api/upload-blob')?.[1]?.body));
     expect(body).toMatchObject({
       name: 'mobile.jpg',
       mimeType: 'image/jpeg',

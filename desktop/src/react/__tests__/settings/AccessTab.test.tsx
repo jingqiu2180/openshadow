@@ -21,8 +21,8 @@ vi.mock('../../settings/store', () => {
 });
 
 vi.mock('../../settings/api', () => ({
-  hanaFetch: (...args: unknown[]) => mockHanaFetch(...args),
-  hanaUrl: (path: string) => `http://127.0.0.1:14500${path}?token=local`,
+  openshadowFetch: (...args: unknown[]) => mockHanaFetch(...args),
+  openshadowUrl: (path: string) => `http://127.0.0.1:14500${path}?token=local`,
 }));
 
 vi.mock('../../settings/helpers', () => ({
@@ -424,7 +424,7 @@ describe('AccessTab', () => {
         credentials: 'include',
         headers: { Authorization: 'Bearer hana_dev_remote_secret' },
       }));
-      expect(window.hana.reloadMainWindow).toHaveBeenCalledTimes(1);
+      expect(window.openshadow.reloadMainWindow).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -450,7 +450,7 @@ describe('AccessTab', () => {
 
     expect(mockState.activeServerConnectionId).toBe('local');
     expect(mockState.activeServerConnection).toBe(localConnection);
-    expect(window.hana.reloadMainWindow).toHaveBeenCalledTimes(1);
+    expect(window.openshadow.reloadMainWindow).toHaveBeenCalledTimes(1);
   });
 
   it('saves the local owner profile and password from the account section', async () => {

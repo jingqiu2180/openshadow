@@ -40,9 +40,9 @@ export function OnboardingApp({ preview, skipToTutorial }: OnboardingAppProps) {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const localeLoadSeq = useRef(0);
 
-  const hanaFetch: HanaFetch = useCallback((path, opts = {}) => {
+  const openshadowFetch: HanaFetch = useCallback((path, opts = {}) => {
     if (!serverConnection) {
-      throw new Error(`onboarding hanaFetch ${path}: server connection not ready`);
+      throw new Error(`onboarding openshadowFetch ${path}: server connection not ready`);
     }
     const headers = appendConnectionAuth(serverConnection, opts.headers);
     return fetch(buildConnectionUrl(serverConnection, path), { ...opts, headers });
@@ -88,17 +88,17 @@ export function OnboardingApp({ preview, skipToTutorial }: OnboardingAppProps) {
     persistServerConnectionSelection(connection);
     setServerConnection(connection);
     if (!preview) {
-      await window.hana.onboardingComplete?.();
+      await window.openshadow.onboardingComplete?.();
     }
   }, [preview]);
 
   useEffect(() => {
     (async () => {
       try {
-        const port = await window.hana.getServerPort();
-        const token = await window.hana.getServerToken();
+        const port = await window.openshadow.getServerPort();
+        const token = await window.openshadow.getServerToken();
         setServerConnection(createLocalServerConnection({ serverPort: port, serverToken: token }));
-        const splashInfo = await window.hana.getSplashInfo?.();
+        const splashInfo = await window.openshadow.getSplashInfo?.();
         const loc = splashInfo?.locale || 'zh-CN';
         const name = splashInfo?.agentName || 'Shadow';
         setLocale(loc);
@@ -107,7 +107,7 @@ export function OnboardingApp({ preview, skipToTutorial }: OnboardingAppProps) {
         i18n.defaultName = name;
         setI18nReady(true);
         try {
-          const localPath = await window.hana.getAvatarPath?.('agent');
+          const localPath = await window.openshadow.getAvatarPath?.('agent');
           if (localPath) setAvatarSrc(window.platform?.getFileUrl?.(localPath) ?? '');
         } catch { /* ignore */ }
       } catch (err) {
@@ -126,12 +126,12 @@ export function OnboardingApp({ preview, skipToTutorial }: OnboardingAppProps) {
         ))}
       </div>
 
-      {step === 0 && <LocaleStep key={`step-0-${stepKey}`} preview={preview} hanaFetch={hanaFetch} avatarSrc={avatarSrc} initialLocale={locale} goToStep={goToStep} showError={showError} onLocaleChange={onLocaleChange} onConnectLanServer={connectLanServer} />}
-      {step === 1 && <NameStep key={`step-1-${stepKey}`} preview={preview} hanaFetch={hanaFetch} goToStep={goToStep} showError={showError} />}
-      {step === 2 && <ProviderStep key={`step-2-${stepKey}`} preview={preview} hanaFetch={hanaFetch} goToStep={goToStep} showError={showError} onProviderReady={onProviderReady} />}
-      {step === 3 && <ModelStep key={`step-3-${stepKey}`} preview={preview} hanaFetch={hanaFetch} providerName={providerName} providerUrl={providerUrl} providerApi={providerApi} apiKey={apiKey} goToStep={goToStep} showError={showError} />}
+      {step === 0 && <LocaleStep key={`step-0-${stepKey}`} preview={preview} openshadowFetch={openshadowFetch} avatarSrc={avatarSrc} initialLocale={locale} goToStep={goToStep} showError={showError} onLocaleChange={onLocaleChange} onConnectLanServer={connectLanServer} />}
+      {step === 1 && <NameStep key={`step-1-${stepKey}`} preview={preview} openshadowFetch={openshadowFetch} goToStep={goToStep} showError={showError} />}
+      {step === 2 && <ProviderStep key={`step-2-${stepKey}`} preview={preview} openshadowFetch={openshadowFetch} goToStep={goToStep} showError={showError} onProviderReady={onProviderReady} />}
+      {step === 3 && <ModelStep key={`step-3-${stepKey}`} preview={preview} openshadowFetch={openshadowFetch} providerName={providerName} providerUrl={providerUrl} providerApi={providerApi} apiKey={apiKey} goToStep={goToStep} showError={showError} />}
       {step === 4 && <ThemeStep key={`step-4-${stepKey}`} goToStep={goToStep} />}
-      {step === 5 && <WorkspaceStep key={`step-5-${stepKey}`} preview={preview} hanaFetch={hanaFetch} goToStep={goToStep} showError={showError} />}
+      {step === 5 && <WorkspaceStep key={`step-5-${stepKey}`} preview={preview} openshadowFetch={openshadowFetch} goToStep={goToStep} showError={showError} />}
       {step === 6 && <TutorialStep key={`step-6-${stepKey}`} preview={preview} showError={showError} />}
 
       {toastMsg && (

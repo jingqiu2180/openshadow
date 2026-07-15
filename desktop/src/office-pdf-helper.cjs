@@ -4,7 +4,7 @@ const { pathToFileURL } = require("url");
 const { app, BrowserWindow } = require("electron");
 const { buildFontInjectionCss } = require("./office-pdf-fonts.cjs");
 
-const OFFICE_PDF_HELPER_FLAG = "--hana-office-html-to-pdf";
+const OFFICE_PDF_HELPER_FLAG = "--openshadow-office-html-to-pdf";
 const DEFAULT_TIMEOUT_MS = 60000;
 
 function isOfficePdfHelperInvocation(argv = process.argv) {

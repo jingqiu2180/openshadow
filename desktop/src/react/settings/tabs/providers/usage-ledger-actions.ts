@@ -1,4 +1,4 @@
-import { hanaFetch } from '../../api';
+import { openshadowFetch } from '../../api';
 
 export interface NormalizedUsage {
   input?: {
@@ -67,7 +67,7 @@ export interface LoadLlmUsageEntriesOptions {
 export async function loadLlmUsageEntries(options: number | LoadLlmUsageEntriesOptions = 500): Promise<UsageLedgerEntry[]> {
   const params = usageQueryParams(options);
   const query = params.toString();
-  const res = await hanaFetch(`/api/usage/llm${query ? `?${query}` : ''}`);
+  const res = await openshadowFetch(`/api/usage/llm${query ? `?${query}` : ''}`);
   const data: unknown = await res.json();
   if (!isUsageResponse(data)) return [];
   return data.entries;
