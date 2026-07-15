@@ -359,6 +359,11 @@ function registerIpcHandlers() {
     return { port: info?.port || null, token: info?.token || null }
   })
 
+  // 应用版本号（AboutTab.tsx 通过 window.hana.getAppVersion() 调用）
+  wrapIpcHandler('app:get-version', () => {
+    return app.getVersion()
+  })
+
   // 热重启 server（渲染进程触发）
   wrapIpcHandler('server:restart', async () => {
     await serverManager.restart('ipc')

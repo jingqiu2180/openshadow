@@ -20453,6 +20453,9 @@ function requireMain() {
       const info = readServerInfo();
       return { port: info?.port || null, token: info?.token || null };
     });
+    wrapIpcHandler("app:get-version", () => {
+      return app.getVersion();
+    });
     wrapIpcHandler("server:restart", async () => {
       await serverManager2.restart("ipc");
       return { ok: true, port: serverManager2.getPort() };

@@ -84,6 +84,21 @@ const platformApi = {
   getFileUrl: (filePath) => {
     try { return pathToFileURL(filePath).toString() } catch { return '' }
   },
+
+  // ─── 应用版本 ────────────────────────────────────────────
+  getAppVersion: () => ipcRenderer.invoke('app:get-version'),
+
+  // ─── 自动更新（electron-updater 桥接）────────────────────
+  autoUpdateCheck: () => ipcRenderer.invoke('auto-update-check'),
+  autoUpdateInstall: () => ipcRenderer.invoke('auto-update-install'),
+  autoUpdateState: () => ipcRenderer.invoke('auto-update-state'),
+  autoUpdateSetChannel: (channel) => ipcRenderer.invoke('auto-update-set-channel', channel),
+  onAutoUpdateState: (callback) => {
+    // 对齐 auto-updater.cjs setState() → sendToRenderer("auto-update-state", ...)
+    const handler = (_event, state) => callback(state)
+    ipcRenderer.on('auto-update-state', handler)
+    return () => { ipcRenderer.removeListener('auto-update-state', handler) }
+  },
 }
 
 // 注入 window.hana（兼容 platform.js）
