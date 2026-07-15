@@ -15,7 +15,7 @@ import {
 import styles from './RightWorkspacePanel.module.css';
 
 const EMPTY_FILES: readonly FileRef[] = Object.freeze([]);
-const SESSION_FILE_SORT_KEY = 'hana-session-file-sort';
+const SESSION_FILE_SORT_KEY = 'openshadow-session-file-sort';
 const RUBBER_BAND_MIN = 4;
 
 type SessionFileSortMode = 'time-desc' | 'name-asc' | 'name-desc' | 'type-asc';

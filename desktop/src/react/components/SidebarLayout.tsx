@@ -55,7 +55,7 @@ export function updateLayout(): void {
       const neededForLeft = getSidebarWidth();
       if (w - rightW - previewW - channelInspectorW - neededForLeft >= CHAT_MIN_WIDTH) {
         const tab = s.currentTab || 'chat';
-        const savedLeft = localStorage.getItem(`hana-sidebar-${tab}`);
+        const savedLeft = localStorage.getItem(`openshadow-sidebar-${tab}`);
         if (savedLeft !== 'closed') {
           useStore.setState({ sidebarOpen: true, sidebarAutoCollapsed: false });
         }
@@ -66,7 +66,7 @@ export function updateLayout(): void {
       const leftW2 = s2.sidebarOpen ? getSidebarWidth() : 0;
       const neededForRight = getJianWidth();
       if (w - leftW2 - previewW - channelInspectorW - neededForRight >= CHAT_MIN_WIDTH) {
-        const savedRight = localStorage.getItem('hana-jian');
+        const savedRight = localStorage.getItem('openshadow-jian');
         if (savedRight !== 'closed') {
           useStore.setState({ jianOpen: true, jianAutoCollapsed: false });
         }
@@ -81,7 +81,7 @@ export function toggleSidebar(forceOpen?: boolean): void {
   useStore.setState({ sidebarOpen: open });
 
   const tab = s.currentTab || 'chat';
-  localStorage.setItem(`hana-sidebar-${tab}`, open ? 'open' : 'closed');
+  localStorage.setItem(`openshadow-sidebar-${tab}`, open ? 'open' : 'closed');
 
   if (forceOpen === undefined) {
     useStore.setState({ sidebarAutoCollapsed: false });
@@ -100,11 +100,11 @@ export function SidebarLayout() {
     initDone.current = true;
 
     // 迁移 localStorage
-    const legacy = localStorage.getItem('hana-sidebar');
-    if (legacy && !localStorage.getItem('hana-sidebar-chat')) {
-      localStorage.setItem('hana-sidebar-chat', legacy);
+    const legacy = localStorage.getItem('openshadow-sidebar');
+    if (legacy && !localStorage.getItem('openshadow-sidebar-chat')) {
+      localStorage.setItem('openshadow-sidebar-chat', legacy);
     }
-    const savedOpen = localStorage.getItem('hana-sidebar-chat');
+    const savedOpen = localStorage.getItem('openshadow-sidebar-chat');
     const sidebarOpen = savedOpen !== 'closed';
 
     useStore.setState({

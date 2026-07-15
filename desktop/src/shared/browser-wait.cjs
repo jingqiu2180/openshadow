@@ -5,7 +5,7 @@ const DEFAULT_STABLE_SAMPLES = 3;
 
 const READ_BROWSER_STATE_SCRIPT = `
 (() => {
-  if (!window.__hanaBrowserWaitState) {
+  if (!window.__openshadowBrowserWaitState) {
     const state = { mutationAt: Date.now(), observer: null };
     try {
       state.observer = new MutationObserver(() => {
@@ -18,7 +18,7 @@ const READ_BROWSER_STATE_SCRIPT = `
         attributes: true,
       });
     } catch {}
-    window.__hanaBrowserWaitState = state;
+    window.__openshadowBrowserWaitState = state;
   }
   const body = document.body;
   const root = document.documentElement;
@@ -27,7 +27,7 @@ const READ_BROWSER_STATE_SCRIPT = `
     body ? body.scrollHeight || 0 : 0,
     root ? root.scrollHeight || 0 : 0
   );
-  const mutationAt = window.__hanaBrowserWaitState.mutationAt || Date.now();
+  const mutationAt = window.__openshadowBrowserWaitState.mutationAt || Date.now();
   return {
     readyState: document.readyState,
     elementCount: document.getElementsByTagName("*").length,

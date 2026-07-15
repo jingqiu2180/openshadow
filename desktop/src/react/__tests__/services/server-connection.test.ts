@@ -108,8 +108,8 @@ describe('server connection helpers', () => {
       connectionId: 'custom:remote',
       kind: 'custom_remote' as const,
       label: 'Remote Studio',
-      baseUrl: 'https://hana.example',
-      wsUrl: 'wss://hana.example',
+      baseUrl: 'https://openshadow.example',
+      wsUrl: 'wss://openshadow.example',
       token: 'remote-token',
       trustState: 'tunnel' as const,
       credentialKind: 'device_credential' as const,
@@ -150,8 +150,8 @@ describe('server connection helpers', () => {
     });
     expect(connection).not.toBeNull();
 
-    expect(buildConnectionUrl(connection!, '/api/agents/hana/avatar', { includeTokenQuery: true }))
-      .toBe('http://127.0.0.1:3210/api/agents/hana/avatar?token=test-token-123');
+    expect(buildConnectionUrl(connection!, '/api/agents/openshadow/avatar', { includeTokenQuery: true }))
+      .toBe('http://127.0.0.1:3210/api/agents/openshadow/avatar?token=test-token-123');
     expect(buildConnectionUrl(connection!, '/api/sessions?limit=10', { includeTokenQuery: true }))
       .toBe('http://127.0.0.1:3210/api/sessions?limit=10&token=test-token-123');
   });
@@ -166,16 +166,16 @@ describe('server connection helpers', () => {
       connectionId: 'custom:remote',
       kind: 'custom_remote' as const,
       label: 'Remote Studio',
-      baseUrl: 'https://hana.example',
-      wsUrl: 'wss://hana.example',
+      baseUrl: 'https://openshadow.example',
+      wsUrl: 'wss://openshadow.example',
       token: 'remote-token',
       trustState: 'tunnel' as const,
       credentialKind: 'device_credential' as const,
     };
 
     expect(buildConnectionUrl(remote, '/api/resources/res_1/content', { includeTokenQuery: true }))
-      .toBe('https://hana.example/api/resources/res_1/content');
-    expect(buildConnectionWsUrl(remote, '/ws')).toBe('wss://hana.example/ws');
+      .toBe('https://openshadow.example/api/resources/res_1/content');
+    expect(buildConnectionWsUrl(remote, '/ws')).toBe('wss://openshadow.example/ws');
   });
 
   it('identifies the local owner connection by the same contract as server route security', () => {
@@ -262,7 +262,7 @@ describe('server connection helpers', () => {
   it('creates a LAN device ServerConnection from manual URL, credential, and server identity', () => {
     const connection = createDeviceServerConnection({
       baseUrl: '192.168.31.75:14500/mobile/',
-      credential: 'hana_dev_remote_secret',
+      credential: 'openshadow_dev_remote_secret',
       identity: {
         connectionKind: 'lan',
         serverId: 'server_lan',
@@ -287,7 +287,7 @@ describe('server connection helpers', () => {
       label: 'Personal Studio',
       baseUrl: 'http://192.168.31.75:14500',
       wsUrl: 'ws://192.168.31.75:14500',
-      token: 'hana_dev_remote_secret',
+      token: 'openshadow_dev_remote_secret',
       trustState: 'lan',
       credentialKind: 'device_credential',
       capabilities: ['chat', 'resources', 'files'],
@@ -351,7 +351,7 @@ describe('server connection helpers', () => {
   it('normalizes the browser desktop PWA URL when creating a manual LAN connection', () => {
     const connection = createDeviceServerConnection({
       baseUrl: '192.168.31.75:14500/desktop/',
-      credential: 'hana_dev_remote_secret',
+      credential: 'openshadow_dev_remote_secret',
       identity: {
         connectionKind: 'lan',
         serverId: 'server_lan',
@@ -399,17 +399,17 @@ describe('server connection helpers', () => {
 
     const connection = await connectDeviceServerConnection({
       baseUrl: 'http://192.168.31.75:14500/',
-      credential: 'hana_dev_remote_secret',
+      credential: 'openshadow_dev_remote_secret',
       fetchImpl: fetchImpl as unknown as typeof fetch,
     });
 
     expect(fetchImpl).toHaveBeenNthCalledWith(1, 'http://192.168.31.75:14500/api/web-auth/login', expect.objectContaining({
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({ credential: 'hana_dev_remote_secret' }),
+      body: JSON.stringify({ credential: 'openshadow_dev_remote_secret' }),
     }));
     expect(fetchImpl).toHaveBeenNthCalledWith(2, 'http://192.168.31.75:14500/api/server/identity', expect.objectContaining({
-      headers: { Authorization: 'Bearer hana_dev_remote_secret' },
+      headers: { Authorization: 'Bearer openshadow_dev_remote_secret' },
       credentials: 'include',
     }));
     expect(connection.connectionId).toBe('lan:node_lan:studio_lan');
@@ -428,7 +428,7 @@ describe('server connection helpers', () => {
     })!;
     const remote = createDeviceServerConnection({
       baseUrl: 'http://192.168.31.75:14500',
-      credential: 'hana_dev_remote_secret',
+      credential: 'openshadow_dev_remote_secret',
       identity: {
         connectionKind: 'lan',
         serverId: 'server_lan',

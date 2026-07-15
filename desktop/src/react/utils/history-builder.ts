@@ -430,7 +430,7 @@ export function buildItemsFromHistory(data: HistoryApiResponse): ChatListItem[] 
         .replace(/^<t>[^<]*<\/t>\s*/, '');
 
       // 过滤系统注入的后台任务通知（steer 消息），不展示给用户
-      if (/<hana-background-result\s/.test(rawContent) || /<hana-deferred-tasks>/.test(rawContent)) {
+      if (/<openshadow-background-result\s/.test(rawContent) || /<openshadow-deferred-tasks>/.test(rawContent)) {
         continue;
       }
 

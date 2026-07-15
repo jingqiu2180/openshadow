@@ -14,7 +14,7 @@ import leavesSrc from '../../assets/textures/leaves-overlay.mp4';
 export const LeavesOverlay = memo(function LeavesOverlay() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [enabled, setEnabled] = useState(
-    () => localStorage.getItem('hana-leaves-overlay') === '1',
+    () => localStorage.getItem('openshadow-leaves-overlay') === '1',
   );
 
   // 监听跨窗口事件
@@ -25,8 +25,8 @@ export const LeavesOverlay = memo(function LeavesOverlay() {
         setEnabled(detail.enabled);
       }
     };
-    window.addEventListener('hana-settings', handler);
-    return () => window.removeEventListener('hana-settings', handler);
+    window.addEventListener('openshadow-settings', handler);
+    return () => window.removeEventListener('openshadow-settings', handler);
   }, []);
 
   // 确保视频播放

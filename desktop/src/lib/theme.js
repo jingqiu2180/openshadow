@@ -10,7 +10,7 @@
 (function () {
   var themeKey = 'openshadow.theme';
   var textureKey = 'openshadow-paper-texture';
-  var fontKey = 'hana-font-serif';
+  var fontKey = 'openshadow-font-serif';
 
   // 旧主题 ID 到新 ID 的映射（兼容 legacy 代码）
   var LEGACY_ALIASES = {

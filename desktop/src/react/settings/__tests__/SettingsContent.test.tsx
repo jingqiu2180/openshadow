@@ -79,7 +79,7 @@ describe('SettingsContent tab heading', () => {
         key: 'snapshot:browser',
         requestId: 1,
         data: {
-          agentId: 'hana',
+          agentId: 'openshadow',
           config: {},
           identity: '',
           ishiki: '',

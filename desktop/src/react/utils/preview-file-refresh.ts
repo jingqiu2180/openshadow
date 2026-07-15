@@ -20,7 +20,7 @@ function showMissingFileNotice(item: PreviewItem, filePath: string): void {
   const fallback = `File is no longer available: ${item.title || filePath}`;
   const translated = window.t?.('preview.fileMissing', { title: item.title || filePath });
   const text = translated && translated !== 'preview.fileMissing' ? translated : fallback;
-  window.dispatchEvent(new CustomEvent('hana-inline-notice', {
+  window.dispatchEvent(new CustomEvent('openshadow-inline-notice', {
     detail: { text, type: 'error' },
   }));
 }

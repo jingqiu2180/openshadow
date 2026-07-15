@@ -103,7 +103,7 @@
 
 .folderSelectWrapShowHistory .folderHistory {
     display: block;
-    animation: hana-folder-history-in var(--duration-fast) var(--ease-out);
+    animation: openshadow-folder-history-in var(--duration-fast) var(--ease-out);
 }
 
 .folderHistoryList {

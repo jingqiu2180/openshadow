@@ -87,7 +87,7 @@ describe('OnboardingApp locale switching', () => {
       callback(0);
       return 1;
     });
-    vi.stubGlobal('hana', {
+    vi.stubGlobal('openshadow', {
       getServerPort: vi.fn(async () => '62950'),
       getServerToken: vi.fn(async () => 'token'),
       getSplashInfo: vi.fn(async () => ({ locale: 'zh-CN', agentName: 'Shadow' })),
@@ -154,7 +154,7 @@ describe('OnboardingApp locale switching', () => {
       target: { value: 'http://192.168.31.75:14500' },
     });
     fireEvent.change(screen.getByLabelText('访问密钥'), {
-      target: { value: 'hana_dev_remote_secret' },
+      target: { value: 'openshadow_dev_remote_secret' },
     });
     fireEvent.click(screen.getByRole('button', { name: '连接' }));
 

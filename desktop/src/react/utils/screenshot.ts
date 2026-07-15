@@ -17,7 +17,7 @@ function getErrorMessage(err: unknown): string {
 }
 
 function dispatchInlineNotice(text: string, type: 'success' | 'error', deskDir?: string) {
-  window.dispatchEvent(new CustomEvent('hana-inline-notice', {
+  window.dispatchEvent(new CustomEvent('openshadow-inline-notice', {
     detail: { text, type, deskDir },
   }));
 }
@@ -180,13 +180,13 @@ export async function takeScreenshot(targetMessageId: string, sessionPath: strin
   if (messages.length === 0) return;
 
   // 2. 读取截图设置
-  const color = localStorage.getItem('hana-screenshot-color') || 'light';
-  const width = localStorage.getItem('hana-screenshot-width') || 'mobile';
+  const color = localStorage.getItem('openshadow-screenshot-color') || 'light';
+  const width = localStorage.getItem('openshadow-screenshot-width') || 'mobile';
   const theme = buildThemeName(color, width);
 
   const t = window.t ?? ((p: string) => p);
-  const hana = (window as any).hana;
-  if (!hana?.screenshotRender) {
+  const openshadow = (window as any).openshadow;
+  if (!openshadow?.screenshotRender) {
     dispatchInlineNotice(t('common.screenshotFailed'), 'error');
     return;
   }
@@ -210,7 +210,7 @@ export async function takeScreenshot(targetMessageId: string, sessionPath: strin
         imageCache,
         { index: i + 1, total: chunks.length },
       );
-      const result = await hana.screenshotRender(payload) as ScreenshotRenderResult;
+      const result = await openshadow.screenshotRender(payload) as ScreenshotRenderResult;
       if (!result.success) {
         throw new Error(result.error || t('common.screenshotFailed'));
       }
@@ -235,13 +235,13 @@ export async function takeScreenshot(targetMessageId: string, sessionPath: strin
  * Markdown 编辑器截图（纯文章模式）。
  */
 export async function takeArticleScreenshot(markdown: string, options: ArticleScreenshotOptions = {}): Promise<void> {
-  const color = localStorage.getItem('hana-screenshot-color') || 'light';
-  const width = localStorage.getItem('hana-screenshot-width') || 'mobile';
+  const color = localStorage.getItem('openshadow-screenshot-color') || 'light';
+  const width = localStorage.getItem('openshadow-screenshot-width') || 'mobile';
   const theme = buildThemeName(color, width);
 
   const t = window.t ?? ((p: string) => p);
-  const hana = (window as any).hana;
-  if (!hana?.screenshotRender) {
+  const openshadow = (window as any).openshadow;
+  if (!openshadow?.screenshotRender) {
     dispatchInlineNotice(t('common.screenshotFailed'), 'error');
     return;
   }
@@ -249,7 +249,7 @@ export async function takeArticleScreenshot(markdown: string, options: ArticleSc
   const homeFolder = useStore.getState().homeFolder || null;
   const endProgress = beginScreenshotProgress(1, 1);
   try {
-    const result = await hana.screenshotRender({
+    const result = await openshadow.screenshotRender({
       mode: 'article',
       theme,
       markdown,
@@ -318,8 +318,8 @@ async function resolveAssistantFallbackAvatar(state: StoreSnapshot): Promise<str
 }
 
 async function fetchAvatarAsDataUrl(role: string, agentId: string | null): Promise<string | null> {
-  const port = await (window as any).hana?.getServerPort?.();
-  const token = await (window as any).hana?.getServerToken?.();
+  const port = await (window as any).openshadow?.getServerPort?.();
+  const token = await (window as any).openshadow?.getServerToken?.();
   const connection = createLocalServerConnection({ serverPort: port, serverToken: token });
   if (!connection || !connection.token) return null;
 

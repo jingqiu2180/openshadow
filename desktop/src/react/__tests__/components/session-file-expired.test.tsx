@@ -417,8 +417,8 @@ describe('expired session file presentation', () => {
         userId: 'user_remote',
         studioId: 'studio_remote',
         label: 'Remote Hana',
-        baseUrl: 'https://hana.example',
-        wsUrl: 'wss://hana.example',
+        baseUrl: 'https://openshadow.example',
+        wsUrl: 'wss://openshadow.example',
         token: 'remote token',
         authState: 'paired',
         trustState: 'tunnel',
@@ -476,7 +476,7 @@ describe('expired session file presentation', () => {
 
     expect(screen.getByRole('img', { name: 'img.png' })).toHaveAttribute(
       'src',
-      'https://hana.example/api/resources/res_sf_img/content',
+      'https://openshadow.example/api/resources/res_sf_img/content',
     );
   });
 
@@ -489,8 +489,8 @@ describe('expired session file presentation', () => {
         userId: 'user_lan',
         studioId: 'studio_lan',
         label: 'LAN Hana',
-        baseUrl: 'http://hana.local:14500',
-        wsUrl: 'ws://hana.local:14500',
+        baseUrl: 'http://openshadow.local:14500',
+        wsUrl: 'ws://openshadow.local:14500',
         token: null,
         authState: 'paired',
         trustState: 'lan',
@@ -548,7 +548,7 @@ describe('expired session file presentation', () => {
     );
 
     const download = screen.getByRole('link', { name: '下载到本机 demo.pdf' });
-    expect(download).toHaveAttribute('href', 'http://hana.local:14500/api/resources/res_sf_demo/content');
+    expect(download).toHaveAttribute('href', 'http://openshadow.local:14500/api/resources/res_sf_demo/content');
     expect(download).toHaveAttribute('download', 'demo.pdf');
   });
 });

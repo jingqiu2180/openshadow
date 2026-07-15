@@ -164,7 +164,7 @@ export const AssistantMessage = memo(function AssistantMessage({
         <div className={styles.avatarRow}>
           <AgentAvatar
             info={displayInfo}
-            className={`${styles.avatar} ${styles.hanaAvatar}`}
+            className={`${styles.avatar} ${styles.openshadowAvatar}`}
             alt={displayName}
           />
           <span className={styles.avatarName}>{displayName}</span>

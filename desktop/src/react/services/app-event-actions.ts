@@ -164,7 +164,7 @@ export function handleAppEvent(type: string, data: any = {}, options: AppEventOp
       useStore.setState((state: any) => ({
         skillCatalogVersion: (Number(state.skillCatalogVersion) || 0) + 1,
       }));
-      window.dispatchEvent(new CustomEvent('hana-skills-changed', { detail: data || {} }));
+      window.dispatchEvent(new CustomEvent('openshadow-skills-changed', { detail: data || {} }));
       if (options.source === 'server') {
         window.platform?.settingsChanged?.('skills-changed', data || {});
       }
@@ -270,7 +270,7 @@ export function handleAppEvent(type: string, data: any = {}, options: AppEventOp
       window.setPaperTexture(data.enabled);
       break;
     case 'leaves-overlay-changed':
-      window.dispatchEvent(new CustomEvent('hana-settings', {
+      window.dispatchEvent(new CustomEvent('openshadow-settings', {
         detail: { type: 'leaves-overlay-changed', enabled: data.enabled },
       }));
       break;

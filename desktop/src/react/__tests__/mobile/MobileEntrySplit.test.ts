@@ -65,8 +65,8 @@ describe('Mobile PWA entry split', () => {
     const entrySource = readFileSync(path.join(process.cwd(), 'desktop/src/mobile-main.tsx'), 'utf8');
     const serviceWorkerSource = readFileSync(path.join(process.cwd(), 'desktop/src/mobile-sw.js'), 'utf8');
 
-    expect(entrySource).toContain('hana-mobile-update-available');
-    expect(entrySource).toContain('hana-mobile-apply-update');
+    expect(entrySource).toContain('openshadow-mobile-update-available');
+    expect(entrySource).toContain('openshadow-mobile-apply-update');
     expect(entrySource).toContain('updatefound');
     expect(entrySource).toContain('controllerchange');
     expect(entrySource).toContain('registration.update()');
@@ -77,7 +77,7 @@ describe('Mobile PWA entry split', () => {
   it('serves mobile PWA assets explicitly in Vite dev instead of falling back to HTML', () => {
     const viteConfig = readFileSync(path.join(process.cwd(), 'vite.config.ts'), 'utf8');
 
-    expect(viteConfig).toContain("name: 'hana-serve-mobile-pwa-static-files'");
+    expect(viteConfig).toContain("name: 'openshadow-serve-mobile-pwa-static-files'");
     expect(viteConfig).toContain("['/sw.js'");
     expect(viteConfig).toContain("'application/javascript; charset=utf-8'");
     expect(viteConfig).toContain("['/manifest.webmanifest'");

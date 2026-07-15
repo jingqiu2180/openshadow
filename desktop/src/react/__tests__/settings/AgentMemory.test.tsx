@@ -11,7 +11,7 @@ type MockResponse = { json: () => Promise<any> };
 
 const openshadowFetchMock = vi.fn(async (_url: string, _opts?: RequestInit): Promise<MockResponse> => ({
   json: async () => ({
-    agentId: 'hana',
+    agentId: 'openshadow',
     status: 'degraded',
     reason: null,
     failedSteps: ['deepMemory'],
@@ -75,7 +75,7 @@ describe('Agent memory settings health notice', () => {
 
     render(
       <MemorySection
-        agentId="hana"
+        agentId="openshadow"
         hasUtilityModel
         memoryEnabled
         currentPins={[]}
@@ -84,7 +84,7 @@ describe('Agent memory settings health notice', () => {
 
     await waitFor(() => {
       expect(openshadowFetchMock).toHaveBeenCalledWith(
-        '/api/memories/health?agentId=hana',
+        '/api/memories/health?agentId=openshadow',
         expect.objectContaining({ signal: expect.any(AbortSignal) }),
       );
     });

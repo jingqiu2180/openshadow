@@ -532,7 +532,7 @@ export function PluginsTab() {
 
                     {/* Enable/disable toggle */}
                     <button
-                      className={`hana-toggle${enabled ? ' on' : ''}`}
+                      className={`openshadow-toggle${enabled ? ' on' : ''}`}
                       disabled={restricted}
                       onClick={() => togglePlugin(plugin.id, !enabled)}
                     />
@@ -642,7 +642,7 @@ export function PluginsTab() {
             const value = configDraft[key];
             const control = property.type === 'boolean' ? (
               <button
-                className={`hana-toggle${value === true ? ' on' : ''}`}
+                className={`openshadow-toggle${value === true ? ' on' : ''}`}
                 onClick={() => updateConfigDraft(key, value !== true)}
               />
             ) : property.enum ? (

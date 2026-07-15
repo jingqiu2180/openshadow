@@ -31,7 +31,7 @@ describe('app-file-drag', () => {
       }],
     });
 
-    expect(payload.dragId).toMatch(/^hana-drag-/);
+    expect(payload.dragId).toMatch(/^openshadow-drag-/);
     expect(readAppFileDragPayload(dataTransfer)).toEqual(payload);
     expect(getActiveAppFileDragPayload()).toEqual(payload);
 

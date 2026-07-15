@@ -17,7 +17,7 @@ interface OverlayProps {
   className?: string;
   backdropClassName?: string;
   duration?: number;
-  /** 禁用 Overlay 默认的容器进出动画（hana-scale-in / hana-fade-down），让 className 自带的动画接管。 */
+  /** 禁用 Overlay 默认的容器进出动画（openshadow-scale-in / openshadow-fade-down），让 className 自带的动画接管。 */
   disableContainerAnimation?: boolean;
 }
 

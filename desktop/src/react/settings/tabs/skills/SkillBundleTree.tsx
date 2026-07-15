@@ -40,11 +40,11 @@ interface SkillBundleTreeProps {
 }
 
 function skillDragType() {
-  return 'application/x-hana-skill-name';
+  return 'application/x-openshadow-skill-name';
 }
 
 function bundleDragType() {
-  return 'application/x-hana-skill-bundle-id';
+  return 'application/x-openshadow-skill-bundle-id';
 }
 
 function startSkillDrag(event: React.DragEvent<HTMLDivElement>, skillName: string) {
@@ -217,7 +217,7 @@ export function SkillBundleTree({
                   {mode === 'agent' && onToggleBundle ? (
                     <button
                       data-testid={`skill-bundle-toggle-${bundle.id}`}
-                      className={`hana-toggle mini${state.all ? ' on' : ''}${state.partial ? ' bundle-mixed' : ''}`}
+                      className={`openshadow-toggle mini${state.all ? ' on' : ''}${state.partial ? ' bundle-mixed' : ''}`}
                       type="button"
                       title={state.next ? t('settings.skills.enableBundleTitle') : t('settings.skills.disableBundleTitle')}
                       aria-label={state.next ? t('settings.skills.enableBundleAriaLabel', { name: bundle.name }) : t('settings.skills.disableBundleAriaLabel', { name: bundle.name })}

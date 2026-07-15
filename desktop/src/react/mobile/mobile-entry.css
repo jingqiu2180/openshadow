@@ -76,7 +76,7 @@ body.paper-texture .jian-card,
 body.paper-texture .msg-card,
 body.paper-texture .input-wrapper,
 body.paper-texture .browser-floating-card,
-body.paper-texture .hana-toast,
+body.paper-texture .openshadow-toast,
 body.paper-texture .ob-input,
 body.paper-texture .provider-card {
     background-image: url('../../assets/textures/rice-paper.png');
@@ -433,7 +433,7 @@ html[data-platform="linux"] .tb-toggle-right {
 }
 
 .browser-bg-globe {
-    animation: hana-globe-spin 3s linear infinite;
+    animation: openshadow-globe-spin 3s linear infinite;
 }
 
 .session-list {
@@ -468,7 +468,7 @@ html[data-platform="linux"] .tb-toggle-right {
     text-align: center;
 }
 
-.hana-toggle {
+.openshadow-toggle {
     position: relative;
     width: 36px;
     height: 20px;
@@ -481,7 +481,7 @@ html[data-platform="linux"] .tb-toggle-right {
     transition: background var(--duration-slow);
 }
 
-.hana-toggle::after {
+.openshadow-toggle::after {
     content: "";
     position: absolute;
     top: 3px;
@@ -493,26 +493,26 @@ html[data-platform="linux"] .tb-toggle-right {
     transition: transform var(--duration-slow);
 }
 
-.hana-toggle:hover {
+.openshadow-toggle:hover {
     filter: brightness(0.92);
 }
 
-.hana-toggle.on {
+.openshadow-toggle.on {
     background: var(--accent);
 }
 
-.hana-toggle.on::after {
+.openshadow-toggle.on::after {
     transform: translateX(16px);
 }
 
-.hana-toggle.disabled,
-.hana-toggle:disabled {
+.openshadow-toggle.disabled,
+.openshadow-toggle:disabled {
     opacity: 0.35;
     cursor: not-allowed;
     pointer-events: none;
 }
 
-.hana-toggle-label {
+.openshadow-toggle-label {
     color: var(--text-muted);
     font-size: 0.78rem;
 }
@@ -944,7 +944,7 @@ body.resizing .jian-sidebar-inner {
     transition: none !important;
 }
 
-.hana-toast {
+.openshadow-toast {
     position: fixed;
     top: calc(var(--titlebar-h) + 12px);
     left: 50%;
@@ -965,25 +965,25 @@ body.resizing .jian-sidebar-inner {
     transition: opacity var(--duration-slow), transform var(--duration-slow);
 }
 
-.hana-toast.show {
+.openshadow-toast.show {
     opacity: 1;
     pointer-events: auto;
     transform: translateX(-50%) translateY(0);
 }
 
-.hana-toast.error {
+.openshadow-toast.error {
     background: var(--bg-card, #fff);
     color: var(--text-muted);
 }
 
-.hana-toast-close,
-.hana-toast-action {
+.openshadow-toast-close,
+.openshadow-toast-action {
     font: inherit;
     color: inherit;
     cursor: default;
 }
 
-.hana-toast-close {
+.openshadow-toast-close {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -994,14 +994,14 @@ body.resizing .jian-sidebar-inner {
     opacity: 0.5;
 }
 
-.hana-toast-actions {
+.openshadow-toast-actions {
     display: flex;
     align-items: center;
     gap: 6px;
     margin-left: 8px;
 }
 
-.hana-toast-action {
+.openshadow-toast-action {
     padding: 2px 8px;
     border: 1px solid var(--border-light, #ddd);
     border-radius: 3px;
@@ -1095,7 +1095,7 @@ body.resizing .jian-sidebar-inner {
     cursor: default;
     transition: box-shadow var(--duration-fast);
     -webkit-app-region: no-drag;
-    animation: hana-card-slide-down var(--duration-slow) var(--ease-out) both;
+    animation: openshadow-card-slide-down var(--duration-slow) var(--ease-out) both;
 }
 
 .browser-floating-card:hover {
@@ -1239,7 +1239,7 @@ body.resizing .jian-sidebar-inner {
     max-width: 440px;
     overflow-y: auto;
     --slide-y: 10px;
-    animation: hana-fade-up var(--duration-slow) ease-out;
+    animation: openshadow-fade-up var(--duration-slow) ease-out;
 }
 
 .onboarding-step.active {
@@ -1390,7 +1390,7 @@ body.resizing .jian-sidebar-inner {
 }
 
 .context-menu,
-.hana-toast,
+.openshadow-toast,
 .browser-floating-card,
 .drop-overlay {
     -webkit-app-region: no-drag;

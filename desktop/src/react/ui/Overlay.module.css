@@ -24,11 +24,11 @@
 /* ── 进出动画 ── */
 
 .enter {
-    animation: hana-fade-in var(--duration-slow) var(--ease-out);
+    animation: openshadow-fade-in var(--duration-slow) var(--ease-out);
 }
 
 .exit {
-    animation: hana-fade-out var(--duration-fast) var(--ease-in) forwards;
+    animation: openshadow-fade-out var(--duration-fast) var(--ease-in) forwards;
 }
 
 /* ── 内容容器（纯结构，不带视觉样式）── */
@@ -40,11 +40,11 @@
 }
 
 .container-enter {
-    animation: hana-scale-in var(--duration-slow) var(--ease-out);
+    animation: openshadow-scale-in var(--duration-slow) var(--ease-out);
 }
 
 .container-exit {
-    animation: hana-fade-down var(--duration-fast) var(--ease-in) forwards;
+    animation: openshadow-fade-down var(--duration-fast) var(--ease-in) forwards;
 }
 
 /* ── 默认卡片外观（消费者不提供 className 时使用）── */

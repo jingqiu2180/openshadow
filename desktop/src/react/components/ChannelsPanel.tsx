@@ -32,7 +32,7 @@ import chatStyles from './chat/Chat.module.css';
 const CHANNEL_SCROLL_THRESHOLD = 80;
 const EMPTY_CHAT_ITEMS: ChatListItem[] = [];
 const PHONE_STREAM_MESSAGE_PREFIX = 'agent-phone-stream';
-const CHANNEL_COMPOSER_FOCUS_EVENT = 'hana-channel-composer-focus';
+const CHANNEL_COMPOSER_FOCUS_EVENT = 'openshadow-channel-composer-focus';
 
 function channelMaxScrollTop(el: HTMLElement): number {
   return Math.max(0, el.scrollHeight - el.clientHeight);

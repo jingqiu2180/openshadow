@@ -70,27 +70,27 @@ describe('useBridgeState snapshot hydration', () => {
   beforeEach(() => {
     Object.keys(mockState).forEach(key => delete mockState[key]);
     Object.assign(mockState, {
-      currentAgentId: 'hana',
+      currentAgentId: 'openshadow',
       showToast: vi.fn(),
       settingsSnapshot: {
-        key: 'local:snapshot:hana',
+        key: 'local:snapshot:openshadow',
         status: 'ready',
         data: {
-          agentId: 'hana',
+          agentId: 'openshadow',
           publicIshiki: 'snapshot-public-ishiki',
           bridgeStatus: {
-            agentId: 'hana',
+            agentId: 'openshadow',
             telegram: {
               enabled: true,
               configured: true,
               status: 'connected',
               token: 'masked-token',
-              agentId: 'hana',
+              agentId: 'openshadow',
             },
-            feishu: { enabled: false, status: 'disconnected', agentId: 'hana' },
-            whatsapp: { enabled: false, status: 'disconnected', agentId: 'hana' },
-            qq: { enabled: false, status: 'disconnected', agentId: 'hana' },
-            wechat: { enabled: false, status: 'disconnected', token: '', agentId: 'hana' },
+            feishu: { enabled: false, status: 'disconnected', agentId: 'openshadow' },
+            whatsapp: { enabled: false, status: 'disconnected', agentId: 'openshadow' },
+            qq: { enabled: false, status: 'disconnected', agentId: 'openshadow' },
+            wechat: { enabled: false, status: 'disconnected', token: '', agentId: 'openshadow' },
             permissionMode: 'operate',
             readOnly: false,
             receiptEnabled: true,
@@ -107,7 +107,7 @@ describe('useBridgeState snapshot hydration', () => {
     mockHanaFetch.mockReset();
     mockUpdateSettingsSnapshot.mockClear();
     mockHanaFetch.mockImplementation((url: string) => {
-      if (url === '/api/bridge/status?agentId=hana') {
+      if (url === '/api/bridge/status?agentId=openshadow') {
         return new Promise<Response>(() => {});
       }
       throw new Error(`unexpected request: ${url}`);
@@ -128,7 +128,7 @@ describe('useBridgeState snapshot hydration', () => {
     expect(screen.getByTestId('telegram-token')).toHaveTextContent('masked-token');
     expect(screen.getByTestId('public-ishiki')).toHaveTextContent('snapshot-public-ishiki');
     expect(mockHanaFetch).toHaveBeenCalledWith(
-      '/api/bridge/status?agentId=hana',
+      '/api/bridge/status?agentId=openshadow',
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });
@@ -136,10 +136,10 @@ describe('useBridgeState snapshot hydration', () => {
   it('keeps saved public ishiki in the settings snapshot for remounts', async () => {
     mockState.settingsSnapshot.data.publicIshiki = '';
     mockHanaFetch.mockImplementation((url: string, opts?: RequestInit) => {
-      if (url === '/api/bridge/status?agentId=hana') {
+      if (url === '/api/bridge/status?agentId=openshadow') {
         return new Promise<Response>(() => {});
       }
-      if (url === '/api/agents/hana/public-ishiki') {
+      if (url === '/api/agents/openshadow/public-ishiki') {
         expect(opts).toMatchObject({
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

@@ -434,7 +434,7 @@ describe('SkillsTab — sticky skillsViewAgentId & toggleSkill race guard', () =
 
     skillName = 'reflected-workflow';
     await act(async () => {
-      window.dispatchEvent(new CustomEvent('hana-skills-changed', {
+      window.dispatchEvent(new CustomEvent('openshadow-skills-changed', {
         detail: { agentId: 'agent-a' },
       }));
     });

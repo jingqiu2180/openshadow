@@ -272,7 +272,7 @@ function jsonResponse(body: unknown, ok = true): Response {
     Object.keys(mockState).forEach(k => delete mockState[k]);
     Object.assign(mockState, initialStateFactory());
     Object.assign(mockState, { workspaceDeskStateByRoot: {} as Record<string, unknown> });
-    (globalThis.window as unknown as { hana?: unknown }).hana = {};
+    (globalThis.window as unknown as { openshadow?: unknown }).openshadow = {};
     installStoreMethods();
     mockFetch.mockReset();
     mockClearChat.mockReset();
@@ -440,18 +440,18 @@ function jsonResponse(body: unknown, ok = true): Response {
 
   it('continues a deleted-agent session by creating and switching to the returned primary-agent session', async () => {
     const oldPath = '/tmp/agents/deleted/sessions/old.jsonl';
-    const newPath = '/tmp/agents/hana/sessions/new.jsonl';
+    const newPath = '/tmp/agents/openshadow/sessions/new.jsonl';
     mockFetch.mockImplementation(async (url: string) => {
       if (url === '/api/sessions/continue-deleted-agent') {
-        return jsonResponse({ ok: true, path: newPath, agentId: 'hana', agentName: 'Hana' });
+        return jsonResponse({ ok: true, path: newPath, agentId: 'openshadow', agentName: 'Hana' });
       }
       if (url === '/api/sessions') {
-        return jsonResponse([{ path: newPath, agentId: 'hana', agentName: 'Hana', cwd: '/tmp/work' }]);
+        return jsonResponse([{ path: newPath, agentId: 'openshadow', agentName: 'Hana', cwd: '/tmp/work' }]);
       }
       if (url === '/api/sessions/switch') {
         return jsonResponse({
           ok: true,
-          agentId: 'hana',
+          agentId: 'openshadow',
           agentName: 'Hana',
           cwd: '/tmp/work',
           workspaceFolders: [],
@@ -511,9 +511,9 @@ function jsonResponse(body: unknown, ok = true): Response {
     });
 
     it('invalidates an in-flight session switch so the new-session desk stays on the agent home folder', async () => {
-      (mockState as Record<string, unknown>).currentSessionPath = '/session/hana.jsonl';
-      (mockState as Record<string, unknown>).deskBasePath = '/workspace/Desktop/project-hana';
-      (mockState as Record<string, unknown>).homeFolder = '/workspace/Desktop/project-hana';
+      (mockState as Record<string, unknown>).currentSessionPath = '/session/openshadow.jsonl';
+      (mockState as Record<string, unknown>).deskBasePath = '/workspace/Desktop/project-openshadow';
+      (mockState as Record<string, unknown>).homeFolder = '/workspace/Desktop/project-openshadow';
 
       let resolveSwitch!: (r: Response) => void;
       const switchResponse = new Promise<Response>(resolve => { resolveSwitch = resolve; });
@@ -532,8 +532,8 @@ function jsonResponse(body: unknown, ok = true): Response {
 
       expect(mockState.currentSessionPath).toBeNull();
       expect(mockState.pendingNewSession).toBe(true);
-      expect(mockState.selectedFolder).toBe('/workspace/Desktop/project-hana');
-      expect(mockState.deskBasePath).toBe('/workspace/Desktop/project-hana');
+      expect(mockState.selectedFolder).toBe('/workspace/Desktop/project-openshadow');
+      expect(mockState.deskBasePath).toBe('/workspace/Desktop/project-openshadow');
       expect(deskActionMocks.activateWorkspaceDesk).not.toHaveBeenCalledWith('/workspace/Desktop');
     });
 
@@ -546,7 +546,7 @@ function jsonResponse(body: unknown, ok = true): Response {
 
       await createNewSession();
 
-      const permissionEvent = dispatchedEvents.filter(e => e.type === 'hana-plan-mode').at(-1);
+      const permissionEvent = dispatchedEvents.filter(e => e.type === 'openshadow-plan-mode').at(-1);
       expect(permissionEvent?.detail).toEqual({ enabled: true, mode: 'read_only' });
       expect(mockState.sessionPermissionMode).toBe('read_only');
       expect(mockState.pendingNewSessionPermissionMode).toBe('read_only');
@@ -733,12 +733,12 @@ function jsonResponse(body: unknown, ok = true): Response {
     });
 
     it('carries an explicit project id from the new-session draft into session creation', async () => {
-      await createNewSession({ projectId: 'project-hana', cwd: '/workspace/project-hana' });
+      await createNewSession({ projectId: 'project-openshadow', cwd: '/workspace/project-openshadow' });
       mockFetch.mockResolvedValueOnce(jsonResponse({
         ok: true,
         path: '/session/new.jsonl',
-        cwd: '/workspace/project-hana',
-        projectId: 'project-hana',
+        cwd: '/workspace/project-openshadow',
+        projectId: 'project-openshadow',
         workspaceFolders: [],
       }));
       mockFetch.mockResolvedValueOnce(jsonResponse([]));
@@ -750,8 +750,8 @@ function jsonResponse(body: unknown, ok = true): Response {
         expect.objectContaining({
           body: JSON.stringify({
             memoryEnabled: true,
-            cwd: '/workspace/project-hana',
-            projectId: 'project-hana',
+            cwd: '/workspace/project-openshadow',
+            projectId: 'project-openshadow',
             permissionMode: 'ask',
             currentSessionPath: null,
           }),

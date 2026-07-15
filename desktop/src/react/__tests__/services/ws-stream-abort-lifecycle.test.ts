@@ -78,7 +78,7 @@ describe('ws stream lifecycle after abort', () => {
         firstMessage: '',
         modified: '2026-05-08T00:00:00.000Z',
         messageCount: 0,
-        agentId: 'hana',
+        agentId: 'openshadow',
         agentName: 'Hana',
         cwd: null,
       }],

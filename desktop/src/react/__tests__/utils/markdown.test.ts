@@ -80,7 +80,7 @@ describe('renderMarkdown', () => {
     ].join('\n'));
 
     const refMatch = html.match(
-      /<sup class="footnote-ref"><a href="#(?<footnoteId>fn-hana-fn-[a-z0-9]+-1)" id="(?<refId>fnref-hana-fn-[a-z0-9]+-1)" role="doc-noteref">1<\/a><\/sup>/,
+      /<sup class="footnote-ref"><a href="#(?<footnoteId>fn-openshadow-fn-[a-z0-9]+-1)" id="(?<refId>fnref-openshadow-fn-[a-z0-9]+-1)" role="doc-noteref">1<\/a><\/sup>/,
     );
 
     expect(refMatch?.groups?.footnoteId).toBeTruthy();
@@ -98,9 +98,9 @@ describe('renderMarkdown', () => {
     const firstAgain = renderMarkdown('引用[^1]\n\n[^1]: 第一条');
     const second = renderMarkdown('引用[^1]\n\n[^1]: 第二条');
 
-    const firstId = first.match(/id="(?<id>fn-hana-fn-[a-z0-9]+-1)"/)?.groups?.id;
-    const firstAgainId = firstAgain.match(/id="(?<id>fn-hana-fn-[a-z0-9]+-1)"/)?.groups?.id;
-    const secondId = second.match(/id="(?<id>fn-hana-fn-[a-z0-9]+-1)"/)?.groups?.id;
+    const firstId = first.match(/id="(?<id>fn-openshadow-fn-[a-z0-9]+-1)"/)?.groups?.id;
+    const firstAgainId = firstAgain.match(/id="(?<id>fn-openshadow-fn-[a-z0-9]+-1)"/)?.groups?.id;
+    const secondId = second.match(/id="(?<id>fn-openshadow-fn-[a-z0-9]+-1)"/)?.groups?.id;
 
     expect(firstId).toBeTruthy();
     expect(firstAgainId).toBe(firstId);
@@ -259,9 +259,9 @@ describe('renderMarkdown', () => {
     ].join('\n'));
 
     expect(html).toMatch(/<section class="footnotes" role="doc-endnotes">/);
-    expect(html).toMatch(/<sup class="footnote-ref"><a href="#fn-hana-fn-[a-z0-9]+-1" id="fnref-hana-fn-[a-z0-9]+-1" role="doc-noteref" rel="noopener noreferrer">1<\/a><\/sup>/);
-    expect(html).toMatch(/<li id="fn-hana-fn-[a-z0-9]+-1">/);
-    expect(html).toMatch(/<a href="#fnref-hana-fn-[a-z0-9]+-1" class="footnote-backref" role="doc-backlink" title="Jump back to reference" rel="noopener noreferrer">(?:↩|&#8617;)<\/a>/);
+    expect(html).toMatch(/<sup class="footnote-ref"><a href="#fn-openshadow-fn-[a-z0-9]+-1" id="fnref-openshadow-fn-[a-z0-9]+-1" role="doc-noteref" rel="noopener noreferrer">1<\/a><\/sup>/);
+    expect(html).toMatch(/<li id="fn-openshadow-fn-[a-z0-9]+-1">/);
+    expect(html).toMatch(/<a href="#fnref-openshadow-fn-[a-z0-9]+-1" class="footnote-backref" role="doc-backlink" title="Jump back to reference" rel="noopener noreferrer">(?:↩|&#8617;)<\/a>/);
   });
 
   it('strips unsafe raw footnote ids classes and roles in markdown preview mode', () => {
@@ -269,14 +269,14 @@ describe('renderMarkdown', () => {
       '<section class="footnotes evil" role="banner">',
       '<ol>',
       '<li id="evil" onclick="alert(1)">',
-      '<a id="fnref-hana-fn-safe-1" class="footnote-backref evil" href="javascript:alert(2)" role="button">back</a>',
+      '<a id="fnref-openshadow-fn-safe-1" class="footnote-backref evil" href="javascript:alert(2)" role="button">back</a>',
       '</li>',
       '</ol>',
       '</section>',
     ].join(''));
 
     expect(html).toContain('<section class="footnotes">');
-    expect(html).toContain('<a id="fnref-hana-fn-safe-1" class="footnote-backref">back</a>');
+    expect(html).toContain('<a id="fnref-openshadow-fn-safe-1" class="footnote-backref">back</a>');
     expect(html).not.toContain('evil');
     expect(html).not.toContain('role="banner"');
     expect(html).not.toContain('role="button"');

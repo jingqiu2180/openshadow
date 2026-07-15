@@ -58,10 +58,10 @@ function readAppearancePrefs(): AppearancePrefs {
   const concreteTheme = document.documentElement.getAttribute('data-theme');
   return {
     currentTheme: registry.migrateSavedTheme(localStorage.getItem(registry.STORAGE_KEY)),
-    serifEnabled: localStorage.getItem('hana-font-serif') !== '0',
+    serifEnabled: localStorage.getItem('openshadow-font-serif') !== '0',
     paperTextureEnabled: isPaperTextureEnabled(localStorage),
     paperTextureBlocked: isPaperTextureBlockedTheme(concreteTheme),
-    leavesOverlayEnabled: localStorage.getItem('hana-leaves-overlay') === '1',
+    leavesOverlayEnabled: localStorage.getItem('openshadow-leaves-overlay') === '1',
   };
 }
 
@@ -254,8 +254,8 @@ export function InterfaceTab() {
             <Toggle
               on={leavesOverlayEnabled}
               onChange={(next) => {
-                localStorage.setItem('hana-leaves-overlay', next ? '1' : '0');
-                window.dispatchEvent(new CustomEvent('hana-settings', {
+                localStorage.setItem('openshadow-leaves-overlay', next ? '1' : '0');
+                window.dispatchEvent(new CustomEvent('openshadow-settings', {
                   detail: { type: 'leaves-overlay-changed', enabled: next },
                 }));
                 platform?.settingsChanged?.('leaves-overlay-changed', { enabled: next });

@@ -187,8 +187,8 @@ export function useBridgeState() {
 
   useEffect(() => {
     const handler = () => loadStatus();
-    window.addEventListener('hana-bridge-reload', handler);
-    return () => window.removeEventListener('hana-bridge-reload', handler);
+    window.addEventListener('openshadow-bridge-reload', handler);
+    return () => window.removeEventListener('openshadow-bridge-reload', handler);
   }, [loadStatus]);
 
   const saveBridgeConfig = async (plat: string, credentials: Record<string, string> | null, enabled?: boolean) => {

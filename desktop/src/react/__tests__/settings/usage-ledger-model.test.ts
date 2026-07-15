@@ -10,7 +10,7 @@ function entry(requestId: string, endedAt: string, totalTokens: number): UsageLe
     durationMs: 10,
     status: 'ok',
     source: { subsystem: 'session', operation: 'reply' },
-    attribution: { kind: 'session', agentId: 'hana', sessionPath: '/s/a.jsonl' },
+    attribution: { kind: 'session', agentId: 'openshadow', sessionPath: '/s/a.jsonl' },
     model: { provider: 'openai', modelId: 'gpt-5', api: 'openai-responses' },
     usage: {
       input: { totalTokens },

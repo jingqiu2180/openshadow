@@ -9,14 +9,14 @@
 
 /* ── Spin ──
    旧名：spin(×5), pv-spin, ring-spin
-   统一为 hana-spin                              */
-@keyframes hana-spin {
+   统一为 openshadow-spin                              */
+@keyframes openshadow-spin {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
 }
 
 /* globe-spin 独立保留：Y 轴旋转，语义不同 */
-@keyframes hana-globe-spin {
+@keyframes openshadow-globe-spin {
     from { transform: rotateY(0deg); }
     to   { transform: rotateY(360deg); }
 }
@@ -24,13 +24,13 @@
 
 /* ── Fade ──
    旧名：svFadeIn, pv-add-overlay-in（纯 opacity）
-   统一为 hana-fade-in                           */
-@keyframes hana-fade-in {
+   统一为 openshadow-fade-in                           */
+@keyframes openshadow-fade-in {
     from { opacity: 0; }
     to   { opacity: 1; }
 }
 
-@keyframes hana-fade-out {
+@keyframes openshadow-fade-out {
     from { opacity: 1; }
     to   { opacity: 0; }
 }
@@ -38,34 +38,34 @@
 
 /* ── Fade + Slide Y ──
    旧名：obFadeIn(10px), msgIn(8px), dropdown-in(4px), tab-fade-in(4px)
-   统一为 hana-fade-up，位移量通过 --slide-y 控制（默认 4px，最常见的 dropdown 场景）  */
-@keyframes hana-fade-up {
+   统一为 openshadow-fade-up，位移量通过 --slide-y 控制（默认 4px，最常见的 dropdown 场景）  */
+@keyframes openshadow-fade-up {
     from { opacity: 0; transform: translateY(var(--slide-y, 4px)); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes hana-fade-down {
+@keyframes openshadow-fade-down {
     from { opacity: 1; transform: translateY(0); }
     to   { opacity: 0; transform: translateY(var(--slide-y, 4px)); }
 }
 
 /* ── Chat Stream Motion（短促、轻柔，仅 opacity/微位移）── */
-@keyframes hana-stream-tail-in {
+@keyframes openshadow-stream-tail-in {
     from { opacity: 0.18; }
     to   { opacity: 1; }
 }
 
-@keyframes hana-chat-soft-down-in {
+@keyframes openshadow-chat-soft-down-in {
     from { opacity: 0; transform: translateY(-3px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes hana-chat-soft-up-in {
+@keyframes openshadow-chat-soft-up-in {
     from { opacity: 0; transform: translateY(3px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes hana-tool-bar-in {
+@keyframes openshadow-tool-bar-in {
     from { opacity: 0; transform: scaleY(0); }
     to   { opacity: 1; transform: scaleY(1); }
 }
@@ -73,7 +73,7 @@
 
 /* ── Scale + Fade ──
    旧名：svSlideIn（scale 0.96 + translateY 8px）  */
-@keyframes hana-scale-in {
+@keyframes openshadow-scale-in {
     from { opacity: 0; transform: scale(0.96) translateY(8px); }
     to   { opacity: 1; transform: scale(1) translateY(0); }
 }
@@ -81,7 +81,7 @@
 /* ── Popout ──
    下拉菜单从触发按钮位置展开。配合 transform-origin: bottom right/left 使用，
    让菜单看起来"从按钮向上长出"。比 fade-up 更明确的"出现"语义  */
-@keyframes hana-popout {
+@keyframes openshadow-popout {
     from { opacity: 0; transform: scale(0.92); }
     to   { opacity: 1; transform: scale(1); }
 }
@@ -89,12 +89,12 @@
 
 /* ── Slide X + Scale（浮窗）──
    旧名：floatSlideIn / floatSlideOut              */
-@keyframes hana-slide-in-left {
+@keyframes openshadow-slide-in-left {
     from { opacity: 0; transform: translateX(-20px) scale(0.97); }
     to   { opacity: 1; transform: translateX(0) scale(1); }
 }
 
-@keyframes hana-slide-out-left {
+@keyframes openshadow-slide-out-left {
     from { opacity: 1; transform: translateX(0) scale(1); }
     to   { opacity: 0; transform: translateX(-12px) scale(0.97); }
 }
@@ -102,12 +102,12 @@
 
 /* ── Slide Y（面板从上方进出）──
    旧名：cwdPanelIn / cwdPanelOut                  */
-@keyframes hana-slide-in-top {
+@keyframes openshadow-slide-in-top {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes hana-slide-out-top {
+@keyframes openshadow-slide-out-top {
     from { opacity: 1; transform: translateY(0); }
     to   { opacity: 0; transform: translateY(-6px); }
 }
@@ -115,7 +115,7 @@
 
 /* ── Slide Down（大幅度，卡片从顶部滑入）──
    旧名：browserCardSlideDown                      */
-@keyframes hana-card-slide-down {
+@keyframes openshadow-card-slide-down {
     from { transform: translateY(-110%); opacity: 0; }
     to   { transform: translateY(0);     opacity: 1; }
 }
@@ -126,15 +126,15 @@
           subagentPulse (1↔0.6)
           oauth-pulse (0.4↔1)
           ss-pulse (0.6↔0.3)
-   统一为 hana-pulse，亮/暗通过 --pulse-lo/--pulse-hi 控制 */
-@keyframes hana-pulse {
+   统一为 openshadow-pulse，亮/暗通过 --pulse-lo/--pulse-hi 控制 */
+@keyframes openshadow-pulse {
     0%, 100% { opacity: var(--pulse-lo, 0.3); }
     50%      { opacity: var(--pulse-hi, 1); }
 }
 
 /* ── Expand（手风琴展开）──
    旧名：compat-expand                             */
-@keyframes hana-expand {
+@keyframes openshadow-expand {
     from { max-height: 0; opacity: 0; }
     to   { max-height: 800px; opacity: 1; }
 }
@@ -142,7 +142,7 @@
 
 /* ── Hint Fade（显示后自动淡出）──
    旧名：pv-hint-fade                              */
-@keyframes hana-hint-fade {
+@keyframes openshadow-hint-fade {
     0%, 60% { opacity: 1; }
     100%    { opacity: 0; }
 }
@@ -150,7 +150,7 @@
 
 /* ── Rise + Clip（确认栏上升/收缩）──
    旧名：session-confirmation-rise/retract          */
-@keyframes hana-rise {
+@keyframes openshadow-rise {
     from {
         opacity: 0;
         transform: translateY(24px);
@@ -163,7 +163,7 @@
     }
 }
 
-@keyframes hana-retract {
+@keyframes openshadow-retract {
     from {
         opacity: 1;
         transform: translateY(0);
@@ -179,7 +179,7 @@
 
 /* ── Typewriter Dots ──
    旧名：typewriterDots（独特，无法归类）            */
-@keyframes hana-typewriter-dots {
+@keyframes openshadow-typewriter-dots {
     0%, 100% { content: '\00a0'; }
     25%      { content: '.'; }
     50%      { content: '..'; }
@@ -187,7 +187,7 @@
 }
 
 /* ── Cycling Dots（从一个英文句号开始循环）── */
-@keyframes hana-cycling-dots {
+@keyframes openshadow-cycling-dots {
     0%, 100% { content: '.'; }
     33%      { content: '..'; }
     66%      { content: '...'; }
@@ -195,7 +195,7 @@
 
 /* ── Folder History（带 translateX 偏移的渐入）──
    旧名：folderHistoryIn（独特：有 translateX(-50%)）*/
-@keyframes hana-folder-history-in {
+@keyframes openshadow-folder-history-in {
     from { opacity: 0; transform: translateX(-50%) translateY(4px); }
     to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }

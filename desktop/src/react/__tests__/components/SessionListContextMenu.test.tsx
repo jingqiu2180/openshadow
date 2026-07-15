@@ -46,24 +46,24 @@ function seedSessions() {
   useStore.setState({
     sessions: [
       {
-        path: '/tmp/agents/hana/sessions/with-summary.jsonl',
+        path: '/tmp/agents/openshadow/sessions/with-summary.jsonl',
         title: 'Has summary',
         firstMessage: 'hello',
         modified: '2026-04-29T08:00:00.000Z',
         messageCount: 2,
-        agentId: 'hana',
+        agentId: 'openshadow',
         agentName: 'Hana',
         cwd: '/tmp/project',
         pinnedAt: null,
         hasSummary: true,
       },
       {
-        path: '/tmp/agents/hana/sessions/no-summary.jsonl',
+        path: '/tmp/agents/openshadow/sessions/no-summary.jsonl',
         title: 'No summary',
         firstMessage: 'hello',
         modified: '2026-04-29T07:00:00.000Z',
         messageCount: 1,
-        agentId: 'hana',
+        agentId: 'openshadow',
         agentName: 'Hana',
         cwd: '/tmp/project',
         pinnedAt: null,
@@ -120,7 +120,7 @@ async function switchToProjectView() {
 
 describe('SessionList context menu', () => {
   beforeEach(() => {
-    window.localStorage.removeItem('hana-session-sidebar-view-mode');
+    window.localStorage.removeItem('openshadow-session-sidebar-view-mode');
     globalThis.t = ((key: string) => {
       if (key === 'yuan.types') return {};
       return key;
@@ -162,7 +162,7 @@ describe('SessionList context menu', () => {
     fireEvent.click(screen.getByText('摘要'));
     expect(screen.queryByTestId('session-summary-card')).not.toBeInTheDocument();
     expect(openshadowFetchMock).not.toHaveBeenCalledWith(
-      '/api/sessions/summary?path=%2Ftmp%2Fagents%2Fhana%2Fsessions%2Fno-summary.jsonl',
+      '/api/sessions/summary?path=%2Ftmp%2Fagents%2Fopenshadow%2Fsessions%2Fno-summary.jsonl',
     );
   });
 
@@ -179,7 +179,7 @@ describe('SessionList context menu', () => {
     expect(menu?.querySelector('.context-menu-divider')).toBeNull();
     expect(screen.queryByTestId('session-summary-card')).not.toBeInTheDocument();
     expect(openshadowFetchMock).not.toHaveBeenCalledWith(
-      '/api/sessions/summary?path=%2Ftmp%2Fagents%2Fhana%2Fsessions%2Fwith-summary.jsonl',
+      '/api/sessions/summary?path=%2Ftmp%2Fagents%2Fopenshadow%2Fsessions%2Fwith-summary.jsonl',
     );
 
     fireEvent.click(screen.getByText('摘要'));
@@ -187,7 +187,7 @@ describe('SessionList context menu', () => {
     expect(await screen.findByTestId('session-summary-card')).toHaveAttribute('data-scrollable', 'true');
     expect(await screen.findByText(/用户在做记忆系统/)).toBeInTheDocument();
     expect(openshadowFetchMock).toHaveBeenCalledWith(
-      '/api/sessions/summary?path=%2Ftmp%2Fagents%2Fhana%2Fsessions%2Fwith-summary.jsonl',
+      '/api/sessions/summary?path=%2Ftmp%2Fagents%2Fopenshadow%2Fsessions%2Fwith-summary.jsonl',
     );
   });
 
@@ -196,7 +196,7 @@ describe('SessionList context menu', () => {
 
     fireEvent.contextMenu(sessionButton('Has summary'), { clientX: 24, clientY: 32 });
     fireEvent.click(await screen.findByText('session.pin'));
-    expect(pinSessionMock).toHaveBeenCalledWith('/tmp/agents/hana/sessions/with-summary.jsonl', true);
+    expect(pinSessionMock).toHaveBeenCalledWith('/tmp/agents/openshadow/sessions/with-summary.jsonl', true);
 
     fireEvent.contextMenu(sessionButton('No summary'), { clientX: 24, clientY: 32 });
     fireEvent.click(await screen.findByText('session.rename'));
@@ -204,18 +204,18 @@ describe('SessionList context menu', () => {
     fireEvent.change(input, { target: { value: 'Renamed summaryless session' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(renameSessionMock).toHaveBeenCalledWith(
-      '/tmp/agents/hana/sessions/no-summary.jsonl',
+      '/tmp/agents/openshadow/sessions/no-summary.jsonl',
       'Renamed summaryless session',
     );
 
     fireEvent.contextMenu(sessionButton('Has summary'), { clientX: 24, clientY: 32 });
     fireEvent.click(await screen.findByText('session.archive'));
-    expect(archiveSessionMock).toHaveBeenCalledWith('/tmp/agents/hana/sessions/with-summary.jsonl');
+    expect(archiveSessionMock).toHaveBeenCalledWith('/tmp/agents/openshadow/sessions/with-summary.jsonl');
   });
 
   it('closes a sidebar browser badge without switching the session row', async () => {
     const browserStates = {
-      '/tmp/agents/hana/sessions/with-summary.jsonl': {
+      '/tmp/agents/openshadow/sessions/with-summary.jsonl': {
         url: 'https://example.com',
         running: false,
         resumable: true,
@@ -240,7 +240,7 @@ describe('SessionList context menu', () => {
     await waitFor(() => {
       expect(openshadowFetchMock).toHaveBeenCalledWith('/api/browser/close-session', expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ sessionPath: '/tmp/agents/hana/sessions/with-summary.jsonl' }),
+        body: JSON.stringify({ sessionPath: '/tmp/agents/openshadow/sessions/with-summary.jsonl' }),
       }));
     });
     expect(switchSessionMock).not.toHaveBeenCalled();
@@ -255,12 +255,12 @@ describe('SessionList context menu', () => {
       if (url.includes('phase=title')) {
         return jsonResponse({
           results: [{
-            path: '/tmp/agents/hana/sessions/title-search.jsonl',
+            path: '/tmp/agents/openshadow/sessions/title-search.jsonl',
             title: '聊天记录搜索',
             firstMessage: 'hello',
             modified: '2026-05-22T08:00:00.000Z',
             messageCount: 2,
-            agentId: 'hana',
+            agentId: 'openshadow',
             agentName: 'Hana',
             cwd: '/tmp/project',
             matchKind: 'title',
@@ -271,12 +271,12 @@ describe('SessionList context menu', () => {
       if (url.includes('phase=content')) {
         return jsonResponse({
           results: [{
-            path: '/tmp/agents/hana/sessions/content-search.jsonl',
+            path: '/tmp/agents/openshadow/sessions/content-search.jsonl',
             title: '排查记录',
             firstMessage: 'hello',
             modified: '2026-05-22T07:00:00.000Z',
             messageCount: 4,
-            agentId: 'hana',
+            agentId: 'openshadow',
             agentName: 'Hana',
             cwd: '/tmp/project',
             matchKind: 'content',
@@ -304,7 +304,7 @@ describe('SessionList context menu', () => {
     const resultButton = screen.getByText('聊天记录搜索').closest('button');
     if (!resultButton) throw new Error('missing search result button');
     fireEvent.click(resultButton);
-    expect(switchSessionMock).toHaveBeenCalledWith('/tmp/agents/hana/sessions/title-search.jsonl');
+    expect(switchSessionMock).toHaveBeenCalledWith('/tmp/agents/openshadow/sessions/title-search.jsonl');
   });
 
   it('uses the session meta font size for the summary body', () => {
@@ -369,9 +369,9 @@ describe('SessionList context menu', () => {
 
   it('renders unread output and running status as row-level status signals', async () => {
     useStore.setState({
-      currentSessionPath: '/tmp/agents/hana/sessions/no-summary.jsonl',
-      streamingSessions: ['/tmp/agents/hana/sessions/with-summary.jsonl'],
-      unreadOutputSessionPaths: ['/tmp/agents/hana/sessions/with-summary.jsonl'],
+      currentSessionPath: '/tmp/agents/openshadow/sessions/no-summary.jsonl',
+      streamingSessions: ['/tmp/agents/openshadow/sessions/with-summary.jsonl'],
+      unreadOutputSessionPaths: ['/tmp/agents/openshadow/sessions/with-summary.jsonl'],
     } as never);
 
     render(<SessionList />);
@@ -385,9 +385,9 @@ describe('SessionList context menu', () => {
 
   it('keeps the status dot after a background session finishes until the user opens it', () => {
     useStore.setState({
-      currentSessionPath: '/tmp/agents/hana/sessions/no-summary.jsonl',
+      currentSessionPath: '/tmp/agents/openshadow/sessions/no-summary.jsonl',
       streamingSessions: [],
-      unreadOutputSessionPaths: ['/tmp/agents/hana/sessions/with-summary.jsonl'],
+      unreadOutputSessionPaths: ['/tmp/agents/openshadow/sessions/with-summary.jsonl'],
     } as never);
 
     render(<SessionList />);
@@ -539,12 +539,12 @@ describe('SessionList context menu', () => {
     vi.spyOn(window, 'confirm').mockReturnValueOnce(true);
     useStore.setState({
       sessions: [{
-        path: '/tmp/agents/hana/sessions/project-1.jsonl',
+        path: '/tmp/agents/openshadow/sessions/project-1.jsonl',
         title: 'Project item 1',
         firstMessage: 'hello',
         modified: new Date().toISOString(),
         messageCount: 1,
-        agentId: 'hana',
+        agentId: 'openshadow',
         agentName: 'Hana',
         cwd: '/tmp/project',
         projectId: 'project-root',
@@ -566,7 +566,7 @@ describe('SessionList context menu', () => {
         return jsonResponse({
           ok: true,
           catalog: { folders: [], projects: [] },
-          assignment: { projectId: 'cwd:', sessionPaths: ['/tmp/agents/hana/sessions/project-1.jsonl'] },
+          assignment: { projectId: 'cwd:', sessionPaths: ['/tmp/agents/openshadow/sessions/project-1.jsonl'] },
         });
       }
       return jsonResponse({});
@@ -590,12 +590,12 @@ describe('SessionList context menu', () => {
   it('starts a new session draft inside the selected project from the hover action', async () => {
     useStore.setState({
       sessions: [{
-        path: '/tmp/agents/hana/sessions/project-1.jsonl',
+        path: '/tmp/agents/openshadow/sessions/project-1.jsonl',
         title: 'Project item 1',
         firstMessage: 'hello',
         modified: new Date().toISOString(),
         messageCount: 1,
-        agentId: 'hana',
+        agentId: 'openshadow',
         agentName: 'Hana',
         cwd: '/tmp/project',
         projectId: 'project-root',
@@ -632,12 +632,12 @@ describe('SessionList context menu', () => {
   it('starts a new session draft inside a cwd project by carrying only cwd', async () => {
     useStore.setState({
       sessions: [{
-        path: '/tmp/agents/hana/sessions/cwd-project.jsonl',
+        path: '/tmp/agents/openshadow/sessions/cwd-project.jsonl',
         title: 'Cwd project item',
         firstMessage: 'hello',
         modified: new Date().toISOString(),
         messageCount: 1,
-        agentId: 'hana',
+        agentId: 'openshadow',
         agentName: 'Hana',
         cwd: '/tmp/project',
         projectId: null,
@@ -669,12 +669,12 @@ describe('SessionList context menu', () => {
   it('shows five project sessions by default and persists the show-all expansion', async () => {
     useStore.setState({
       sessions: Array.from({ length: 6 }, (_, index) => ({
-        path: `/tmp/agents/hana/sessions/project-${index + 1}.jsonl`,
+        path: `/tmp/agents/openshadow/sessions/project-${index + 1}.jsonl`,
         title: `Project item ${index + 1}`,
         firstMessage: 'hello',
         modified: new Date(Date.now() - index * 1000).toISOString(),
         messageCount: 1,
-        agentId: 'hana',
+        agentId: 'openshadow',
         agentName: 'Hana',
         cwd: '/tmp/project',
         projectId: 'project-root',
@@ -725,12 +725,12 @@ describe('SessionList context menu', () => {
     useStore.setState({
       sessions: [
         {
-          path: '/tmp/agents/hana/sessions/project-1.jsonl',
+          path: '/tmp/agents/openshadow/sessions/project-1.jsonl',
           title: 'Project item 1',
           firstMessage: 'hello',
           modified: new Date().toISOString(),
           messageCount: 1,
-          agentId: 'hana',
+          agentId: 'openshadow',
           agentName: 'Hana',
           cwd: '/tmp/project',
           projectId: 'project-root',
@@ -785,12 +785,12 @@ describe('SessionList context menu', () => {
     useStore.setState({
       sessions: [
         {
-          path: '/tmp/agents/hana/sessions/project-1.jsonl',
+          path: '/tmp/agents/openshadow/sessions/project-1.jsonl',
           title: 'Folder child session',
           firstMessage: 'hello',
           modified: new Date().toISOString(),
           messageCount: 1,
-          agentId: 'hana',
+          agentId: 'openshadow',
           agentName: 'Hana',
           cwd: '/tmp/project',
           projectId: 'project-child',
@@ -869,7 +869,7 @@ describe('SessionList context menu', () => {
       expect(openshadowFetchMock).toHaveBeenCalledWith('/api/session-projects/session-assignment', expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
-          sessionPath: '/tmp/agents/hana/sessions/with-summary.jsonl',
+          sessionPath: '/tmp/agents/openshadow/sessions/with-summary.jsonl',
           projectId: 'project-custom',
         }),
       }));
@@ -926,24 +926,24 @@ describe('SessionList context menu', () => {
     useStore.setState({
       sessions: [
         {
-          path: '/tmp/agents/hana/sessions/alpha.jsonl',
+          path: '/tmp/agents/openshadow/sessions/alpha.jsonl',
           title: 'Alpha session',
           firstMessage: 'hello',
           modified: new Date(Date.now() - 1000).toISOString(),
           messageCount: 1,
-          agentId: 'hana',
+          agentId: 'openshadow',
           agentName: 'Hana',
           cwd: '/tmp/alpha-project',
           pinnedAt: null,
           hasSummary: false,
         },
         {
-          path: '/tmp/agents/hana/sessions/beta.jsonl',
+          path: '/tmp/agents/openshadow/sessions/beta.jsonl',
           title: 'Beta session',
           firstMessage: 'hello',
           modified: new Date().toISOString(),
           messageCount: 1,
-          agentId: 'hana',
+          agentId: 'openshadow',
           agentName: 'Hana',
           cwd: '/tmp/beta-project',
           pinnedAt: null,

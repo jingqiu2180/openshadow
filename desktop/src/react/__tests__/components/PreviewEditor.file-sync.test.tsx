@@ -64,7 +64,7 @@ describe('PreviewEditor file sync', () => {
       <PreviewEditor
         ref={ref}
         content="original"
-        filePath="/tmp/hana-note.md"
+        filePath="/tmp/openshadow-note.md"
         mode="markdown"
       />,
     );
@@ -74,7 +74,7 @@ describe('PreviewEditor file sync', () => {
         <PreviewEditor
           ref={ref}
           content="external update"
-          filePath="/tmp/hana-note.md"
+          filePath="/tmp/openshadow-note.md"
           fileVersion={{ mtimeMs: 2, size: 15, sha256: 'external' }}
           mode="markdown"
         />,
@@ -99,7 +99,7 @@ describe('PreviewEditor file sync', () => {
       <PreviewEditor
         ref={markdownRef}
         content="alpha\nbeta"
-        filePath="/tmp/hana-note.md"
+        filePath="/tmp/openshadow-note.md"
         mode="markdown"
       />,
     );
@@ -133,7 +133,7 @@ describe('PreviewEditor file sync', () => {
       <PreviewEditor
         ref={ref}
         content="alpha\nbeta"
-        filePath="/tmp/hana-note.md"
+        filePath="/tmp/openshadow-note.md"
         mode="markdown"
         onSelectionChange={onSelectionChange}
         onSelectionCommit={onSelectionCommit}
@@ -170,7 +170,7 @@ describe('PreviewEditor file sync', () => {
       <PreviewEditor
         ref={ref}
         content="original"
-        filePath="/tmp/hana-note.md"
+        filePath="/tmp/openshadow-note.md"
         fileVersion={fileVersion}
         mode="markdown"
         onContentChange={onContentChange}
@@ -188,7 +188,7 @@ describe('PreviewEditor file sync', () => {
     });
 
     expect(platform.writeFileIfUnchanged).toHaveBeenCalledWith(
-      '/tmp/hana-note.md',
+      '/tmp/openshadow-note.md',
       'user edit',
       fileVersion,
     );
@@ -241,7 +241,7 @@ describe('PreviewEditor file sync', () => {
       <PreviewEditor
         ref={ref}
         content="abcdef"
-        filePath="/tmp/hana-note.md"
+        filePath="/tmp/openshadow-note.md"
         mode="markdown"
       />,
     );
@@ -255,7 +255,7 @@ describe('PreviewEditor file sync', () => {
         <PreviewEditor
           ref={ref}
           content="abcXYZdef"
-          filePath="/tmp/hana-note.md"
+          filePath="/tmp/openshadow-note.md"
           mode="markdown"
         />,
       );
@@ -273,7 +273,7 @@ describe('PreviewEditor file sync', () => {
       <PreviewEditor
         ref={ref}
         content="line 1\nline 2\nline 3"
-        filePath="/tmp/hana-note.md"
+        filePath="/tmp/openshadow-note.md"
         mode="markdown"
       />,
     );
@@ -296,7 +296,7 @@ describe('PreviewEditor file sync', () => {
         <PreviewEditor
           ref={ref}
           content="line 1\ninserted\nline 2\nline 3"
-          filePath="/tmp/hana-note.md"
+          filePath="/tmp/openshadow-note.md"
           mode="markdown"
         />,
       );
@@ -327,7 +327,7 @@ describe('PreviewEditor file sync', () => {
       <PreviewEditor
         ref={ref}
         content={saved}
-        filePath="/tmp/hana-note.md"
+        filePath="/tmp/openshadow-note.md"
         fileVersion={loadedVersion}
         mode="markdown"
         onContentChange={onContentChange}
@@ -346,7 +346,7 @@ describe('PreviewEditor file sync', () => {
         <PreviewEditor
           ref={ref}
           content={coverUpdated}
-          filePath="/tmp/hana-note.md"
+          filePath="/tmp/openshadow-note.md"
           fileVersion={coverVersion}
           mode="markdown"
           onContentChange={onContentChange}
@@ -370,7 +370,7 @@ describe('PreviewEditor file sync', () => {
     expect(ref.current?.getView()?.state.doc.toString()).toBe(merged);
     expect(onContentChange).toHaveBeenCalledWith(merged);
     expect(platform.writeFileIfUnchanged).toHaveBeenCalledWith(
-      '/tmp/hana-note.md',
+      '/tmp/openshadow-note.md',
       merged,
       coverVersion,
     );
@@ -384,7 +384,7 @@ describe('PreviewEditor file sync', () => {
       <PreviewEditor
         ref={ref}
         content="你好ab"
-        filePath="/tmp/hana-note.md"
+        filePath="/tmp/openshadow-note.md"
         mode="markdown"
         onStatsChange={onStatsChange}
       />,
@@ -423,7 +423,7 @@ describe('PreviewEditor file sync', () => {
       <PreviewEditor
         ref={ref}
         content="original"
-        filePath="/tmp/hana-note.md"
+        filePath="/tmp/openshadow-note.md"
         fileVersion={loadedVersion}
         mode="markdown"
         onContentChange={onContentChange}
@@ -464,7 +464,7 @@ describe('PreviewEditor file sync', () => {
 
     expect(platform.writeFileIfUnchanged).toHaveBeenCalledTimes(2);
     expect(platform.writeFileIfUnchanged).toHaveBeenLastCalledWith(
-      '/tmp/hana-note.md',
+      '/tmp/openshadow-note.md',
       'second edit',
       firstVersion,
     );
@@ -493,13 +493,13 @@ describe('PreviewEditor file sync', () => {
     });
 
     vi.mocked(platform.writeFileIfUnchanged!).mockReturnValueOnce(firstWrite);
-    window.addEventListener('hana-inline-notice', onNotice);
+    window.addEventListener('openshadow-inline-notice', onNotice);
 
     const { rerender } = render(
       <PreviewEditor
         ref={ref}
         content="original"
-        filePath="/tmp/hana-note.md"
+        filePath="/tmp/openshadow-note.md"
         fileVersion={loadedVersion}
         mode="markdown"
       />,
@@ -538,7 +538,7 @@ describe('PreviewEditor file sync', () => {
         <PreviewEditor
           ref={ref}
           content="first edit"
-          filePath="/tmp/hana-note.md"
+          filePath="/tmp/openshadow-note.md"
           fileVersion={firstVersion}
           mode="markdown"
         />,
@@ -546,7 +546,7 @@ describe('PreviewEditor file sync', () => {
       await Promise.resolve();
     });
 
-    window.removeEventListener('hana-inline-notice', onNotice);
+    window.removeEventListener('openshadow-inline-notice', onNotice);
 
     expect(ref.current?.getView()?.state.doc.toString()).toBe('second edit');
     expect(notices.some(notice => String(notice.text ?? '').includes('settings.fileChangedOnDisk'))).toBe(false);

@@ -96,7 +96,7 @@ function jsonResponse(data: unknown) {
 
 function installHana(overrides: Record<string, unknown> = {}) {
   vi.stubGlobal('window', Object.assign(window, {
-    hana: {
+    openshadow: {
       getAutoLaunchStatus,
       setAutoLaunchEnabled,
       setKeepAwakeEnabled,

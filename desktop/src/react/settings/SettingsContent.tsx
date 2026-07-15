@@ -155,7 +155,7 @@ export function SettingsContent({
     if (!platform?.onSettingsChanged) return;
     const unsubscribe = platform.onSettingsChanged((type: string, data: unknown) => {
       if (type !== 'skills-changed') return;
-      window.dispatchEvent(new CustomEvent('hana-skills-changed', { detail: data || {} }));
+      window.dispatchEvent(new CustomEvent('openshadow-skills-changed', { detail: data || {} }));
     });
     return typeof unsubscribe === 'function' ? unsubscribe : undefined;
   }, []);

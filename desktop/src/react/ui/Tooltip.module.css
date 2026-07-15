@@ -16,7 +16,7 @@
     line-height: 1.25;
     white-space: nowrap;
     pointer-events: none;
-    animation: hana-fade-up var(--duration-instant) var(--ease-out);
+    animation: openshadow-fade-up var(--duration-instant) var(--ease-out);
     -webkit-app-region: no-drag;
 }
 

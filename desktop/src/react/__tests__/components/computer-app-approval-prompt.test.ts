@@ -233,7 +233,7 @@ describe('computer app approval prompt', () => {
     const listener = (event: Event) => {
       permissionEvents.push((event as CustomEvent).detail || {});
     };
-    window.addEventListener('hana-plan-mode', listener);
+    window.addEventListener('openshadow-plan-mode', listener);
     openshadowFetchMock
       .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, mode: 'operate' }), { status: 200 }))
       .mockResolvedValueOnce(new Response('{}', { status: 200 }));
@@ -277,7 +277,7 @@ describe('computer app approval prompt', () => {
       ]);
       expect(permissionEvents.at(-1)).toMatchObject({ mode: 'operate', enabled: false });
     } finally {
-      window.removeEventListener('hana-plan-mode', listener);
+      window.removeEventListener('openshadow-plan-mode', listener);
     }
   });
 

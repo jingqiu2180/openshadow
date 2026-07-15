@@ -45,7 +45,7 @@ function getBridgeSessionIdentity(
 
 export function BridgePanel() {
 
-  const [platform, setPlatform] = useState(() => localStorage.getItem('hana_bridge_tab') || 'feishu');
+  const [platform, setPlatform] = useState(() => localStorage.getItem('openshadow_bridge_tab') || 'feishu');
   const [sessions, setSessions] = useState<BridgeSession[]>([]);
   const [currentKey, setCurrentKey] = useState<string | null>(null);
   const [currentName, setCurrentName] = useState('');
@@ -148,13 +148,13 @@ export function BridgePanel() {
 
   const { visible, close } = usePanel('bridge', loadData, [currentAgentId]);
 
-  // 订阅 bridge status 变化（代替 window.__hanaBridgeLoadStatus）
+  // 订阅 bridge status 变化（代替 window.__openshadowBridgeLoadStatus）
   const bridgeStatusTrigger = useStore(s => s.bridgeStatusTrigger);
   useEffect(() => {
     if (bridgeStatusTrigger > 0) loadStatus();
   }, [bridgeStatusTrigger, loadStatus]);
 
-  // 订阅 bridge 消息（代替 window.__hanaBridgeOnMessage）— 按 agent 过滤
+  // 订阅 bridge 消息（代替 window.__openshadowBridgeOnMessage）— 按 agent 过滤
   const bridgeLatestMessage = useStore(s => s.bridgeLatestMessage);
   useEffect(() => {
     if (!bridgeLatestMessage || !visible) return;
@@ -189,7 +189,7 @@ export function BridgePanel() {
     setCurrentIsOwner(false);
     setCurrentSessionPath(null);
     setChatOpen(false);
-    localStorage.setItem('hana_bridge_tab', plat);
+    localStorage.setItem('openshadow_bridge_tab', plat);
     loadPlatformData(plat);
   }, [loadPlatformData]);
 

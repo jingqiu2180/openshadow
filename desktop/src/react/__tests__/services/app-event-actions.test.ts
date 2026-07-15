@@ -175,7 +175,7 @@ describe('handleAppEvent', () => {
     expect(mockState.skillCatalogVersion).toBe(3);
     expect((globalThis as any).window.dispatchEvent).toHaveBeenCalledTimes(1);
     const event = ((globalThis as any).window.dispatchEvent as any).mock.calls[0][0] as CustomEvent;
-    expect(event.type).toBe('hana-skills-changed');
+    expect(event.type).toBe('openshadow-skills-changed');
     expect(event.detail).toEqual({ agentId: 'agent-a' });
   });
 

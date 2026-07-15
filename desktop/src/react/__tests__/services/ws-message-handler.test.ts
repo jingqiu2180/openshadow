@@ -630,7 +630,7 @@ describe('ws-message-handler permission mode events', () => {
 
   it('keeps explicit auto mode from legacy plan_mode messages instead of collapsing to operate', () => {
     const details: unknown[] = [];
-    windowTarget.addEventListener('hana-plan-mode', (event) => {
+    windowTarget.addEventListener('openshadow-plan-mode', (event) => {
       details.push((event as CustomEvent).detail);
     });
 
@@ -646,7 +646,7 @@ describe('ws-message-handler permission mode events', () => {
 
   it('syncs explicit permission_mode messages for the focused session', () => {
     const details: unknown[] = [];
-    windowTarget.addEventListener('hana-plan-mode', (event) => {
+    windowTarget.addEventListener('openshadow-plan-mode', (event) => {
       details.push((event as CustomEvent).detail);
     });
 

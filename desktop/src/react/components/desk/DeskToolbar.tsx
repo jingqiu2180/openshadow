@@ -130,7 +130,7 @@ export function DeskSortButton({ sortMode, onSort, onShowMenu }: {
       items: getSortOptions().map(o => ({
         label: (o.key === sortMode ? '· ' : '   ') + o.label,
         action: () => {
-          localStorage.setItem('hana-desk-sort', o.key);
+          localStorage.setItem('openshadow-desk-sort', o.key);
           onSort(o.key);
         },
       })),

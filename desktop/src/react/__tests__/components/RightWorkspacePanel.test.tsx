@@ -86,12 +86,12 @@ function resetStore(items: ChatListItem[] = []) {
     sessionRegistryFilesByPath: {},
     rightWorkspaceTab: 'workspace',
     jianDrawerOpen: true,
-    deskBasePath: '/tmp/hana-work',
+    deskBasePath: '/tmp/openshadow-work',
     deskCurrentPath: '',
     deskFiles: [],
     deskJianContent: '',
-    agents: [{ id: 'hana', name: 'Hana', yuan: 'hanako', hasAvatar: false }],
-    currentAgentId: 'hana',
+    agents: [{ id: 'openshadow', name: 'Hana', yuan: 'hanako', hasAvatar: false }],
+    currentAgentId: 'openshadow',
     selectedFolder: null,
     homeFolder: null,
     jianView: 'desk',
@@ -160,7 +160,7 @@ describe('RightWorkspacePanel', () => {
     expect(within(tabList).getByRole('tab', { name: '工作台' })).toHaveAttribute('aria-selected', 'true');
     expect(container.querySelector('[data-right-workspace-tab-slider]')).toBeInTheDocument();
     expect((tabList as HTMLElement).style.getPropertyValue('--right-workspace-active-tab-index')).toBe('1');
-    expect(screen.getByText('hana-work')).toBeInTheDocument();
+    expect(screen.getByText('openshadow-work')).toBeInTheDocument();
     expect(screen.queryByText(/工作台 ·/)).not.toBeInTheDocument();
   });
 
@@ -368,8 +368,8 @@ describe('RightWorkspacePanel', () => {
         userId: 'user_lan',
         studioId: 'studio_lan',
         label: 'LAN Hana',
-        baseUrl: 'http://hana.local:14500',
-        wsUrl: 'ws://hana.local:14500',
+        baseUrl: 'http://openshadow.local:14500',
+        wsUrl: 'ws://openshadow.local:14500',
         token: null,
         authState: 'paired',
         trustState: 'lan',
@@ -408,7 +408,7 @@ describe('RightWorkspacePanel', () => {
     fireEvent.click(screen.getByRole('tab', { name: '对话文件' }));
 
     const download = screen.getByRole('link', { name: '下载到本机 report.pdf' });
-    expect(download).toHaveAttribute('href', 'http://hana.local:14500/api/resources/res_sf_report/content');
+    expect(download).toHaveAttribute('href', 'http://openshadow.local:14500/api/resources/res_sf_report/content');
     expect(download).toHaveAttribute('download', 'report.pdf');
   });
 
@@ -423,8 +423,8 @@ describe('RightWorkspacePanel', () => {
         userId: 'user_lan',
         studioId: 'studio_lan',
         label: 'LAN Hana',
-        baseUrl: 'http://hana.local:14500',
-        wsUrl: 'ws://hana.local:14500',
+        baseUrl: 'http://openshadow.local:14500',
+        wsUrl: 'ws://openshadow.local:14500',
         token: null,
         authState: 'paired',
         trustState: 'lan',
@@ -726,7 +726,7 @@ describe('RightWorkspacePanel', () => {
         },
       ]);
     });
-    expect(openshadowFetch).toHaveBeenCalledWith('/api/bridge/send-media?agentId=hana', expect.objectContaining({
+    expect(openshadowFetch).toHaveBeenCalledWith('/api/bridge/send-media?agentId=openshadow', expect.objectContaining({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     }));

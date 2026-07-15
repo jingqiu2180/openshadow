@@ -564,7 +564,7 @@
     min-height: 260px;
     max-height: 400px;
     overflow-y: auto;
-    animation: hana-slide-in-top var(--duration-fast, 0.15s) ease-out;
+    animation: openshadow-slide-in-top var(--duration-fast, 0.15s) ease-out;
     transform-origin: top right;
     transition: border-color var(--duration-fast, 0.15s);
     isolation: isolate;
@@ -631,7 +631,7 @@
 }
 
 .cwdPanelWrap.closing .cwdPanel {
-    animation: hana-slide-out-top var(--duration-instant) ease-in forwards;
+    animation: openshadow-slide-out-top var(--duration-instant) ease-in forwards;
 }
 
 .cwdEmpty {

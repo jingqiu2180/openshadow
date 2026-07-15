@@ -79,10 +79,10 @@ vi.mock('../../settings/helpers', () => ({
 vi.mock('../../settings/store', () => {
   const state = {
     agents: [
-      { id: 'hana', name: 'Hana', yuan: 'hanako', isPrimary: false },
+      { id: 'openshadow', name: 'Hana', yuan: 'hanako', isPrimary: false },
       { id: 'primary', name: 'Primary', yuan: 'hanako', isPrimary: true },
     ],
-    getSettingsAgentId: () => 'hana',
+    getSettingsAgentId: () => 'openshadow',
     showToast: showToastMock,
   };
   type SettingsStoreHook = {

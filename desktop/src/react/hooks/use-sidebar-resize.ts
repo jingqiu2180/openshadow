@@ -115,10 +115,10 @@ export function useSidebarResize(): void {
     }
 
     // 恢复保存的宽度
-    const savedLeft = localStorage.getItem('hana-sidebar-width');
-    const savedRight = localStorage.getItem('hana-jian-width');
-    const savedChannelInspector = localStorage.getItem('hana-channel-inspector-width');
-    const savedPreview = localStorage.getItem('hana-preview-width');
+    const savedLeft = localStorage.getItem('openshadow-sidebar-width');
+    const savedRight = localStorage.getItem('openshadow-jian-width');
+    const savedChannelInspector = localStorage.getItem('openshadow-channel-inspector-width');
+    const savedPreview = localStorage.getItem('openshadow-preview-width');
     if (savedLeft) applySidebarWidth(Number(savedLeft));
     if (savedRight) applyJianWidth(Number(savedRight));
     if (savedChannelInspector) applyChannelInspectorWidth(Number(savedChannelInspector));
@@ -224,7 +224,7 @@ export function useSidebarResize(): void {
       () => sidebarEl,
       () => sidebarEl?.offsetWidth || 240,
       (w) => applySidebarWidth(w),
-      LEFT_MIN, LEFT_MAX, 'hana-sidebar-width', false,
+      LEFT_MIN, LEFT_MAX, 'openshadow-sidebar-width', false,
     );
 
     setupHandle(
@@ -232,7 +232,7 @@ export function useSidebarResize(): void {
       () => jianSidebarEl,
       () => jianSidebarEl?.offsetWidth || 260,
       (w) => applyJianWidth(w),
-      RIGHT_MIN, RIGHT_MAX, 'hana-jian-width', true,
+      RIGHT_MIN, RIGHT_MAX, 'openshadow-jian-width', true,
     );
 
     setupHandle(
@@ -240,7 +240,7 @@ export function useSidebarResize(): void {
       () => channelInspectorEl,
       () => channelInspectorEl?.offsetWidth || 280,
       (w) => applyChannelInspectorWidth(w),
-      CHANNEL_INSPECTOR_MIN, CHANNEL_INSPECTOR_MAX, 'hana-channel-inspector-width', true,
+      CHANNEL_INSPECTOR_MIN, CHANNEL_INSPECTOR_MAX, 'openshadow-channel-inspector-width', true,
     );
 
     const previewHandle = document.getElementById('previewResizeHandle');
@@ -249,7 +249,7 @@ export function useSidebarResize(): void {
       () => previewPanel,
       () => previewPanel?.offsetWidth || 580,
       (w) => applyPreviewWidth(w),
-      PREVIEW_MIN, getPreviewMaxWidth, 'hana-preview-width', true,
+      PREVIEW_MIN, getPreviewMaxWidth, 'openshadow-preview-width', true,
     );
 
     return () => {

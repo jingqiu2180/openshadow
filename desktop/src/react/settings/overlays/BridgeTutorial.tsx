@@ -7,8 +7,8 @@ export function BridgeTutorial() {
 
   useEffect(() => {
     const handler = () => setVisible(true);
-    window.addEventListener('hana-show-bridge-tutorial', handler);
-    return () => window.removeEventListener('hana-show-bridge-tutorial', handler);
+    window.addEventListener('openshadow-show-bridge-tutorial', handler);
+    return () => window.removeEventListener('openshadow-show-bridge-tutorial', handler);
   }, []);
 
   const close = useCallback(() => setVisible(false), []);

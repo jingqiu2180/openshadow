@@ -30,8 +30,8 @@ export function AgentCreateOverlay() {
       setVisible(true);
       requestAnimationFrame(() => inputRef.current?.focus());
     };
-    window.addEventListener('hana-show-agent-create', handler);
-    return () => window.removeEventListener('hana-show-agent-create', handler);
+    window.addEventListener('openshadow-show-agent-create', handler);
+    return () => window.removeEventListener('openshadow-show-agent-create', handler);
   }, []);
 
   const close = useCallback(() => {

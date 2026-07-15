@@ -84,7 +84,7 @@ describe('channel-actions', () => {
         } as Response)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ ownerAgentId: 'hana', dms: [{ ownerAgentId: 'hana', peerId: 'agent1', peerName: 'Agent 1', messageCount: 5 }] }),
+          json: async () => ({ ownerAgentId: 'openshadow', dms: [{ ownerAgentId: 'openshadow', peerId: 'agent1', peerName: 'Agent 1', messageCount: 5 }] }),
         } as Response);
 
       const { loadChannels } = await import('../../stores/channel-actions');
@@ -99,7 +99,7 @@ describe('channel-actions', () => {
       expect(channels[0].isDM).toBe(false);
       expect(channels[1].isDM).toBe(true);
       expect(channels[1].id).toBe('dm:agent1');
-      expect(channels[1].dmOwnerId).toBe('hana');
+      expect(channels[1].dmOwnerId).toBe('openshadow');
     });
 
     it('serverPort 为空时不请求', async () => {
@@ -125,12 +125,12 @@ describe('channel-actions', () => {
         isDM: true,
         peerId: 'agent1',
         peerName: 'Agent 1',
-        dmOwnerId: 'hana',
+        dmOwnerId: 'openshadow',
       }];
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          ownerAgentId: 'hana',
+          ownerAgentId: 'openshadow',
           peerId: 'agent1',
           peerName: 'Agent 1',
           messages: [{ sender: 'agent1', timestamp: '2026-05-19 12:00:00', body: 'hello' }],
@@ -148,7 +148,7 @@ describe('channel-actions', () => {
       const { openChannel } = await import('../../stores/channel-actions');
       await openChannel('dm:agent1', true);
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/dm/agent1?agentId=hana');
+      expect(mockFetch).toHaveBeenCalledWith('/api/dm/agent1?agentId=openshadow');
       expect(mockState.channelMessages).toEqual([
         { sender: 'agent1', timestamp: '2026-05-19 12:00:00', body: 'hello' },
       ]);
@@ -163,7 +163,7 @@ describe('channel-actions', () => {
           activities: [{
             conversationId: 'ch1',
             conversationType: 'channel',
-            agentId: 'hana',
+            agentId: 'openshadow',
             state: 'idle',
             summary: '已回复',
             timestamp: '2026-05-12T12:00:00.000Z',
@@ -175,7 +175,7 @@ describe('channel-actions', () => {
       await loadConversationAgentActivities('ch1');
 
       expect(mockFetch).toHaveBeenCalledWith('/api/conversations/ch1/agent-activities');
-      expect((mockState.channelAgentActivities as any).ch1.hana[0]).toMatchObject({
+      expect((mockState.channelAgentActivities as any).ch1.openshadow[0]).toMatchObject({
         state: 'idle',
         summary: '已回复',
       });
@@ -195,7 +195,7 @@ describe('channel-actions', () => {
         isDM: true,
         peerId: 'agent1',
         peerName: 'Agent 1',
-        dmOwnerId: 'hana',
+        dmOwnerId: 'openshadow',
       }];
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -205,7 +205,7 @@ describe('channel-actions', () => {
       const { loadConversationAgentPhoneSettings } = await import('../../stores/channel-actions');
       await loadConversationAgentPhoneSettings('dm:agent1');
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/conversations/dm%3Aagent1/agent-phone-settings?agentId=hana');
+      expect(mockFetch).toHaveBeenCalledWith('/api/conversations/dm%3Aagent1/agent-phone-settings?agentId=openshadow');
       expect(mockState.channelAgentPhoneToolMode).toBe('write');
       expect(mockState.channelAgentReplyMinChars).toBe(10);
       expect(mockState.channelAgentReplyMaxChars).toBe(80);
@@ -224,7 +224,7 @@ describe('channel-actions', () => {
         isDM: true,
         peerId: 'agent1',
         peerName: 'Agent 1',
-        dmOwnerId: 'hana',
+        dmOwnerId: 'openshadow',
       }];
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -234,7 +234,7 @@ describe('channel-actions', () => {
       const { saveConversationAgentPhoneSettings } = await import('../../stores/channel-actions');
       await saveConversationAgentPhoneSettings({ mode: 'write', replyMinChars: 20, replyMaxChars: 90 });
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/conversations/dm%3Aagent1/agent-phone-settings?agentId=hana', expect.objectContaining({
+      expect(mockFetch).toHaveBeenCalledWith('/api/conversations/dm%3Aagent1/agent-phone-settings?agentId=openshadow', expect.objectContaining({
         method: 'POST',
       }));
       expect(mockState.channelAgentPhoneToolMode).toBe('write');
@@ -314,11 +314,11 @@ describe('channel-actions', () => {
     it('adds a member and updates the current channel projection', async () => {
       mockState.currentChannel = 'ch1';
       mockState.userName = 'testuser';
-      mockState.channelMembers = ['hana', 'butter'];
+      mockState.channelMembers = ['openshadow', 'butter'];
       mockState.channels = [{
         id: 'ch1',
         name: 'general',
-        members: ['hana', 'butter'],
+        members: ['openshadow', 'butter'],
         lastMessage: '',
         lastSender: '',
         lastTimestamp: '',
@@ -326,7 +326,7 @@ describe('channel-actions', () => {
       }];
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ ok: true, members: ['hana', 'butter', 'ming'] }),
+        json: async () => ({ ok: true, members: ['openshadow', 'butter', 'ming'] }),
       } as Response);
 
       const { addChannelMember } = await import('../../stores/channel-actions');
@@ -335,14 +335,14 @@ describe('channel-actions', () => {
       expect(mockFetch).toHaveBeenCalledWith('/api/channels/ch1/members', expect.objectContaining({
         method: 'POST',
       }));
-      expect(mockState.channelMembers).toEqual(['hana', 'butter', 'ming']);
-      expect((mockState.channels as any[])[0].members).toEqual(['hana', 'butter', 'ming']);
+      expect(mockState.channelMembers).toEqual(['openshadow', 'butter', 'ming']);
+      expect((mockState.channels as any[])[0].members).toEqual(['openshadow', 'butter', 'ming']);
       expect(mockState.channelHeaderMembersText).toBe('4 channel.membersCount');
     });
 
     it('surfaces backend member removal errors without mutating local members', async () => {
       mockState.currentChannel = 'ch1';
-      mockState.channelMembers = ['hana', 'butter'];
+      mockState.channelMembers = ['openshadow', 'butter'];
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
@@ -351,7 +351,7 @@ describe('channel-actions', () => {
 
       const { removeChannelMember } = await import('../../stores/channel-actions');
       await expect(removeChannelMember('ch1', 'butter')).rejects.toThrow(/at least 2/i);
-      expect(mockState.channelMembers).toEqual(['hana', 'butter']);
+      expect(mockState.channelMembers).toEqual(['openshadow', 'butter']);
     });
   });
 

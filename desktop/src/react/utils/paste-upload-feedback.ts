@@ -8,7 +8,7 @@ export function notifyPasteUploadFailure(t: Translator, reason?: unknown): void 
       ? reason.message
       : '';
 
-  window.dispatchEvent(new CustomEvent('hana-inline-notice', {
+  window.dispatchEvent(new CustomEvent('openshadow-inline-notice', {
     detail: {
       text: reasonText ? `${base}: ${reasonText}` : base,
       type: 'error',

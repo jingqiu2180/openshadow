@@ -320,15 +320,15 @@ describe('StreamingMarkdownContent', () => {
     const cardBlock = css.match(/\.mediaGenerationCard\s*\{(?<body>[^}]*)\}/)?.groups?.body || '';
     const toolBlock = Array.from(css.matchAll(/\.toolGroup::before\s*\{(?<body>[^}]*)\}/g))
       .map(match => match.groups?.body || '')
-      .find(body => body.includes('hana-tool-bar-in')) || '';
+      .find(body => body.includes('openshadow-tool-bar-in')) || '';
 
-    expect(tailBlock).toContain('hana-stream-tail-in');
+    expect(tailBlock).toContain('openshadow-stream-tail-in');
     expect(tailBlock).not.toContain('requestAnimationFrame');
-    expect(cardBlock).toContain('hana-chat-soft-up-in');
-    expect(toolBlock).toContain('hana-tool-bar-in');
-    expect(animations).toContain('@keyframes hana-stream-tail-in');
-    expect(animations).toContain('@keyframes hana-chat-soft-down-in');
-    expect(animations).toContain('@keyframes hana-chat-soft-up-in');
-    expect(animations).toContain('@keyframes hana-tool-bar-in');
+    expect(cardBlock).toContain('openshadow-chat-soft-up-in');
+    expect(toolBlock).toContain('openshadow-tool-bar-in');
+    expect(animations).toContain('@keyframes openshadow-stream-tail-in');
+    expect(animations).toContain('@keyframes openshadow-chat-soft-down-in');
+    expect(animations).toContain('@keyframes openshadow-chat-soft-up-in');
+    expect(animations).toContain('@keyframes openshadow-tool-bar-in');
   });
 });

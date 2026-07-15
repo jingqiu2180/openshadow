@@ -202,12 +202,12 @@ export function SessionConfirmationPrompt({ block, exiting = false }: SessionCon
       if (!res.ok || data?.ok === false) {
         throw new Error(data?.error || 'failed to switch current session permission mode');
       }
-      window.dispatchEvent(new CustomEvent('hana-plan-mode', {
+      window.dispatchEvent(new CustomEvent('openshadow-plan-mode', {
         detail: { enabled: false, mode: data?.mode || 'operate' },
       }));
       await submit('confirmed');
     } catch (err) {
-      window.dispatchEvent(new CustomEvent('hana-inline-notice', {
+      window.dispatchEvent(new CustomEvent('openshadow-inline-notice', {
         detail: {
           text: textWithFallback('input.accessModeLocked', '当前无法更改权限模式'),
           type: 'error',

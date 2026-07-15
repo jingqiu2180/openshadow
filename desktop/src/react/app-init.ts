@@ -84,7 +84,7 @@ window.__openshadowLog = function (level: string, module: string, message: strin
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ level, module, message }),
-  }).catch(err => console.warn('[hanaLog] log upload failed:', err));
+  }).catch(err => console.warn('[openshadowLog] log upload failed:', err));
 };
 
 // ── 全局错误捕获 ──

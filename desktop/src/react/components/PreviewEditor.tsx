@@ -104,7 +104,7 @@ function getErrorMessage(err: unknown): string {
 
 function showSaveError(prefixKey: string, err: unknown): void {
   const tFn = window.t ?? ((p: string) => p);
-  window.dispatchEvent(new CustomEvent('hana-inline-notice', {
+  window.dispatchEvent(new CustomEvent('openshadow-inline-notice', {
     detail: { text: `${tFn(prefixKey)}: ${getErrorMessage(err)}`, type: 'error' },
   }));
 }

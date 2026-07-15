@@ -14,7 +14,7 @@ export function Toggle({ on, onChange, label, ariaLabel, title, disabled = false
   const visualOn = on === true;
   const effectiveDisabled = disabled || loading;
   const className = [
-    'hana-toggle',
+    'openshadow-toggle',
     visualOn ? 'on' : '',
     loading ? 'loading' : '',
   ].filter(Boolean).join(' ');
@@ -35,7 +35,7 @@ export function Toggle({ on, onChange, label, ariaLabel, title, disabled = false
           onChange(!visualOn);
         }}
       />
-      {label && <span className="hana-toggle-label">{label}</span>}
+      {label && <span className="openshadow-toggle-label">{label}</span>}
     </div>
   );
 }

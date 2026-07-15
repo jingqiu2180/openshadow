@@ -4,10 +4,10 @@ import type { AutoUpdateState } from '../types';
 function devWebPreviewState(): AutoUpdateState | null {
   if (!window.__OPEN_SHADOW_DEV_WEB__) return null;
   const params = new URLSearchParams(window.location.search);
-  if (params.get('hana_update_preview') !== 'downloaded') return null;
+  if (params.get('openshadow_update_preview') !== 'downloaded') return null;
   return {
     status: 'downloaded',
-    version: params.get('hana_update_version') || '0.237.14',
+    version: params.get('openshadow_update_version') || '0.237.14',
     releaseNotes: null,
     releaseUrl: null,
     downloadUrl: null,

@@ -72,7 +72,7 @@
   margin-top: 0;
   overflow: hidden auto;
   flex-direction: column;
-  animation: hana-popout var(--duration-fast) var(--ease-out);
+  animation: openshadow-popout var(--duration-fast) var(--ease-out);
   transform-origin: top right;
   padding: 0;
   -webkit-app-region: no-drag;

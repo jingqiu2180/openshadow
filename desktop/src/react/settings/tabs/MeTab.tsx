@@ -78,7 +78,7 @@ export function MeTab() {
     input.addEventListener('change', () => {
       if (input.files?.[0]) {
         // Dispatch to CropOverlay
-        window.dispatchEvent(new CustomEvent('hana-open-cropper', {
+        window.dispatchEvent(new CustomEvent('openshadow-open-cropper', {
           detail: { role: 'user', file: input.files[0] },
         }));
       }

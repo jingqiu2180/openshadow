@@ -27,7 +27,7 @@ vi.mock('../../settings/actions', () => ({
 }));
 
 const agents = [
-  { id: 'hana', name: '小花', yuan: 'hanako', isPrimary: true, hasAvatar: false },
+  { id: 'openshadow', name: '小花', yuan: 'hanako', isPrimary: true, hasAvatar: false },
   { id: 'deepseek', name: 'DeepSeek', yuan: 'deepseek', isPrimary: false, hasAvatar: false },
   { id: 'maomao', name: '毛毛', yuan: 'maomao', isPrimary: false, hasAvatar: false },
 ];
@@ -73,8 +73,8 @@ describe('AgentCardStack actions', () => {
   it('lets the page own wheel scrolling while the stack is collapsed and captures horizontal stack scrolling only after expansion', () => {
     render(React.createElement(AgentCardStack, {
       agents,
-      selectedId: 'hana',
-      currentAgentId: 'hana',
+      selectedId: 'openshadow',
+      currentAgentId: 'openshadow',
       onSelect: vi.fn(),
       onAvatarClick: vi.fn(),
       onSetPrimary: vi.fn(),
@@ -109,7 +109,7 @@ describe('AgentCardStack actions', () => {
     render(React.createElement(AgentCardStack, {
       agents,
       selectedId: 'deepseek',
-      currentAgentId: 'hana',
+      currentAgentId: 'openshadow',
       onSelect: vi.fn(),
       onAvatarClick: vi.fn(),
       onSetPrimary,
@@ -130,8 +130,8 @@ describe('AgentCardStack actions', () => {
   it('does not show set-primary or delete actions for the primary agent', () => {
     render(React.createElement(AgentCardStack, {
       agents,
-      selectedId: 'hana',
-      currentAgentId: 'hana',
+      selectedId: 'openshadow',
+      currentAgentId: 'openshadow',
       onSelect: vi.fn(),
       onAvatarClick: vi.fn(),
       onSetPrimary: vi.fn(),
@@ -148,8 +148,8 @@ describe('AgentCardStack actions', () => {
   it('does not open agent actions from right click', () => {
     render(React.createElement(AgentCardStack, {
       agents,
-      selectedId: 'hana',
-      currentAgentId: 'hana',
+      selectedId: 'openshadow',
+      currentAgentId: 'openshadow',
       onSelect: vi.fn(),
       onAvatarClick: vi.fn(),
       onSetPrimary: vi.fn(),

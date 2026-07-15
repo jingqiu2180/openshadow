@@ -4,7 +4,7 @@
  * Toggle widget only exposes { on, onChange, label } and does NOT forward
  * data-* props. Tests locate toggles via data-tool-name attribute set on the
  * row root <div> inside AgentToolsSection itself, then read on/off state via
- * the descendant `.hana-toggle` button class.
+ * the descendant `.openshadow-toggle` button class.
  *
  * @vitest-environment jsdom
  */
@@ -28,12 +28,12 @@ function getRow(container: HTMLElement, toolName: string): HTMLElement | null {
 }
 
 function isToggleOn(row: HTMLElement | null): boolean {
-  const btn = row?.querySelector(".hana-toggle");
+  const btn = row?.querySelector(".openshadow-toggle");
   return !!btn?.classList.contains("on");
 }
 
 function clickToggle(row: HTMLElement | null) {
-  const btn = row?.querySelector(".hana-toggle") as HTMLElement | null;
+  const btn = row?.querySelector(".openshadow-toggle") as HTMLElement | null;
   if (btn) fireEvent.click(btn);
 }
 

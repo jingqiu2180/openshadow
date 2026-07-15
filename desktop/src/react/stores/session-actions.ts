@@ -46,7 +46,7 @@ function isAbortError(err: unknown): boolean {
 }
 
 function isDesktopShell(): boolean {
-  return typeof window !== 'undefined' && !!(window as unknown as { hana?: unknown }).hana;
+  return typeof window !== 'undefined' && !!(window as unknown as { openshadow?: unknown }).openshadow;
 }
 
 function shouldRestoreInputFocus(path: string | null): boolean {
@@ -85,7 +85,7 @@ function normalizeSessionPermissionMode(mode: unknown): SessionPermissionMode {
 function emitSessionPermissionMode(mode: unknown): SessionPermissionMode {
   const normalized = normalizeSessionPermissionMode(mode);
   useStore.getState().setSessionPermissionMode?.(normalized);
-  window.dispatchEvent(new CustomEvent('hana-plan-mode', {
+  window.dispatchEvent(new CustomEvent('openshadow-plan-mode', {
     detail: { enabled: normalized === 'read_only', mode: normalized },
   }));
   return normalized;

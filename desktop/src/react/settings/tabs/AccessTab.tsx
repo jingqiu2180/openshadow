@@ -595,7 +595,7 @@ export function AccessTab() {
                 className={styles['settings-input']}
                 value={remoteServerKey}
                 type="password"
-                placeholder="hana_dev_..."
+                placeholder="openshadow_dev_..."
                 onChange={(event) => setRemoteServerKey(event.target.value)}
               />
             </label>

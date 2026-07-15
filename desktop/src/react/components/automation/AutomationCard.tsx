@@ -125,7 +125,7 @@ export function AutomationCard({
     <div className={styles.card}>
       <button type="button" className={styles.row} onClick={onToggleOpen} aria-expanded={open}>
         <span
-          className={`hana-toggle${job.enabled ? ' on' : ''}`}
+          className={`openshadow-toggle${job.enabled ? ' on' : ''}`}
           title={job.enabled ? t('automation.disable') : t('automation.enable')}
           onClick={(e) => {
             e.stopPropagation();

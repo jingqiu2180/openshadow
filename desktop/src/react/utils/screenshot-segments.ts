@@ -2,7 +2,7 @@ import type { ChatMessage, ContentBlock, UserAttachment } from '../stores/chat-t
 import { isImageOrSvgExt } from './file-kind';
 
 export const SCREENSHOT_SEGMENT_VISIBLE_CHAR_LIMIT = 10_000;
-export const SCREENSHOT_SEGMENT_VISIBLE_CHAR_LIMIT_STORAGE_KEY = 'hana-screenshot-segment-char-limit';
+export const SCREENSHOT_SEGMENT_VISIBLE_CHAR_LIMIT_STORAGE_KEY = 'openshadow-screenshot-segment-char-limit';
 const IMAGE_BLOCK_VISIBLE_CHAR_WEIGHT = 6_000;
 
 export function readScreenshotSegmentVisibleCharLimit(storage: Storage = localStorage): number {

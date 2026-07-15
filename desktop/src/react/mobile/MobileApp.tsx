@@ -26,8 +26,8 @@ const MOBILE_EDGE_GESTURE_WIDTH = 28;
 const MOBILE_EDGE_GESTURE_MIN_DISTANCE = 56;
 const MOBILE_EDGE_GESTURE_MAX_VERTICAL_DRIFT = 80;
 const MOBILE_EDGE_GESTURE_DOMINANCE = 1.25;
-const MOBILE_UPDATE_AVAILABLE_EVENT = 'hana-mobile-update-available';
-const MOBILE_APPLY_UPDATE_EVENT = 'hana-mobile-apply-update';
+const MOBILE_UPDATE_AVAILABLE_EVENT = 'openshadow-mobile-update-available';
+const MOBILE_APPLY_UPDATE_EVENT = 'openshadow-mobile-apply-update';
 
 const LazyPreviewPanel = lazy(() => import('../components/PreviewPanel').then(module => ({ default: module.PreviewPanel })));
 const LazyMediaViewer = lazy(() => import('../components/shared/MediaViewer/MediaViewer').then(module => ({ default: module.MediaViewer })));

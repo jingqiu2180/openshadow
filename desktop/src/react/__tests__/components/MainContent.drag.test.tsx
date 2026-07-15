@@ -22,7 +22,7 @@ describe('MainContent app file drag attachments', () => {
     const { attachAppFileDragPayloadToInput } = await import('../../MainContent');
 
     await attachAppFileDragPayloadToInput({
-      dragId: 'hana-drag-test',
+      dragId: 'openshadow-drag-test',
       source: 'session-file',
       files: [{
         id: 'sf_report',
@@ -54,7 +54,7 @@ describe('MainContent app file drag attachments', () => {
     const { attachAppFileDragPayloadToInput } = await import('../../MainContent');
 
     await attachAppFileDragPayloadToInput({
-      dragId: 'hana-drag-mount-workspace',
+      dragId: 'openshadow-drag-mount-workspace',
       source: 'workspace',
       files: [{
         id: 'workspace:report.md',
@@ -82,7 +82,7 @@ describe('MainContent app file drag attachments', () => {
     const { attachAppFileDragPayloadToInput, attachFilesFromPaths } = await import('../../MainContent');
 
     await attachAppFileDragPayloadToInput({
-      dragId: 'hana-drag-channel-session-file',
+      dragId: 'openshadow-drag-channel-session-file',
       source: 'session-file',
       files: [{
         id: 'sf_channel',

@@ -1,4 +1,4 @@
-export const RUNTIME_API_KEY_PREFIX = "hana-runtime-api-key:";
+export const RUNTIME_API_KEY_PREFIX = "openshadow-runtime-api-key:";
 
 export function buildRuntimeApiKeyRef(providerId) {
   return `${RUNTIME_API_KEY_PREFIX}${providerId}`;

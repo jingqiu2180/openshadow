@@ -30,8 +30,8 @@ export function AgentDeleteOverlay() {
       setNameInput('');
       setVisible(true);
     };
-    window.addEventListener('hana-show-agent-delete', handler);
-    return () => window.removeEventListener('hana-show-agent-delete', handler);
+    window.addEventListener('openshadow-show-agent-delete', handler);
+    return () => window.removeEventListener('openshadow-show-agent-delete', handler);
   }, []);
 
   useEffect(() => {

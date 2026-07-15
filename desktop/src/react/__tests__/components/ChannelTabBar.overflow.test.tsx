@@ -93,6 +93,6 @@ describe('ChannelTabBar overflow', () => {
 
     expect(useStore.getState().hiddenPluginTabs).toEqual([]);
     expect(useStore.getState().currentTab).toBe('plugin:hidden-notes');
-    expect(localStorage.getItem('hana-tab')).toBe('plugin:hidden-notes');
+    expect(localStorage.getItem('openshadow-tab')).toBe('plugin:hidden-notes');
   });
 });

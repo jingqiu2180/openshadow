@@ -428,8 +428,8 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
       setSlashResult({ text, type, deskDir });
       setTimeout(() => setSlashResult(null), 3000);
     };
-    window.addEventListener('hana-inline-notice', handler);
-    return () => window.removeEventListener('hana-inline-notice', handler);
+    window.addEventListener('openshadow-inline-notice', handler);
+    return () => window.removeEventListener('openshadow-inline-notice', handler);
   }, []);
 
   // ── Welcome 模式 placeholder tip（mount、i18n ready、每次 welcome 重新激活时随机一条） ──
@@ -1322,8 +1322,8 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
       const detail = (e as CustomEvent).detail || {};
       setPermissionMode((detail.mode || (detail.enabled ? 'read_only' : 'operate')) as PermissionMode);
     };
-    window.addEventListener('hana-plan-mode', handler);
-    return () => window.removeEventListener('hana-plan-mode', handler);
+    window.addEventListener('openshadow-plan-mode', handler);
+    return () => window.removeEventListener('openshadow-plan-mode', handler);
   }, [activeServerConnection, setPermissionMode, setThinkingLevel, surface]);
 
   // ── Handle slash selection (builtin vs skill) ──
@@ -1483,7 +1483,7 @@ function InputAreaInner({ surface }: Required<InputAreaProps>) {
         finalText = text ? `${text}\n\n${fileBlock}` : fileBlock;
       }
 
-      // 图片 / 视频读 base64。统一走 platform 层：Electron 里 platform 代理到 hana，
+      // 图片 / 视频读 base64。统一走 platform 层：Electron 里 platform 代理到 openshadow，
       // Web/PWA 里 platform 代理到 HTTP fallback。
       const platform = window.platform;
       const images: Array<{ type: 'image'; data: string; mimeType: string }> = [];

@@ -88,7 +88,7 @@ describe('desk-actions workspace roots', () => {
 
   it('passes the selected agent id when loading the selected agent workbench', async () => {
     useStore.setState({
-      currentAgentId: 'hana',
+      currentAgentId: 'openshadow',
       selectedAgentId: 'mio',
       selectedFolder: '/workspace/Mio',
       deskBasePath: '/workspace/Mio',
@@ -222,8 +222,8 @@ describe('desk-actions workspace roots', () => {
 
   it('records the selected workspace in the local picker history when switching folders', async () => {
     useStore.setState({
-      selectedFolder: '/hana',
-      homeFolder: '/hana',
+      selectedFolder: '/openshadow',
+      homeFolder: '/openshadow',
       cwdHistory: ['/workspace/Desktop'],
     } as never);
     mockHanaFetch
@@ -240,8 +240,8 @@ describe('desk-actions workspace roots', () => {
 
   it('promotes an extra folder to primary instead of keeping it in both lists', async () => {
     useStore.setState({
-      selectedFolder: '/hana',
-      homeFolder: '/hana',
+      selectedFolder: '/openshadow',
+      homeFolder: '/openshadow',
       cwdHistory: ['/workspace/Desktop'],
       workspaceFolders: ['/reference', '/workspace/Desktop'],
     } as never);
@@ -1060,7 +1060,7 @@ describe('desk-actions workspace roots', () => {
         basePath: '/workspace',
       }))
       .mockResolvedValueOnce(jsonResponse({
-        files: [{ name: 'hana.png', isDir: false }],
+        files: [{ name: 'openshadow.png', isDir: false }],
         basePath: '/workspace',
       }));
 
@@ -1077,7 +1077,7 @@ describe('desk-actions workspace roots', () => {
     expect(useStore.getState().deskTreeFilesByPath).toMatchObject({
       '': [{ name: 'OH-Works', isDir: true }],
       'OH-Works': [{ name: 'Screenshots', isDir: true }],
-      'OH-Works/Screenshots': [{ name: 'hana.png', isDir: false }],
+      'OH-Works/Screenshots': [{ name: 'openshadow.png', isDir: false }],
     });
     expect(useStore.getState().deskExpandedPaths).toEqual(['OH-Works', 'OH-Works/Screenshots']);
     expect(useStore.getState().deskSelectedPath).toBe('OH-Works/Screenshots');

@@ -37,10 +37,10 @@ const PREVIEW_IMAGES: Record<string, string> = {
 
 export function SharingTab() {
   const [screenshotColor, setScreenshotColor] = useState(
-    () => localStorage.getItem('hana-screenshot-color') || 'light'
+    () => localStorage.getItem('openshadow-screenshot-color') || 'light'
   );
   const [screenshotWidth, setScreenshotWidth] = useState(
-    () => localStorage.getItem('hana-screenshot-width') || 'mobile'
+    () => localStorage.getItem('openshadow-screenshot-width') || 'mobile'
   );
   const [screenshotFont, setScreenshotFont] = useState(() => readScreenshotFontSelectionId());
   const [segmentLimit, setSegmentLimit] = useState(() => readScreenshotSegmentVisibleCharLimit());
@@ -88,7 +88,7 @@ export function SharingTab() {
               key={key}
               className={`${styles['theme-card']}${screenshotColor === key ? ' ' + styles['active'] : ''}`}
               style={{ background: bg }}
-              onClick={() => { setScreenshotColor(key); localStorage.setItem('hana-screenshot-color', key); }}
+              onClick={() => { setScreenshotColor(key); localStorage.setItem('openshadow-screenshot-color', key); }}
             >
               <div className={styles['theme-card-name']} style={{ color }}>{t(`settings.screenshot.${key}`)}</div>
               <div className={styles['theme-card-mode']} style={{ color: accent }}>{t('settings.screenshot.title')}</div>
@@ -109,7 +109,7 @@ export function SharingTab() {
               <button
                 key={width}
                 className={`${styles['ss-layout-card']}${screenshotWidth === width ? ' ' + styles['active'] : ''}`}
-                onClick={() => { setScreenshotWidth(width); localStorage.setItem('hana-screenshot-width', width); }}
+                onClick={() => { setScreenshotWidth(width); localStorage.setItem('openshadow-screenshot-width', width); }}
               >
                 <div className={styles['ss-layout-preview']}>
                   {src ? (

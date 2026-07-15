@@ -78,7 +78,7 @@ const pairedSummary = {
     deviceId: 'device_1',
     status: 'active',
     scopes: ['chat', 'resources.read', 'files.read', 'files.write'],
-    secretPrefix: 'hana_dev_abc',
+    secretPrefix: 'openshadow_dev_abc',
     createdAt: '2026-05-16T02:00:00.000Z',
     lastUsedAt: '2026-05-16T03:00:00.000Z',
   }],
@@ -122,7 +122,7 @@ const remoteConnection = {
   label: 'LAN Studio',
   baseUrl: 'http://192.168.31.75:14500',
   wsUrl: 'ws://192.168.31.75:14500',
-  token: 'hana_dev_remote_secret',
+  token: 'openshadow_dev_remote_secret',
   trustState: 'lan',
   credentialKind: 'device_credential',
 };
@@ -169,7 +169,7 @@ describe('AccessTab', () => {
       if (url === '/api/access/mobile-credentials' && options?.method === 'POST') {
         return Promise.resolve(jsonResponse({
           ok: true,
-          secret: 'hana_dev_visible_once',
+          secret: 'openshadow_dev_visible_once',
           accessUrl: 'http://192.168.31.75:14500/mobile/',
           device: { deviceId: 'device_1', displayName: 'iPhone', status: 'active' },
           credential: { credentialId: 'cred_1', scopes: ['chat', 'files.read', 'files.write'], status: 'active' },
@@ -178,7 +178,7 @@ describe('AccessTab', () => {
       if (url === '/api/access/desktop-credentials' && options?.method === 'POST') {
         return Promise.resolve(jsonResponse({
           ok: true,
-          secret: 'hana_dev_desktop_visible_once',
+          secret: 'openshadow_dev_desktop_visible_once',
           accessUrl: 'http://192.168.31.75:14500/desktop/',
           device: { deviceId: 'device_desktop', displayName: 'Studio Laptop', deviceKind: 'desktop', status: 'active' },
           credential: { credentialId: 'cred_desktop', scopes: ['chat', 'files.read', 'files.write'], status: 'active' },
@@ -187,7 +187,7 @@ describe('AccessTab', () => {
       if (url === '/api/access/account/profile' && options?.method === 'PUT') {
         return Promise.resolve(jsonResponse({
           ok: true,
-          account: { ...baseSummary.account, username: 'hana-owner', displayName: 'Hana Owner' },
+          account: { ...baseSummary.account, username: 'openshadow-owner', displayName: 'Hana Owner' },
         }));
       }
       if (url === '/api/access/account/password' && options?.method === 'PUT') {
@@ -234,7 +234,7 @@ describe('AccessTab', () => {
       throw new Error(`unexpected fetch URL: ${url}`);
     }));
     Object.assign(window, {
-      hana: { reloadMainWindow: vi.fn(async () => {}) },
+      openshadow: { reloadMainWindow: vi.fn(async () => {}) },
     });
   });
 
@@ -361,7 +361,7 @@ describe('AccessTab', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'settings.access.generateMobileKey' }));
 
-    expect(await screen.findByDisplayValue('hana_dev_visible_once')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('openshadow_dev_visible_once')).toBeInTheDocument();
     expect(mockHanaFetch).toHaveBeenCalledWith('/api/access/mobile-credentials', expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({
@@ -378,7 +378,7 @@ describe('AccessTab', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'settings.access.generateDesktopKey' }));
 
-    expect(await screen.findByDisplayValue('hana_dev_desktop_visible_once')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('openshadow_dev_desktop_visible_once')).toBeInTheDocument();
     expect(mockHanaFetch).toHaveBeenCalledWith('/api/access/desktop-credentials', expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({
@@ -408,7 +408,7 @@ describe('AccessTab', () => {
       target: { value: 'http://192.168.31.75:14500' },
     });
     fireEvent.change(screen.getByLabelText('settings.access.remoteServerKey'), {
-      target: { value: 'hana_dev_remote_secret' },
+      target: { value: 'openshadow_dev_remote_secret' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'settings.access.connectLanServer' }));
 
@@ -416,13 +416,13 @@ describe('AccessTab', () => {
       expect(fetch).toHaveBeenCalledWith('http://192.168.31.75:14500/api/web-auth/login', expect.objectContaining({
         method: 'POST',
         credentials: 'include',
-        body: JSON.stringify({ credential: 'hana_dev_remote_secret' }),
+        body: JSON.stringify({ credential: 'openshadow_dev_remote_secret' }),
       }));
     });
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('http://192.168.31.75:14500/api/server/identity', expect.objectContaining({
         credentials: 'include',
-        headers: { Authorization: 'Bearer hana_dev_remote_secret' },
+        headers: { Authorization: 'Bearer openshadow_dev_remote_secret' },
       }));
       expect(window.shadow.reloadMainWindow).toHaveBeenCalledTimes(1);
     });
@@ -459,7 +459,7 @@ describe('AccessTab', () => {
     render(<AccessTab />);
 
     fireEvent.change(await screen.findByLabelText('settings.access.username'), {
-      target: { value: 'hana-owner' },
+      target: { value: 'openshadow-owner' },
     });
     fireEvent.change(screen.getByLabelText('settings.access.displayName'), {
       target: { value: 'Hana Owner' },
@@ -469,7 +469,7 @@ describe('AccessTab', () => {
     await waitFor(() => {
       expect(mockHanaFetch).toHaveBeenCalledWith('/api/access/account/profile', expect.objectContaining({
         method: 'PUT',
-        body: JSON.stringify({ username: 'hana-owner', displayName: 'Hana Owner' }),
+        body: JSON.stringify({ username: 'openshadow-owner', displayName: 'Hana Owner' }),
       }));
     });
 

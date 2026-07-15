@@ -40,7 +40,7 @@ function bridgeState(overrides = {}) {
       owner: {},
     },
     globalSettingsSaving: false,
-    selectedAgentId: 'hana',
+    selectedAgentId: 'openshadow',
     setSelectedAgentId: vi.fn(),
     publicIshiki: '',
     setPublicIshiki: vi.fn(),

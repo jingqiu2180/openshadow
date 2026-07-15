@@ -158,13 +158,13 @@ describe('refreshPreviewItemsFromFile', () => {
     vi.mocked(window.platform!.readFile!).mockResolvedValueOnce(null);
     window.t = ((key: string) => key) as typeof window.t;
     const noticeSpy = vi.fn();
-    window.addEventListener('hana-inline-notice', noticeSpy);
+    window.addEventListener('openshadow-inline-notice', noticeSpy);
 
     const { __resetPreviewFileRefreshStateForTests, refreshPreviewItemsFromFile } = await import('../../utils/preview-file-refresh');
     __resetPreviewFileRefreshStateForTests();
 
     await refreshPreviewItemsFromFile('/tmp/missing.md');
-    window.removeEventListener('hana-inline-notice', noticeSpy);
+    window.removeEventListener('openshadow-inline-notice', noticeSpy);
 
     expect(mockUpsertPreviewItem).toHaveBeenCalledTimes(1);
     expect(mockUpsertPreviewItem).toHaveBeenCalledWith({

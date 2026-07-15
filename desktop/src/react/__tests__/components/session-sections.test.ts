@@ -15,7 +15,7 @@ function makeSession(overrides: Partial<Session>): Session {
     firstMessage: '',
     modified: '2026-04-29T01:00:00.000Z',
     messageCount: 1,
-    agentId: 'hana',
+    agentId: 'openshadow',
     agentName: 'Hana',
     cwd: null,
     ...overrides,
@@ -148,7 +148,7 @@ describe('buildSessionSections', () => {
 
 describe('buildSessionProjectView', () => {
   it('excludes pinned sessions and groups unassigned sessions by derived cwd project', () => {
-    const cwd = '/Users/test/Desktop/project-hana';
+    const cwd = '/Users/test/Desktop/project-openshadow';
     const sections = buildSessionProjectView([
       makeSession({
         path: '/sessions/pinned.jsonl',
@@ -174,7 +174,7 @@ describe('buildSessionProjectView', () => {
     expect(sections.rootProjects).toHaveLength(1);
     expect(sections.rootProjects[0]).toMatchObject({
       id: autoProjectIdForCwd(cwd),
-      name: 'project-hana',
+      name: 'project-openshadow',
       source: 'cwd',
       folderId: null,
     });
@@ -199,7 +199,7 @@ describe('buildSessionProjectView', () => {
       makeSession({
         path: '/sessions/resume.jsonl',
         title: '作品集整理',
-        cwd: '/Users/test/Desktop/project-hana',
+        cwd: '/Users/test/Desktop/project-openshadow',
         projectId: 'project-resume',
       }),
       makeSession({
@@ -252,7 +252,7 @@ describe('buildSessionProjectView', () => {
     const sections = buildSessionProjectView([
       makeSession({
         path: '/sessions/uncategorized.jsonl',
-        cwd: '/Users/test/Desktop/project-hana',
+        cwd: '/Users/test/Desktop/project-openshadow',
         projectId: UNCATEGORIZED_PROJECT_ID,
       }),
     ], { projects: [] });

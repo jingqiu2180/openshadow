@@ -1252,15 +1252,15 @@ export function toggleJianSidebar(forceOpen?: boolean): void {
   const s = useStore.getState();
   const newOpen = forceOpen !== undefined ? forceOpen : !s.jianOpen;
   s.setJianOpen(newOpen);
-  localStorage.setItem('hana-jian', newOpen ? 'open' : 'closed');
+  localStorage.setItem('openshadow-jian', newOpen ? 'open' : 'closed');
   if (forceOpen === undefined) s.setJianAutoCollapsed(false);
 }
 
 export function initJian(): void {
-  const legacy = localStorage.getItem('hana-jian');
-  const savedJian = legacy ?? localStorage.getItem('hana-jian-chat');
+  const legacy = localStorage.getItem('openshadow-jian');
+  const savedJian = legacy ?? localStorage.getItem('openshadow-jian-chat');
   if (savedJian !== null && legacy === null) {
-    localStorage.setItem('hana-jian', savedJian);
+    localStorage.setItem('openshadow-jian', savedJian);
   }
   if (savedJian !== null) useStore.getState().setJianOpen(savedJian !== 'closed');
   const s = useStore.getState();

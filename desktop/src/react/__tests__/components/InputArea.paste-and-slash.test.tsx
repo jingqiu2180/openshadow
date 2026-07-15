@@ -414,7 +414,7 @@ describe('InputArea paste and slash menu behavior', () => {
   it('passes pasted clipboard files with filesystem paths through the drag attachment path', async () => {
     const { attachFilesFromPaths } = await import('../../MainContent');
     const file = new File(['report'], 'report.pdf', { type: 'application/pdf' });
-    const getFilePath = vi.fn(() => '/Users/hana/Desktop/report.pdf');
+    const getFilePath = vi.fn(() => '/Users/openshadow/Desktop/report.pdf');
     window.platform = { getFilePath } as unknown as typeof window.platform;
     render(React.createElement(InputArea));
 
@@ -434,8 +434,8 @@ describe('InputArea paste and slash menu behavior', () => {
     expect(handled).toBe(true);
     expect(preventDefault).toHaveBeenCalledTimes(1);
     await waitFor(() => {
-      expect(attachFilesFromPaths).toHaveBeenCalledWith(['/Users/hana/Desktop/report.pdf'], {
-        '/Users/hana/Desktop/report.pdf': 'report.pdf',
+      expect(attachFilesFromPaths).toHaveBeenCalledWith(['/Users/openshadow/Desktop/report.pdf'], {
+        '/Users/openshadow/Desktop/report.pdf': 'report.pdf',
       });
     });
     expect(mocks.openshadowFetch).not.toHaveBeenCalledWith('/api/upload-blob', expect.anything());
@@ -447,7 +447,7 @@ describe('InputArea paste and slash menu behavior', () => {
         return new Response(JSON.stringify({
           uploads: [{
             fileId: 'sf_pasted_image',
-            dest: '/hana/session-files/pasted.png',
+            dest: '/openshadow/session-files/pasted.png',
             name: 'pasted.png',
             isDirectory: false,
           }],
@@ -483,7 +483,7 @@ describe('InputArea paste and slash menu behavior', () => {
     await waitFor(() => {
       expect(useStore.getState().attachedFiles).toEqual([{
         fileId: 'sf_pasted_image',
-        path: '/hana/session-files/pasted.png',
+        path: '/openshadow/session-files/pasted.png',
         name: 'pasted.png',
         isDirectory: false,
       }]);
@@ -498,7 +498,7 @@ describe('InputArea paste and slash menu behavior', () => {
         return new Response(JSON.stringify({
           uploads: [{
             fileId: 'sf_compressed_paste',
-            dest: '/hana/session-files/pasted.jpg',
+            dest: '/openshadow/session-files/pasted.jpg',
             name: 'pasted.jpg',
             isDirectory: false,
           }],
@@ -628,7 +628,7 @@ describe('InputArea paste and slash menu behavior', () => {
     const uploadJson = {
       uploads: [{
         fileId: 'sf_mobile_image',
-        dest: '/hana/session-files/mobile.png',
+        dest: '/openshadow/session-files/mobile.png',
         name: 'mobile.png',
         isDirectory: false,
       }],
@@ -663,7 +663,7 @@ describe('InputArea paste and slash menu behavior', () => {
     expect(body.base64Data).toBe('AQID');
     expect(useStore.getState().attachedFiles[0]).toMatchObject({
       fileId: 'sf_mobile_image',
-      path: '/hana/session-files/mobile.png',
+      path: '/openshadow/session-files/mobile.png',
       name: 'mobile.png',
       isDirectory: false,
       base64Data: 'AQID',
@@ -676,7 +676,7 @@ describe('InputArea paste and slash menu behavior', () => {
     const uploadJson = {
       uploads: [{
         fileId: 'sf_mobile_compressed',
-        dest: '/hana/session-files/mobile.jpg',
+        dest: '/openshadow/session-files/mobile.jpg',
         name: 'mobile.jpg',
         isDirectory: false,
       }],
@@ -711,7 +711,7 @@ describe('InputArea paste and slash menu behavior', () => {
     });
     expect(useStore.getState().attachedFiles[0]).toMatchObject({
       fileId: 'sf_mobile_compressed',
-      path: '/hana/session-files/mobile.jpg',
+      path: '/openshadow/session-files/mobile.jpg',
       name: 'mobile.jpg',
       isDirectory: false,
       base64Data: 'BAUG',

@@ -16694,7 +16694,7 @@ function requireGpuStartupPolicy() {
   function isExplicitSafeMode(argv, env) {
     if (boolFromSetting(env?.HANA_GPU_SAFE_MODE, false)) return true;
     if (boolFromSetting(env?.HANA_DISABLE_HARDWARE_ACCELERATION, false)) return true;
-    return hasArg(argv, "hana-gpu-safe-mode") || hasArg(argv, "hana-disable-hardware-acceleration");
+    return hasArg(argv, "hana-gpu-safe-mode") || hasArg(argv, "openshadow-disable-hardware-acceleration");
   }
   function isExplicitGpuSandboxCompatibility(argv, env) {
     if (boolFromSetting(env?.HANA_GPU_SANDBOX_COMPAT, false)) return true;
@@ -17197,7 +17197,7 @@ function requireGpuStartupPolicy() {
     const state = readState(openShadowHome);
     items.push(`Incomplete startup classification: ${classifyIncompleteStartup(state)}`);
     items.push(`GPU sandbox diagnostic classification: ${classifyGpuSandboxDiagnostic(state, policy)}`);
-    items.push(`Unsafe no-sandbox note: only enabled by --openshadow-gpu-unsafe-no-sandbox for one diagnostic launch`);
+    items.push(`Unsafe no-sandbox note: only enabled by --hana-gpu-unsafe-no-sandbox for one diagnostic launch`);
     if (state.startup) items.push(`GPU startup marker: ${JSON.stringify(state.startup)}`);
     if (state.autoGpuMode) items.push(`GPU auto mode: ${JSON.stringify(state.autoGpuMode)}`);
     if (state.safeMode) items.push(`GPU safe mode: ${JSON.stringify(state.safeMode)}`);

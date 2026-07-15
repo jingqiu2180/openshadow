@@ -250,7 +250,7 @@ describe('InputArea status stack', () => {
   beforeEach(() => {
     seedLayeredInputState();
     window.platform = {} as typeof window.platform;
-    delete (window as unknown as { hana?: unknown }).hana;
+    delete (window as unknown as { openshadow?: unknown }).openshadow;
   });
 
   afterEach(() => {
@@ -274,7 +274,7 @@ describe('InputArea status stack', () => {
   it('reveals screenshot notice directories in the workspace tree without replacing the desk root', async () => {
     render(React.createElement(InputArea));
 
-    window.dispatchEvent(new CustomEvent('hana-inline-notice', {
+    window.dispatchEvent(new CustomEvent('openshadow-inline-notice', {
       detail: {
         text: '截图已保存到工作目录下的「OH-Works」文件夹',
         type: 'success',

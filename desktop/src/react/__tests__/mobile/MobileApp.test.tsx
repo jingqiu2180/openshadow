@@ -131,7 +131,7 @@ describe('MobileApp', () => {
     render(<MobileApp />);
 
     fireEvent.click(await screen.findByRole('tab', { name: 'mobile.auth.passwordTab' }));
-    fireEvent.change(screen.getByLabelText('mobile.auth.usernameField'), { target: { value: 'hana-owner' } });
+    fireEvent.change(screen.getByLabelText('mobile.auth.usernameField'), { target: { value: 'openshadow-owner' } });
     fireEvent.change(screen.getByLabelText('mobile.auth.passwordField'), { target: { value: 'secret-password' } });
     fireEvent.click(screen.getByRole('button', { name: 'mobile.auth.submit' }));
 
@@ -139,7 +139,7 @@ describe('MobileApp', () => {
       const loginCall = fetchMock.mock.calls.find(([input]) => String(input).includes('/api/web-auth/login'));
       expect(loginCall).toBeTruthy();
       const body = JSON.parse(String(loginCall?.[1]?.body));
-      expect(body).toEqual({ username: 'hana-owner', password: 'secret-password' });
+      expect(body).toEqual({ username: 'openshadow-owner', password: 'secret-password' });
       expect(body).not.toHaveProperty('credential');
     });
   });
@@ -207,11 +207,11 @@ describe('MobileApp', () => {
     expect(useStore.getState().homeFolder).toBe('/workspace');
     expect(useStore.getState().selectedFolder).toBe('/workspace');
     expect(useStore.getState().agents[0]).toMatchObject({
-      id: 'hana',
+      id: 'openshadow',
       homeFolder: '/workspace',
       chatModel: { id: 'deepseek-chat', provider: 'deepseek' },
     });
-    expect(useStore.getState().sessions.some(session => session.path === '/hana/sessions/one.jsonl')).toBe(true);
+    expect(useStore.getState().sessions.some(session => session.path === '/openshadow/sessions/one.jsonl')).toBe(true);
     fireEvent.click(screen.getByTitle('sidebar.jian'));
     expect(await screen.findByText('note.md')).toBeInTheDocument();
   });
@@ -284,7 +284,7 @@ describe('MobileApp', () => {
 
   it('shows a controlled reload action when the PWA has an update ready', async () => {
     const applyUpdate = vi.fn();
-    window.addEventListener('hana-mobile-apply-update', applyUpdate);
+    window.addEventListener('openshadow-mobile-apply-update', applyUpdate);
     fetchMock.mockImplementation((input: RequestInfo | URL, options?: RequestInit) => {
       const url = String(input);
       if (url.includes('/api/web-auth/session')) {
@@ -298,7 +298,7 @@ describe('MobileApp', () => {
       await waitForMobileChatReady();
 
       act(() => {
-        window.dispatchEvent(new Event('hana-mobile-update-available'));
+        window.dispatchEvent(new Event('openshadow-mobile-update-available'));
       });
 
       expect(await screen.findByText('mobile.update.available')).toBeInTheDocument();
@@ -306,7 +306,7 @@ describe('MobileApp', () => {
 
       expect(applyUpdate).toHaveBeenCalledTimes(1);
     } finally {
-      window.removeEventListener('hana-mobile-apply-update', applyUpdate);
+      window.removeEventListener('openshadow-mobile-apply-update', applyUpdate);
     }
   });
 
@@ -322,7 +322,7 @@ describe('MobileApp', () => {
     render(<MobileApp />);
 
     expect(await waitForMobileChatReady()).toHaveTextContent('sidebar.newChat');
-    expect(useStore.getState().sessions.some(session => session.path === '/hana/sessions/one.jsonl')).toBe(true);
+    expect(useStore.getState().sessions.some(session => session.path === '/openshadow/sessions/one.jsonl')).toBe(true);
     expect(useStore.getState()).toMatchObject({
       currentSessionPath: null,
       pendingNewSession: true,
@@ -379,7 +379,7 @@ describe('MobileApp', () => {
   });
 
   it('re-pulls the open session on foreground when its revision drifted while backgrounded (#1610)', async () => {
-    const sessionPath = '/hana/sessions/rc.jsonl';
+    const sessionPath = '/openshadow/sessions/rc.jsonl';
     let diskRevision = 'rev-1';
     fetchMock.mockImplementation((input: RequestInfo | URL, options?: RequestInit) => {
       const url = String(input);
@@ -393,7 +393,7 @@ describe('MobileApp', () => {
       }
       if (url.includes('/api/sessions') && !url.includes('/api/sessions/')) {
         return Promise.resolve(jsonResponse([
-          { path: sessionPath, title: 'RC 会话', firstMessage: '', modified: '2026-06-10T00:00:00.000Z', messageCount: 2, agentId: 'hana', agentName: 'Hana', cwd: '/workspace', revision: diskRevision },
+          { path: sessionPath, title: 'RC 会话', firstMessage: '', modified: '2026-06-10T00:00:00.000Z', messageCount: 2, agentId: 'openshadow', agentName: 'Hana', cwd: '/workspace', revision: diskRevision },
         ]));
       }
       return Promise.resolve(jsonResponse(jsonResponseForMobile(url, options)));
@@ -417,7 +417,7 @@ describe('MobileApp', () => {
   });
 
   it('does not re-pull the open session on foreground when its revision is unchanged', async () => {
-    const sessionPath = '/hana/sessions/idle.jsonl';
+    const sessionPath = '/openshadow/sessions/idle.jsonl';
     fetchMock.mockImplementation((input: RequestInfo | URL, options?: RequestInit) => {
       const url = String(input);
       if (url.includes('/api/web-auth/session')) {
@@ -430,7 +430,7 @@ describe('MobileApp', () => {
       }
       if (url.includes('/api/sessions') && !url.includes('/api/sessions/')) {
         return Promise.resolve(jsonResponse([
-          { path: sessionPath, title: '安静会话', firstMessage: '', modified: '2026-06-10T00:00:00.000Z', messageCount: 2, agentId: 'hana', agentName: 'Hana', cwd: '/workspace', revision: 'rev-stable' },
+          { path: sessionPath, title: '安静会话', firstMessage: '', modified: '2026-06-10T00:00:00.000Z', messageCount: 2, agentId: 'openshadow', agentName: 'Hana', cwd: '/workspace', revision: 'rev-stable' },
         ]));
       }
       return Promise.resolve(jsonResponse(jsonResponseForMobile(url, options)));
@@ -466,7 +466,7 @@ describe('MobileApp', () => {
     const listener = (event: Event) => {
       planModeEvents.push((event as CustomEvent).detail);
     };
-    window.addEventListener('hana-plan-mode', listener);
+    window.addEventListener('openshadow-plan-mode', listener);
     fetchMock.mockImplementation((input: RequestInfo | URL, options?: RequestInit) => {
       const url = String(input);
       if (url.includes('/api/web-auth/session')) {
@@ -485,7 +485,7 @@ describe('MobileApp', () => {
       }
       if (url.includes('/api/sessions')) {
         return Promise.resolve(jsonResponse([
-          { path: '/hana/sessions/one.jsonl', title: '日常记录', firstMessage: '', modified: '2026-05-16T00:00:00.000Z', messageCount: 2, agentId: 'hana', agentName: 'Hana', cwd: '/workspace', permissionMode: 'read_only' },
+          { path: '/openshadow/sessions/one.jsonl', title: '日常记录', firstMessage: '', modified: '2026-05-16T00:00:00.000Z', messageCount: 2, agentId: 'openshadow', agentName: 'Hana', cwd: '/workspace', permissionMode: 'read_only' },
         ]));
       }
       return Promise.resolve(jsonResponse(jsonResponseForMobile(url, options)));
@@ -500,7 +500,7 @@ describe('MobileApp', () => {
         expect(planModeEvents).toContainEqual({ enabled: true, mode: 'read_only' });
       });
     } finally {
-      window.removeEventListener('hana-plan-mode', listener);
+      window.removeEventListener('openshadow-plan-mode', listener);
     }
   });
 
@@ -598,7 +598,7 @@ describe('MobileApp', () => {
       MockWebSocket.instances[0]?.onmessage?.({
         data: JSON.stringify({
           type: 'session_user_message',
-          sessionPath: '/hana/sessions/one.jsonl',
+          sessionPath: '/openshadow/sessions/one.jsonl',
           message: { id: 'u-mobile-1', text: '手机端发来的消息' },
         }),
       } as MessageEvent);
@@ -623,14 +623,14 @@ describe('MobileApp', () => {
       MockWebSocket.instances[0]?.onmessage?.({
         data: JSON.stringify({
           type: 'session_created',
-          sessionPath: '/hana/sessions/from-desktop.jsonl',
+          sessionPath: '/openshadow/sessions/from-desktop.jsonl',
           session: {
-            path: '/hana/sessions/from-desktop.jsonl',
+            path: '/openshadow/sessions/from-desktop.jsonl',
             title: '电脑新会话',
             firstMessage: 'desktop created',
             modified: '2026-05-16T12:00:00.000Z',
             messageCount: 1,
-            agentId: 'hana',
+            agentId: 'openshadow',
             agentName: 'Hana',
             cwd: '/workspace',
           },
@@ -639,7 +639,7 @@ describe('MobileApp', () => {
     });
 
     await waitFor(() => {
-      expect(useStore.getState().sessions.some(session => session.path === '/hana/sessions/from-desktop.jsonl')).toBe(true);
+      expect(useStore.getState().sessions.some(session => session.path === '/openshadow/sessions/from-desktop.jsonl')).toBe(true);
       expect(screen.getByText('电脑新会话')).toBeInTheDocument();
     });
   });
@@ -768,13 +768,13 @@ function jsonResponseForMobile(
       locale: 'zh-CN',
       agentName: 'Hana',
       userName: 'Owner',
-      currentAgentId: 'hana',
+      currentAgentId: 'openshadow',
       agentYuan: 'hanako',
       homeFolder: '/workspace',
       cwdHistory: ['/workspace'],
       avatars: { agent: false, user: false },
       agents: [{
-        id: 'hana',
+        id: 'openshadow',
         name: 'Hana',
         yuan: 'hanako',
         isPrimary: true,
@@ -807,7 +807,7 @@ function jsonResponseForMobile(
   }
   if (url.includes('/api/sessions')) {
     return [
-      { path: '/hana/sessions/one.jsonl', title: '日常记录', firstMessage: '', modified: '2026-05-16T00:00:00.000Z', messageCount: 2, agentId: 'hana', agentName: 'Hana', cwd: '/workspace' },
+      { path: '/openshadow/sessions/one.jsonl', title: '日常记录', firstMessage: '', modified: '2026-05-16T00:00:00.000Z', messageCount: 2, agentId: 'openshadow', agentName: 'Hana', cwd: '/workspace' },
     ];
   }
   return {};

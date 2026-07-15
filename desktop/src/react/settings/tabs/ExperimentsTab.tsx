@@ -107,7 +107,7 @@ function SwitchButton({
       role="switch"
       aria-label={label}
       aria-checked={checked}
-      className={`hana-toggle${checked ? ' on' : ''}${disabled ? ' disabled' : ''}`}
+      className={`openshadow-toggle${checked ? ' on' : ''}${disabled ? ' disabled' : ''}`}
       disabled={disabled}
       onClick={onClick}
     />

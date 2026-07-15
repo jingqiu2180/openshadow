@@ -98,7 +98,7 @@ describe('DeskSection workspace watching', () => {
     window.confirm = vi.fn(() => true);
     useStore.setState({
       serverPort: 62950,
-      deskBasePath: '/tmp/hana-desk',
+      deskBasePath: '/tmp/openshadow-desk',
       deskCurrentPath: 'notes',
       deskFiles: [],
       deskTreeFilesByPath: {
@@ -132,15 +132,15 @@ describe('DeskSection workspace watching', () => {
       </>,
     );
 
-    expect(watchWorkspace).toHaveBeenCalledWith('/tmp/hana-desk');
-    expect(watchWorkspace).toHaveBeenCalledWith('/tmp/hana-desk/notes');
+    expect(watchWorkspace).toHaveBeenCalledWith('/tmp/openshadow-desk');
+    expect(watchWorkspace).toHaveBeenCalledWith('/tmp/openshadow-desk/notes');
     mocks.loadDeskTreeFiles.mockClear();
 
     await act(async () => {
       emitWorkspaceChanged?.({
-        rootPath: '/tmp/hana-desk/notes',
-        changedPath: '/tmp/hana-desk/notes/new.md',
-        affectedDir: '/tmp/hana-desk/notes',
+        rootPath: '/tmp/openshadow-desk/notes',
+        changedPath: '/tmp/openshadow-desk/notes/new.md',
+        affectedDir: '/tmp/openshadow-desk/notes',
         eventType: 'add',
       });
     });
@@ -153,21 +153,21 @@ describe('DeskSection workspace watching', () => {
 
     render(<WorkspaceFileWatchBridge />);
 
-    expect(watchWorkspace).toHaveBeenCalledWith('/tmp/hana-desk');
-    expect(watchWorkspace).toHaveBeenCalledWith('/tmp/hana-desk/notes');
+    expect(watchWorkspace).toHaveBeenCalledWith('/tmp/openshadow-desk');
+    expect(watchWorkspace).toHaveBeenCalledWith('/tmp/openshadow-desk/notes');
 
     await act(async () => {
       useStore.setState({ deskExpandedPaths: [] } as never);
     });
 
-    expect(unwatchWorkspace).toHaveBeenCalledWith('/tmp/hana-desk/notes');
+    expect(unwatchWorkspace).toHaveBeenCalledWith('/tmp/openshadow-desk/notes');
     unwatchWorkspace.mockClear();
 
     await act(async () => {
       useStore.setState({ deskBasePath: '' } as never);
     });
 
-    expect(unwatchWorkspace).toHaveBeenCalledWith('/tmp/hana-desk');
+    expect(unwatchWorkspace).toHaveBeenCalledWith('/tmp/openshadow-desk');
   });
 
   it('flushes dirty expanded tree paths when the workspace tree mounts', async () => {
@@ -292,13 +292,13 @@ describe('DeskSection workspace watching', () => {
     const rootFile = screen.getByRole('treeitem', { name: /root.md/ });
     fireEvent.dragStart(rootFile);
 
-    expect(window.platform?.startDrag).toHaveBeenCalledWith('/tmp/hana-desk/root.md');
+    expect(window.platform?.startDrag).toHaveBeenCalledWith('/tmp/openshadow-desk/root.md');
     expect(getActiveAppFileDragPayload()).toEqual(expect.objectContaining({
       source: 'workspace',
       files: [{
         id: 'workspace:root.md',
         name: 'root.md',
-        path: '/tmp/hana-desk/root.md',
+        path: '/tmp/openshadow-desk/root.md',
         sourceSubdir: '',
         isDirectory: false,
       }],
@@ -355,9 +355,9 @@ describe('DeskSection workspace watching', () => {
 
     expect(getActiveAppFileDragPayload()?.files.map(file => file.name)).toEqual(['a.md', 'c.md', 'd.md']);
     expect(window.platform?.startDrag).toHaveBeenCalledWith([
-      '/tmp/hana-desk/a.md',
-      '/tmp/hana-desk/c.md',
-      '/tmp/hana-desk/d.md',
+      '/tmp/openshadow-desk/a.md',
+      '/tmp/openshadow-desk/c.md',
+      '/tmp/openshadow-desk/d.md',
     ]);
     clearAppFileDragPayload();
   });
@@ -634,7 +634,7 @@ describe('DeskSection workspace watching', () => {
 
     render(<DeskSection />);
 
-    expect(screen.getByText('工作台 · hana-desk')).toBeTruthy();
+    expect(screen.getByText('工作台 · openshadow-desk')).toBeTruthy();
 
     act(() => {
       useStore.setState({ deskBasePath: '/workspace/Desktop', deskCurrentPath: '' } as never);

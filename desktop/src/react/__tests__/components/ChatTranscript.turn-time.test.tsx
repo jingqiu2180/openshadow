@@ -69,7 +69,7 @@ describe('ChatTranscript turn timestamps', () => {
     useStore.setState({
       agents: [],
       agentName: 'Hana',
-      agentYuan: 'hana',
+      agentYuan: 'openshadow',
       streamingSessions: [],
       selectedIdsBySession: {},
       chatSessions: {

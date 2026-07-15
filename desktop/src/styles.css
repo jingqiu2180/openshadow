@@ -120,9 +120,9 @@ body.paper-texture .sidebar {
 body.paper-texture .jian-card,
 body.paper-texture .msg-card,
 body.paper-texture .input-wrapper,
-body.paper-texture .hana-warning-box,
+body.paper-texture .openshadow-warning-box,
 body.paper-texture .browser-floating-card,
-body.paper-texture .hana-toast,
+body.paper-texture .openshadow-toast,
 body.paper-texture .ob-input,
 body.paper-texture .provider-card,
 body.paper-texture .ob-provider-trigger,
@@ -643,7 +643,7 @@ html[data-platform="linux"] .tb-toggle-right {
 }
 
 .browser-bg-globe {
-    animation: hana-globe-spin 3s linear infinite;
+    animation: openshadow-globe-spin 3s linear infinite;
 }
 
 /* (旧 sidebar-toggle-wrap / jian-toggle-wrap 已移至 titlebar toggle 按钮) */
@@ -663,7 +663,7 @@ html[data-platform="linux"] .tb-toggle-right {
     border-radius: var(--radius-md);
     padding: var(--space-xs);
     box-shadow: 0 4px 16px var(--shadow);
-    animation: hana-fade-up var(--duration-fast) var(--ease-out);
+    animation: openshadow-fade-up var(--duration-fast) var(--ease-out);
 }
 
 
@@ -790,7 +790,7 @@ html[data-platform="linux"] .tb-toggle-right {
 }
 
 /* ── 统一开关组件 ── */
-.hana-toggle {
+.openshadow-toggle {
     width: 36px;
     height: 20px;
     border-radius: 5px;
@@ -803,7 +803,7 @@ html[data-platform="linux"] .tb-toggle-right {
     padding: 0;
 }
 
-.hana-toggle::after {
+.openshadow-toggle::after {
     content: "";
     position: absolute;
     top: 3px;
@@ -815,41 +815,41 @@ html[data-platform="linux"] .tb-toggle-right {
     transition: transform var(--duration-slow);
 }
 
-.hana-toggle:hover {
+.openshadow-toggle:hover {
     filter: brightness(0.92);
 }
 
-.hana-toggle.on {
+.openshadow-toggle.on {
     background: var(--accent);
 }
 
-.hana-toggle.on::after {
+.openshadow-toggle.on::after {
     transform: translateX(16px);
 }
 
-.hana-toggle.disabled,
-.hana-toggle:disabled {
+.openshadow-toggle.disabled,
+.openshadow-toggle:disabled {
     opacity: 0.35;
     cursor: not-allowed;
     pointer-events: none;
 }
 
 /* loading：异步数据未到位的中性态。滑块居中，背景脉冲，覆盖 disabled 的低 opacity */
-.hana-toggle.loading {
+.openshadow-toggle.loading {
     opacity: 0.55;
-    animation: hana-toggle-loading-pulse 1.2s ease-in-out infinite;
+    animation: openshadow-toggle-loading-pulse 1.2s ease-in-out infinite;
 }
 
-.hana-toggle.loading::after {
+.openshadow-toggle.loading::after {
     transform: translateX(8px);
 }
 
-@keyframes hana-toggle-loading-pulse {
+@keyframes openshadow-toggle-loading-pulse {
     0%, 100% { opacity: 0.55; }
     50% { opacity: 0.35; }
 }
 
-.hana-toggle-label {
+.openshadow-toggle-label {
     font-size: 0.78rem;
     color: var(--text-muted);
 }
@@ -1565,12 +1565,12 @@ html[data-platform="linux"] .tb-toggle-right {
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
     display: flex;
     flex-direction: column;
-    animation: hana-slide-in-left var(--duration-instant) ease-out;
+    animation: openshadow-slide-in-left var(--duration-instant) ease-out;
     overflow: hidden;
 }
 
 .devtools-panel.closing .devtools-inner {
-    animation: hana-slide-out-left var(--duration-instant) ease-in forwards;
+    animation: openshadow-slide-out-left var(--duration-instant) ease-in forwards;
 }
 
 .devtools-buttons {
@@ -1811,7 +1811,7 @@ html[data-platform="linux"] .tb-toggle-right {
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: hana-fade-in var(--duration-fast) ease-out;
+    animation: openshadow-fade-in var(--duration-fast) ease-out;
 }
 
 .sv-container {
@@ -1825,7 +1825,7 @@ html[data-platform="linux"] .tb-toggle-right {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: hana-scale-in var(--duration-fast) ease-out;
+    animation: openshadow-scale-in var(--duration-fast) ease-out;
 }
 
 .sv-topbar {
@@ -2431,7 +2431,7 @@ body.resizing .channel-inspector-rail {
 /* (笺编辑器样式已迁移至 Desk.module.css) */
 
 /* Toast 通知 */
-.hana-toast {
+.openshadow-toast {
     position: fixed;
     top: calc(var(--titlebar-h) + 12px);
     left: 50%;
@@ -2451,16 +2451,16 @@ body.resizing .channel-inspector-rail {
     pointer-events: none;
     box-shadow: 0 8px 28px rgba(0,0,0,0.12);
 }
-.hana-toast.show {
+.openshadow-toast.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
     pointer-events: auto;
 }
-.hana-toast.error {
+.openshadow-toast.error {
     background: var(--bg-card, #fff);
     color: var(--text-muted);
 }
-.hana-toast-close {
+.openshadow-toast-close {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2472,16 +2472,16 @@ body.resizing .channel-inspector-rail {
     padding: 2px;
     border-radius: 4px;
 }
-.hana-toast-close:hover {
+.openshadow-toast-close:hover {
     opacity: 1;
 }
-.hana-toast-actions {
+.openshadow-toast-actions {
     display: flex;
     align-items: center;
     gap: 6px;
     margin-left: 8px;
 }
-.hana-toast-action {
+.openshadow-toast-action {
     background: none;
     border: 1px solid var(--border-light, #ddd);
     border-radius: 3px;
@@ -2791,7 +2791,7 @@ body.resizing .channel-inspector-rail {
     cursor: default;
     transition: box-shadow var(--duration-fast);
     -webkit-app-region: no-drag;
-    animation: hana-card-slide-down var(--duration-slow) var(--ease-out) both;
+    animation: openshadow-card-slide-down var(--duration-slow) var(--ease-out) both;
 }
 .browser-floating-right {
     display: flex;
@@ -2881,7 +2881,7 @@ body.resizing .channel-inspector-rail {
 /* ═══════════════════════════════════════
    Warning 弹窗（频道等）
    ═══════════════════════════════════════ */
-.hana-warning-overlay {
+.openshadow-warning-overlay {
     position: fixed;
     inset: 0;
     z-index: 9999;
@@ -2889,42 +2889,42 @@ body.resizing .channel-inspector-rail {
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.35);
-    animation: hana-fade-in var(--duration-fast) ease;
+    animation: openshadow-fade-in var(--duration-fast) ease;
 }
-.hana-warning-box {
+.openshadow-warning-box {
     width: 420px;
     max-width: 90vw;
     background-color: var(--bg-card);
     border-radius: var(--radius-lg);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
     padding: 1.6rem 1.8rem 1.3rem;
-    animation: hana-fade-up var(--duration-slow) var(--ease-out);
+    animation: openshadow-fade-up var(--duration-slow) var(--ease-out);
 }
-.hana-warning-title {
+.openshadow-warning-title {
     font-size: 1rem;
     font-weight: 600;
     color: var(--text);
     margin: 0 0 0.8rem;
 }
-.hana-warning-body {
+.openshadow-warning-body {
     font-size: 0.82rem;
     line-height: 1.7;
     color: var(--text-secondary);
 }
-.hana-warning-body p {
+.openshadow-warning-body p {
     margin: 0 0 0.6rem;
 }
-.hana-warning-body p:last-child {
+.openshadow-warning-body p:last-child {
     margin-bottom: 0;
 }
-.hana-warning-actions {
+.openshadow-warning-actions {
     display: flex;
     justify-content: flex-end;
     gap: var(--space-sm);
     margin-top: 1.2rem;
 }
-.hana-warning-cancel,
-.hana-warning-confirm {
+.openshadow-warning-cancel,
+.openshadow-warning-confirm {
     font-family: inherit;
     font-size: 0.8rem;
     padding: 0.4rem 1rem;
@@ -2933,18 +2933,18 @@ body.resizing .channel-inspector-rail {
     cursor: default;
     transition: background var(--duration-fast), color var(--duration-fast);
 }
-.hana-warning-cancel {
+.openshadow-warning-cancel {
     background: var(--bg-secondary);
     color: var(--text-secondary);
 }
-.hana-warning-cancel:hover {
+.openshadow-warning-cancel:hover {
     background: var(--overlay-medium);
 }
-.hana-warning-confirm {
+.openshadow-warning-confirm {
     background: var(--accent);
     color: #fff;
 }
-.hana-warning-confirm:hover {
+.openshadow-warning-confirm:hover {
     opacity: 0.85;
 }
 
@@ -3011,7 +3011,7 @@ html[data-platform="linux"] .onboarding {
     flex: 1;
     overflow-y: auto;
     --slide-y: 10px;
-    animation: hana-fade-up var(--duration-slow) ease-out;
+    animation: openshadow-fade-up var(--duration-slow) ease-out;
 }
 .onboarding-step.active {
     display: flex;
@@ -3656,7 +3656,7 @@ html[data-platform="linux"] .onboarding {
     gap: var(--space-xs);
 }
 .ob-model-edit-field span,
-.ob-model-edit-toggle-row .hana-toggle-label {
+.ob-model-edit-toggle-row .openshadow-toggle-label {
     color: var(--text-muted);
     font-size: 0.72rem;
 }
@@ -4016,7 +4016,7 @@ html[data-platform="linux"] .onboarding {
    加进来（InputArea 内的浮层已各自在自己的 module 里声明）。
    ============================================================ */
 .context-menu,
-.hana-toast,
+.openshadow-toast,
 .float-sidebar,
 .browser-floating-card,
 .drop-overlay {

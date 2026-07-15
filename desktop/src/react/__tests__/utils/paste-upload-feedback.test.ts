@@ -13,11 +13,11 @@ describe('notifyPasteUploadFailure', () => {
 
   beforeEach(() => {
     notices.length = 0;
-    window.addEventListener('hana-inline-notice', handler);
+    window.addEventListener('openshadow-inline-notice', handler);
   });
 
   afterEach(() => {
-    window.removeEventListener('hana-inline-notice', handler);
+    window.removeEventListener('openshadow-inline-notice', handler);
   });
 
   it('dispatches a visible error notice with the upload failure reason', () => {

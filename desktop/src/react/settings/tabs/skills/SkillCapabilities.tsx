@@ -108,10 +108,10 @@ export function SkillCapabilities({ installCfg }: SkillCapabilitiesProps) {
       </SettingsSection>
 
       {showGithubWarning && (
-        <div className="hana-warning-overlay" onClick={() => setShowGithubWarning(false)}>
-          <div className="hana-warning-box" onClick={(e) => e.stopPropagation()}>
-            <h3 className="hana-warning-title">{t('settings.skills.fetchWarning.title')}</h3>
-            <div className="hana-warning-body">
+        <div className="openshadow-warning-overlay" onClick={() => setShowGithubWarning(false)}>
+          <div className="openshadow-warning-box" onClick={(e) => e.stopPropagation()}>
+            <h3 className="openshadow-warning-title">{t('settings.skills.fetchWarning.title')}</h3>
+            <div className="openshadow-warning-body">
               <p>{t('settings.skills.fetchWarning.body1')}</p>
               <p>{t('settings.skills.fetchWarning.body2')}</p>
               <p>
@@ -120,11 +120,11 @@ export function SkillCapabilities({ installCfg }: SkillCapabilitiesProps) {
                 3. {t('settings.skills.fetchWarning.risk3')}
               </p>
             </div>
-            <div className="hana-warning-actions">
-              <button className="hana-warning-cancel" onClick={() => setShowGithubWarning(false)}>
+            <div className="openshadow-warning-actions">
+              <button className="openshadow-warning-cancel" onClick={() => setShowGithubWarning(false)}>
                 {t('common.cancel')}
               </button>
-              <button className="hana-warning-confirm" onClick={confirmGithubFetch}>
+              <button className="openshadow-warning-confirm" onClick={confirmGithubFetch}>
                 {t('settings.skills.fetchWarning.confirm')}
               </button>
             </div>
@@ -133,10 +133,10 @@ export function SkillCapabilities({ installCfg }: SkillCapabilitiesProps) {
       )}
 
       {showSafetyWarning && (
-        <div className="hana-warning-overlay" onClick={() => setShowSafetyWarning(false)}>
-          <div className="hana-warning-box" onClick={(e) => e.stopPropagation()}>
-            <h3 className="hana-warning-title">{t('settings.skills.safetyWarning.title')}</h3>
-            <div className="hana-warning-body">
+        <div className="openshadow-warning-overlay" onClick={() => setShowSafetyWarning(false)}>
+          <div className="openshadow-warning-box" onClick={(e) => e.stopPropagation()}>
+            <h3 className="openshadow-warning-title">{t('settings.skills.safetyWarning.title')}</h3>
+            <div className="openshadow-warning-body">
               <p>{t('settings.skills.safetyWarning.body1')}</p>
               <p>
                 1. {t('settings.skills.safetyWarning.risk1')}<br />
@@ -145,11 +145,11 @@ export function SkillCapabilities({ installCfg }: SkillCapabilitiesProps) {
               </p>
               <p>{t('settings.skills.safetyWarning.body2')}</p>
             </div>
-            <div className="hana-warning-actions">
-              <button className="hana-warning-cancel" onClick={() => setShowSafetyWarning(false)}>
+            <div className="openshadow-warning-actions">
+              <button className="openshadow-warning-cancel" onClick={() => setShowSafetyWarning(false)}>
                 {t('common.cancel')}
               </button>
-              <button className="hana-warning-confirm" onClick={async () => {
+              <button className="openshadow-warning-confirm" onClick={async () => {
                 setShowSafetyWarning(false);
                 await autoSaveConfig(
                   { capabilities: { learn_skills: { safety_review: false } } },

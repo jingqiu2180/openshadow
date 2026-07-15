@@ -23,7 +23,7 @@ function setAppearanceGlobals() {
     document.documentElement.setAttribute('data-theme', theme === 'auto' ? registry.DEFAULT_THEME : theme);
   });
   (globalThis as AppearanceGlobals).setSerifFont = vi.fn((enabled: boolean) => {
-    localStorage.setItem('hana-font-serif', enabled ? '1' : '0');
+    localStorage.setItem('openshadow-font-serif', enabled ? '1' : '0');
     document.body.classList.toggle('font-sans', !enabled);
   });
   (globalThis as AppearanceGlobals).setPaperTexture = vi.fn((enabled: boolean) => {
@@ -63,7 +63,7 @@ describe('InterfaceTab appearance state', () => {
   });
 
   it('updates the reading font card from component state after the preference changes', () => {
-    localStorage.setItem('hana-font-serif', '1');
+    localStorage.setItem('openshadow-font-serif', '1');
 
     render(React.createElement(InterfaceTab));
 
@@ -73,7 +73,7 @@ describe('InterfaceTab appearance state', () => {
     fireEvent.click(sansCard!);
 
     expect(globalThis.setSerifFont).toHaveBeenCalledWith(false);
-    expect(localStorage.getItem('hana-font-serif')).toBe('0');
+    expect(localStorage.getItem('openshadow-font-serif')).toBe('0');
   });
 
   it('recomputes paper texture availability when the selected theme changes', () => {

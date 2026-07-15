@@ -1,7 +1,7 @@
 import type { PlatformApi } from '../types';
 
 const noopUnsubscribe = () => {};
-const OPEN_SETTINGS_EVENT = 'hana-mobile-open-settings';
+const OPEN_SETTINGS_EVENT = 'openshadow-mobile-open-settings';
 
 export function installMobilePlatform(): void {
   if (typeof window === 'undefined') return;

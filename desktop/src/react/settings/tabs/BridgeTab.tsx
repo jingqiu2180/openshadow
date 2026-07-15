@@ -104,7 +104,7 @@ export function BridgeTab() {
       </SettingsSection>
 
       <div className="bridge-help-link-row">
-        <span className="bridge-help-link" onClick={() => window.dispatchEvent(new Event('hana-show-bridge-tutorial'))}>
+        <span className="bridge-help-link" onClick={() => window.dispatchEvent(new Event('openshadow-show-bridge-tutorial'))}>
           {t('settings.bridge.howTo')}
         </span>
       </div>

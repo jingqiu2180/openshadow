@@ -178,9 +178,9 @@ export function ActivityPanel() {
           <div className={fp.floatingPanelHeader}>
               <h2 className={fp.floatingPanelTitle}>{t('activity.title')}</h2>
               <div className={fp.activityHbToggle}>
-                <span className="hana-toggle-label">{t('activity.heartbeat')}</span>
+                <span className="openshadow-toggle-label">{t('activity.heartbeat')}</span>
                 <button
-                  className={'hana-toggle' + (hbEnabled ? ' on' : '')}
+                  className={'openshadow-toggle' + (hbEnabled ? ' on' : '')}
                   onClick={toggleHeartbeat}
                 />
               </div>

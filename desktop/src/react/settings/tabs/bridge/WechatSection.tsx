@@ -67,7 +67,7 @@ export function WechatSection({ status, showToast, onSaveConfig, onReload, agent
               {t('settings.bridge.wechatLoggedIn')}
             </span>
             <div className={bridgeStyles['wechat-btn-row']}>
-              <button className="bridge-test-btn" onClick={() => window.dispatchEvent(new CustomEvent('hana-show-wechat-qrcode', { detail: { agentId } }))}>
+              <button className="bridge-test-btn" onClick={() => window.dispatchEvent(new CustomEvent('openshadow-show-wechat-qrcode', { detail: { agentId } }))}>
                 {t('settings.bridge.wechatRescan')}
               </button>
               <button className="bridge-test-btn" onClick={unbind}>
@@ -77,7 +77,7 @@ export function WechatSection({ status, showToast, onSaveConfig, onReload, agent
           </div>
         ) : (
           <div className={bridgeStyles['wechat-scan-row']}>
-            <button className="bridge-test-btn" onClick={() => window.dispatchEvent(new CustomEvent('hana-show-wechat-qrcode', { detail: { agentId } }))}>
+            <button className="bridge-test-btn" onClick={() => window.dispatchEvent(new CustomEvent('openshadow-show-wechat-qrcode', { detail: { agentId } }))}>
               {t('settings.bridge.wechatScan')}
             </button>
           </div>

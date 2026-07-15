@@ -12,7 +12,7 @@ function runPlatformScript(): void {
 
 describe('web platform fallback capability contract', () => {
   beforeEach(() => {
-    delete (window as any).hana;
+    delete (window as any).openshadow;
     delete (window as any).platform;
     delete (window as any).__OPEN_SHADOW_DEV_WEB__;
     (globalThis as any).localStorage = {

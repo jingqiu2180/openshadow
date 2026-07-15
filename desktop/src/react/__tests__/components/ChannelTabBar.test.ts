@@ -37,8 +37,8 @@ describe('ChannelTabBar switchTab', () => {
   });
 
   it('keeps the right workspace companion state independent from tab switches', () => {
-    localStorage.setItem('hana-jian-plugin:hanako-hyperframes', 'closed');
-    localStorage.setItem('hana-jian-plugin:other-plugin', 'open');
+    localStorage.setItem('openshadow-jian-plugin:hanako-hyperframes', 'closed');
+    localStorage.setItem('openshadow-jian-plugin:other-plugin', 'open');
 
     switchTab('plugin:hanako-hyperframes');
 

@@ -29,9 +29,9 @@ describe('resolveLinkTarget', () => {
   });
 
   it('decodes file URLs into local file targets', () => {
-    expect(resolveLinkTarget('file:///tmp/hana-link-fixture/demo.md')).toEqual({
+    expect(resolveLinkTarget('file:///tmp/openshadow-link-fixture/demo.md')).toEqual({
       kind: 'file',
-      filePath: '/tmp/hana-link-fixture/demo.md',
+      filePath: '/tmp/openshadow-link-fixture/demo.md',
       ext: 'md',
       label: 'demo.md',
     });

@@ -36,7 +36,7 @@ async function loadMermaid(): Promise<MermaidApi> {
 
 function nextMermaidId(): string {
   idSeq += 1;
-  return `hana-mermaid-${idSeq}`;
+  return `openshadow-mermaid-${idSeq}`;
 }
 
 function errorMessage(err: unknown): string {

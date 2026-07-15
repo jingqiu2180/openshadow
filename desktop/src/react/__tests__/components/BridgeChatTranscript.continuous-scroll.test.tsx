@@ -94,7 +94,7 @@ describe('BridgeChatTranscript continuous bottom scroll', () => {
     const { container } = render(
       <BridgeChatTranscript
         sessionPath="/bridge/session.jsonl"
-        agentId="hana"
+        agentId="openshadow"
         contactName="微信联系人"
         contactAvatarUrl={null}
         emptyLabel="empty"

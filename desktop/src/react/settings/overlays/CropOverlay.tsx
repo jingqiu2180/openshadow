@@ -46,8 +46,8 @@ export function CropOverlay() {
       };
       reader.readAsDataURL(file);
     };
-    window.addEventListener('hana-open-cropper', handler);
-    return () => window.removeEventListener('hana-open-cropper', handler);
+    window.addEventListener('openshadow-open-cropper', handler);
+    return () => window.removeEventListener('openshadow-open-cropper', handler);
   }, []);
 
   const close = useCallback(() => {

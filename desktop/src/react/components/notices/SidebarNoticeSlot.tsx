@@ -3,7 +3,7 @@ import { useAutoUpdateState } from '../../hooks/use-auto-update-state';
 import type { AutoUpdateState } from '../../types';
 import styles from './SidebarNoticeSlot.module.css';
 
-const DISMISSED_UPDATE_KEY = 'hana-sidebar-update-dismissed-key';
+const DISMISSED_UPDATE_KEY = 'openshadow-sidebar-update-dismissed-key';
 
 type NoticeStorage = Pick<Storage, 'getItem' | 'setItem'>;
 

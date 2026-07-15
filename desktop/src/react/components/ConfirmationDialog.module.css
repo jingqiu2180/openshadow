@@ -1,6 +1,6 @@
 /* ConfirmationDialog.module.css */
 
-.hana-warning-overlay {
+.openshadow-warning-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -13,7 +13,7 @@
   z-index: 10000;
 }
 
-.hana-warning-box {
+.openshadow-warning-box {
   background: var(--modal-bg, #fff);
   border-radius: 8px;
   padding: 24px;
@@ -22,43 +22,43 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.hana-confirm-box {
+.openshadow-confirm-box {
   /* Confirm specific styles */
 }
 
-.hana-confirm-box.danger {
+.openshadow-confirm-box.danger {
   border: 1px solid var(--danger-color, #ff4d4f);
 }
 
-.hana-warning-title {
+.openshadow-warning-title {
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 12px 0;
   color: var(--text-color, #333);
 }
 
-.hana-warning-body {
+.openshadow-warning-body {
   margin-bottom: 20px;
 }
 
-.hana-warning-body p {
+.openshadow-warning-body p {
   margin: 0 0 8px 0;
   font-size: 14px;
   color: var(--text-color, #333);
 }
 
-.hana-confirm-detail {
+.openshadow-confirm-detail {
   font-size: 12px;
   color: var(--text-secondary, #666);
 }
 
-.hana-warning-actions {
+.openshadow-warning-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
 }
 
-.hana-warning-cancel {
+.openshadow-warning-cancel {
   padding: 6px 16px;
   border: 1px solid var(--border-color, #d9d9d9);
   border-radius: 4px;
@@ -68,12 +68,12 @@
   font-size: 14px;
 }
 
-.hana-warning-cancel:hover {
+.openshadow-warning-cancel:hover {
   border-color: var(--accent-color, #1890ff);
   color: var(--accent-color, #1890ff);
 }
 
-.hana-warning-confirm {
+.openshadow-warning-confirm {
   padding: 6px 16px;
   border: none;
   border-radius: 4px;
@@ -83,20 +83,20 @@
   font-size: 14px;
 }
 
-.hana-warning-confirm:hover {
+.openshadow-warning-confirm:hover {
   background: var(--accent-hover, #40a9ff);
 }
 
-.hana-warning-confirm.danger {
+.openshadow-warning-confirm.danger {
   background: var(--danger-color, #ff4d4f);
 }
 
-.hana-warning-confirm.danger:hover {
+.openshadow-warning-confirm.danger:hover {
   background: var(--danger-hover, #ff7875);
 }
 
-.hana-warning-confirm:disabled,
-.hana-warning-cancel:disabled {
+.openshadow-warning-confirm:disabled,
+.openshadow-warning-cancel:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

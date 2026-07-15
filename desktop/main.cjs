@@ -112,7 +112,7 @@ let wizardCompleting = false
 let suppressWindowAllClosed = false
 
 // ─── Self-contained config reader ────────────────────────────
-// 对齐 openhanako：配置写到用户数据目录，不写安装目录（避免 Program Files EPERM）
+// 配置写到用户数据目录，不写安装目录（避免 Program Files EPERM）
 const _openShadowHome = process.env.OPENSHADOW_HOME || join(process.env.APPDATA || process.env.HOME || '', '.openshadow')
 const CONFIG_PATH = join(_openShadowHome, 'config.json')
 

@@ -93,7 +93,7 @@ export function WechatQrcodeOverlay() {
                 body: JSON.stringify({ platform: 'wechat', userId: data.userId }),
               }).catch((err: unknown) => console.warn('[WechatQrcodeOverlay] set owner failed', err));
             }
-            window.dispatchEvent(new Event('hana-bridge-reload'));
+            window.dispatchEvent(new Event('openshadow-bridge-reload'));
             setTimeout(close, 1200);
             return;
           } else if (data.status === 'expired') {
@@ -129,9 +129,9 @@ export function WechatQrcodeOverlay() {
       setRefreshCount(0);
       fetchQrcode();
     };
-    window.addEventListener('hana-show-wechat-qrcode', show);
+    window.addEventListener('openshadow-show-wechat-qrcode', show);
     return () => {
-      window.removeEventListener('hana-show-wechat-qrcode', show);
+      window.removeEventListener('openshadow-show-wechat-qrcode', show);
       stopPolling();
     };
   }, [fetchQrcode, stopPolling]);

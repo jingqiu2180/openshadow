@@ -136,7 +136,7 @@ function persistedLanConnectionJson() {
     label: 'LAN Studio',
     baseUrl: 'http://192.168.31.75:14500',
     wsUrl: 'ws://192.168.31.75:14500',
-    token: 'hana_dev_remote_secret',
+    token: 'openshadow_dev_remote_secret',
     authState: 'paired',
     trustState: 'lan',
     credentialKind: 'device_credential',
@@ -257,7 +257,7 @@ describe('initApp bridge indicator', () => {
         listeners[type].push(cb);
       }),
       localStorage: {
-        getItem: vi.fn((key: string) => key === 'openshadow-server-connections-v1' ? persistedLanConnectionJson() : null),
+        getItem: vi.fn((key: string) => key === 'hana-server-connections-v1' ? persistedLanConnectionJson() : null),
         setItem: vi.fn(),
         removeItem: vi.fn(),
       },
@@ -310,13 +310,13 @@ describe('initApp bridge indicator', () => {
     expect(mockHanaFetch).toHaveBeenNthCalledWith(1, '/api/web-auth/login', expect.objectContaining({
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({ credential: 'hana_dev_remote_secret' }),
+      body: JSON.stringify({ credential: 'openshadow_dev_remote_secret' }),
     }));
     expect(mockHanaFetch).toHaveBeenNthCalledWith(2, '/api/server/identity');
     expect(mockState.activeServerConnection).toEqual(expect.objectContaining({
       connectionId: 'lan:node_lan:studio_lan',
       kind: 'lan',
-      token: 'hana_dev_remote_secret',
+      token: 'openshadow_dev_remote_secret',
       credentialKind: 'device_credential',
     }));
     expect(mockConnectWebSocket).toHaveBeenCalledTimes(1);

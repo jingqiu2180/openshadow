@@ -35,11 +35,11 @@ export function switchTab(tab: TabType) {
     hydrateCurrentChannelIfNeeded().catch((err: unknown) =>
       console.warn('[channels] hydrate current channel failed', err));
   }
-  localStorage.setItem('hana-tab', tab);
+  localStorage.setItem('openshadow-tab', tab);
 
   const isPluginTab = typeof tab === 'string' && tab.startsWith('plugin:');
   if (!isPluginTab) {
-    const savedLeft = localStorage.getItem(`hana-sidebar-${tab}`);
+    const savedLeft = localStorage.getItem(`openshadow-sidebar-${tab}`);
     const wantLeftOpen = savedLeft !== 'closed';
     if (s.sidebarOpen !== wantLeftOpen) toggleSidebar(wantLeftOpen);
   }
@@ -142,7 +142,7 @@ export function ChannelTabBar() {
 
   // Restore saved tab on mount
   useEffect(() => {
-    const savedTab = localStorage.getItem('hana-tab');
+    const savedTab = localStorage.getItem('openshadow-tab');
     if (savedTab && savedTab !== 'chat') switchTab(savedTab as TabType);
   }, []);
 

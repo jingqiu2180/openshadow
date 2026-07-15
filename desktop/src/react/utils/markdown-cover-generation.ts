@@ -116,7 +116,7 @@ async function refreshAfterCover(input: MarkdownCoverTargetInput): Promise<void>
 }
 
 export function dispatchCoverNotice(text: string, type: 'success' | 'error' = 'success'): void {
-  window.dispatchEvent(new CustomEvent('hana-inline-notice', {
+  window.dispatchEvent(new CustomEvent('openshadow-inline-notice', {
     detail: { text, type },
   }));
 }

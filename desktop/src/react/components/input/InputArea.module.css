@@ -284,7 +284,7 @@
 }
 
 .context-ring.compacting svg {
-    animation: hana-spin 1.5s linear infinite;
+    animation: openshadow-spin 1.5s linear infinite;
     transform-origin: center;
 }
 
@@ -305,7 +305,7 @@
     border: var(--panel-card-border);
     border-radius: var(--radius-sm);
     box-shadow: var(--panel-card-shadow);
-    animation: hana-fade-up var(--duration-fast) var(--ease-out);
+    animation: openshadow-fade-up var(--duration-fast) var(--ease-out);
 }
 
 .context-ring-menu-item {
@@ -395,7 +395,7 @@
     box-shadow: 0 4px 16px var(--shadow);
     z-index: 50;
     transform-origin: bottom right;
-    animation: hana-popout var(--duration-fast) var(--ease-out);
+    animation: openshadow-popout var(--duration-fast) var(--ease-out);
 }
 
 .thinking-selector.open .thinking-dropdown {
@@ -614,7 +614,7 @@
     box-shadow: 0 4px 16px var(--shadow);
     z-index: 50;
     transform-origin: bottom right;
-    animation: hana-popout var(--duration-fast) var(--ease-out);
+    animation: openshadow-popout var(--duration-fast) var(--ease-out);
 }
 
 .model-selector.open .model-dropdown {
@@ -850,7 +850,7 @@
     height: 6px;
     border-radius: 50%;
     background: var(--accent);
-    animation: hana-pulse 1.2s ease-in-out infinite;
+    animation: openshadow-pulse 1.2s ease-in-out infinite;
 }
 
 .screenshot-busy-bar {
@@ -888,7 +888,7 @@
     height: 6px;
     border-radius: 50%;
     background: #c08080;
-    animation: hana-pulse 1.2s ease-in-out infinite;
+    animation: openshadow-pulse 1.2s ease-in-out infinite;
 }
 
 .slash-result-dot-ok {
@@ -934,7 +934,7 @@
     border: var(--panel-card-border);
     border-radius: var(--panel-card-radius);
     box-shadow: var(--panel-card-shadow);
-    animation: hana-fade-up var(--duration-fast) var(--ease-out);
+    animation: openshadow-fade-up var(--duration-fast) var(--ease-out);
 }
 
 .capability-drift-text {
@@ -1028,7 +1028,7 @@
     border: 1px solid rgba(var(--accent-rgb), 0.12);
     border-radius: var(--radius-chat-card);
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.055);
-    animation: hana-rise var(--duration-slow) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: openshadow-rise var(--duration-slow) cubic-bezier(0.25, 0.46, 0.45, 0.94);
     transform-origin: bottom center;
     overflow: hidden;
 }
@@ -1043,7 +1043,7 @@
 
 .session-confirmation-prompt-exiting {
     pointer-events: none;
-    animation: hana-retract var(--duration-fast) cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+    animation: openshadow-retract var(--duration-fast) cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
 }
 
 .session-confirmation-body {
@@ -1177,7 +1177,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     box-shadow: 0 4px 16px var(--shadow);
-    animation: hana-fade-up var(--duration-fast) var(--ease-out);
+    animation: openshadow-fade-up var(--duration-fast) var(--ease-out);
 }
 
 .session-confirmation-menu-item {
@@ -1270,7 +1270,7 @@
     border: 1px solid rgba(var(--accent-rgb), 0.18);
     border-radius: var(--radius-md);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-    animation: hana-popout var(--duration-fast) var(--ease-out);
+    animation: openshadow-popout var(--duration-fast) var(--ease-out);
 }
 
 .audio-recording-dot {

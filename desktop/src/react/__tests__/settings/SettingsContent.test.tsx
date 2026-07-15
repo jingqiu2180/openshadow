@@ -239,7 +239,7 @@ describe('SettingsContent title placement', () => {
       label: 'LAN Studio',
       baseUrl: 'http://192.168.31.75:14500',
       wsUrl: 'ws://192.168.31.75:14500',
-      token: 'hana_dev_remote',
+      token: 'openshadow_dev_remote',
       authState: 'paired',
       trustState: 'lan',
       credentialKind: 'device_credential',
@@ -263,7 +263,7 @@ describe('SettingsContent title placement', () => {
       expect(mockState.activeServerConnection).toEqual(expect.objectContaining({
         connectionId: remoteConnection.connectionId,
         baseUrl: 'http://192.168.31.75:14500',
-        token: 'hana_dev_remote',
+        token: 'openshadow_dev_remote',
       }));
     });
     expect(mockState.serverConnections).toEqual(expect.objectContaining({

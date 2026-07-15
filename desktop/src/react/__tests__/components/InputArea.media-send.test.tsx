@@ -166,14 +166,14 @@ function seedSession() {
     inlineErrors: {},
     attachedFiles: [{
       fileId: 'sf_pasted',
-      path: '/tmp/hana/session-files/pasted.png',
+      path: '/tmp/openshadow/session-files/pasted.png',
       name: 'pasted.png',
       isDirectory: false,
     }],
     attachedFilesBySession: {
       '/session/media.jsonl': [{
         fileId: 'sf_pasted',
-        path: '/tmp/hana/session-files/pasted.png',
+        path: '/tmp/openshadow/session-files/pasted.png',
         name: 'pasted.png',
         isDirectory: false,
       }],
@@ -259,7 +259,7 @@ describe('InputArea media send', () => {
     window.platform = {
       readFileBase64: vi.fn(async () => 'IMAGE_BASE64'),
     } as unknown as typeof window.platform;
-    delete (window as unknown as { hana?: unknown }).hana;
+    delete (window as unknown as { openshadow?: unknown }).openshadow;
   });
 
   it('sends pasted image bytes through the platform API when window.shadow is unavailable', async () => {
@@ -270,7 +270,7 @@ describe('InputArea media send', () => {
     await waitFor(() => {
       expect(mocks.wsSend).toHaveBeenCalledTimes(1);
     });
-    expect(window.platform.readFileBase64).toHaveBeenCalledWith('/tmp/hana/session-files/pasted.png');
+    expect(window.platform.readFileBase64).toHaveBeenCalledWith('/tmp/openshadow/session-files/pasted.png');
     const payload = JSON.parse(String(mocks.wsSend.mock.calls[0][0]));
     expect(payload.images).toEqual([{
       type: 'image',
@@ -279,7 +279,7 @@ describe('InputArea media send', () => {
     }]);
     expect(payload.displayMessage.attachments[0]).toMatchObject({
       fileId: 'sf_pasted',
-      path: '/tmp/hana/session-files/pasted.png',
+      path: '/tmp/openshadow/session-files/pasted.png',
       name: 'pasted.png',
       mimeType: 'image/png',
       visionAuxiliary: true,
@@ -304,7 +304,7 @@ describe('InputArea media send', () => {
     expect(payload.images).toBeUndefined();
     expect(payload.displayMessage.attachments[0]).toMatchObject({
       fileId: 'sf_pasted',
-      path: '/tmp/hana/session-files/pasted.png',
+      path: '/tmp/openshadow/session-files/pasted.png',
       name: 'pasted.png',
       visionAuxiliary: false,
     });
@@ -328,7 +328,7 @@ describe('InputArea media send', () => {
     expect(payload.images).toBeUndefined();
     expect(payload.displayMessage.attachments[0]).toMatchObject({
       fileId: 'sf_pasted',
-      path: '/tmp/hana/session-files/pasted.png',
+      path: '/tmp/openshadow/session-files/pasted.png',
       visionAuxiliary: false,
     });
   });
@@ -367,14 +367,14 @@ describe('InputArea media send', () => {
     useStore.setState({
       attachedFiles: [{
         fileId: 'sf_voice',
-        path: '/tmp/hana/session-files/voice.wav',
+        path: '/tmp/openshadow/session-files/voice.wav',
         name: 'voice.wav',
         isDirectory: false,
       }],
       attachedFilesBySession: {
         '/session/media.jsonl': [{
           fileId: 'sf_voice',
-          path: '/tmp/hana/session-files/voice.wav',
+          path: '/tmp/openshadow/session-files/voice.wav',
           name: 'voice.wav',
           isDirectory: false,
         }],
@@ -401,7 +401,7 @@ describe('InputArea media send', () => {
       expect(mocks.wsSend).toHaveBeenCalledTimes(1);
     });
     const payload = JSON.parse(String(mocks.wsSend.mock.calls[0][0]));
-    expect(window.platform.readFileBase64).toHaveBeenCalledWith('/tmp/hana/session-files/voice.wav');
+    expect(window.platform.readFileBase64).toHaveBeenCalledWith('/tmp/openshadow/session-files/voice.wav');
     expect(payload.text).toBe('');
     expect(payload.audios).toEqual([{
       type: 'audio',
@@ -410,7 +410,7 @@ describe('InputArea media send', () => {
     }]);
     expect(payload.displayMessage.attachments[0]).toMatchObject({
       fileId: 'sf_voice',
-      path: '/tmp/hana/session-files/voice.wav',
+      path: '/tmp/openshadow/session-files/voice.wav',
       name: 'voice.wav',
       mimeType: 'audio/wav',
     });
@@ -420,7 +420,7 @@ describe('InputArea media send', () => {
     useStore.setState({
       attachedFiles: [{
         fileId: 'sf_recording',
-        path: '/tmp/hana/session-files/recording.wav',
+        path: '/tmp/openshadow/session-files/recording.wav',
         name: '录音 1.wav',
         isDirectory: false,
         mimeType: 'audio/wav',
@@ -428,7 +428,7 @@ describe('InputArea media send', () => {
       attachedFilesBySession: {
         '/session/media.jsonl': [{
           fileId: 'sf_recording',
-          path: '/tmp/hana/session-files/recording.wav',
+          path: '/tmp/openshadow/session-files/recording.wav',
           name: '录音 1.wav',
           isDirectory: false,
           mimeType: 'audio/wav',
@@ -465,7 +465,7 @@ describe('InputArea media send', () => {
       expect(mocks.wsSend).toHaveBeenCalledTimes(1);
     });
     const payload = JSON.parse(String(mocks.wsSend.mock.calls[0][0]));
-    expect(window.platform.readFileBase64).toHaveBeenCalledWith('/tmp/hana/session-files/recording.wav');
+    expect(window.platform.readFileBase64).toHaveBeenCalledWith('/tmp/openshadow/session-files/recording.wav');
     expect(payload.text).toBe('');
     expect(payload.audios).toEqual([{
       type: 'audio',
@@ -474,7 +474,7 @@ describe('InputArea media send', () => {
     }]);
     expect(payload.displayMessage.attachments[0]).toMatchObject({
       fileId: 'sf_recording',
-      path: '/tmp/hana/session-files/recording.wav',
+      path: '/tmp/openshadow/session-files/recording.wav',
       name: '录音 1.wav',
       mimeType: 'audio/wav',
     });
@@ -487,7 +487,7 @@ describe('InputArea media send', () => {
         return new Response(JSON.stringify({
           uploads: [{
             fileId: 'sf_recording',
-            dest: '/tmp/hana/session-files/recording.wav',
+            dest: '/tmp/openshadow/session-files/recording.wav',
             name: '录音 1.wav',
             presentation: 'voice-input',
             listed: false,
@@ -556,7 +556,7 @@ describe('InputArea media send', () => {
       text: '',
       attachments: [{
         fileId: 'sf_recording',
-        path: '/tmp/hana/session-files/recording.wav',
+        path: '/tmp/openshadow/session-files/recording.wav',
         name: '录音 1.wav',
         isDir: false,
         mimeType: 'audio/wav',
@@ -641,14 +641,14 @@ describe('InputArea media send', () => {
     useStore.setState({
       attachedFiles: [{
         fileId: 'sf_voice',
-        path: '/tmp/hana/session-files/voice.wav',
+        path: '/tmp/openshadow/session-files/voice.wav',
         name: 'voice.wav',
         isDirectory: false,
       }],
       attachedFilesBySession: {
         '/session/media.jsonl': [{
           fileId: 'sf_voice',
-          path: '/tmp/hana/session-files/voice.wav',
+          path: '/tmp/openshadow/session-files/voice.wav',
           name: 'voice.wav',
           isDirectory: false,
         }],

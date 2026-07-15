@@ -67,7 +67,7 @@ export const ProcessFoldBlock = memo(function ProcessFoldBlock({
           <div className={styles.avatarRow}>
             <AgentAvatar
               info={displayInfo}
-              className={`${styles.avatar} ${styles.hanaAvatar}`}
+              className={`${styles.avatar} ${styles.openshadowAvatar}`}
               alt={displayName}
             />
             <span className={styles.avatarName}>{displayName}</span>

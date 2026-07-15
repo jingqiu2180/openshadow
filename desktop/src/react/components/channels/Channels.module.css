@@ -629,7 +629,7 @@
     width: 440px;
     max-width: 90vw;
     box-shadow: 0 12px 48px var(--shadow);
-    animation: hana-fade-up var(--duration-fast) var(--ease-out);
+    animation: openshadow-fade-up var(--duration-fast) var(--ease-out);
 }
 
 .createTitle {

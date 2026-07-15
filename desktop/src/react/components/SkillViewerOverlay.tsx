@@ -59,8 +59,8 @@ export function SkillViewerOverlay() {
   useEffect(() => {
     if (!data) return;
     (async () => {
-      const hana = window.shadow;
-      const items = await hana?.listSkillFiles?.(data.baseDir) as TreeItem[] | undefined;
+      const openshadow = window.shadow;
+      const items = await openshadow?.listSkillFiles?.(data.baseDir) as TreeItem[] | undefined;
       setFiles(items || []);
       const mdPath = data.filePath || (data.baseDir + '/SKILL.md');
       loadFile(mdPath, 'SKILL.md');

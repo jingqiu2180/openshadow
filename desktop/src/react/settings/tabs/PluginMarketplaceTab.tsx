@@ -16,7 +16,7 @@ interface MarketplacePlugin {
   permissions?: string[];
   contributions?: string[];
   repository?: string | null;
-  compatibility?: { minAppVersion?: string; hanaApi?: string };
+  compatibility?: { minAppVersion?: string; openshadowApi?: string };
   distribution?: { kind?: 'source' | 'release'; path?: string; packageUrl?: string; sha256?: string } | null;
   installed?: boolean;
   installedVersion?: string | null;

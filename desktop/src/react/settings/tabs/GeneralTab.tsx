@@ -177,7 +177,7 @@ function normalizeNotificationPreferences(value: unknown): NotificationPreferenc
 }
 
 export function GeneralTab() {
-  const hana = window.shadow;
+  const openshadow = window.shadow;
   const settingsConfig = useSettingsStore(s => s.settingsConfig);
   const snapshotQuickChat = useSettingsStore(s => s.settingsSnapshot.data?.preferences?.quickChat);
   const snapshotNotifications = useSettingsStore(s => s.settingsSnapshot.data?.preferences?.notifications);
@@ -200,7 +200,7 @@ export function GeneralTab() {
 
   useEffect(() => {
     let alive = true;
-    hana?.getAutoLaunchStatus?.()
+    openshadow?.getAutoLaunchStatus?.()
       .then((status) => {
         if (alive && status) setAutoLaunch(status);
       })
@@ -210,7 +210,7 @@ export function GeneralTab() {
     return () => {
       alive = false;
     };
-  }, [hana]);
+  }, [openshadow]);
 
   useEffect(() => {
     if (snapshotQuickChat) {
@@ -278,12 +278,12 @@ export function GeneralTab() {
         preferences: { ...snapshot.preferences, quickChat: saved },
       }));
       if (options.reloadShortcut) {
-        const registration = await hana?.quickChatReloadShortcut?.();
+        const registration = await openshadow?.quickChatReloadShortcut?.();
         if (registration && registration.ok === false) {
           throw new Error(registration.error || t('settings.general.quickChat.registrationFailed'));
         }
       }
-      if (options.eventName) hana?.settingsChanged?.(options.eventName, { quickChat: saved });
+      if (options.eventName) openshadow?.settingsChanged?.(options.eventName, { quickChat: saved });
     } catch (err: any) {
       setQuickChatPrefs(previous);
       try {
@@ -292,13 +292,13 @@ export function GeneralTab() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ quickChat: previous }),
         });
-        if (options.reloadShortcut) await hana?.quickChatReloadShortcut?.();
+        if (options.reloadShortcut) await openshadow?.quickChatReloadShortcut?.();
       } catch {}
       showToast(t('settings.saveFailed') + ': ' + (err?.message || String(err)), 'error');
     } finally {
       setQuickChatSaving(false);
     }
-  }, [hana, quickChatPrefs, showToast]);
+  }, [openshadow, quickChatPrefs, showToast]);
 
   const saveQuickChatShortcut = useCallback((shortcut: string) => saveQuickChatPreferences(
     { shortcut },
@@ -329,27 +329,27 @@ export function GeneralTab() {
   }, [quickChatRecording, saveQuickChatShortcut]);
 
   const handleAutoLaunchToggle = useCallback(async (on: boolean) => {
-    if (!hana?.setAutoLaunchEnabled) return;
+    if (!openshadow?.setAutoLaunchEnabled) return;
     const previous = autoLaunch;
     setAutoLaunchSaving(true);
     try {
-      const next = await hana.setAutoLaunchEnabled(on);
+      const next = await openshadow.setAutoLaunchEnabled(on);
       setAutoLaunch(next || previous);
     } catch {
       setAutoLaunch(previous);
     } finally {
       setAutoLaunchSaving(false);
     }
-  }, [autoLaunch, hana]);
+  }, [autoLaunch, openshadow]);
 
   const handleKeepAwakeToggle = useCallback(async (on: boolean) => {
-    if (!hana?.setKeepAwakeEnabled) return;
+    if (!openshadow?.setKeepAwakeEnabled) return;
     const previous = keepAwake === true;
     setKeepAwakeSaving(true);
     try {
       const saved = await autoSaveConfig({ keep_awake: on }, { silent: true });
       if (saved === false) return;
-      await hana.setKeepAwakeEnabled(on);
+      await openshadow.setKeepAwakeEnabled(on);
     } catch (err: any) {
       if (previous !== on) {
         await autoSaveConfig({ keep_awake: previous }, { silent: true });
@@ -359,7 +359,7 @@ export function GeneralTab() {
     } finally {
       setKeepAwakeSaving(false);
     }
-  }, [hana, keepAwake, showToast]);
+  }, [openshadow, keepAwake, showToast]);
 
   const handleTurnCompletionChange = useCallback(async (value: string) => {
     if (!notificationPrefs) return;
@@ -413,7 +413,7 @@ export function GeneralTab() {
               on={keepAwake}
               onChange={handleKeepAwakeToggle}
               ariaLabel={t('settings.general.keepAwake')}
-              disabled={keepAwakeSaving || !hana?.setKeepAwakeEnabled}
+              disabled={keepAwakeSaving || !openshadow?.setKeepAwakeEnabled}
             />
           }
         />

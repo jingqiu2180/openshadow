@@ -17,7 +17,7 @@ afterEach(cleanup);
 describe('Toggle', () => {
   it('renders on state when on=true', () => {
     const { container } = render(<Toggle on={true} onChange={() => {}} />);
-    const btn = container.querySelector('button.hana-toggle');
+    const btn = container.querySelector('button.openshadow-toggle');
     expect(btn).not.toBeNull();
     expect(btn?.classList.contains('on')).toBe(true);
     expect(btn?.classList.contains('loading')).toBe(false);
@@ -28,7 +28,7 @@ describe('Toggle', () => {
 
   it('renders off state when on=false', () => {
     const { container } = render(<Toggle on={false} onChange={() => {}} />);
-    const btn = container.querySelector('button.hana-toggle');
+    const btn = container.querySelector('button.openshadow-toggle');
     expect(btn?.classList.contains('on')).toBe(false);
     expect(btn?.classList.contains('loading')).toBe(false);
     expect(btn?.getAttribute('aria-checked')).toBe('false');
@@ -36,7 +36,7 @@ describe('Toggle', () => {
 
   it('renders loading state when on=undefined', () => {
     const { container } = render(<Toggle on={undefined} onChange={() => {}} />);
-    const btn = container.querySelector('button.hana-toggle');
+    const btn = container.querySelector('button.openshadow-toggle');
     expect(btn?.classList.contains('loading')).toBe(true);
     expect(btn?.classList.contains('on')).toBe(false);
     expect(btn?.getAttribute('aria-busy')).toBe('true');
@@ -47,7 +47,7 @@ describe('Toggle', () => {
   it('does not fire onChange when clicked in loading state', () => {
     const onChange = vi.fn();
     const { container } = render(<Toggle on={undefined} onChange={onChange} />);
-    const btn = container.querySelector('button.hana-toggle') as HTMLButtonElement;
+    const btn = container.querySelector('button.openshadow-toggle') as HTMLButtonElement;
     fireEvent.click(btn);
     expect(onChange).not.toHaveBeenCalled();
   });
@@ -55,21 +55,21 @@ describe('Toggle', () => {
   it('fires onChange with toggled value when on=true', () => {
     const onChange = vi.fn();
     const { container } = render(<Toggle on={true} onChange={onChange} />);
-    fireEvent.click(container.querySelector('button.hana-toggle')!);
+    fireEvent.click(container.querySelector('button.openshadow-toggle')!);
     expect(onChange).toHaveBeenCalledWith(false);
   });
 
   it('fires onChange with toggled value when on=false', () => {
     const onChange = vi.fn();
     const { container } = render(<Toggle on={false} onChange={onChange} />);
-    fireEvent.click(container.querySelector('button.hana-toggle')!);
+    fireEvent.click(container.querySelector('button.openshadow-toggle')!);
     expect(onChange).toHaveBeenCalledWith(true);
   });
 
   it('respects external disabled prop', () => {
     const onChange = vi.fn();
     const { container } = render(<Toggle on={true} onChange={onChange} disabled />);
-    const btn = container.querySelector('button.hana-toggle') as HTMLButtonElement;
+    const btn = container.querySelector('button.openshadow-toggle') as HTMLButtonElement;
     expect(btn.disabled).toBe(true);
     fireEvent.click(btn);
     expect(onChange).not.toHaveBeenCalled();

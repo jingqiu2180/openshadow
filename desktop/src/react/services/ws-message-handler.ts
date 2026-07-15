@@ -685,7 +685,7 @@ export function handleServerMessage(msg: any): void {
       if (!sp || sp === useStore.getState().currentSessionPath) {
         const mode = msg.mode || (msg.enabled ? 'read_only' : 'operate');
         syncSessionPermissionMode(mode);
-        window.dispatchEvent(new CustomEvent('hana-plan-mode', {
+        window.dispatchEvent(new CustomEvent('openshadow-plan-mode', {
           detail: { enabled: !!msg.enabled, mode },
         }));
       }
@@ -696,7 +696,7 @@ export function handleServerMessage(msg: any): void {
       const sp = msg.sessionPath;
       if (!sp || sp === useStore.getState().currentSessionPath) {
         syncSessionPermissionMode(msg.mode);
-        window.dispatchEvent(new CustomEvent('hana-plan-mode', {
+        window.dispatchEvent(new CustomEvent('openshadow-plan-mode', {
           detail: { enabled: msg.mode === 'read_only', mode: msg.mode },
         }));
       }
@@ -708,7 +708,7 @@ export function handleServerMessage(msg: any): void {
       if (!sp || sp === useStore.getState().currentSessionPath) {
         const mode = msg.permissionMode || msg.mode;
         syncSessionPermissionMode(mode);
-        window.dispatchEvent(new CustomEvent('hana-plan-mode', {
+        window.dispatchEvent(new CustomEvent('openshadow-plan-mode', {
           detail: {
             enabled: msg.readOnly === true,
             mode,

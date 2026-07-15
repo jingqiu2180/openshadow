@@ -50,7 +50,7 @@ describe('PlanModeButton', () => {
   it('targets the active session when changing an existing conversation permission mode', async () => {
     vi.mocked(openshadowFetch).mockResolvedValueOnce(jsonResponse({ mode: 'operate' }));
     useStore.setState({
-      currentSessionPath: '/tmp/hana-session.jsonl',
+      currentSessionPath: '/tmp/openshadow-session.jsonl',
       pendingNewSession: false,
     } as never);
     const onChange = vi.fn();
@@ -65,7 +65,7 @@ describe('PlanModeButton', () => {
         body: JSON.stringify({
           mode: 'operate',
           pendingNewSession: false,
-          sessionPath: '/tmp/hana-session.jsonl',
+          sessionPath: '/tmp/openshadow-session.jsonl',
         }),
       }));
     });

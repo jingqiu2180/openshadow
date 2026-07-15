@@ -244,7 +244,7 @@ export function AgentTab() {
             input.accept = 'image/png,image/jpeg,image/webp';
             input.addEventListener('change', () => {
               if (input.files?.[0]) {
-                window.dispatchEvent(new CustomEvent('hana-open-cropper', {
+                window.dispatchEvent(new CustomEvent('openshadow-open-cropper', {
                   detail: { role: 'agent', file: input.files[0] },
                 }));
               }
@@ -252,11 +252,11 @@ export function AgentTab() {
             input.click();
           }}
           onSetPrimary={(id) => setPrimaryAgent(id)}
-          onDelete={(id) => window.dispatchEvent(new CustomEvent('hana-show-agent-delete', {
+          onDelete={(id) => window.dispatchEvent(new CustomEvent('openshadow-show-agent-delete', {
             detail: { agentId: id },
           }))}
           onExport={openAgentExportPreview}
-          onAdd={() => window.dispatchEvent(new Event('hana-show-agent-create'))}
+          onAdd={() => window.dispatchEvent(new Event('openshadow-show-agent-create'))}
           exportingAgentId={exportPlanningAgentId}
         />
 

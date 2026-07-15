@@ -21,7 +21,7 @@ export type AppFileDragPayloadInput = Omit<AppFileDragPayload, 'dragId'> & {
   dragId?: string;
 };
 
-const APP_FILE_DRAG_MIME = 'application/x-hana-file-drag';
+const APP_FILE_DRAG_MIME = 'application/x-openshadow-file-drag';
 
 let dragSeq = 0;
 let activeDragId: string | null = null;
@@ -30,7 +30,7 @@ const cleanupTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 function nextDragId(): string {
   dragSeq += 1;
-  return `hana-drag-${Date.now().toString(36)}-${dragSeq.toString(36)}`;
+  return `openshadow-drag-${Date.now().toString(36)}-${dragSeq.toString(36)}`;
 }
 
 export function writeAppFileDragPayload(

@@ -113,10 +113,10 @@ describe('AgentTab settings agent selection', () => {
     (window as unknown as { platform: unknown }).platform = { showInFinder: showInFinderMock };
     useSettingsStore.setState({
       agents: [
-        { id: 'hana', name: 'Hana', yuan: 'hanako', isPrimary: true },
+        { id: 'openshadow', name: 'Hana', yuan: 'hanako', isPrimary: true },
         { id: 'deepseek', name: 'DeepSeek', yuan: 'deepseek', isPrimary: false },
       ],
-      currentAgentId: 'hana',
+      currentAgentId: 'openshadow',
       settingsAgentId: null,
       settingsConfig: {
         agent: { name: 'Hana', yuan: 'hanako' },
@@ -139,7 +139,7 @@ describe('AgentTab settings agent selection', () => {
     const { AgentTab } = await import('../../settings/tabs/AgentTab');
     render(<AgentTab />);
 
-    expect(screen.getByTestId('selected-agent')).toHaveTextContent('hana');
+    expect(screen.getByTestId('selected-agent')).toHaveTextContent('openshadow');
     expect(screen.getByTestId('memory-section')).toBeInTheDocument();
 
     act(() => {
@@ -189,8 +189,8 @@ describe('AgentTab settings agent selection', () => {
             ok: true,
             plan: {
               mode: 'export',
-              agentId: 'hana',
-              packageName: 'hana-charactercard.zip',
+              agentId: 'openshadow',
+              packageName: 'openshadow-charactercard.zip',
               agent: { name: 'Hana', yuan: 'hanako', description: '花名册描述' },
               prompts: { identity: 'identity', ishiki: 'ishiki', publicIshiki: 'public' },
               memory: {
@@ -209,8 +209,8 @@ describe('AgentTab settings agent selection', () => {
         return {
           json: async () => ({
             ok: true,
-            filePath: '/tmp/hana-charactercard.zip',
-            fileName: 'hana-charactercard.zip',
+            filePath: '/tmp/openshadow-charactercard.zip',
+            fileName: 'openshadow-charactercard.zip',
           }),
         };
       }
@@ -235,10 +235,10 @@ describe('AgentTab settings agent selection', () => {
       return url === '/api/character-cards/export' && opts?.method === 'POST';
     }) as [string, RequestInit | undefined] | undefined;
     expect(JSON.parse(String(exportCall?.[1]?.body))).toEqual({
-      agentId: 'hana',
+      agentId: 'openshadow',
       exportMemory: false,
     });
-    expect(showInFinderMock).toHaveBeenCalledWith('/tmp/hana-charactercard.zip');
+    expect(showInFinderMock).toHaveBeenCalledWith('/tmp/openshadow-charactercard.zip');
   });
 
   it('saves the agent name when pressing Enter in the name field (#1306)', async () => {
@@ -257,7 +257,7 @@ describe('AgentTab settings agent selection', () => {
 
     const cfgCall = openshadowFetchMock.mock.calls.find((call) => {
       const [url, opts] = call as [string, RequestInit | undefined];
-      return url === '/api/agents/hana/config' && opts?.method === 'PUT';
+      return url === '/api/agents/openshadow/config' && opts?.method === 'PUT';
     }) as [string, RequestInit | undefined] | undefined;
     expect(cfgCall).toBeTruthy();
     expect(JSON.parse(String(cfgCall?.[1]?.body))).toEqual({ agent: { name: 'NewName' } });
@@ -282,11 +282,11 @@ describe('AgentTab settings agent selection', () => {
 
     const cfgCall = openshadowFetchMock.mock.calls.find((call) => {
       const [url, opts] = call as [string, RequestInit | undefined];
-      return url === '/api/agents/hana/config' && opts?.method === 'PUT';
+      return url === '/api/agents/openshadow/config' && opts?.method === 'PUT';
     }) as [string, RequestInit | undefined] | undefined;
     const identityCall = openshadowFetchMock.mock.calls.find((call) => {
       const [url, opts] = call as [string, RequestInit | undefined];
-      return url === '/api/agents/hana/identity' && opts?.method === 'PUT';
+      return url === '/api/agents/openshadow/identity' && opts?.method === 'PUT';
     });
 
     expect(cfgCall).toBeTruthy();
@@ -311,7 +311,7 @@ describe('AgentTab settings agent selection', () => {
 
     const cfgCall = openshadowFetchMock.mock.calls.find((call) => {
       const [url, opts] = call as [string, RequestInit | undefined];
-      return url === '/api/agents/hana/config' && opts?.method === 'PUT';
+      return url === '/api/agents/openshadow/config' && opts?.method === 'PUT';
     });
     expect(cfgCall).toBeUndefined();
   });

@@ -171,7 +171,7 @@ describe('InputArea welcome placeholder', () => {
     seedInputState();
     mocks.openshadowFetch.mockResolvedValue(new Response('{}', { status: 200 }));
     window.platform = {} as typeof window.platform;
-    delete (window as unknown as { hana?: unknown }).hana;
+    delete (window as unknown as { openshadow?: unknown }).openshadow;
   });
 
   afterEach(() => {

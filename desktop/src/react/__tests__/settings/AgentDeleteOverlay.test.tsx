@@ -38,11 +38,11 @@ describe('AgentDeleteOverlay', () => {
     Object.keys(mockState).forEach(key => delete mockState[key]);
     Object.assign(mockState, {
       agents: [
-        { id: 'hana', name: '小花', yuan: 'hanako', isPrimary: true },
+        { id: 'openshadow', name: '小花', yuan: 'hanako', isPrimary: true },
         { id: 'deepseek', name: 'DeepSeek', yuan: 'deepseek', isPrimary: false },
       ],
-      currentAgentId: 'hana',
-      settingsAgentId: 'hana',
+      currentAgentId: 'openshadow',
+      settingsAgentId: 'openshadow',
       showToast: vi.fn(),
     });
   });
@@ -57,7 +57,7 @@ describe('AgentDeleteOverlay', () => {
     render(<AgentDeleteOverlay />);
 
     act(() => {
-      window.dispatchEvent(new CustomEvent('hana-show-agent-delete', {
+      window.dispatchEvent(new CustomEvent('openshadow-show-agent-delete', {
         detail: { agentId: 'deepseek' },
       }));
     });

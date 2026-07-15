@@ -19,7 +19,7 @@ const DEFAULT_DURATION = 250;  // 对齐 --duration-slow（0.25s）
  * 用法：
  *   const { mounted, stage } = useAnimatePresence(open, { duration: 250 });
  *   if (!mounted) return null;
- *   return <div className={stage === 'enter' ? 'hana-fade-in' : stage === 'exit' ? 'hana-fade-out' : ''}>
+ *   return <div className={stage === 'enter' ? 'openshadow-fade-in' : stage === 'exit' ? 'openshadow-fade-out' : ''}>
  */
 export function useAnimatePresence(visible: boolean, options?: Options) {
   const duration = options?.duration ?? DEFAULT_DURATION;

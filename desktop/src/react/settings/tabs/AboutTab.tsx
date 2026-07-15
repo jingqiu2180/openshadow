@@ -13,7 +13,7 @@ import appIconUrl from '../../../icon.png';
 import styles from '../Settings.module.css';
 
 export function AboutTab() {
-  const hana = window.shadow;
+  const openshadow = window.shadow;
   const settingsConfig = useSettingsStore(s => s.settingsConfig);
   const [version, setVersion] = useState('');
   const autoUpdate = useAutoUpdateState();
@@ -22,23 +22,23 @@ export function AboutTab() {
   const autoCheck = readConfigBoolean(settingsConfig, cfg => cfg.auto_check_updates, true);
 
   useEffect(() => {
-    hana?.getAppVersion?.().then((v: string) => setVersion(v || ''));
-  }, [hana]);
+    openshadow?.getAppVersion?.().then((v: string) => setVersion(v || ''));
+  }, [openshadow]);
 
   const handleCheck = useCallback(() => {
-    hana?.autoUpdateCheck?.();
+    openshadow?.autoUpdateCheck?.();
   }, []);
 
   const handleInstall = useCallback(async () => {
-    await hana?.autoUpdateInstall?.();
+    await openshadow?.autoUpdateInstall?.();
   }, []);
 
   const handleBetaToggle = useCallback(async (on: boolean) => {
     const channel = on ? 'beta' : 'stable';
-    hana?.autoUpdateSetChannel?.(channel);
+    openshadow?.autoUpdateSetChannel?.(channel);
     await autoSaveConfig({ update_channel: channel }, { silent: true });
     await loadSettingsConfig();
-    hana?.autoUpdateCheck?.();
+    openshadow?.autoUpdateCheck?.();
   }, []);
 
   const handleAutoCheckToggle = useCallback(async (on: boolean) => {
@@ -84,7 +84,7 @@ export function AboutTab() {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                hana?.openExternal?.('https://github.com/jingqiu2180/openshadow');
+                openshadow?.openExternal?.('https://github.com/jingqiu2180/openshadow');
               }}
             >
               github.com/jingqiu2180/openshadow

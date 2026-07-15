@@ -119,8 +119,8 @@ export const SettingsConfirmCard = memo(function SettingsConfirmCard(props: Prop
         <div className={`${styles.settingsConfirmCard} ${styles.settingsConfirmCardDone}`}>
           <div className={styles.settingsConfirmHeader}>
             <span className={styles.settingsConfirmLabel}>{displayLabel}</span>
-            <div className={`hana-toggle${editValue === 'true' ? ' on' : ''}`} style={{ pointerEvents: 'none' }}>
-              <div className="hana-toggle-thumb" />
+            <div className={`openshadow-toggle${editValue === 'true' ? ' on' : ''}`} style={{ pointerEvents: 'none' }}>
+              <div className="openshadow-toggle-thumb" />
             </div>
           </div>
           <div className={styles.settingsConfirmNote}>{toggleLabel(currentValue, editValue, t)}</div>
@@ -160,8 +160,8 @@ export const SettingsConfirmCard = memo(function SettingsConfirmCard(props: Prop
               <div className={styles.settingsConfirmLabel}>{displayLabel}</div>
               {description && <div className={styles.settingsConfirmDesc}>{description}</div>}
             </div>
-            <div className={`hana-toggle${editValue === 'true' ? ' on' : ''}`}>
-              <div className="hana-toggle-thumb" />
+            <div className={`openshadow-toggle${editValue === 'true' ? ' on' : ''}`}>
+              <div className="openshadow-toggle-thumb" />
             </div>
           </div>
           <div className={styles.settingsConfirmNote}>{toggleLabel(currentValue, editValue, t)}</div>

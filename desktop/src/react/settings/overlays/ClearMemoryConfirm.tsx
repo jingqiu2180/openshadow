@@ -11,8 +11,8 @@ export function ClearMemoryConfirm() {
 
   useEffect(() => {
     const handler = () => setVisible(true);
-    window.addEventListener('hana-show-clear-confirm', handler);
-    return () => window.removeEventListener('hana-show-clear-confirm', handler);
+    window.addEventListener('openshadow-show-clear-confirm', handler);
+    return () => window.removeEventListener('openshadow-show-clear-confirm', handler);
   }, []);
 
   const close = useCallback(() => setVisible(false), []);

@@ -30,7 +30,7 @@ export const ICONS = {
 
 // ── 排序 ──
 
-export const DESK_SORT_KEY = 'hana-desk-sort';
+export const DESK_SORT_KEY = 'openshadow-desk-sort';
 
 export type SortMode = 'mtime-desc' | 'name-asc' | 'name-desc' | 'size-desc' | 'type-asc';
 export type FileTypeFilter = 'image' | 'text' | 'video';

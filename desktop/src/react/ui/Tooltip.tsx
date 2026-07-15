@@ -106,7 +106,7 @@ export function Tooltip({
   anchorClassName,
 }: TooltipProps) {
   const reactId = useId();
-  const tooltipId = id || `hana-tooltip-${reactId}`;
+  const tooltipId = id || `openshadow-tooltip-${reactId}`;
   const anchorRef = useRef<HTMLElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const timerRef = useRef<number | null>(null);

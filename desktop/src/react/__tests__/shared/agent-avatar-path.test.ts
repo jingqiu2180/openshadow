@@ -15,7 +15,7 @@ function writeAvatar(agentId: string, file: string): string {
 }
 
 beforeEach(() => {
-  home = fs.mkdtempSync(path.join(os.tmpdir(), 'hana-avatar-path-'));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), 'openshadow-avatar-path-'));
 });
 
 afterEach(() => {

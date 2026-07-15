@@ -162,7 +162,7 @@ function TreeDisclosureIcon({ expanded }: { expanded: boolean }) {
 }
 
 function dispatchDeskNotice(text: string): void {
-  window.dispatchEvent(new CustomEvent('hana-inline-notice', {
+  window.dispatchEvent(new CustomEvent('openshadow-inline-notice', {
     detail: { text, type: 'error' },
   }));
 }

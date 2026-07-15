@@ -119,8 +119,8 @@ export function SkillsTab() {
       void loadSkills();
       void loadExternalPaths();
     };
-    window.addEventListener('hana-skills-changed', refresh);
-    return () => window.removeEventListener('hana-skills-changed', refresh);
+    window.addEventListener('openshadow-skills-changed', refresh);
+    return () => window.removeEventListener('openshadow-skills-changed', refresh);
   }, [loadSkills, loadExternalPaths]);
 
   const visible = skillsList.filter(s => !s.hidden);

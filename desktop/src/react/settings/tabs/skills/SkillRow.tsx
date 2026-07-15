@@ -84,7 +84,7 @@ export function SkillRow({
         )}
         {onToggle && (
           <button
-            className={`hana-toggle${skill.enabled ? ' on' : ''}`}
+            className={`openshadow-toggle${skill.enabled ? ' on' : ''}`}
             type="button"
             title={skill.enabled ? '关闭 Skill' : '启用 Skill'}
             aria-label={skill.enabled ? `关闭 ${skill.name}` : `启用 ${skill.name}`}

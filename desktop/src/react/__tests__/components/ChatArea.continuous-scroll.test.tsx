@@ -95,9 +95,9 @@ describe('ChatArea continuous bottom scroll', () => {
           loadingMore: false,
         },
       },
-      sessions: [{ path: '/chat/scroll.jsonl', agentId: 'hana', title: null, firstMessage: '', modified: '', messageCount: 1 }],
+      sessions: [{ path: '/chat/scroll.jsonl', agentId: 'openshadow', title: null, firstMessage: '', modified: '', messageCount: 1 }],
       streamingSessions: ['/chat/scroll.jsonl'],
-      agents: [{ id: 'hana', name: 'Hana', yuan: 'hanako' }],
+      agents: [{ id: 'openshadow', name: 'Hana', yuan: 'hanako' }],
     } as never);
     window.getSelection()?.removeAllRanges();
   });
@@ -160,7 +160,7 @@ describe('ChatArea continuous bottom scroll', () => {
           loadingMore: false,
         },
       },
-      sessions: [{ path: '/chat/empty.jsonl', agentId: 'hana', title: null, firstMessage: '', modified: '', messageCount: 0 }],
+      sessions: [{ path: '/chat/empty.jsonl', agentId: 'openshadow', title: null, firstMessage: '', modified: '', messageCount: 0 }],
       streamingSessions: [],
     } as never);
 

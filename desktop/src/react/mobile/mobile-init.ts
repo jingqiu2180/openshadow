@@ -259,7 +259,7 @@ async function activateMobileWelcomeDesk(): Promise<void> {
 function syncMobilePermissionMode(session: Pick<Session, 'permissionMode'> | null | undefined): void {
   const mode = session?.permissionMode;
   if (!isSessionPermissionMode(mode)) return;
-  window.dispatchEvent(new CustomEvent('hana-plan-mode', {
+  window.dispatchEvent(new CustomEvent('openshadow-plan-mode', {
     detail: {
       enabled: mode === 'read_only',
       mode,

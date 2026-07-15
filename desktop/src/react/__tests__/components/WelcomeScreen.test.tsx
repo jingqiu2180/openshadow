@@ -68,8 +68,8 @@ describe('WelcomeScreen workspace picker', () => {
       deskWorkspaceMountId: null,
       deskWorkspaceLabel: null,
       studioWorkspaces: [],
-      homeFolder: '/workspace/Desktop/project-hana',
-      cwdHistory: ['/workspace/Desktop/project-hana'],
+      homeFolder: '/workspace/Desktop/project-openshadow',
+      cwdHistory: ['/workspace/Desktop/project-openshadow'],
       workspaceFolders: ['/workspace/Reference'],
       serverPort: 62950,
       serverToken: 'test-token',
@@ -185,7 +185,7 @@ describe('WelcomeScreen workspace picker', () => {
     expect(useStore.getState().cwdHistory).toEqual([]);
     expect(mocks.openshadowFetch).toHaveBeenCalledWith('/api/config/workspaces/recent', expect.objectContaining({
       method: 'DELETE',
-      body: JSON.stringify({ path: '/workspace/Desktop/project-hana' }),
+      body: JSON.stringify({ path: '/workspace/Desktop/project-openshadow' }),
     }));
   });
 
@@ -202,9 +202,9 @@ describe('WelcomeScreen workspace picker', () => {
   it('disables the memory toggle when the selected agent has memory disabled in settings', async () => {
     useStore.setState({
       agents: [
-        { id: 'hana', name: 'Shadow', yuan: 'hanako', isPrimary: true, memoryMasterEnabled: false },
+        { id: 'openshadow', name: 'Shadow', yuan: 'hanako', isPrimary: true, memoryMasterEnabled: false },
       ],
-      currentAgentId: 'hana',
+      currentAgentId: 'openshadow',
       memoryEnabled: true,
     } as never);
     const { WelcomeScreen } = await import('../../components/WelcomeScreen');
@@ -221,7 +221,7 @@ describe('WelcomeScreen workspace picker', () => {
     useStore.setState({
       agents: [
         {
-          id: 'hana',
+          id: 'openshadow',
           name: 'Shadow',
           yuan: 'hanako',
           isPrimary: true,
@@ -237,7 +237,7 @@ describe('WelcomeScreen workspace picker', () => {
           chatModel: { id: 'gpt-5.2', provider: 'openai' },
         },
       ],
-      currentAgentId: 'hana',
+      currentAgentId: 'openshadow',
       selectedAgentId: null,
       selectedFolder: '/workspace/Hana',
       homeFolder: '/workspace/Hana',

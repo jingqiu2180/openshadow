@@ -67,7 +67,7 @@ describe('AssistantMessage completion actions', () => {
     useStore.setState({
       agents: [],
       agentName: 'Hana',
-      agentYuan: 'hana',
+      agentYuan: 'openshadow',
       selectedIdsBySession: {},
       streamingSessions: [],
       chatSessions: {

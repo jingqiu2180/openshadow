@@ -80,7 +80,7 @@ describe('useSidebarResize', () => {
 
     expect(document.documentElement.style.getPropertyValue('--channel-inspector-width')).toBe('310px');
     expect(document.documentElement.style.getPropertyValue('--jian-sidebar-width')).not.toBe('310px');
-    expect(storage.setItem).toHaveBeenCalledWith('hana-channel-inspector-width', '310');
+    expect(storage.setItem).toHaveBeenCalledWith('openshadow-channel-inspector-width', '310');
   });
 
   it('拖拽时创建透明事件盾牌，避免 iframe 吞掉后续 mousemove/mouseup', () => {
@@ -110,6 +110,6 @@ describe('useSidebarResize', () => {
     fireEvent.mouseUp(document);
 
     expect(document.documentElement.style.getPropertyValue('--preview-panel-width')).toBe('1080px');
-    expect(storage.setItem).toHaveBeenCalledWith('hana-preview-width', '1080');
+    expect(storage.setItem).toHaveBeenCalledWith('openshadow-preview-width', '1080');
   });
 });

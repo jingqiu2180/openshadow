@@ -98,7 +98,7 @@ export function LocaleStep({
               aria-label={t('onboarding.remote.key')}
               value={serverKey}
               type="password"
-              placeholder="hana_dev_..."
+              placeholder="openshadow_dev_..."
               onChange={event => setServerKey(event.target.value)}
             />
             <div className="ob-remote-connect-actions">

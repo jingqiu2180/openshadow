@@ -52,7 +52,7 @@ describe('PreviewPanel markdown editor status', () => {
         type: 'markdown',
         title: 'note.md',
         content: '你好ab',
-        filePath: '/tmp/hana-note.md',
+        filePath: '/tmp/openshadow-note.md',
       }],
       openTabs: ['note'],
       activeTabId: 'note',
@@ -138,7 +138,7 @@ describe('PreviewPanel markdown editor status', () => {
           type: 'markdown',
           title: 'note.md',
           content: '你好ab',
-          filePath: '/tmp/hana-note.md',
+          filePath: '/tmp/openshadow-note.md',
         },
         {
           id: 'inactive',
@@ -175,7 +175,7 @@ describe('PreviewPanel markdown editor status', () => {
           type: 'markdown',
           title: 'note.md',
           content: '你好ab',
-          filePath: '/tmp/hana-note.md',
+          filePath: '/tmp/openshadow-note.md',
         },
         {
           id: 'inactive',
@@ -202,7 +202,7 @@ describe('PreviewPanel markdown editor status', () => {
     render(<PreviewPanel />);
 
     await waitFor(() => {
-      expect(window.platform?.watchFile).toHaveBeenCalledWith('/tmp/hana-note.md');
+      expect(window.platform?.watchFile).toHaveBeenCalledWith('/tmp/openshadow-note.md');
       expect(window.platform?.watchFile).toHaveBeenCalledWith('/tmp/inactive.ts');
     });
 
@@ -213,7 +213,7 @@ describe('PreviewPanel markdown editor status', () => {
     await waitFor(() => {
       expect(window.platform?.watchFile).toHaveBeenCalledWith('/tmp/extra.md');
     });
-    expect(window.platform?.unwatchFile).not.toHaveBeenCalledWith('/tmp/hana-note.md');
+    expect(window.platform?.unwatchFile).not.toHaveBeenCalledWith('/tmp/openshadow-note.md');
     expect(window.platform?.unwatchFile).not.toHaveBeenCalledWith('/tmp/inactive.ts');
 
     useStore.setState({ openTabs: ['note', 'extra'] } as Partial<StoreState>);
@@ -221,7 +221,7 @@ describe('PreviewPanel markdown editor status', () => {
     await waitFor(() => {
       expect(window.platform?.unwatchFile).toHaveBeenCalledWith('/tmp/inactive.ts');
     });
-    expect(window.platform?.unwatchFile).not.toHaveBeenCalledWith('/tmp/hana-note.md');
+    expect(window.platform?.unwatchFile).not.toHaveBeenCalledWith('/tmp/openshadow-note.md');
     expect(window.platform?.unwatchFile).not.toHaveBeenCalledWith('/tmp/extra.md');
   });
 });

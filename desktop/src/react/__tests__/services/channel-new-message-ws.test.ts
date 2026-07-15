@@ -265,7 +265,7 @@ describe('conversation_agent_activity websocket routing', () => {
     const activity = {
       conversationId: 'ch_crew',
       conversationType: 'channel',
-      agentId: 'hana',
+      agentId: 'openshadow',
       state: 'replying',
       summary: '正在组织回复',
       timestamp: '2026-05-12T12:00:00.000Z',

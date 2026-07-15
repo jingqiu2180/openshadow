@@ -16,8 +16,8 @@ export function CompiledMemoryViewer() {
 
   useEffect(() => {
     const handler = () => { setVisible(true); load(); };
-    window.addEventListener('hana-view-compiled-memory', handler);
-    return () => window.removeEventListener('hana-view-compiled-memory', handler);
+    window.addEventListener('openshadow-view-compiled-memory', handler);
+    return () => window.removeEventListener('openshadow-view-compiled-memory', handler);
   }, []);
 
   const load = async () => {

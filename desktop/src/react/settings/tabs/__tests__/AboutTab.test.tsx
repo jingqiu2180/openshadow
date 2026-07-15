@@ -63,7 +63,7 @@ afterEach(() => {
 
 function installHana() {
   vi.stubGlobal('window', Object.assign(window, {
-    hana: {
+    openshadow: {
       getAppVersion: vi.fn().mockResolvedValue('0.160.2'),
       autoUpdateCheck: vi.fn(),
       autoUpdateInstall: vi.fn(),

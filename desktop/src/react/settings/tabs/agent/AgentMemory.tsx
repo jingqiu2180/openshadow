@@ -221,7 +221,7 @@ export function MemorySection({ agentId, hasUtilityModel, memoryEnabled, current
             </div>
             <button
               className={`${styles['memory-action-btn']} ${styles['compiled-view-btn']}`}
-              onClick={() => window.dispatchEvent(new Event('hana-view-compiled-memory'))}
+              onClick={() => window.dispatchEvent(new Event('openshadow-view-compiled-memory'))}
             >
               {t('settings.memory.compiledView')}
             </button>
@@ -232,13 +232,13 @@ export function MemorySection({ agentId, hasUtilityModel, memoryEnabled, current
             <div className={`${styles['memory-actions-row']} ${styles['memory-actions-spaced']}`}>
               <button
                 className={styles['memory-action-btn']}
-                onClick={() => window.dispatchEvent(new Event('hana-view-memories'))}
+                onClick={() => window.dispatchEvent(new Event('openshadow-view-memories'))}
               >
                 {t('settings.memory.actions.view')}
               </button>
               <button
                 className={`${styles['memory-action-btn']} ${styles['danger']}`}
-                onClick={() => window.dispatchEvent(new Event('hana-show-clear-confirm'))}
+                onClick={() => window.dispatchEvent(new Event('openshadow-show-clear-confirm'))}
               >
                 {t('settings.memory.actions.clear')}
               </button>

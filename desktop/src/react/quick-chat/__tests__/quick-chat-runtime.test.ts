@@ -7,7 +7,7 @@ import {
 describe('quick chat runtime state', () => {
   it('prefers the current persisted agent from a fresh agent list', () => {
     const agent = pickQuickChatRuntimeAgent([
-      { id: 'hana', name: 'Hana', isPrimary: true },
+      { id: 'openshadow', name: 'Hana', isPrimary: true },
       { id: 'ming', name: 'Ming', isCurrent: true },
     ]);
 

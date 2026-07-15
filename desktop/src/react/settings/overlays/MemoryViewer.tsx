@@ -11,8 +11,8 @@ export function MemoryViewer() {
 
   useEffect(() => {
     const handler = () => { setVisible(true); loadMemories(); };
-    window.addEventListener('hana-view-memories', handler);
-    return () => window.removeEventListener('hana-view-memories', handler);
+    window.addEventListener('openshadow-view-memories', handler);
+    return () => window.removeEventListener('openshadow-view-memories', handler);
   }, []);
 
   const loadMemories = async () => {

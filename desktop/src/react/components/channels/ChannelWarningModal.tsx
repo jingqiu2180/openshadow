@@ -21,11 +21,11 @@ export function ChannelWarningModal({ open, onConfirm, onCancel }: ChannelWarnin
       closeOnBackdrop={false}
       closeOnEsc={false}
       zIndex={9999}
-      className="hana-warning-box"
+      className="openshadow-warning-box"
       disableContainerAnimation
     >
-      <h3 className="hana-warning-title">{t('channel.warningTitle')}</h3>
-      <div className="hana-warning-body">
+      <h3 className="openshadow-warning-title">{t('channel.warningTitle')}</h3>
+      <div className="openshadow-warning-body">
         {paragraphs.map((para, i) => {
           const lines = para.split('\n');
           return (
@@ -39,11 +39,11 @@ export function ChannelWarningModal({ open, onConfirm, onCancel }: ChannelWarnin
           );
         })}
       </div>
-      <div className="hana-warning-actions">
-        <button className="hana-warning-cancel" onClick={onCancel}>
+      <div className="openshadow-warning-actions">
+        <button className="openshadow-warning-cancel" onClick={onCancel}>
           {t('channel.createCancel')}
         </button>
-        <button className="hana-warning-confirm" onClick={onConfirm}>
+        <button className="openshadow-warning-confirm" onClick={onConfirm}>
           {t('channel.warningConfirm')}
         </button>
       </div>

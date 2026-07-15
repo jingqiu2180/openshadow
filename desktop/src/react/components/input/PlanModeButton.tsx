@@ -85,7 +85,7 @@ export function PlanModeButton({ mode, onChange, locked = false }: {
       });
       const data = await res.json();
       if (data.locked) {
-        window.dispatchEvent(new CustomEvent('hana-inline-notice', {
+        window.dispatchEvent(new CustomEvent('openshadow-inline-notice', {
           detail: { text: t('input.accessModeLocked'), type: 'error' },
         }));
       }

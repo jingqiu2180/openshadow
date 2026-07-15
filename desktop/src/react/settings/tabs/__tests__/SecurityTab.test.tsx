@@ -68,8 +68,8 @@ describe('SecurityTab Windows sandbox network control', () => {
         file_backup: { enabled: false, retention_days: 1, max_file_size_kb: 1024 },
       },
       platformName: 'win32',
-      currentAgentId: 'hana',
-      settingsAgentId: 'hana',
+      currentAgentId: 'openshadow',
+      settingsAgentId: 'openshadow',
     } as never);
   });
 

@@ -29,12 +29,12 @@ describe('ws-message-handler desktop notification', () => {
   });
 
   afterEach(() => {
-    delete (window as unknown as { hana?: unknown }).hana;
+    delete (window as unknown as { openshadow?: unknown }).openshadow;
   });
 
   it('把触发 agent 的 agentId 透传给 showNotification（多 agent 定时任务可分辨身份）', () => {
     const showNotification = vi.fn();
-    (window as unknown as { hana: { showNotification: typeof showNotification } }).hana = { showNotification };
+    (window as unknown as { openshadow: { showNotification: typeof showNotification } }).openshadow = { showNotification };
 
     handleServerMessage({
       type: 'notification',
@@ -50,7 +50,7 @@ describe('ws-message-handler desktop notification', () => {
 
   it('agentId 缺失时透传 null，不从全局焦点兜底', () => {
     const showNotification = vi.fn();
-    (window as unknown as { hana: { showNotification: typeof showNotification } }).hana = { showNotification };
+    (window as unknown as { openshadow: { showNotification: typeof showNotification } }).openshadow = { showNotification };
 
     handleServerMessage({
       type: 'notification',
@@ -66,7 +66,7 @@ describe('ws-message-handler desktop notification', () => {
 
   it('把 when_unfocused 策略透传给主进程，由桌面边界判断是否弹出', () => {
     const showNotification = vi.fn();
-    (window as unknown as { hana: { showNotification: typeof showNotification } }).hana = { showNotification };
+    (window as unknown as { openshadow: { showNotification: typeof showNotification } }).openshadow = { showNotification };
 
     handleServerMessage({
       type: 'notification',
@@ -83,7 +83,7 @@ describe('ws-message-handler desktop notification', () => {
 
   it('完成任务不是当前 Session 时，把 session-aware 通知转成 always', () => {
     const showNotification = vi.fn();
-    (window as unknown as { hana: { showNotification: typeof showNotification } }).hana = { showNotification };
+    (window as unknown as { openshadow: { showNotification: typeof showNotification } }).openshadow = { showNotification };
     useStore.setState({ currentSessionPath: '/tmp/current.jsonl' });
 
     handleServerMessage({
@@ -102,7 +102,7 @@ describe('ws-message-handler desktop notification', () => {
 
   it('完成任务正是当前 Session 时，把 session-aware 通知转成 when_unfocused', () => {
     const showNotification = vi.fn();
-    (window as unknown as { hana: { showNotification: typeof showNotification } }).hana = { showNotification };
+    (window as unknown as { openshadow: { showNotification: typeof showNotification } }).openshadow = { showNotification };
     useStore.setState({ currentSessionPath: '/tmp/finished.jsonl' });
 
     handleServerMessage({
