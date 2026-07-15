@@ -1,6 +1,6 @@
 {
   "name": "openshadow",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "OpenShadow — Your AI shadow that works in the dark. Autonomous patrol, task execution, file monitoring.",
   "type": "module",
   "author": {
@@ -35,7 +35,7 @@
     "postinstall": "node scripts/patch-pi-sdk.cjs",
     "test:unit": "vitest run",
     "test:bridge": "node desktop/scripts/bridge-contract.cjs",
-    "test:smoke": "node desktop/scripts/smoke-launch.cjs",
+    "test:smoke": "electron desktop/scripts/smoke-launch.cjs",
     "test:contract": "vitest run desktop/src/react/__tests__/bridge-ghost-global.test.ts",
     "test:e2e:workspace": "playwright test tests/e2e/workspace.web.spec.ts",
     "test:e2e:chat": "playwright test tests/e2e/chat.web.spec.ts",
