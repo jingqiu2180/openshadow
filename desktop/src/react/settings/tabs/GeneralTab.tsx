@@ -177,7 +177,7 @@ function normalizeNotificationPreferences(value: unknown): NotificationPreferenc
 }
 
 export function GeneralTab() {
-  const hana = window.openshadow;
+  const hana = window.shadow;
   const settingsConfig = useSettingsStore(s => s.settingsConfig);
   const snapshotQuickChat = useSettingsStore(s => s.settingsSnapshot.data?.preferences?.quickChat);
   const snapshotNotifications = useSettingsStore(s => s.settingsSnapshot.data?.preferences?.notifications);

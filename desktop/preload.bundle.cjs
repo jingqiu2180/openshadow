@@ -111,7 +111,7 @@ function requirePreload() {
       };
     }
   };
-  contextBridge.exposeInMainWorld("openshadow", platformApi);
+  contextBridge.exposeInMainWorld("shadow", platformApi);
   contextBridge.exposeInMainWorld("platform", platformApi);
   contextBridge.exposeInMainWorld("__REM_API__", {
     // Screenshot

@@ -540,10 +540,10 @@ export function handleServerMessage(msg: any): void {
       break;
 
     case 'notification':
-      if (window.openshadow?.showNotification) {
+      if (window.shadow?.showNotification) {
         // agentId 标识触发通知的助手，主进程据此读取该 agent 头像作为通知 icon。
         // 缺失时透传 null，主进程退回无 icon，禁止从当前焦点 agent 兜底。
-        window.openshadow.showNotification(msg.title, msg.body, msg.agentId ?? null, {
+        window.shadow.showNotification(msg.title, msg.body, msg.agentId ?? null, {
           desktopFocusPolicy: resolveNotificationDesktopFocusPolicy(msg),
         });
       }

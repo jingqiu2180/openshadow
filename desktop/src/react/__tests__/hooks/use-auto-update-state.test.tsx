@@ -32,7 +32,7 @@ describe('useAutoUpdateState', () => {
   beforeEach(() => {
     pushState = null;
     unsubscribe = vi.fn();
-    window.openshadow = {
+    window.shadow = {
       autoUpdateState: vi.fn().mockResolvedValue(state('checking')),
       onAutoUpdateState: vi.fn((callback) => {
         pushState = callback;

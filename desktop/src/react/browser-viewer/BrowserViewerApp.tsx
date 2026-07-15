@@ -51,7 +51,7 @@ export function BrowserViewerApp() {
   const tabListRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const hana = window.openshadow;
+    const hana = window.shadow;
 
     // 监听主题切换
     hana?.onSettingsChanged?.((type: string, data: unknown) => {
@@ -76,7 +76,7 @@ export function BrowserViewerApp() {
     window.i18n?.load?.(navigator.language || 'zh');
   }, []);
 
-  const hana = window.openshadow;
+  const hana = window.shadow;
   const activeTab = useMemo(
     () => tabs.find((tab) => tab.tabId === activeTabId) || tabs[0] || null,
     [tabs, activeTabId],

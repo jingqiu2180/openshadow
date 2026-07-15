@@ -262,7 +262,7 @@ describe('InputArea media send', () => {
     delete (window as unknown as { hana?: unknown }).hana;
   });
 
-  it('sends pasted image bytes through the platform API when window.openshadow is unavailable', async () => {
+  it('sends pasted image bytes through the platform API when window.shadow is unavailable', async () => {
     render(React.createElement(InputArea));
 
     fireEvent.click(screen.getByTestId('send'));

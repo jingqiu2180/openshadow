@@ -88,17 +88,17 @@ export function OnboardingApp({ preview, skipToTutorial }: OnboardingAppProps) {
     persistServerConnectionSelection(connection);
     setServerConnection(connection);
     if (!preview) {
-      await window.openshadow.onboardingComplete?.();
+      await window.shadow.onboardingComplete?.();
     }
   }, [preview]);
 
   useEffect(() => {
     (async () => {
       try {
-        const port = await window.openshadow.getServerPort();
-        const token = await window.openshadow.getServerToken();
+        const port = await window.shadow.getServerPort();
+        const token = await window.shadow.getServerToken();
         setServerConnection(createLocalServerConnection({ serverPort: port, serverToken: token }));
-        const splashInfo = await window.openshadow.getSplashInfo?.();
+        const splashInfo = await window.shadow.getSplashInfo?.();
         const loc = splashInfo?.locale || 'zh-CN';
         const name = splashInfo?.agentName || 'Shadow';
         setLocale(loc);
@@ -107,7 +107,7 @@ export function OnboardingApp({ preview, skipToTutorial }: OnboardingAppProps) {
         i18n.defaultName = name;
         setI18nReady(true);
         try {
-          const localPath = await window.openshadow.getAvatarPath?.('agent');
+          const localPath = await window.shadow.getAvatarPath?.('agent');
           if (localPath) setAvatarSrc(window.platform?.getFileUrl?.(localPath) ?? '');
         } catch { /* ignore */ }
       } catch (err) {

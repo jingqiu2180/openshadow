@@ -274,7 +274,7 @@ export function AccessTab() {
       });
       setRemoteServerKey('');
       showToast(t('settings.access.remoteServerConnected'), 'success');
-      window.openshadow?.reloadMainWindow?.();
+      window.shadow?.reloadMainWindow?.();
     } catch (err: any) {
       showToast(`${t('settings.access.remoteServerFailed')}: ${err.message}`, 'error');
     } finally {
@@ -298,7 +298,7 @@ export function AccessTab() {
       activeServerConnectionId: null,
     });
     showToast(t('settings.access.returnedToLocal'), 'success');
-    window.openshadow?.reloadMainWindow?.();
+    window.shadow?.reloadMainWindow?.();
   }, [showToast]);
 
   const saveAccount = useCallback(async () => {

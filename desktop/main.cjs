@@ -286,7 +286,7 @@ setIpcSenderValidator((channel, event) => isTrustedAppWebContents(event?.sender,
 async function runWizardWindow() {
   if (isWizardCompleted()) return
 
-  // React Onboarding 入口用标准 preload（暴露 window.openshadow / window.platform 桥接）
+  // React Onboarding 入口用标准 preload（暴露 window.shadow / window.platform 桥接）
   const preloadPath = join(__dirname, 'preload.bundle.cjs')
   console.log('[onboarding] preload path:', preloadPath, '| exists:', existsSync(preloadPath))
 
@@ -359,7 +359,7 @@ function registerIpcHandlers() {
     return { port: info?.port || null, token: info?.token || null }
   })
 
-  // 应用版本号（AboutTab.tsx 通过 window.openshadow.getAppVersion() 调用）
+  // 应用版本号（AboutTab.tsx 通过 window.shadow.getAppVersion() 调用）
   wrapIpcHandler('app:get-version', () => {
     return app.getVersion()
   })

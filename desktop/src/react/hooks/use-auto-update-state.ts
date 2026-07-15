@@ -29,7 +29,7 @@ export function useAutoUpdateState(): AutoUpdateState | null {
 
     let alive = true;
 
-    window.openshadow?.autoUpdateState?.()
+    window.shadow?.autoUpdateState?.()
       .then((nextState) => {
         if (alive && nextState) {
           setState(nextState);
@@ -37,7 +37,7 @@ export function useAutoUpdateState(): AutoUpdateState | null {
       })
       .catch(() => {});
 
-    const unsubscribe = window.openshadow?.onAutoUpdateState?.((nextState) => {
+    const unsubscribe = window.shadow?.onAutoUpdateState?.((nextState) => {
       setState(nextState);
     });
 

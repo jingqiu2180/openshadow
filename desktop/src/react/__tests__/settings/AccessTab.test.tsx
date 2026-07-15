@@ -424,7 +424,7 @@ describe('AccessTab', () => {
         credentials: 'include',
         headers: { Authorization: 'Bearer hana_dev_remote_secret' },
       }));
-      expect(window.openshadow.reloadMainWindow).toHaveBeenCalledTimes(1);
+      expect(window.shadow.reloadMainWindow).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -450,7 +450,7 @@ describe('AccessTab', () => {
 
     expect(mockState.activeServerConnectionId).toBe('local');
     expect(mockState.activeServerConnection).toBe(localConnection);
-    expect(window.openshadow.reloadMainWindow).toHaveBeenCalledTimes(1);
+    expect(window.shadow.reloadMainWindow).toHaveBeenCalledTimes(1);
   });
 
   it('saves the local owner profile and password from the account section', async () => {

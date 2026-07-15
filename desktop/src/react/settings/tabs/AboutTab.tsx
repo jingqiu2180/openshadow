@@ -13,7 +13,7 @@ import appIconUrl from '../../../icon.png';
 import styles from '../Settings.module.css';
 
 export function AboutTab() {
-  const hana = window.openshadow;
+  const hana = window.shadow;
   const settingsConfig = useSettingsStore(s => s.settingsConfig);
   const [version, setVersion] = useState('');
   const autoUpdate = useAutoUpdateState();

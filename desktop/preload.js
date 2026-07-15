@@ -48,7 +48,7 @@ const platformApi = {
     windowClose: () => ipcRenderer.send('window:close'),
     getPlatform: async () => process.platform,
 };
-// 注入 window.openshadow（兼容 platform.js）
+// 注入 window.shadow（兼容 platform.js）
 contextBridge.exposeInMainWorld('openshadow', platformApi);
 // 注入 window.__REM_API__（现有功能）
 contextBridge.exposeInMainWorld('__REM_API__', {

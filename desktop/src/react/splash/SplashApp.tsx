@@ -36,7 +36,7 @@ export function SplashApp() {
       let yuan = 'hanako';
 
       try {
-        const hana = window.openshadow;
+        const hana = window.shadow;
         const [avatarPath, splashInfo] = await Promise.all([
           hana?.getAvatarPath?.('agent'),
           hana?.getSplashInfo?.(),

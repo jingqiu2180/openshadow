@@ -360,7 +360,7 @@ export async function initApp(): Promise<void> {
   });
 
   // 21. Skill Viewer overlay（主进程 / 设置窗口 → 渲染进程）
-  window.openshadow?.onShowSkillViewer?.((data: any) => {
+  window.shadow?.onShowSkillViewer?.((data: any) => {
     useStore.setState({ skillViewerData: data });
   });
 
