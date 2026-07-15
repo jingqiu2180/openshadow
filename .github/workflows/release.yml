@@ -34,6 +34,16 @@ jobs:
       - name: Run bridge contract + ghost-global guard tests
         run: npm run test:bridge && npm run test:contract
 
+      # 全量单测套件：当前非阻塞（continue-on-error），仅提供可见性。
+      # 套件现有 19 个历史红测试 + tsc 328 错误待逐批修复，修完后再翻成硬门禁。
+      - name: Run unit test suite (non-blocking, visibility)
+        run: npm run test:unit
+        continue-on-error: true
+
+      - name: Typecheck (non-blocking, visibility)
+        run: npm run typecheck
+        continue-on-error: true
+
       - name: Build + package Linux
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,6 +75,16 @@ jobs:
 
       - name: Run bridge contract + ghost-global guard tests
         run: npm run test:bridge && npm run test:contract
+
+      # 全量单测套件：当前非阻塞（continue-on-error），仅提供可见性。
+      # 套件现有 19 个历史红测试 + tsc 328 错误待逐批修复，修完后再翻成硬门禁。
+      - name: Run unit test suite (non-blocking, visibility)
+        run: npm run test:unit
+        continue-on-error: true
+
+      - name: Typecheck (non-blocking, visibility)
+        run: npm run typecheck
+        continue-on-error: true
 
       - name: Generate Windows icon
         run: node scripts/generate-windows-icon.cjs
@@ -104,6 +124,16 @@ jobs:
 
       - name: Run bridge contract + ghost-global guard tests
         run: npm run test:bridge && npm run test:contract
+
+      # 全量单测套件：当前非阻塞（continue-on-error），仅提供可见性。
+      # 套件现有 19 个历史红测试 + tsc 328 错误待逐批修复，修完后再翻成硬门禁。
+      - name: Run unit test suite (non-blocking, visibility)
+        run: npm run test:unit
+        continue-on-error: true
+
+      - name: Typecheck (non-blocking, visibility)
+        run: npm run typecheck
+        continue-on-error: true
 
       - name: Build + package macOS (skip notarization)
         env:
