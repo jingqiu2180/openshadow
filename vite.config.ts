@@ -214,7 +214,7 @@ function serveMobilePwaStaticFiles(): Plugin {
   ]);
 
   return {
-    name: 'hana-serve-mobile-pwa-static-files',
+    name: 'openshadow-serve-mobile-pwa-static-files',
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {

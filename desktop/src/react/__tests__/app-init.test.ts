@@ -105,6 +105,11 @@ function jsonResponse(body: unknown): Response {
   return { json: async () => body } as unknown as Response;
 }
 
+// 带 ok:true 的响应，供 waitForServerHealth 的 /api/health 轮询立即判定为就绪（initApp 在拉 identity 前会先轮询 health）。
+function healthyResponse(body: unknown): Response {
+  return { ok: true, json: async () => body } as unknown as Response;
+}
+
 function serverIdentityResponse(partial: Record<string, unknown> = {}): Response {
   return jsonResponse({
     connectionKind: 'local',
@@ -208,6 +213,7 @@ describe('initApp bridge indicator', () => {
     (globalThis as Record<string, unknown>).t = vi.fn((key: string) => key);
 
     mockHanaFetch
+      .mockResolvedValueOnce(healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(serverIdentityResponse())
       .mockResolvedValueOnce(jsonResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(jsonResponse({ locale: 'zh-CN', desk: { home_folder: null }, cwd_history: [] }))
@@ -257,7 +263,7 @@ describe('initApp bridge indicator', () => {
         listeners[type].push(cb);
       }),
       localStorage: {
-        getItem: vi.fn((key: string) => key === 'hana-server-connections-v1' ? persistedLanConnectionJson() : null),
+        getItem: vi.fn((key: string) => key === 'openshadow-server-connections-v1' ? persistedLanConnectionJson() : null),
         setItem: vi.fn(),
         removeItem: vi.fn(),
       },
@@ -281,6 +287,7 @@ describe('initApp bridge indicator', () => {
     (globalThis as Record<string, unknown>).t = vi.fn((key: string) => key);
 
     mockHanaFetch
+      .mockResolvedValueOnce(healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(jsonResponse({ ok: true }))
       .mockResolvedValueOnce(serverIdentityResponse({
         connectionKind: 'lan',
@@ -307,12 +314,12 @@ describe('initApp bridge indicator', () => {
     const { initApp } = await import('../app-init');
     await initApp();
 
-    expect(mockHanaFetch).toHaveBeenNthCalledWith(1, '/api/web-auth/login', expect.objectContaining({
+    expect(mockHanaFetch).toHaveBeenNthCalledWith(2, '/api/web-auth/login', expect.objectContaining({
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({ credential: 'openshadow_dev_remote_secret' }),
     }));
-    expect(mockHanaFetch).toHaveBeenNthCalledWith(2, '/api/server/identity');
+    expect(mockHanaFetch).toHaveBeenNthCalledWith(3, '/api/server/identity');
     expect(mockState.activeServerConnection).toEqual(expect.objectContaining({
       connectionId: 'lan:node_lan:studio_lan',
       kind: 'lan',
@@ -345,7 +352,10 @@ describe('initApp bridge indicator', () => {
     };
     (globalThis as Record<string, unknown>).t = vi.fn((key: string) => key);
 
-    mockHanaFetch.mockRejectedValueOnce(new Error('identity unavailable'));
+    mockHanaFetch.mockImplementation(async (url: string) => {
+      if (String(url).includes('/api/server/identity')) throw new Error('identity unavailable');
+      return healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} });
+    });
 
     const { initApp } = await import('../app-init');
     await initApp();
@@ -380,6 +390,7 @@ describe('initApp bridge indicator', () => {
     (globalThis as Record<string, unknown>).t = vi.fn((key: string) => key);
 
     mockHanaFetch
+      .mockResolvedValueOnce(healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(serverIdentityResponse())
       .mockResolvedValueOnce(jsonResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(jsonResponse({
@@ -432,6 +443,7 @@ describe('initApp bridge indicator', () => {
     (globalThis as Record<string, unknown>).t = vi.fn((key: string) => key);
 
     mockHanaFetch
+      .mockResolvedValueOnce(healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(serverIdentityResponse())
       .mockResolvedValueOnce(jsonResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(jsonResponse({ locale: 'zh-CN', desk: { home_folder: '/agent-home' }, cwd_history: [] }))
@@ -489,6 +501,7 @@ describe('initApp bridge indicator', () => {
     (globalThis as Record<string, unknown>).t = vi.fn((key: string) => key);
 
     mockHanaFetch
+      .mockResolvedValueOnce(healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(serverIdentityResponse())
       .mockResolvedValueOnce(jsonResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(jsonResponse({ locale: 'zh-CN', desk: { home_folder: '/agent-home' }, cwd_history: [] }))
@@ -559,6 +572,7 @@ describe('initApp bridge indicator', () => {
     (globalThis as Record<string, unknown>).t = vi.fn((key: string) => key);
 
     mockHanaFetch
+      .mockResolvedValueOnce(healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(serverIdentityResponse())
       .mockResolvedValueOnce(jsonResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(jsonResponse({ locale: 'zh-CN', desk: { home_folder: '/old-home' }, cwd_history: [] }))
@@ -619,6 +633,7 @@ describe('initApp bridge indicator', () => {
     (globalThis as Record<string, unknown>).t = vi.fn((key: string) => key);
 
     mockHanaFetch
+      .mockResolvedValueOnce(healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(serverIdentityResponse())
       .mockResolvedValueOnce(jsonResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(jsonResponse({ locale: 'zh-CN', desk: { home_folder: '/old-home' }, cwd_history: [] }))
@@ -679,6 +694,7 @@ describe('initApp bridge indicator', () => {
     (globalThis as Record<string, unknown>).t = vi.fn((key: string) => key);
 
     mockHanaFetch
+      .mockResolvedValueOnce(healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(serverIdentityResponse())
       .mockResolvedValueOnce(jsonResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(jsonResponse({ locale: 'zh-CN', desk: { home_folder: '/old-home' }, cwd_history: [] }))
@@ -743,6 +759,7 @@ describe('initApp bridge indicator', () => {
 
     mockGetWebSocket.mockReturnValue({ readyState: 1, send } as unknown as WebSocket);
     mockHanaFetch
+      .mockResolvedValueOnce(healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(serverIdentityResponse())
       .mockResolvedValueOnce(jsonResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(jsonResponse({ locale: 'zh-CN', desk: { home_folder: null }, cwd_history: [] }))
@@ -808,6 +825,7 @@ describe('initApp bridge indicator', () => {
     (globalThis as Record<string, unknown>).t = vi.fn((key: string) => key);
 
     mockHanaFetch
+      .mockResolvedValueOnce(healthyResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(serverIdentityResponse())
       .mockResolvedValueOnce(jsonResponse({ agent: 'Shadow', user: 'User', avatars: {} }))
       .mockResolvedValueOnce(jsonResponse({ locale: 'zh-CN', desk: { home_folder: null }, cwd_history: [] }))

@@ -234,7 +234,7 @@ describe('AccessTab', () => {
       throw new Error(`unexpected fetch URL: ${url}`);
     }));
     Object.assign(window, {
-      openshadow: { reloadMainWindow: vi.fn(async () => {}) },
+      shadow: { reloadMainWindow: vi.fn(async () => {}) },
     });
   });
 
