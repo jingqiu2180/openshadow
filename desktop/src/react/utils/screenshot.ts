@@ -185,8 +185,8 @@ export async function takeScreenshot(targetMessageId: string, sessionPath: strin
   const theme = buildThemeName(color, width);
 
   const t = window.t ?? ((p: string) => p);
-  const openshadow = (window as any).openshadow;
-  if (!openshadow?.screenshotRender) {
+  const shadow = (window as any).shadow;
+  if (!shadow?.screenshotRender) {
     dispatchInlineNotice(t('common.screenshotFailed'), 'error');
     return;
   }
@@ -210,7 +210,7 @@ export async function takeScreenshot(targetMessageId: string, sessionPath: strin
         imageCache,
         { index: i + 1, total: chunks.length },
       );
-      const result = await openshadow.screenshotRender(payload) as ScreenshotRenderResult;
+      const result = await shadow.screenshotRender(payload) as ScreenshotRenderResult;
       if (!result.success) {
         throw new Error(result.error || t('common.screenshotFailed'));
       }
@@ -240,8 +240,8 @@ export async function takeArticleScreenshot(markdown: string, options: ArticleSc
   const theme = buildThemeName(color, width);
 
   const t = window.t ?? ((p: string) => p);
-  const openshadow = (window as any).openshadow;
-  if (!openshadow?.screenshotRender) {
+  const shadow = (window as any).shadow;
+  if (!shadow?.screenshotRender) {
     dispatchInlineNotice(t('common.screenshotFailed'), 'error');
     return;
   }
@@ -249,7 +249,7 @@ export async function takeArticleScreenshot(markdown: string, options: ArticleSc
   const homeFolder = useStore.getState().homeFolder || null;
   const endProgress = beginScreenshotProgress(1, 1);
   try {
-    const result = await openshadow.screenshotRender({
+    const result = await shadow.screenshotRender({
       mode: 'article',
       theme,
       markdown,
@@ -318,8 +318,8 @@ async function resolveAssistantFallbackAvatar(state: StoreSnapshot): Promise<str
 }
 
 async function fetchAvatarAsDataUrl(role: string, agentId: string | null): Promise<string | null> {
-  const port = await (window as any).openshadow?.getServerPort?.();
-  const token = await (window as any).openshadow?.getServerToken?.();
+  const port = await (window as any).shadow?.getServerPort?.();
+  const token = await (window as any).shadow?.getServerToken?.();
   const connection = createLocalServerConnection({ serverPort: port, serverToken: token });
   if (!connection || !connection.token) return null;
 

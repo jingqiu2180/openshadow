@@ -53,19 +53,19 @@ describe('screenshot utils', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     window.removeEventListener('openshadow-inline-notice', noticeHandler);
-    delete (window as any).openshadow;
+    delete (window as any).shadow;
     delete (window as any).t;
     delete (window as any).i18n;
   });
 
   it('主进程 IPC reject 时，给用户发出明确失败提示而不是变成未处理异常', async () => {
-    (window as any).openshadow = {
+    (window as any).shadow = {
       screenshotRender: vi.fn().mockRejectedValue(new Error('disk full')),
     };
 
     await expect(takeArticleScreenshot('# hello')).resolves.toBeUndefined();
 
-    expect((window as any).openshadow.screenshotRender).toHaveBeenCalledOnce();
+    expect((window as any).shadow.screenshotRender).toHaveBeenCalledOnce();
     expect(notices).toEqual([
       expect.objectContaining({
         type: 'error',
@@ -75,7 +75,7 @@ describe('screenshot utils', () => {
   });
 
   it('Markdown article screenshots carry source file context for relative attachments', async () => {
-    (window as any).openshadow = {
+    (window as any).shadow = {
       screenshotRender: vi.fn().mockResolvedValue({ success: true, dir: '/tmp/openshadow-home/截图' }),
     };
 
@@ -84,7 +84,7 @@ describe('screenshot utils', () => {
       articleType: 'markdown',
     })).resolves.toBeUndefined();
 
-    expect((window as any).openshadow.screenshotRender).toHaveBeenCalledWith(expect.objectContaining({
+    expect((window as any).shadow.screenshotRender).toHaveBeenCalledWith(expect.objectContaining({
       mode: 'article',
       markdown: '![](<文本附件/a.png>)',
       filePath: '/vault/note.md',
@@ -93,7 +93,7 @@ describe('screenshot utils', () => {
   });
 
   it('code article screenshots carry type and language so code files render as code blocks', async () => {
-    (window as any).openshadow = {
+    (window as any).shadow = {
       screenshotRender: vi.fn().mockResolvedValue({ success: true, dir: '/tmp/openshadow-home/截图' }),
     };
 
@@ -103,7 +103,7 @@ describe('screenshot utils', () => {
       language: 'ts',
     })).resolves.toBeUndefined();
 
-    expect((window as any).openshadow.screenshotRender).toHaveBeenCalledWith(expect.objectContaining({
+    expect((window as any).shadow.screenshotRender).toHaveBeenCalledWith(expect.objectContaining({
       mode: 'article',
       markdown: 'const x = 1;',
       filePath: '/vault/app.ts',
@@ -114,13 +114,13 @@ describe('screenshot utils', () => {
 
   it('screenshot font follows the reading font when no screenshot override is selected', async () => {
     localStorage.setItem('openshadow-font-serif', '0');
-    (window as any).openshadow = {
+    (window as any).shadow = {
       screenshotRender: vi.fn().mockResolvedValue({ success: true, dir: '/tmp/openshadow-home/截图' }),
     };
 
     await expect(takeArticleScreenshot('# hello')).resolves.toBeUndefined();
 
-    expect((window as any).openshadow.screenshotRender).toHaveBeenCalledWith(expect.objectContaining({
+    expect((window as any).shadow.screenshotRender).toHaveBeenCalledWith(expect.objectContaining({
       fontFamily: expect.stringContaining('Inter'),
     }));
   });
@@ -128,13 +128,13 @@ describe('screenshot utils', () => {
   it('screenshot font can override the reading font explicitly', async () => {
     localStorage.setItem('openshadow-font-serif', '0');
     localStorage.setItem('openshadow-screenshot-font', 'serif');
-    (window as any).openshadow = {
+    (window as any).shadow = {
       screenshotRender: vi.fn().mockResolvedValue({ success: true, dir: '/tmp/openshadow-home/截图' }),
     };
 
     await expect(takeArticleScreenshot('# hello')).resolves.toBeUndefined();
 
-    expect((window as any).openshadow.screenshotRender).toHaveBeenCalledWith(expect.objectContaining({
+    expect((window as any).shadow.screenshotRender).toHaveBeenCalledWith(expect.objectContaining({
       fontFamily: expect.stringContaining('Noto Serif SC'),
     }));
   });
@@ -159,7 +159,7 @@ describe('screenshot utils', () => {
         },
       },
     };
-    (window as any).openshadow = {
+    (window as any).shadow = {
       screenshotRender: vi.fn().mockResolvedValue({ success: true, dir: '/tmp/openshadow-home/截图' }),
       getServerPort: vi.fn().mockResolvedValue(null),
       getServerToken: vi.fn().mockResolvedValue(null),
@@ -178,13 +178,13 @@ describe('screenshot utils', () => {
     expect(storeMock.state.updateScreenshotProgress).toHaveBeenCalledWith({ currentPage: 2 });
     expect(storeMock.state.updateScreenshotProgress).toHaveBeenCalledWith({ completedBlocks: 4 });
     expect(storeMock.state.endScreenshotTask).toHaveBeenCalledOnce();
-    expect((window as any).openshadow.screenshotRender).toHaveBeenCalledTimes(2);
-    expect((window as any).openshadow.screenshotRender).toHaveBeenNthCalledWith(1, expect.objectContaining({
+    expect((window as any).shadow.screenshotRender).toHaveBeenCalledTimes(2);
+    expect((window as any).shadow.screenshotRender).toHaveBeenNthCalledWith(1, expect.objectContaining({
       locale: 'zh',
       segmentIndex: 1,
       segmentTotal: 2,
     }));
-    expect((window as any).openshadow.screenshotRender).toHaveBeenNthCalledWith(2, expect.objectContaining({
+    expect((window as any).shadow.screenshotRender).toHaveBeenNthCalledWith(2, expect.objectContaining({
       segmentIndex: 2,
       segmentTotal: 2,
     }));
@@ -226,7 +226,7 @@ describe('screenshot utils', () => {
       return new Response('', { status: 404 });
     });
     vi.stubGlobal('fetch', fetchMock);
-    (window as any).openshadow = {
+    (window as any).shadow = {
       screenshotRender: vi.fn().mockResolvedValue({ success: true, dir: '/tmp/openshadow-home/截图' }),
       getServerPort: vi.fn().mockResolvedValue(null),
       getServerToken: vi.fn().mockResolvedValue(null),
@@ -234,7 +234,7 @@ describe('screenshot utils', () => {
 
     await expect(takeScreenshot('u1', sessionPath)).resolves.toBeUndefined();
 
-    const payload = (window as any).openshadow.screenshotRender.mock.calls[0][0];
+    const payload = (window as any).shadow.screenshotRender.mock.calls[0][0];
     expect(payload.messages[0].avatarDataUrl).toMatch(/^data:image\/svg\+xml/);
     expect(decodeURIComponent(payload.messages[0].avatarDataUrl)).toContain('唐');
     expect(payload.messages[1].avatarDataUrl).toMatch(/^data:image\/png;base64,/);
@@ -286,7 +286,7 @@ describe('screenshot utils', () => {
         },
       },
     };
-    (window as any).openshadow = {
+    (window as any).shadow = {
       screenshotRender: vi.fn().mockResolvedValue({ success: true, dir: '/tmp/openshadow-home/截图' }),
       getServerPort: vi.fn().mockResolvedValue(null),
       getServerToken: vi.fn().mockResolvedValue(null),
@@ -294,7 +294,7 @@ describe('screenshot utils', () => {
 
     await expect(takeScreenshot('u1', sessionPath)).resolves.toBeUndefined();
 
-    const payload = (window as any).openshadow.screenshotRender.mock.calls[0][0];
+    const payload = (window as any).shadow.screenshotRender.mock.calls[0][0];
     expect(payload.messages[0].blocks).toEqual([
       { type: 'markdown', content: '附件在这里' },
       {
