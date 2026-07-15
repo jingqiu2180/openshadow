@@ -31,6 +31,9 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Run bridge contract + ghost-global guard tests
+        run: npm run test:bridge && npm run test:contract
+
       - name: Build + package Linux
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -59,6 +62,9 @@ jobs:
 
       - name: Install npm dependencies
         run: npm ci
+
+      - name: Run bridge contract + ghost-global guard tests
+        run: npm run test:bridge && npm run test:contract
 
       - name: Generate Windows icon
         run: node scripts/generate-windows-icon.cjs
@@ -96,6 +102,9 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Run bridge contract + ghost-global guard tests
+        run: npm run test:bridge && npm run test:contract
+
       - name: Build + package macOS (skip notarization)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -112,11 +121,35 @@ jobs:
             release/*.zip
             release/latest-mac.yml
 
+  # ───────────────────────── Smoke (real Electron launch) ─────────────────────────
+  smoke:
+    name: Smoke (real Electron preload launch)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build preload bundle
+        run: npm run electron:preload
+
+      - name: Install xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Launch real Electron + assert window.shadow
+        run: xvfb-run -a node desktop/scripts/smoke-launch.cjs
+
   # ───────────────────────── Publish GitHub Release ─────────────────────────
   # 把三个平台的产物聚合到一个 GitHub Release
   release:
     name: Publish GitHub Release
-    needs: [linux, windows, macos]
+    needs: [linux, windows, macos, smoke]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/download-artifact@v4

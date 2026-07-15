@@ -78,7 +78,7 @@
           if (typeof window.shadow?.selectFolder === 'function') {
             return await window.shadow.selectFolder();
           }
-          // 兼容旧版桥接（早期版本暴露为 window.openshadow.platform）
+          // 兼容旧版桥接（回退到 window.shadow.platform 命名空间）
           if (typeof window.shadow?.platform?.selectFolder === 'function') {
             return await window.shadow.platform.selectFolder();
           }
