@@ -5,6 +5,15 @@
 
 ---
 
+## [0.5.4] - 2026-07-16
+
+### 修复（发版门禁 flaky）
+- **修复 v0.5.3 CI 在 Mac/Linux 上 `tests/core/session-store.test.ts` 的 `should list sessions sorted by updatedAt` 偶发失败（Windows 偶过）**：根因是测试依赖 `Date.now()` 亚毫秒级时序——`create(s1)`/`create(s2)`/`addMessage(s1)` 三次时间戳可能落在同一毫秒，导致两个 session 的 `updatedAt` 相等；`list()` 按 `updatedAt` 降序排序退化为 `readdirSync` 文件系统枚举顺序，而 Windows 与 Mac/Linux 的目录顺序不同，表现为跨平台 flaky。产品排序逻辑本身正确，无需改代码。
+- **修法**：在 `create(s2)` 与 `addMessage(s1)` 之间 `await` 一个 10ms 延迟，保证 `addMessage` bump 出的 `s1.updatedAt` 严格大于 `s2.updatedAt`（真实睡眠保证 ≥10ms，跨平台确定）。
+- 验证：本地单跑 18 用例全绿；`tests/core/usage-tracker.test.ts` 在 v0.5.3 已验证跨平台稳定（Windows/Mac/Linux 均过）。
+
+---
+
 ## [0.5.3] - 2026-07-16
 
 ### 修复（发版门禁 flaky 超时）

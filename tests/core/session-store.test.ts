@@ -50,9 +50,13 @@ describe('SessionStore', () => {
     expect(store.delete('nonexistent')).toBe(false)
   })
 
-  it('should list sessions sorted by updatedAt', () => {
+  it('should list sessions sorted by updatedAt', async () => {
     const s1 = store.create('gpt-4', 'First')
     const s2 = store.create('gpt-4', 'Second')
+    // addMessage 会 bump s1.updatedAt；但 create(s1)/create(s2)/addMessage 三次 Date.now()
+    // 可能落在同一毫秒，导致 updatedAt 相等，最终顺序退回 readdirSync 的文件系统顺序
+    // （Windows 与 Mac/Linux 顺序不同，表现为跨平台 flaky）。显式拉开时间窗口，保证确定性。
+    await new Promise(resolve => setTimeout(resolve, 10))
     store.addMessage(s1.id, { role: 'user', content: 'hello' })
 
     const list = store.list()
