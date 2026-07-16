@@ -5,6 +5,14 @@
 
 ---
 
+## [0.5.3] - 2026-07-16
+
+### 修复（发版门禁 flaky 超时）
+- **修复 v0.5.2 CI 在 `tests/core/usage-tracker.test.ts` 上 2 个用例偶发 5000ms 超时**：根因是 `beforeEach` 里 `vi.resetModules()` + `await import()` 在每个用例都强制重新加载整个模块图（含原生 `better-sqlite3`）并重建全新磁盘 SQLite 库 + 重跑整份 `schema.sql`，单用例本地即 ~2.1s；在较慢的 Windows CI runner 上偶发超过 5000ms 默认超时 → 随机失败（`getSummary` 本身为纯同步 SQL，非逻辑 bug）。
+- **修法**：改为 `beforeAll` 仅加载一次模块，用例之间只 `DELETE FROM usage_logs` 清空表（隔离不变）。单用例耗时从 ~2.1s 降到 6–22ms，整文件 17.8s → 3.0s，从根本上消除该 flaky。
+
+---
+
 ## [0.5.2] - 2026-07-16
 
 ### 修复（发版门禁阻断 bug）
