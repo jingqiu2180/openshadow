@@ -7,10 +7,12 @@
  *
  * Pi SDK 0.68+ 已把 createAgentSession({ tools }) 改成工具名 allowlist，
  * Hana 现在通过 lib/pi-sdk 适配层把本地 Tool[] 转为 customTools + names。
- * 因此这个脚本只验证版本、SDK 结构和生产 import 边界，不再写 node_modules。
+ * 因此这个脚本主要验证版本、SDK 结构和生产 import 边界；
+ * 此外会就地给 pi-coding-agent 的 package.json exports 补精确键，
+ * 修复 vite 对通配 exports 的深导入解析失败（见 patchExports）。
  *
  * 文件名（patch-pi-sdk）保留是为了不动 package.json 的 postinstall 钩子，
- * 避免触发 npm install cache 重算。实际职责已是只读验证（log 前缀 verify-pi-sdk）。
+ * 避免触发 npm install cache 重算。log 前缀保持 verify-pi-sdk。
  */
 
 const fs = require("fs");
@@ -95,5 +97,35 @@ for (const dir of scanDirs) scanDir(dir);
 if (leaks.length > 0) {
   fail(`production files bypass lib/pi-sdk: ${leaks.join(", ")}`);
 }
+
+// ── 修复 vite 对 pi-coding-agent 通配 exports 的深导入解析失败 ──
+// vite 的 resolveExports 在处理 ".*" 全通配 + 嵌套 "./dist/utils/*" 组合时，
+// 对 "@mariozechner/pi-coding-agent/dist/utils/image-resize.js" 这类深导入
+// 会误报 "Missing ... specifier"（Node 原生 ESM 可正常解析，证明 exports 本身合法）。
+// 补精确键让 vite 走精确匹配（优先级高于通配），根治该解析 bug。
+// 影响范围：test (vitest) + 生产构建（所有 vite 实例）统一受益。
+function patchExports() {
+  const pkgPath = path.join(sdkRoot, "package.json");
+  const json = readJson(pkgPath);
+  if (!json.exports || typeof json.exports !== "object") return;
+  const needed = {
+    "./dist/utils/image-resize.js": "./dist/utils/image-resize.js",
+    "./dist/core/compaction/compaction.js": "./dist/core/compaction/compaction.js",
+  };
+  let changed = false;
+  for (const [key, target] of Object.entries(needed)) {
+    if (!(key in json.exports)) {
+      json.exports[key] = target;
+      changed = true;
+    }
+  }
+  if (changed) {
+    fs.writeFileSync(pkgPath, JSON.stringify(json, null, 2) + "\n", "utf8");
+    console.log("[verify-pi-sdk] patched package.json exports (added deep-import specifiers for vite)");
+  } else {
+    console.log("[verify-pi-sdk] package.json exports already patched");
+  }
+}
+patchExports();
 
 console.log("[verify-pi-sdk] all checks passed");

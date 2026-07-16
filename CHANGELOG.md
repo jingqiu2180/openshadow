@@ -5,6 +5,18 @@
 
 ---
 
+## [0.5.2] - 2026-07-16
+
+### 修复（发版门禁阻断 bug）
+- **修复 v0.5.1 发版被 CI 全红拦截的根因**：`lib/pi-sdk/index.ts` 深导入 `@mariozechner/pi-coding-agent/dist/utils/image-resize.js` 与 `.../dist/core/compaction/compaction.js`，该包 `exports` 仅以通配 `./dist/utils/*` 暴露；vite 的 `resolveExports` 在 `"./*":"./*"` + 嵌套通配组合下误报 `Missing ... specifier`（Node 原生 ESM 可正常解析，证明 exports 本身合法）。这导致 3 个 `tests/core/*.test.ts`（虽为 `describe.skip`，但模块加载即触发 import 链）在 CI 上记为 "Failed Suites"，硬门禁 `test:unit` 误杀整个发版。
+- **修法**：在既有 `postinstall` 补丁脚本 `scripts/patch-pi-sdk.cjs` 中给 pi-coding-agent 的 `package.json.exports` 补两个精确键（`image-resize.js` / `compaction.js`），vite 精确匹配优先，一处生效全局（test + 生产构建所有 vite 实例受益）。补丁幂等，不破坏现有解析。
+- 注：v0.5.1 的 `Smoke` job 失败为 GitHub hosted runner 的 `/tmp` 共享内存偶发环境抖动（非代码回归），v0.4.9/v0.5.0 同脚本均成功；v0.5.2 重跑应可过，若仍偶发可在 Actions 界面单独 re-run smoke job。
+
+### 已知（待加固，非阻塞）
+- smoke 真机测试在 CI 偶发受 runner `/tmp` 共享内存限制；后续可在 `smoke-launch.cjs` 显式设置 `TMPDIR`/`XDG_RUNTIME_DIR` 或加 `--disable-dev-shm-usage` 加固（当前已有 `disable-dev-shm-usage`，疑为 `/tmp` 而非 `/dev/shm`）。
+
+---
+
 ## [0.5.1] - 2026-07-15
 
 ### 质量门禁升级（关键）
