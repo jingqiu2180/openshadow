@@ -2,7 +2,7 @@
  * PI SDK Adapter — 所有 PI SDK 导入的唯一入口
  *
  * 稳定 API 直接 re-export，不稳定 API 通过适配函数封装。
- * 消费方不应直接 import "@mariozechner/..."，全部从这里导入。
+ * 消费方不应直接 import "@earendil-works/..."，全部从这里导入。
  *
  * 纪律：
  *   - 不接受 engine / agent / config 参数
@@ -14,11 +14,16 @@
 import {
   createAgentSession as rawCreateAgentSession,
   ModelRegistry,
-} from "@mariozechner/pi-coding-agent";
+  resizeImage as rawResizeImage,
+  formatDimensionNote as rawFormatDimensionNote,
+  convertToLlm as rawConvertToLlm,
+} from "@earendil-works/pi-coding-agent";
+// 0.80.0 起 pi-ai 老全局 API（getModel/completeSimple）移到 /compat 子入口，
+// 包根入口改为 createModels 新 API。
 import {
   getModel as rawGetPiModel,
   completeSimple as rawCompleteSimple,
-} from "@mariozechner/pi-ai";
+} from "@earendil-works/pi-ai/compat";
 import {
   normalizeCreateAgentSessionOptions,
   PI_BUILTIN_TOOL_NAMES,
@@ -28,19 +33,13 @@ import {
   createFindTool,
   createGrepTool,
 } from "./search-tools.js";
-import {
-  resizeImage as rawResizeImage,
-  formatDimensionNote as rawFormatDimensionNote,
-} from "@mariozechner/pi-coding-agent/dist/utils/image-resize.js";
-import {
-  convertToLlm as rawConvertToLlm,
-} from "@mariozechner/pi-coding-agent";
+// prepareCompaction 0.80.3 仍未从包根导出，保留深子路径（依赖 patch-pi-sdk 补 exports 键）。
 import {
   prepareCompaction as rawPrepareCompaction,
-} from "@mariozechner/pi-coding-agent/dist/core/compaction/compaction.js";
+} from "@earendil-works/pi-coding-agent/dist/core/compaction/compaction.js";
 
 // ── Session 管理 ──
-export { SessionManager, SettingsManager } from "@mariozechner/pi-coding-agent";
+export { SessionManager, SettingsManager } from "@earendil-works/pi-coding-agent";
 
 /**
  * Hana 侧保持稳定的 Tool[] 调用契约，适配层负责转换 Pi SDK 版本差异。
@@ -67,33 +66,33 @@ export { PI_BUILTIN_TOOL_NAMES };
 export {
   createReadTool, createWriteTool, createEditTool, createBashTool,
   createLsTool,
-} from "@mariozechner/pi-coding-agent";
+} from "@earendil-works/pi-coding-agent";
 export { createGrepTool, createFindTool };
 
 // ── 资源加载 ──
-export { DefaultResourceLoader } from "@mariozechner/pi-coding-agent";
+export { DefaultResourceLoader } from "@earendil-works/pi-coding-agent";
 
 // ── Utilities ──
-export { formatSkillsForPrompt, getLastAssistantUsage } from "@mariozechner/pi-coding-agent";
-export { AuthStorage } from "@mariozechner/pi-coding-agent";
+export { formatSkillsForPrompt, getLastAssistantUsage } from "@earendil-works/pi-coding-agent";
+export { AuthStorage } from "@earendil-works/pi-coding-agent";
 
 // ── Session/history utilities ──
 export {
   estimateTokens, findCutPoint,
   serializeConversation, shouldCompact,
   parseSessionEntries, buildSessionContext,
-} from "@mariozechner/pi-coding-agent";
+} from "@earendil-works/pi-coding-agent";
 
 // Diary material summarization only. Context compaction must go through core/session-compactor.js.
-export { generateSummary } from "@mariozechner/pi-coding-agent";
+export { generateSummary } from "@earendil-works/pi-coding-agent";
 
 export const completeSimple = rawCompleteSimple;
 export const convertAgentMessagesToLlm = rawConvertToLlm;
 export const prepareCompaction = rawPrepareCompaction;
 
 // ── pi-ai（直接依赖，需保持与 pi-coding-agent 内部依赖同版本，避免双实例）──
-export { StringEnum } from "@mariozechner/pi-ai";
-export { registerOAuthProvider } from "@mariozechner/pi-ai/oauth";
+export { StringEnum } from "@earendil-works/pi-ai";
+export { registerOAuthProvider } from "@earendil-works/pi-ai/oauth";
 
 export function getPiModel(provider, modelId) {
   return rawGetPiModel(provider, modelId);
@@ -103,7 +102,7 @@ export function getPiModel(provider, modelId) {
 export { Type } from "typebox";
 
 // ── 类型 re-export（供 JSDoc 引用）──
-/** @typedef {import('@mariozechner/pi-coding-agent').ToolDefinition} ToolDefinition */
+/** @typedef {import('@earendil-works/pi-coding-agent').ToolDefinition} ToolDefinition */
 
 // ── Lifecycle helpers ──
 
@@ -138,11 +137,16 @@ export async function emitSessionShutdown(session) {
  * Pi SDK 的 CLI / read tool 已经使用这套图片压缩策略，但顶层包暂未导出。
  * Hana 只在 adapter 层碰深层路径，保证调用侧不用知道 SDK 内部文件布局。
  *
+ * 0.80.3 起上游签名为 `resizeImage(inputBytes: Uint8Array, mimeType, options?)`，
+ * 门面负责把 base64 解码为 Uint8Array 并拆出 mimeType，消费侧契约
+ * （{type,data,mimeType} 对象入参、ResizedImage 出参）保持不变。
+ *
  * @param {{type?: string, data: string, mimeType?: string}} image
  * @param {{maxWidth?: number, maxHeight?: number, maxBytes?: number, jpegQuality?: number}} options
  */
 export async function resizeModelImageInput(image: any, options: any): Promise<any> {
-  return rawResizeImage(image, options);
+  const inputBytes = Buffer.from(String(image?.data ?? ""), "base64");
+  return rawResizeImage(inputBytes, image?.mimeType, options);
 }
 
 /**
@@ -156,9 +160,9 @@ export function formatModelImageDimensionNote(result) {
  * ModelRegistry 工厂。
  * 0.64.0 将构造函数私有化，必须用静态方法。
  * 下次 SDK 改工厂签名，只改这里。
- * @param {import('@mariozechner/pi-coding-agent').AuthStorage} authStorage
+ * @param {import('@earendil-works/pi-coding-agent').AuthStorage} authStorage
  * @param {string} [modelsJsonPath]
- * @returns {import('@mariozechner/pi-coding-agent').ModelRegistry}
+ * @returns {import('@earendil-works/pi-coding-agent').ModelRegistry}
  */
 export function createModelRegistry(authStorage, modelsJsonPath) {
   return ModelRegistry.create(authStorage, modelsJsonPath);

@@ -2,7 +2,7 @@
  * patch-pi-sdk.cjs — Pi SDK 只读验证
  *
  * 历史上这个脚本会在 postinstall 阶段修改
- * node_modules/@mariozechner/pi-coding-agent/dist/core/sdk.js，
+ * node_modules/@earendil-works/pi-coding-agent/dist/core/sdk.js，
  * 为 Hana 的 session-scoped sandbox tools 打通 baseToolsOverride。
  *
  * Pi SDK 0.68+ 已把 createAgentSession({ tools }) 改成工具名 allowlist，
@@ -19,10 +19,10 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.join(__dirname, "..");
-const sdkRoot = path.join(root, "node_modules", "@mariozechner", "pi-coding-agent");
-const piAiRoot = path.join(root, "node_modules", "@mariozechner", "pi-ai");
-const verifiedVersions = new Set(["0.70.2"]);
-const verifiedPiAiVersions = new Set(["0.70.5"]);
+const sdkRoot = path.join(root, "node_modules", "@earendil-works", "pi-coding-agent");
+const piAiRoot = path.join(root, "node_modules", "@earendil-works", "pi-ai");
+const verifiedVersions = new Set(["0.80.3"]);
+const verifiedPiAiVersions = new Set(["0.80.3"]);
 
 function fail(message) {
   console.error(`[verify-pi-sdk] ${message}`);
@@ -44,7 +44,7 @@ if (!verifiedVersions.has(pkg.version)) {
 }
 
 if (!fs.existsSync(piAiRoot)) {
-  fail("@mariozechner/pi-ai is not installed");
+  fail("@earendil-works/pi-ai is not installed");
 }
 const piAiPkg = readJson(path.join(piAiRoot, "package.json"));
 if (!verifiedPiAiVersions.has(piAiPkg.version)) {
@@ -73,7 +73,9 @@ for (const marker of expectedExportMarkers) {
 
 const scanDirs = ["core", "server", "lib", "hub"].map(d => path.join(root, d));
 const adapterDir = path.join(root, "lib", "pi-sdk");
-const importPattern = /(?:from\s+["']@mariozechner\/|import\s*\(\s*["']@mariozechner\/|require\s*\(\s*["']@mariozechner\/)/;
+// 双 scope 泄漏扫描：仅命中 pi-ai / pi-coding-agent（排除 @mariozechner/clipboard 等无关包，
+// 避免误报；且旧 scope 仍纳入检测，防止迁移遗漏残留直连）。
+const importPattern = /(?:from\s+["']@(?:mariozechner|earendil-works)\/(?:pi-ai|pi-coding-agent)|import\s*\(\s*["']@(?:mariozechner|earendil-works)\/(?:pi-ai|pi-coding-agent)|require\s*\(\s*["']@(?:mariozechner|earendil-works)\/(?:pi-ai|pi-coding-agent))/;
 const leaks = [];
 
 function scanDir(dir) {
@@ -99,17 +101,17 @@ if (leaks.length > 0) {
 }
 
 // ── 修复 vite 对 pi-coding-agent 通配 exports 的深导入解析失败 ──
-// vite 的 resolveExports 在处理 ".*" 全通配 + 嵌套 "./dist/utils/*" 组合时，
-// 对 "@mariozechner/pi-coding-agent/dist/utils/image-resize.js" 这类深导入
+// vite 的 resolveExports 在处理 ".*" 全通配 + 嵌套 "./dist/core/*" 组合时，
+// 对 "@earendil-works/pi-coding-agent/dist/core/compaction/compaction.js" 这类深导入
 // 会误报 "Missing ... specifier"（Node 原生 ESM 可正常解析，证明 exports 本身合法）。
 // 补精确键让 vite 走精确匹配（优先级高于通配），根治该解析 bug。
 // 影响范围：test (vitest) + 生产构建（所有 vite 实例）统一受益。
+// 注：0.80.3 起 resizeImage/formatDimensionNote 已转包根导出，image-resize.js 深导入已不再使用，无需补键。
 function patchExports() {
   const pkgPath = path.join(sdkRoot, "package.json");
   const json = readJson(pkgPath);
   if (!json.exports || typeof json.exports !== "object") return;
   const needed = {
-    "./dist/utils/image-resize.js": "./dist/utils/image-resize.js",
     "./dist/core/compaction/compaction.js": "./dist/core/compaction/compaction.js",
   };
   let changed = false;

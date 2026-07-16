@@ -95,7 +95,7 @@ function cleanBinLinks(dir, boundary) {
 // typescript / esbuild / @types/* / vitest / @electron/* 等，运行时完全不需要）仍被
 // 一并拷了进来，使 server-bundle 体积膨胀到 ~1.3GB / 安装解压 ~965MB。Windows Defender
 // 实时防护逐个扫描这些海量小文件会把 NSIS 安装拖到“假死”。这里在整拷后把 devDep 顶层
-// 目录删掉，大幅瘦身；运行时需要的生产依赖闭包（ws / hono / @mariozechner/* /
+// 目录删掉，大幅瘦身；运行时需要的生产依赖闭包（ws / hono / @earendil-works/* /
 // partial-json / better-sqlite3 / node-pty …）全部保留，server 仍能正常启动。
 // 精准闭包复制（替代整拷根 node_modules 再删的死重方案）：
 //
@@ -110,7 +110,7 @@ function cleanBinLinks(dir, boundary) {
 // 运行时正确性保证：
 // 1. server-bundle/package.json 的闭包 = server 运行时需要的全部包（vite external
 //    + 所有传递依赖），闭包外的包 server 永不 import（已在 index.js 中内联）
-// 2. SAFE_KEEP 中的动态加载 SDK（@mariozechner/* 等）虽在闭包中，但额外加
+// 2. SAFE_KEEP 中的动态加载 SDK（@earendil-works/* 等）虽在闭包中，但额外加
 //    双保险防按需 import 场景漏包
 // 3. native addon（better-sqlite3/node-pty/@node-rs/jieba）随闭包复制一并就位
 //
@@ -119,7 +119,7 @@ function cleanBinLinks(dir, boundary) {
 // 动态加载 provider SDK 的双保险名单（防按需 import 场景漏包）。
 // 这些包在闭包内本就存在，此处为双保险；不会额外保留大量死重。
 const SERVER_DYNAMIC_SAFE_KEEP = new Set([
-  "@mariozechner", "@anthropic-ai", "@google", "@mistralai",
+  "@earendil-works", "@mariozechner", "@anthropic-ai", "@google", "@mistralai",
   "@larksuiteoapi", "@aws-sdk", "openai", "node-telegram-bot-api", "google-auth-library",
 ]);
 
@@ -238,7 +238,7 @@ function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {
   if (fs.existsSync(topBin)) cleanBinLinks(topBin, serverDir);
 
   // 关键依赖兜底校验
-  const requiredServerDeps = ["@mariozechner/pi-ai", "partial-json", "ws"];
+  const requiredServerDeps = ["@earendil-works/pi-ai", "@mariozechner/clipboard", "partial-json", "ws"];
   const stillMissing = requiredServerDeps.filter(
     (p) => !fs.existsSync(path.join(target, p, "package.json")),
   );
@@ -347,34 +347,34 @@ exports.default = async function (context) {
   if (fs.existsSync(serverPkgPath)) {
     rebuildServerNodeModulesFromProject(serverDir, localModules);
 
-    // 修补 @mariozechner/* 包的 package.json `exports`：
-    // 这些包（如 pi-coding-agent 0.70.2）的 exports 字段未声明打包 bundle
-    // 引用的内部子路径（如 ./dist/utils/image-resize.js）。external 化后，
+    // 修补 @earendil-works/* 包的 package.json `exports`：
+    // 这些包（如 pi-coding-agent 0.80.3）的 exports 字段未声明打包 bundle
+    // 引用的内部子路径（如 ./dist/core/compaction/compaction.js）。external 化后，
     // 运行时 Node 会抛 ERR_PACKAGE_PATH_NOT_EXPORTED 导致 server 启动即崩。
     // 这里补全通配子路径映射，使深层 import 在运行时可解析。
-    const marioDir = path.join(serverDir, "node_modules", "@mariozechner");
-    if (fs.existsSync(marioDir)) {
-      for (const pkg of fs.readdirSync(marioDir)) {
-        const pkgJson = path.join(marioDir, pkg, "package.json");
+    const piScopeDir = path.join(serverDir, "node_modules", "@earendil-works");
+    if (fs.existsSync(piScopeDir)) {
+      for (const pkg of fs.readdirSync(piScopeDir)) {
+        const pkgJson = path.join(piScopeDir, pkg, "package.json");
         if (!fs.existsSync(pkgJson)) continue;
         let p;
         try { p = JSON.parse(fs.readFileSync(pkgJson, "utf-8")); } catch { continue; }
         if (!p.exports || typeof p.exports !== "object") continue;
-        const patterns = ["./*", "./dist/*", "./dist/utils/*", "./dist/core/*", "./dist/llm/*"];
+        const patterns = ["./*", "./dist/*", "./dist/utils/*", "./dist/core/*", "./dist/core/compaction/*", "./dist/llm/*"];
         let changed = false;
         for (const k of patterns) {
           if (!(k in p.exports)) { p.exports[k] = k; changed = true; }
         }
         if (changed) {
           fs.writeFileSync(pkgJson, JSON.stringify(p, null, 2));
-          console.log(`[fix-modules] patched exports for @mariozechner/${pkg}`);
+          console.log(`[fix-modules] patched exports for @earendil-works/${pkg}`);
         }
       }
     }
   }
 
   // 装后确定性安全裁剪（删 .d.ts/.map/test 等运行时绝不加载的文件）→ 缩小安装包体积
-  // 必须在 @mariozechner exports 修补之后执行；函数只删确定安全的文件，失败不阻断打包。
+  // 必须在 @earendil-works exports 修补之后执行；函数只删确定安全的文件，失败不阻断打包。
   await pruneServerNodeModulesDeterministic(serverDir, console.log);
 
   if (!fs.existsSync(distModules)) return;

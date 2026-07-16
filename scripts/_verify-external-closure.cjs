@@ -62,17 +62,21 @@ try {
 const nm = path.join(tmpDir, "node_modules");
 const nmMB = (du(nm) / 1024 / 1024).toFixed(0);
 const pkgCount = fs.readdirSync(nm).filter((f) => f !== ".bin" && !f.startsWith("@") && !f.startsWith(".")).length +
-  fs.readdirSync(path.join(nm, "@mariozechner"), { withFileTypes: true }).filter((e) => e.isDirectory()).length;
+  fs.readdirSync(path.join(nm, "@earendil-works"), { withFileTypes: true }).filter((e) => e.isDirectory()).length +
+  (fs.existsSync(path.join(nm, "@mariozechner"))
+    ? fs.readdirSync(path.join(nm, "@mariozechner"), { withFileTypes: true }).filter((e) => e.isDirectory()).length
+    : 0);
 console.log(`[verify] node_modules 体积: ${nmMB}MB | 顶层包数(估): ${pkgCount}`);
 
 // 4. 关键包 package.json 在位
 const mustExist = [
   "ws/package.json", "better-sqlite3/package.json", "qrcode/package.json",
-  "@mariozechner/pi-ai/package.json", "openai/package.json", "@anthropic-ai/sdk/package.json",
+  "@earendil-works/pi-ai/package.json", "openai/package.json", "@anthropic-ai/sdk/package.json",
   "@google/genai/package.json", "@mistralai/mistralai/package.json", "@aws-sdk/client-bedrock-runtime/package.json",
   "jsdom/package.json", "exceljs/package.json", "mammoth/package.json", "@node-rs/jieba/package.json",
   "node-pty/package.json", "proxy-agent/package.json", "undici/package.json",
   "@larksuiteoapi/node-sdk/package.json", "node-telegram-bot-api/package.json", "@silvia-odwyer/photon-node/package.json",
+  "@mariozechner/clipboard/package.json",
 ];
 const missing = mustExist.filter((rel) => !fs.existsSync(path.join(nm, rel)));
 console.log(missing.length ? `[verify] ❌ 缺失: ${missing.join(", ")}` : "[verify] ✅ 所有 key 包 package.json 在位");
@@ -97,7 +101,7 @@ try {
 // 7. 动态 import 关键 provider SDK + 运行时真依赖（cwd=tmpDir 确保从闭包解析）
 //    注意：jsdom 不在 server 运行路径（index.js 未引用），其传递依赖 punycode
 //    缺失属已知无害，不计入硬失败；exceljs/mammoth 是 index.js 真实引用的运行时依赖。
-const dynImports = ["openai", "@anthropic-ai/sdk", "@google/genai", "@mistralai/mistralai", "@mariozechner/pi-ai", "exceljs", "mammoth"];
+const dynImports = ["openai", "@anthropic-ai/sdk", "@google/genai", "@mistralai/mistralai", "@earendil-works/pi-ai", "@mariozechner/clipboard", "exceljs", "mammoth"];
 const failImport = [];
 for (const m of dynImports) {
   try {

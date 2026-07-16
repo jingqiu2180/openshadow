@@ -40,3 +40,7 @@ dist/
 # Build output (installer .exe, packaged app.asar, win-unpacked) — never commit.
 # Accidentally committing these bloated the repo by ~1.2 GB (see v0.3.43).
 release/
+
+# Server bundle build output (vite bundle + closure copy) — regenerated on every
+# `npm run build`. Never commit; tracking it produced huge diffs per build.
+dist-server-bundle/

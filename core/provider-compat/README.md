@@ -28,7 +28,7 @@
 
 ## 升级 SDK 时的检查清单
 
-升级 `@mariozechner/pi-coding-agent` 或 `@mariozechner/pi-ai` 后必须执行：
+升级 `@earendil-works/pi-coding-agent` 或 `@earendil-works/pi-ai` 后必须执行：
 
 1. 跑 `npm test` 全套，重点关注 `tests/provider-compat.test.js` 和 `tests/provider-compat/*.test.js`
 2. 检查每个 `provider-compat/*.js` 顶部的"删除条件"，对照 SDK 升级 changelog 看是否还需要保留

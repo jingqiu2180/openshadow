@@ -4,7 +4,7 @@
  *
  * 关键修复：不仅声明顶层 external，还把它们的【完整传递依赖闭包】一并声明为
  * server-bundle 的直接依赖。否则打包期 afterPack 的 `npm install` 在离线/缓存
- * 不完整时会漏装传递依赖（如 @mariozechner/pi-ai → partial-json），导致 server
+ * 不完整时会漏装传递依赖（如 @earendil-works/pi-ai → partial-json），导致 server
  * 启动即崩 (ERR_MODULE_NOT_FOUND)，进而首页拉不到任何 API。
  */
 const { writeFileSync, mkdirSync, existsSync, readFileSync, readdirSync } = require('fs');
@@ -26,24 +26,34 @@ const viteExternals = [
   '@silvia-odwyer/photon-node', '@larksuiteoapi/node-sdk',
   'node-telegram-bot-api', 'proxy-agent', 'undici',
   'exceljs', 'mammoth', 'jsdom', 'qrcode',
+  // ⚠️ @mariozechner/clipboard 是 @earendil-works/pi-coding-agent 0.80.3 的
+  // optionalDependencies（真实传递依赖，0.80.3 依赖树仍存在），必须随闭包复制进
+  // server-bundle，否则运行时 require('@mariozechner/clipboard') 会
+  // ERR_MODULE_NOT_FOUND（clipboard 内部再 require 平台原生包 win32-x64-msvc）。
+  '@mariozechner/clipboard', '@mariozechner/clipboard-win32-x64-msvc',
 ];
 // fsevents 仅 macOS 需要（Windows/Linux 跳过，vite 也仅在 mac 打包时 external）。
 if (process.platform === 'darwin') viteExternals.push('fsevents');
 
-// vite 把 /^@mariozechner\// 作为 RegExp external —— 展开为 node_modules 下
-// 所有 @mariozechner/* 包，确保 provider SDK 全家桶都进闭包（对齐 vite 行为）。
-function listMarioPackages() {
-  const dir = resolve(root, 'node_modules', '@mariozechner');
+// vite 把 /^@earendil-works\// 与 /^@mariozechner\// 作为 RegExp external ——
+// 展开为 node_modules 下所有对应 scope 的包，确保 Pi SDK 全家桶 + clipboard
+// 都进闭包（对齐 vite 行为）。
+function listScopePackages(scope) {
+  const dir = resolve(root, 'node_modules', scope);
   const out = [];
   try {
     for (const name of readdirSync(dir)) {
-      if (existsSync(resolve(dir, name, 'package.json'))) out.push(`@mariozechner/${name}`);
+      if (existsSync(resolve(dir, name, 'package.json'))) out.push(`${scope}/${name}`);
     }
-  } catch { /* 无 @mariozechner 作用域 */ }
+  } catch { /* 无该作用域 */ }
   return out;
 }
 
-const serverExternals = [...viteExternals, ...listMarioPackages()];
+const serverExternals = [
+  ...viteExternals,
+  ...listScopePackages('@earendil-works'),
+  ...listScopePackages('@mariozechner'),
+];
 
 const builtins = new Set(builtinModules);
 
@@ -115,7 +125,7 @@ function fallbackPhysScan(pkgName, fromDir) {
 // 执行收集：先 lock 追踪，再 phys 兜底补漏
 for (const pkg of serverExternals) {
   traceFromLock(pkg);
-  fallbackPhysScan(pkg, root); // 确保自身在位（如 @mariozechner/* 平台原生子包）
+  fallbackPhysScan(pkg, root); // 确保自身在位（如 @earendil-works/* 子包）
 }
 
 // ── 嵌套依赖兜底（lock 看不到的 nested vN 依赖 + 包自声明 deps）──

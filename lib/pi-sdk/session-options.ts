@@ -19,20 +19,20 @@ function findPiCodingAgentDir(): URL {
       typeof (globalThis as any).require === "function"
         ? (globalThis as any).require
         : (() => { const { createRequire } = require("node:module"); return createRequire(import.meta.url); })();
-    const entry = req.resolve("@mariozechner/pi-coding-agent/package.json");
+    const entry = req.resolve("@earendil-works/pi-coding-agent/package.json");
     return new URL("./", `file://${entry.replace(/\\/g, "/")}`);
   } catch {}
 
   // 退回：从 node_modules 向上找
   let dir = dirname(fileURLToPath(import.meta.url));
   while (dir !== dirname(dir)) {
-    const pkgPath = resolve(dir, "node_modules", "@mariozechner", "pi-coding-agent", "package.json");
+    const pkgPath = resolve(dir, "node_modules", "@earendil-works", "pi-coding-agent", "package.json");
     if (fs.existsSync(pkgPath)) {
       return new URL("./", `file://${pkgPath.replace(/\\/g, "/")}`);
     }
     dir = dirname(dir);
   }
-  throw new Error("Unable to locate @mariozechner/pi-coding-agent package directory");
+  throw new Error("Unable to locate @earendil-works/pi-coding-agent package directory");
 }
 
 function readPiCodingAgentVersion() {
@@ -41,13 +41,13 @@ function readPiCodingAgentVersion() {
     const pkgUrl = new URL("package.json", dir);
     if (fs.existsSync(pkgUrl)) {
       const pkg = JSON.parse(fs.readFileSync(pkgUrl, "utf8"));
-      if (pkg.name === "@mariozechner/pi-coding-agent" && typeof pkg.version === "string") {
+      if (pkg.name === "@earendil-works/pi-coding-agent" && typeof pkg.version === "string") {
         return pkg.version;
       }
     }
     dir = new URL("../", dir);
   }
-  throw new Error("Unable to resolve @mariozechner/pi-coding-agent package version");
+  throw new Error("Unable to resolve @earendil-works/pi-coding-agent package version");
 }
 
 export const PI_CODING_AGENT_VERSION = readPiCodingAgentVersion();
@@ -59,7 +59,7 @@ export function getPiCodingAgentVersion() {
 export function isPiSdkNameAllowlistVersion(version = getPiCodingAgentVersion()) {
   const [major, minor] = String(version).split(".").map(part => Number.parseInt(part, 10));
   if (!Number.isFinite(major) || !Number.isFinite(minor)) {
-    throw new Error(`Unsupported @mariozechner/pi-coding-agent version: ${version}`);
+    throw new Error(`Unsupported @earendil-works/pi-coding-agent version: ${version}`);
   }
   return major > 0 || (major === 0 && minor >= 68);
 }

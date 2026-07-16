@@ -21,6 +21,10 @@ export default defineConfig({
         // ws: CJS package, Rollup's CJS→ESM interop loses WebSocketServer
         // named export. Keep external — available as PI SDK transitive dep.
         "ws",
+        // Pi SDK 全家桶（earendil-works）与 0.80.3 仍保留的可选依赖
+        // @mariozechner/clipboard 都必须 external —— 它们运行时从
+        // node_modules 解析（见 _copy-deps.cjs 闭包复制 + fix-modules.cjs 补丁）。
+        /^@earendil-works\//,
         /^@mariozechner\//,
         "@silvia-odwyer/photon-node",
         "@larksuiteoapi/node-sdk",
