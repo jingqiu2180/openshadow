@@ -5,6 +5,13 @@
 
 ---
 
+## [0.5.5] - 2026-07-16
+
+### 改进（CI 基础设施稳定性）
+- **Smoke 冒烟测试加 3 次重试**：GitHub Actions ubuntu runner 偶发 `/tmp` 共享内存权限问题（Chromium sandbox `platform_shared_memory_region_posix` 报错），导致 smoke job 非确定性失败并阻塞 Release 发布。已在 workflow 层包裹 3 次重试（间隔 5s），大幅降低偶发阻塞概率。产品代码无变更。
+
+---
+
 ## [0.5.4] - 2026-07-16
 
 ### 修复（发版门禁 flaky）

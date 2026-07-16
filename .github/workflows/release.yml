@@ -169,8 +169,25 @@ jobs:
       - name: Install xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      - name: Launch real Electron + assert window.shadow
-        run: xvfb-run -a npm run test:smoke
+      # 冒烟测试：真实 Electron 拉起 + 断言 window.shadow。
+      # GitHub Actions ubuntu runner 偶发 /tmp 共享内存权限问题（Chromium sandbox），
+      # 导致 preload 超时。这是 runner 基础设施抖动，非代码回归。
+      # 因此包裹 3 次重试（间隔 5s），大幅降低偶发阻塞发版的概率。
+      - name: Launch real Electron + assert window.shadow (with retry)
+        run: |
+          for attempt in 1 2 3; do
+            echo "::group::Smoke attempt $attempt"
+            if xvfb-run -a npm run test:smoke; then
+              echo "::endgroup::"
+              echo "✅ Smoke passed on attempt $attempt"
+              exit 0
+            fi
+            echo "::endgroup::"
+            echo "⚠️ Smoke attempt $attempt failed, retrying in 5s..."
+            sleep 5
+          done
+          echo "❌ Smoke failed after 3 attempts"
+          exit 1
 
   # ───────────────────────── Publish GitHub Release ─────────────────────────
   # 把三个平台的产物聚合到一个 GitHub Release
