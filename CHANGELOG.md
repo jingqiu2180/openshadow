@@ -5,6 +5,15 @@
 
 ---
 
+## [0.5.6] - 2026-07-16
+
+### 改进（CI 门禁稳定性）
+- **`test:unit` 门禁加 `--retry 2`**：吸收单文件内跨用例共享状态导致的偶发 flaky（如 `MobileApp.test.tsx` 的异步集成用例在不同 run 轮流失败）。真正坏掉的用例仍会全部重试失败、门禁有意义。
+- **`MobileApp.test.tsx` 加 `beforeEach` 重置 `window.platform`**：jsdom 在单文件内不自动重置全局；`installMobilePlatform()` 有 `if (window.platform) return` 早退，前序用例遗留的 `window.platform` 会让本用例安装被跳过 → `onOpenSettingsModal` 订阅不到 → 模态框偶发不出现。
+- **Smoke 冒烟测试加固**：每次重试前把 `TMPDIR`/`XDG_RUNTIME_DIR` 指向 runner 可写的 `$RUNNER_TEMP` 子目录，让 Chromium 的 `.org.chromium.*` 共享内存文件脱离病坏的 `/tmp`；重试次数 3 → 5。
+
+---
+
 ## [0.5.5] - 2026-07-16
 
 ### 改进（CI 基础设施稳定性）

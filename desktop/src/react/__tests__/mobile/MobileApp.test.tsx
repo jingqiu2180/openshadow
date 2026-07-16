@@ -82,6 +82,11 @@ describe('MobileApp', () => {
     })));
     MockWebSocket.instances = [];
     document.documentElement.removeAttribute('data-platform');
+    // 必须重置 window.platform：jsdom 在单文件内不会自动重置全局。
+    // installMobilePlatform() 有 `if (window.platform) return` 早退，若前序用例
+    // 遗留了 window.platform，本用例的安装会被跳过 → onOpenSettingsModal 订阅不到
+    // → openSettings 派发事件无人监听 → 模态框偶发不出现（跨用例 flaky）。
+    (window as unknown as { platform?: unknown }).platform = undefined;
     resetStoreForMobileTest();
     window.t = ((key: string) => key) as typeof window.t;
     window.i18n = {

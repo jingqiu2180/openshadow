@@ -36,8 +36,11 @@ jobs:
 
       # 全量单测套件：硬门禁。--no-file-parallelism 消除并行负载下的 flaky
       #（DeskSection 等 fake-timer+async 在并行时竞争超时）；实测串行全量 1521 全绿。
+      # 全量单测套件：硬门禁。--no-file-parallelism 消除并行负载下的 flaky；
+      # --retry 2 吸收单文件内跨用例共享状态导致的偶发 flaky（如 MobileApp.test.tsx
+      # 的异步集成用例），真正坏掉的用例仍会全部失败、门禁有意义。
       - name: Run unit test suite (hard gate)
-        run: npm run test:unit -- --no-file-parallelism
+        run: npm run test:unit -- --no-file-parallelism --retry 2
 
       - name: Typecheck (non-blocking, visibility)
         run: npm run typecheck
@@ -77,8 +80,11 @@ jobs:
 
       # 全量单测套件：硬门禁。--no-file-parallelism 消除并行负载下的 flaky
       #（DeskSection 等 fake-timer+async 在并行时竞争超时）；实测串行全量 1521 全绿。
+      # 全量单测套件：硬门禁。--no-file-parallelism 消除并行负载下的 flaky；
+      # --retry 2 吸收单文件内跨用例共享状态导致的偶发 flaky（如 MobileApp.test.tsx
+      # 的异步集成用例），真正坏掉的用例仍会全部失败、门禁有意义。
       - name: Run unit test suite (hard gate)
-        run: npm run test:unit -- --no-file-parallelism
+        run: npm run test:unit -- --no-file-parallelism --retry 2
 
       - name: Typecheck (non-blocking, visibility)
         run: npm run typecheck
@@ -125,8 +131,11 @@ jobs:
 
       # 全量单测套件：硬门禁。--no-file-parallelism 消除并行负载下的 flaky
       #（DeskSection 等 fake-timer+async 在并行时竞争超时）；实测串行全量 1521 全绿。
+      # 全量单测套件：硬门禁。--no-file-parallelism 消除并行负载下的 flaky；
+      # --retry 2 吸收单文件内跨用例共享状态导致的偶发 flaky（如 MobileApp.test.tsx
+      # 的异步集成用例），真正坏掉的用例仍会全部失败、门禁有意义。
       - name: Run unit test suite (hard gate)
-        run: npm run test:unit -- --no-file-parallelism
+        run: npm run test:unit -- --no-file-parallelism --retry 2
 
       - name: Typecheck (non-blocking, visibility)
         run: npm run typecheck
@@ -170,23 +179,29 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
       # 冒烟测试：真实 Electron 拉起 + 断言 window.shadow。
-      # GitHub Actions ubuntu runner 偶发 /tmp 共享内存权限问题（Chromium sandbox），
-      # 导致 preload 超时。这是 runner 基础设施抖动，非代码回归。
-      # 因此包裹 3 次重试（间隔 5s），大幅降低偶发阻塞发版的概率。
+      # GitHub Actions ubuntu runner 的 /tmp 共享内存偶发不可用（Chromium sandbox
+      # `platform_shared_memory_region_posix` 报错），导致 preload 超时。
+      # 这是 runner 基础设施问题，非代码回归。两层加固：
+      #   1) 每次重试前把 TMPDIR/XDG_RUNTIME_DIR 指向 runner 自己可写的 $RUNNER_TEMP
+      #      子目录，让 Chromium 的 .org.chromium.* 共享内存文件脱离病坏的 /tmp；
+      #   2) 包裹 5 次重试（间隔 5s），进一步吸收偶发抖动。
       - name: Launch real Electron + assert window.shadow (with retry)
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             echo "::group::Smoke attempt $attempt"
+            export TMPDIR="$RUNNER_TEMP/electron-smoke-$attempt"
+            export XDG_RUNTIME_DIR="$TMPDIR"
+            mkdir -p "$TMPDIR"
             if xvfb-run -a npm run test:smoke; then
               echo "::endgroup::"
               echo "✅ Smoke passed on attempt $attempt"
               exit 0
             fi
             echo "::endgroup::"
-            echo "⚠️ Smoke attempt $attempt failed, retrying in 5s..."
+            echo "⚠️ Smoke attempt $attempt failed, retrying..."
             sleep 5
           done
-          echo "❌ Smoke failed after 3 attempts"
+          echo "❌ Smoke failed after 5 attempts"
           exit 1
 
   # ───────────────────────── Publish GitHub Release ─────────────────────────
