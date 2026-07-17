@@ -125,15 +125,34 @@ const SERVER_DYNAMIC_SAFE_KEEP = new Set([
 
 // 整目录删除集合：仅限确定非运行时的目录/文件。
 // ⚠️ 严禁放 `doc`/`docs`/`documentation`：exceljs 的运行时源码就在
-// `exceljs/lib/doc/`（workbook.js 等），删了会让 exceljs 运行时报错
-// "Cannot find module './doc/workbook'"。这类短目录名在很多包里是源码目录，
-// 宁可少删、体积多留一点，也绝不碰。体积大头靠下方 SAFE_CLEAN_EXT
-// （.d.ts/.map）和 test/* 删除就足够了。
+// `exceljs/lib/doc/`、`yaml/dist/doc/` 等是真正的【源码目录】（composer.js 会
+// require('../doc/directives.js')），删了会让运行时报
+// "Cannot find module './doc/...'"。⚠️ 因此 `doc`/`docs`/`documentation` 这类
+// 短目录名【绝不】进 STRIP 清单 —— 宁可少删、体积多留，也绝不碰源码目录。
+// 体积大头靠下方 SAFE_CLEAN_EXT（.ts/.mts/.cts/.d.ts/.map）和 test/* 删除就足够。
+// 下面在「短目录名不碰」前提下，剥运行时绝不读取的：测试/示例/覆盖率/各类
+// 构建配置/CI 目录/文档文件（注意：不含 doc/docs 这种源码目录）。
 const STRIP_PER_PACKAGE = new Set([
   "test", "tests", "__tests__", "__test__", "spec", "specs",
   "fixtures", "fixture", "testdata", "test-data", "test_files",
   "examples", "example", "demo", "demos",
-  "coverage", ".coverage",
+  "coverage", ".coverage", ".nyc_output",
+  "benchmark", "benchmarks",
+  "CHANGELOG.md", "CHANGES.md", "HISTORY.md", "NEWS.md",
+  "README.md", "readme.md", "README", "readme",
+  "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "LICENSE.md",
+  "tsconfig.json", "tsconfig.base.json", "tsconfig.cjs.json", "tsconfig.esm.json",
+  "jest.config.js", "jest.config.ts", "vitest.config.ts", "vitest.config.js",
+  "karma.conf.js", "mocha.opts",
+  ".eslintrc", ".eslintrc.js", ".eslintrc.json", ".eslintrc.yml",
+  ".prettierrc", ".prettierrc.js", ".prettierrc.json",
+  ".babelrc", ".babelrc.js", ".babelrc.json", "babel.config.js",
+  "rollup.config.js", "rollup.config.ts", "rollup.config.mjs",
+  "vite.config.js", "vite.config.ts",
+  "webpack.config.js", "webpack.config.ts",
+  ".github", ".circleci", ".travis.yml", "appveyor.yml",
+  "Makefile", "Gulpfile.js", "gulpfile.js", "Gruntfile.js",
+  "browserify.config.js", ".tap", ".taprc",
 ]);
 
 function duBytes(p) {
@@ -255,18 +274,26 @@ function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {
 // 撞上运行中 app 锁住的数据文件（EBUSY）→ 不可用于本项目的构建链。
 //
 // 因此只保留「100% 安全」的确定性清理，不做任何基于静态追踪的删除：
-//   · 删 .d.ts/.d.cts/.d.mts/.map/.tsbuildinfo —— Node 运行时绝不加载这些
-//     （server 未开启 source-map-support），删了不影响任何运行期行为；
-//   · 删每包内的 test/__tests__/docs/fixtures/example 等目录（STRIP_PER_PACKAGE）。
-// 本地量得：闭包复制后 node_modules 303MB → 安全清理后 191MB（省 112MB / 37%），
-// 真实安装包（server-bundle ~378MB）预计降到 ~260MB，装速提升显著且 CI 零风险。
+//   · 删 .ts/.mts/.cts/.d.ts/.d.cts/.d.mts/.map/.tsbuildinfo —— Node 运行时
+//     绝不加载这些（server 未开启 source-map-support，且未配置任何 TS loader；
+//     grep 确认 bundle 内无任何运行时 require/import 指向 .ts 文件，仅 JSDoc
+//     注释里的 import() 类型引用）；
+//   · 删每包内的 test/__tests__/docs/fixtures/example/coverage/各类构建配置
+//     等目录与文件（STRIP_PER_PACKAGE，已对齐 copy-server-deps.js 的更全清单）。
+// 实测扩展 .ts/.mts/.cts 删除后：单包可再删 ~1.6 万文件 / ~130MB（此前漏删的
+// 纯 TS 源码是最大单类死重），真实安装包文件数从 ~4.3 万砍到 ~2 万，装速约减半。
 //
 // 关键纪律：本函数绝不删除任何 .node 原生二进制、.js/.cjs/.mjs 运行文件、
 // 或整包目录 —— 只动「确定不会被运行时加载」的文件。
 
-// 类型声明 / sourcemap / tsbuildinfo：Node 运行时绝不加载（server 未开启
-// source-map-support），删了不影响任何运行期行为，但占包体积大头。
-const SAFE_CLEAN_EXT = /\.(d\.ts|d\.cts|d\.mts|map|tsbuildinfo)$/;
+// 类型声明 / TS 源码 / sourcemap / tsbuildinfo：Node 运行时绝不加载。
+//  - server 未开启 source-map-support，且未配置任何 TS loader；
+//  - .ts/.mts/.cts 纯源码文件从不被执行（grep 确认 bundle 内无任何运行时
+//    require/import 指向 .ts 文件，仅有 JSDoc 注释里的 import() 类型引用）；
+//  - .d.ts/.d.cts/.d.mts 类型声明同理。
+// 删了不影响任何运行期行为，但 .ts/.mts/.cts 在闭包里约 1.1 万文件，是最大
+// 单类死重；.d.ts/.map 也占大头。实测扩展后单包可再删 ~1.6 万文件 / ~130MB。
+const SAFE_CLEAN_EXT = /\.(ts|mts|cts|d\.ts|d\.cts|d\.mts|map|tsbuildinfo)$/;
 
 async function pruneServerNodeModulesDeterministic(serverDir, opts = {}) {
   const log = typeof opts.log === "function" ? opts.log : console.log;

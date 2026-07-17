@@ -49,10 +49,21 @@ function listScopePackages(scope) {
   return out;
 }
 
+// @mariozechner 作用域里，运行时真正需要的只有 clipboard（pi-coding-agent 0.80.3
+// 的真实 optionalDependencies，vendor 死代码会 require 它）。其余 @mariozechner/pi-*
+// （pi-ai / pi-coding-agent / pi-agent-core / pi-tui）是 0.80.3 的**冗余 shim 包**——
+// @earendil-works/pi-coding-agent 内部用 loader 把旧 specifier 别名指向自带实现，
+// 运行时绝不读磁盘上的 @mariozechner/pi-* 文件夹。且 CI 的 node_modules 缓存可能
+// 残留旧版 @mariozechner/pi-*，若整 scope 收进闭包会把 ~5.7k 死重文件塞进安装包。
+// 因此显式只收 clipboard*，剔除 pi-*（即便本地/CI 存在也不进包）。
+const marioScopePackages = listScopePackages('@mariozechner').filter((p) =>
+  p === '@mariozechner/clipboard' || p === '@mariozechner/clipboard-win32-x64-msvc',
+);
+
 const serverExternals = [
   ...viteExternals,
   ...listScopePackages('@earendil-works'),
-  ...listScopePackages('@mariozechner'),
+  ...marioScopePackages,
 ];
 
 const builtins = new Set(builtinModules);
