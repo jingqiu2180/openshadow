@@ -20,6 +20,7 @@ import { fileURLToPath } from 'url'
 
 import { HanaEngine } from '../core/engine.js'
 import { ensureFirstRun } from '../core/first-run.js'
+import { resolveServerListenOptions } from '../core/server-network-config.js'
 import {
   ensureHanaPiSdkDirs,
   configureProcessPiSdkEnv,
@@ -255,23 +256,71 @@ async function start() {
   })
 
   // ═══ 启动 HTTP 服务 ═══
-  // 端口优先级：SHADOW_PORT (dev-web) > PORT > 3000
-  const port = Number(process.env.SHADOW_PORT ?? process.env.PORT ?? 3000)
+  // 端口解析优先级：SHADOW_PORT (dev-web) > PORT > server-network.json 配置（默认 14500）
+  const envPort = process.env.SHADOW_PORT ?? process.env.PORT
+  let listenHost = '127.0.0.1'
+  let basePort = 3000
+  let networkMode = 'loopback'
+  try {
+    const opts = resolveServerListenOptions(shadowHome)
+    listenHost = opts.host || '127.0.0.1'
+    basePort = opts.port
+    networkMode = opts.mode
+  } catch (e) {
+    console.warn('[shadow] failed to load server-network config, falling back to defaults:', (e as any)?.message || e)
+  }
+  const startPort = envPort ? Number(envPort) : basePort
 
-  const server = serve({
-    fetch: app.fetch,
-    port,
-  })
+  // 监听：遇到 EADDRINUSE / EACCES 自动顺延端口重试（最多 20 次），避免与其它工程（如占用 3000 的 webpack/vite）冲突直接崩溃
+  const MAX_PORT_TRIES = 20
+  let nodeServer: any = null
+  let actualPort = startPort
+  for (let attempt = 0; attempt < MAX_PORT_TRIES; attempt++) {
+    const tryPort = startPort + attempt
+    try {
+      nodeServer = await new Promise<any>((resolve, reject) => {
+        const s = serve({ fetch: app.fetch, port: tryPort, hostname: listenHost })
+        s.once('error', reject)
+        s.once('listening', () => {
+          s.removeListener('error', reject)
+          resolve(s)
+        })
+      })
+      actualPort = tryPort
+      if (tryPort !== startPort) {
+        console.log(`[shadow] port ${startPort} unavailable, listening on ${tryPort}`)
+      }
+      break
+    } catch (err: any) {
+      const code = err?.code
+      if (code === 'EADDRINUSE' || code === 'EACCES') {
+        try { (nodeServer as any)?.close?.() } catch {}
+        nodeServer = null
+        console.warn(`[shadow] port ${tryPort} unavailable (${code}), trying ${tryPort + 1}...`)
+        continue
+      }
+      failStartup(
+        code === 'EACCES' ? 'LISTEN_PERMISSION_DENIED' : 'UNKNOWN',
+        listenHost, tryPort, networkMode, String(err?.message || err),
+      )
+    }
+  }
+  if (!nodeServer) {
+    failStartup(
+      'PORT_IN_USE', listenHost, startPort, networkMode,
+      `端口 ${startPort}–${startPort + MAX_PORT_TRIES - 1} 均被占用，无法启动服务`,
+    )
+  }
 
   // 注入 WebSocket 升级处理
   try {
-    injectWebSocket(server)
+    injectWebSocket(nodeServer)
     console.log('🔌 WebSocket support enabled')
   } catch {
     console.warn('[shadow] WebSocket support not available')
   }
 
-  console.log(`🚀 Server running on http://localhost:${port}`)
+  console.log(`🚀 Server running on http://${listenHost}:${actualPort}`)
   console.log(`📡 37 business routes mounted`)
 
   // ═══ 写 server-info.json（供 Electron / dev-web 发现 server）═══
@@ -281,8 +330,7 @@ async function start() {
   // shadowHome 已在模块顶部解析并写入 process.env.SHADOW_HOME
   try { fsSync.mkdirSync(shadowHome, { recursive: true }) } catch {}
   const serverInfoPath = path.join(shadowHome, 'server-info.json')
-  let actualPort = port
-  const nodeServer = (server as any)?.server ?? server
+  // actualPort / nodeServer 已在上面的启动逻辑中解析
   try {
     const addr = nodeServer?.address?.()
     if (addr && typeof addr === 'object' && addr.port) {
@@ -317,6 +365,17 @@ async function start() {
   }
   process.on('SIGINT', () => { cleanup(); process.exit(0) })
   process.on('SIGTERM', () => { cleanup(); process.exit(0) })
+}
+
+/**
+ * 启动失败统一出口：打印结构化 marker `[server] startup-error <json>`，
+ * 供 desktop/src/shared/server-readiness.cjs 解析并透出友好中文提示，而非笼统的"Server 未就绪"。
+ */
+function failStartup(code: string, host: string, port: number, networkMode: string, detail: string) {
+  const payload = JSON.stringify({ code, host, port, networkMode, detail })
+  console.error(`[server] startup-error ${payload}`)
+  console.error(`[shadow] 服务启动失败（${code}）：${detail}`)
+  process.exit(1)
 }
 
 start().catch((err: any) => {

@@ -293,16 +293,37 @@ function rebuildServerNodeModulesFromProject(serverDir, projectModules, opts = {
 //  - .d.ts/.d.cts/.d.mts 类型声明同理。
 // 删了不影响任何运行期行为，但 .ts/.mts/.cts 在闭包里约 1.1 万文件，是最大
 // 单类死重；.d.ts/.map 也占大头。实测扩展后单包可再删 ~1.6 万文件 / ~130MB。
-const SAFE_CLEAN_EXT = /\.(ts|mts|cts|d\.ts|d\.cts|d\.mts|map|tsbuildinfo)$/;
+// 追加 .pdb：Windows 原生模块的调试符号（Program Database）。运行时绝不加载
+// （仅调试器 attach 时用），但 node-pty 等把每平台的 conpty/pty/winpty 全套 .pdb
+// 一并发布，单包就有 ~52MB 纯 .pdb 死重。删除 100% 安全，是最大单类原生死重。
+const SAFE_CLEAN_EXT = /\.(ts|mts|cts|d\.ts|d\.cts|d\.mts|map|tsbuildinfo|pdb)$/;
+
+// 跨平台预编译目录识别：形如 <platform>-<arch>[-<libc/abi>]（darwin-arm64 /
+// linux-x64-musl / win32-arm64 …）。仅当其父目录名为 prebuilds/prebuild 时才判定，
+// 避免误伤恰好同名的普通目录。构建目标平台之外的预编译二进制在安装包里是纯死重
+// （如 win32-x64 安装包里的 win32-arm64 / darwin-* / linux-* 全套 .node/.exe/.dll）。
+const PLATFORM_ARCH_DIR_RE =
+  /^(darwin|linux|win32|android|freebsd|sunos|aix)-(x64|arm64|arm|ia32|ppc64|ppc64le|s390x|riscv64|loong64)(-.*)?$/;
+const PREBUILD_PARENT_NAMES = new Set(["prebuilds", "prebuild"]);
 
 async function pruneServerNodeModulesDeterministic(serverDir, opts = {}) {
   const log = typeof opts.log === "function" ? opts.log : console.log;
   const nmDir = path.join(serverDir, "node_modules");
   if (!fs.existsSync(nmDir)) return;
 
+  // 目标平台/架构（用于跨平台 prebuild 裁剪）。afterPack 传入；未传时不做平台裁剪。
+  // electron-builder 的 platform.name：windows/mac/linux → prebuild 命名用 win32/darwin/linux。
+  const platMap = { windows: "win32", mac: "darwin", linux: "linux" };
+  const targetPlatform = opts.platform ? (platMap[opts.platform] || opts.platform) : null;
+  const targetArch = opts.arch || null;
+  const targetPrefix = targetPlatform && targetArch ? `${targetPlatform}-${targetArch}` : null;
+
   let safeRemoved = 0;
   let safeRemovedSize = 0;
-  function safeCleanDir(dir) {
+  let prebuildDirsRemoved = 0;
+  let prebuildBytes = 0;
+
+  function safeCleanDir(dir, parentName) {
     let entries;
     try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
     for (const item of entries) {
@@ -314,7 +335,20 @@ async function pruneServerNodeModulesDeterministic(serverDir, opts = {}) {
           safeRemoved++; safeRemovedSize += sz;
           continue;
         }
-        safeCleanDir(full);
+        // 跨平台 prebuild 裁剪：父目录是 prebuilds/prebuild、当前目录名是
+        // <platform>-<arch> 且不属于目标平台 → 整目录删（非目标平台的 .node/.exe/.dll）。
+        if (
+          targetPrefix &&
+          PREBUILD_PARENT_NAMES.has(parentName) &&
+          PLATFORM_ARCH_DIR_RE.test(item.name) &&
+          !item.name.startsWith(targetPrefix)
+        ) {
+          let sz = 0;
+          try { sz = duBytes(full); fs.rmSync(full, { recursive: true, force: true }); } catch { /* ignore */ }
+          prebuildDirsRemoved++; prebuildBytes += sz;
+          continue;
+        }
+        safeCleanDir(full, item.name);
       } else if (item.isFile()) {
         if (SAFE_CLEAN_EXT.test(item.name)) {
           const sz = fs.statSync(full).size || 0;
@@ -323,11 +357,22 @@ async function pruneServerNodeModulesDeterministic(serverDir, opts = {}) {
       }
     }
   }
-  safeCleanDir(nmDir);
+  safeCleanDir(nmDir, null);
   if (safeRemoved > 0) {
-    log(`[fix-modules] deterministic-clean: removed ${safeRemoved} .d.ts/.map/test files (${(safeRemovedSize / 1024 / 1024).toFixed(0)}MB)`);
+    log(`[fix-modules] deterministic-clean: removed ${safeRemoved} .d.ts/.map/.pdb/test files (${(safeRemovedSize / 1024 / 1024).toFixed(0)}MB)`);
+  }
+  if (prebuildDirsRemoved > 0) {
+    log(`[fix-modules] cross-platform prune: removed ${prebuildDirsRemoved} non-${targetPrefix} prebuild dirs (${(prebuildBytes / 1024 / 1024).toFixed(0)}MB)`);
   }
 }
+
+// 注：曾尝试用 @vercel/nft 做文件级精准裁剪（P0-2 初版），但实测 nodeFileTrace 在
+// 本项目的重型依赖图（jsdom / mermaid / pdfjs-dist / playwright-core / node-pty …）上
+// 即便跳过 provider 包仍会卡死 —— 单次 trace 跑满 29 分钟未完成、连 SAFE_KEEP 也救不了。
+// 该路径已确定性判死并移除。取而代之的是上面 pruneServerNodeModulesDeterministic 里的
+// 「确定性原生瘦身」：删 .pdb 调试符号（单类最大死重 ~66MB）+ 删非目标平台的
+// prebuild 目录（win32-x64 安装包里的 win32-arm64/darwin-*/linux-* 全套二进制）。
+// 既零风险（只删运行时绝不加载的文件/非目标平台二进制），又不依赖任何静态图分析。
 
 exports.default = async function (context) {
   const platformName = context.packager.platform.name;
@@ -400,9 +445,12 @@ exports.default = async function (context) {
     }
   }
 
-  // 装后确定性安全裁剪（删 .d.ts/.map/test 等运行时绝不加载的文件）→ 缩小安装包体积
-  // 必须在 @earendil-works exports 修补之后执行；函数只删确定安全的文件，失败不阻断打包。
-  await pruneServerNodeModulesDeterministic(serverDir, console.log);
+  // 装后确定性安全裁剪 → 缩小安装包体积。必须在 @earendil-works exports 修补之后执行；
+  // 只删确定安全的文件/目录，失败不阻断打包。含三类：
+  //  · SAFE_CLEAN_EXT：.ts/.d.ts/.map/.tsbuildinfo/.pdb（运行时绝不加载；.pdb 是最大单类）
+  //  · STRIP_PER_PACKAGE：test/docs/example/各类构建配置目录
+  //  · 跨平台 prebuild：非目标平台(${platformName}-${arch})的预编译二进制目录
+  await pruneServerNodeModulesDeterministic(serverDir, { log: console.log, platform: platformName, arch });
 
   if (!fs.existsSync(distModules)) return;
 

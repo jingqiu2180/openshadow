@@ -483,13 +483,17 @@ console.log("[build-server] running nft trace...");
 const { nodeFileTrace } = await import("@vercel/nft");
 let fileList;
 try {
-  ({ fileList } = await nodeFileTrace(
+  // nft 在 jsdom / aws-sdk 等重型依赖图上会病态慢（实测 >29min 未完成，与
+  // 历史 OOM 记录吻合），加硬超时护栏：超时即跳过裁剪，绝不阻塞构建。
+  const trace = nodeFileTrace(
     [path.join(outDir, "bundle", "index.js")],
     { base: outDir, conditions: ["node", "import"] },
-  ));
+  );
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error("nft trace timed out after 120s")), 120000));
+  ({ fileList } = await Promise.race([trace, timeout]));
 } catch (e) {
-  // Windows CI 上 nft 可能因用户目录不存在而报错，跳过裁剪
-  console.warn(`[build-server] nft trace failed (${e.message}), skipping prune`);
+  // Windows CI 上 nft 可能因用户目录不存在而报错，或分析超时 → 跳过裁剪
+  console.warn(`[build-server] nft trace failed/skipped (${e.message}), skipping prune`);
   fileList = null;
 }
 
