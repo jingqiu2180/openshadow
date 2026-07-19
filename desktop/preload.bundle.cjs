@@ -109,7 +109,9 @@ function requirePreload() {
       return () => {
         ipcRenderer.removeListener("auto-update-state", handler);
       };
-    }
+    },
+    // ─── 一键反馈/报错导出（diagnostics-export.cjs）─────────
+    exportDiagnostics: () => ipcRenderer.invoke("diagnostics:export")
   };
   contextBridge.exposeInMainWorld("shadow", platformApi);
   contextBridge.exposeInMainWorld("platform", platformApi);

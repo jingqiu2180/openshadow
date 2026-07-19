@@ -309,7 +309,7 @@
     "connecting": "Connecting...",
     "connected": "Connected",
     "disconnected": "Disconnected",
-    "serverNotReady": "Server not ready",
+    "serverNotReady": "Service not ready, please restart the app",
     "loading": "Loading...",
     "reconnecting": "Reconnecting",
     "reconnect": "Reconnect"
@@ -1225,7 +1225,12 @@
       "launchAtLogin": "Launch at login",
       "keepAwake": "Keep running while locked",
       "betaUpdates": "Receive beta updates",
-      "autoCheckUpdates": "Check for updates automatically"
+      "autoCheckUpdates": "Check for updates automatically",
+      "exportDiagnostics": "Export diagnostics",
+      "exportDiagnosticsBtn": "Export",
+      "exportSuccess": "Exported to: {path}",
+      "exportCanceled": "Canceled",
+      "exportError": "Export failed: {error}"
     },
     "access": {
       "networkAccess": "LAN Access",
@@ -1281,7 +1286,7 @@
       "remoteLocalOnlyNote": "Switch back to local Shadow before managing this computer's LAN access, device keys, or local account.",
       "returnToLocal": "Return to Local Shadow",
       "returnedToLocal": "Returned to local Shadow",
-      "localConnectionUnavailable": "Local Shadow connection is not ready",
+      "localConnectionUnavailable": "Local service is not ready, please wait or restart the app",
       "pairedDevices": "Paired Devices",
       "noDevices": "No paired devices",
       "revoke": "Revoke",
@@ -2711,7 +2716,7 @@
       "serverMultipleCrash": "ShadowAgent v{version}\n\nServer crashed multiple times ({reason}).\n\nPlease restart the application.",
       "serverStartTimeout": "Server start timed out",
       "serverKilledBySignal": "Server killed by signal ({signal})",
-      "serverExitedWithCode": "Server exited with code {code}",
+      "serverExitedWithCode": "Server exited (code: {code}), please restart the app",
       "serverFilesNotReady": "Auto-update just completed; new version files still landing on disk (missing {missing}). Waited {waited}s without success. Please restart ShadowAgent shortly.",
       "serverModuleMissing": "Server startup failed: cannot find module {module}.\nThis typically happens right after an auto-update, while new files are still being written to disk.\nRecommendation: wait 1-2 minutes and restart ShadowAgent. Report on GitHub if it persists.",
       "installFailedTitle": "ShadowAgent Update",

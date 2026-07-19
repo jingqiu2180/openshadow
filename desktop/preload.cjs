@@ -103,6 +103,9 @@ const platformApi = {
     ipcRenderer.on('auto-update-state', handler)
     return () => { ipcRenderer.removeListener('auto-update-state', handler) }
   },
+
+  // ─── 一键反馈/报错导出（diagnostics-export.cjs）─────────
+  exportDiagnostics: () => ipcRenderer.invoke('diagnostics:export'),
 }
 
 // 注入 window.shadow（兼容 platform.js）

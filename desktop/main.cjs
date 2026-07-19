@@ -28,6 +28,8 @@ const { setIpcSenderValidator, wrapIpcHandler, wrapIpcOn } = require('./ipc-wrap
 const { createServerManager } = require('./server-manager.cjs')
 const { createSettingsWindow, getSettingsWindow } = require('./settings-window-controller.cjs')
 const { initAutoUpdater, checkForUpdatesAuto } = require('./auto-updater.cjs')
+// 一键反馈/报错导出（收集 ~/.openshadow 日志打包成可发送文件）
+const { exportDiagnostics } = require('./diagnostics-export.cjs')
 const { createFileWatchRegistry } = require('./file-watch-registry.cjs')
 const { createWorkspaceWatchRegistry } = require('./workspace-watch-registry.cjs')
 const { resolveGpuStartupPolicy, applyGpuStartupPolicy, markGpuStartupPending, markGpuStartupPhase, markGpuStartupReady } = require('./src/shared/gpu-startup-policy.cjs')
@@ -362,6 +364,16 @@ function registerIpcHandlers() {
   // 应用版本号（AboutTab.tsx 通过 window.shadow.getAppVersion() 调用）
   wrapIpcHandler('app:get-version', () => {
     return app.getVersion()
+  })
+
+  // 一键反馈/报错导出：收集 ~/.openshadow 日志打包成可发送文件
+  // AboutTab.tsx 通过 window.shadow.exportDiagnostics() 调用
+  wrapIpcHandler('diagnostics:export', async () => {
+    try {
+      return await exportDiagnostics({ openShadowHome: _openShadowHome })
+    } catch (err) {
+      return { ok: false, error: err?.message || String(err) }
+    }
   })
 
   // 热重启 server（渲染进程触发）

@@ -46,6 +46,29 @@ export function AboutTab() {
     await loadSettingsConfig();
   }, []);
 
+  const [exportMsg, setExportMsg] = useState('');
+  const handleExport = useCallback(async () => {
+    setExportMsg('');
+    try {
+      const res = await openshadow?.exportDiagnostics?.();
+      if (!res) {
+        setExportMsg(t('settings.about.exportError', { error: 'no response' }));
+        return;
+      }
+      if (res.canceled) {
+        setExportMsg(t('settings.about.exportCanceled'));
+        return;
+      }
+      if (res.ok) {
+        setExportMsg(t('settings.about.exportSuccess', { path: res.path || '' }));
+      } else {
+        setExportMsg(t('settings.about.exportError', { error: res.error || 'unknown' }));
+      }
+    } catch (err) {
+      setExportMsg(t('settings.about.exportError', { error: (err as Error)?.message || String(err) }));
+    }
+  }, [openshadow]);
+
   return (
     <div className={`${styles['settings-tab-content']} ${styles['active']}`} data-tab="about">
       {/* Hero：保留原 about-hero 独立视觉组件（icon + name + tagline + version + update + check 按钮） */}
@@ -104,6 +127,19 @@ export function AboutTab() {
           label={t('settings.about.betaUpdates')}
           control={<Toggle on={isBeta} onChange={handleBetaToggle} />}
         />
+        <SettingsRow
+          label={t('settings.about.exportDiagnostics')}
+          control={
+            <button className={styles['about-check-update-btn']} onClick={handleExport}>
+              {t('settings.about.exportDiagnosticsBtn')}
+            </button>
+          }
+        />
+        {exportMsg && (
+          <div className={styles['about-version']} style={{ marginTop: 8, fontWeight: 400 }}>
+            {exportMsg}
+          </div>
+        )}
       </SettingsSection>
 
       {/* License 全文：ExpandableRow 直接作为 tab 末尾元素 */}

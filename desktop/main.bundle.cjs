@@ -1,17 +1,17 @@
 "use strict";
 const require$$1 = require("electron");
 const require$$1$2 = require("path");
-const require$$2 = require("fs");
+const require$$0 = require("fs");
 const require$$3 = require("os");
 const require$$1$1 = require("child_process");
-const require$$0 = require("constants");
-const require$$0$1 = require("stream");
+const require$$0$1 = require("constants");
+const require$$0$2 = require("stream");
 const require$$4 = require("util");
 const require$$5$1 = require("assert");
-const require$$0$2 = require("events");
-const require$$0$3 = require("crypto");
+const require$$0$3 = require("events");
+const require$$0$4 = require("crypto");
 const require$$1$3 = require("tty");
-const require$$2$1 = require("url");
+const require$$2 = require("url");
 const require$$14 = require("zlib");
 const require$$4$1 = require("http");
 const node_events = require("node:events");
@@ -188,7 +188,7 @@ var hasRequiredServerManager;
 function requireServerManager() {
   if (hasRequiredServerManager) return serverManager;
   hasRequiredServerManager = 1;
-  const fs2 = require$$2;
+  const fs2 = require$$0;
   const path = require$$1$2;
   const { spawn } = require$$1$1;
   const SERVER_HEARTBEAT_INTERVAL_MS = 1e4;
@@ -627,7 +627,7 @@ function requireSettingsWindowController() {
   hasRequiredSettingsWindowController = 1;
   const { BrowserWindow, app } = require$$1;
   const { join } = require$$1$2;
-  const { existsSync } = require$$2;
+  const { existsSync } = require$$0;
   let settingsWindow = null;
   function createSettingsWindow({ mainWindow, preloadPath, iconPath, isDev, viteDevUrl }) {
     if (settingsWindow && !settingsWindow.isDestroyed()) {
@@ -721,7 +721,7 @@ var hasRequiredPolyfills;
 function requirePolyfills() {
   if (hasRequiredPolyfills) return polyfills;
   hasRequiredPolyfills = 1;
-  var constants2 = require$$0;
+  var constants2 = require$$0$1;
   var origCwd = process.cwd;
   var cwd = null;
   var platform = process.env.GRACEFUL_FS_PLATFORM || process.platform;
@@ -1009,7 +1009,7 @@ var hasRequiredLegacyStreams;
 function requireLegacyStreams() {
   if (hasRequiredLegacyStreams) return legacyStreams;
   hasRequiredLegacyStreams = 1;
-  var Stream = require$$0$1.Stream;
+  var Stream = require$$0$2.Stream;
   legacyStreams = legacy;
   function legacy(fs2) {
     return {
@@ -1129,7 +1129,7 @@ var hasRequiredGracefulFs;
 function requireGracefulFs() {
   if (hasRequiredGracefulFs) return gracefulFs;
   hasRequiredGracefulFs = 1;
-  var fs2 = require$$2;
+  var fs2 = require$$0;
   var polyfills2 = requirePolyfills();
   var legacy = requireLegacyStreams();
   var clone = requireClone();
@@ -2845,7 +2845,7 @@ function requireJsonfile$1() {
   try {
     _fs = requireGracefulFs();
   } catch (_) {
-    _fs = require$$2;
+    _fs = require$$0;
   }
   const universalify2 = requireUniversalify();
   const { stringify, stripBom } = requireUtils();
@@ -3175,7 +3175,7 @@ function requireCancellationToken() {
   hasRequiredCancellationToken = 1;
   Object.defineProperty(CancellationToken, "__esModule", { value: true });
   CancellationToken.CancellationError = CancellationToken.CancellationToken = void 0;
-  const events_1 = require$$0$2;
+  const events_1 = require$$0$3;
   let CancellationToken$1 = class CancellationToken extends events_1.EventEmitter {
     get cancelled() {
       return this._cancelled || this._parent != null && this._parent.cancelled;
@@ -4068,7 +4068,7 @@ function requireProgressCallbackTransform() {
   hasRequiredProgressCallbackTransform = 1;
   Object.defineProperty(ProgressCallbackTransform, "__esModule", { value: true });
   ProgressCallbackTransform.ProgressCallbackTransform = void 0;
-  const stream_1 = require$$0$1;
+  const stream_1 = require$$0$2;
   let ProgressCallbackTransform$1 = class ProgressCallbackTransform extends stream_1.Transform {
     constructor(total, cancellationToken, onProgress) {
       super();
@@ -4137,11 +4137,11 @@ function requireHttpExecutor() {
   httpExecutor.isSensitiveFieldName = isSensitiveFieldName;
   httpExecutor.hashSensitiveValue = hashSensitiveValue;
   httpExecutor.safeStringifyJson = safeStringifyJson;
-  const crypto_1 = require$$0$3;
+  const crypto_1 = require$$0$4;
   const debug_12 = requireSrc();
-  const fs_1 = require$$2;
-  const stream_1 = require$$0$1;
-  const url_1 = require$$2$1;
+  const fs_1 = require$$0;
+  const stream_1 = require$$0$2;
+  const url_1 = require$$2;
   const CancellationToken_1 = requireCancellationToken();
   const error_1 = requireError();
   const ProgressCallbackTransform_1 = requireProgressCallbackTransform();
@@ -4819,7 +4819,7 @@ function requireUuid() {
   hasRequiredUuid = 1;
   Object.defineProperty(uuid, "__esModule", { value: true });
   uuid.nil = uuid.UUID = void 0;
-  const crypto_1 = require$$0$3;
+  const crypto_1 = require$$0$4;
   const error_1 = requireError();
   const invalidName = "options.name must be either a string or a Buffer";
   const randomHost = (0, crypto_1.randomBytes)(16);
@@ -11889,8 +11889,8 @@ function requireDownloadedUpdateHelper() {
   Object.defineProperty(DownloadedUpdateHelper, "__esModule", { value: true });
   DownloadedUpdateHelper.DownloadedUpdateHelper = void 0;
   DownloadedUpdateHelper.createTempUpdateFile = createTempUpdateFile;
-  const crypto_1 = require$$0$3;
-  const fs_1 = require$$2;
+  const crypto_1 = require$$0$4;
+  const fs_1 = require$$0;
   const isEqual = requireLodash_isequal();
   const fs_extra_1 = /* @__PURE__ */ requireLib();
   const path = require$$1$2;
@@ -12202,7 +12202,7 @@ function requireUtil() {
   util.newBaseUrl = newBaseUrl;
   util.newUrlFromBase = newUrlFromBase;
   util.getChannelFilename = getChannelFilename;
-  const url_1 = require$$2$1;
+  const url_1 = require$$2;
   function newBaseUrl(url) {
     const result = new url_1.URL(url);
     if (!result.pathname.endsWith("/")) {
@@ -12278,7 +12278,7 @@ function requireProvider() {
   Provider.resolveFiles = resolveFiles;
   const builder_util_runtime_1 = requireOut();
   const js_yaml_1 = require$$5;
-  const url_1 = require$$2$1;
+  const url_1 = require$$2;
   const util_1 = requireUtil();
   const escapeRegExp = requireLodash_escaperegexp();
   let Provider$1 = class Provider {
@@ -12515,7 +12515,7 @@ function requireGitHubProvider() {
   GitHubProvider.computeReleaseNotes = computeReleaseNotes;
   const builder_util_runtime_1 = requireOut();
   const semver2 = requireSemver();
-  const url_1 = require$$2$1;
+  const url_1 = require$$2;
   const util_1 = requireUtil();
   const Provider_1 = requireProvider();
   const hrefRegExp = /\/tag\/(v?[^/]+)$/;
@@ -12729,7 +12729,7 @@ function requireGitLabProvider() {
   Object.defineProperty(GitLabProvider, "__esModule", { value: true });
   GitLabProvider.GitLabProvider = void 0;
   const builder_util_runtime_1 = requireOut();
-  const url_1 = require$$2$1;
+  const url_1 = require$$2;
   const escapeRegExp = requireLodash_escaperegexp();
   const util_1 = requireUtil();
   const Provider_1 = requireProvider();
@@ -13035,7 +13035,7 @@ function requirePrivateGitHubProvider() {
   const builder_util_runtime_1 = requireOut();
   const js_yaml_1 = require$$5;
   const path = require$$1$2;
-  const url_1 = require$$2$1;
+  const url_1 = require$$2;
   const util_1 = requireUtil();
   const GitHubProvider_1 = requireGitHubProvider();
   const Provider_1 = requireProvider();
@@ -13309,8 +13309,8 @@ function requireDataSplitter() {
   DataSplitter.DataSplitter = void 0;
   DataSplitter.copyData = copyData;
   const builder_util_runtime_1 = requireOut();
-  const fs_1 = require$$2;
-  const stream_1 = require$$0$1;
+  const fs_1 = require$$0;
+  const stream_1 = require$$0$2;
   const downloadPlanBuilder_1 = requireDownloadPlanBuilder();
   const DOUBLE_CRLF = Buffer.from("\r\n\r\n");
   var ReadState;
@@ -13645,7 +13645,7 @@ function requireProgressDifferentialDownloadCallbackTransform() {
   hasRequiredProgressDifferentialDownloadCallbackTransform = 1;
   Object.defineProperty(ProgressDifferentialDownloadCallbackTransform, "__esModule", { value: true });
   ProgressDifferentialDownloadCallbackTransform.ProgressDifferentialDownloadCallbackTransform = void 0;
-  const stream_1 = require$$0$1;
+  const stream_1 = require$$0$2;
   var OperationKind;
   (function(OperationKind2) {
     OperationKind2[OperationKind2["COPY"] = 0] = "COPY";
@@ -13737,9 +13737,9 @@ function requireDifferentialDownloader() {
   DifferentialDownloader.DifferentialDownloader = void 0;
   const builder_util_runtime_1 = requireOut();
   const fs_extra_1 = /* @__PURE__ */ requireLib();
-  const fs_1 = require$$2;
+  const fs_1 = require$$0;
   const DataSplitter_1 = requireDataSplitter();
-  const url_1 = require$$2$1;
+  const url_1 = require$$2;
   const downloadPlanBuilder_1 = requireDownloadPlanBuilder();
   const multipleRangeDownloader_1 = requireMultipleRangeDownloader();
   const ProgressDifferentialDownloadCallbackTransform_1 = requireProgressDifferentialDownloadCallbackTransform();
@@ -14042,9 +14042,9 @@ function requireAppUpdater() {
   Object.defineProperty(AppUpdater, "__esModule", { value: true });
   AppUpdater.NoOpLogger = AppUpdater.AppUpdater = void 0;
   const builder_util_runtime_1 = requireOut();
-  const crypto_1 = require$$0$3;
+  const crypto_1 = require$$0$4;
   const os_1 = require$$3;
-  const events_1 = require$$0$2;
+  const events_1 = require$$0$3;
   const fs_extra_1 = /* @__PURE__ */ requireLib();
   const js_yaml_1 = require$$5;
   const lazy_val_1 = requireMain$2();
@@ -14856,7 +14856,7 @@ function requireAppImageUpdater() {
   const builder_util_runtime_1 = requireOut();
   const child_process_1 = require$$1$1;
   const fs_extra_1 = /* @__PURE__ */ requireLib();
-  const fs_1 = require$$2;
+  const fs_1 = require$$0;
   const path = require$$1$2;
   const BaseUpdater_1 = requireBaseUpdater();
   const FileWithEmbeddedBlockMapDifferentialDownloader_1 = requireFileWithEmbeddedBlockMapDifferentialDownloader();
@@ -15299,13 +15299,13 @@ function requireMacUpdater() {
   MacUpdater.MacUpdater = void 0;
   const builder_util_runtime_1 = requireOut();
   const fs_extra_1 = /* @__PURE__ */ requireLib();
-  const fs_1 = require$$2;
+  const fs_1 = require$$0;
   const path = require$$1$2;
   const http_1 = require$$4$1;
   const AppUpdater_1 = requireAppUpdater();
   const Provider_1 = requireProvider();
   const child_process_1 = require$$1$1;
-  const crypto_1 = require$$0$3;
+  const crypto_1 = require$$0$4;
   let MacUpdater$1 = class MacUpdater2 extends AppUpdater_1.AppUpdater {
     constructor(options, app) {
       super(options, app);
@@ -15666,7 +15666,7 @@ function requireNsisUpdater() {
   const Provider_1 = requireProvider();
   const fs_extra_1 = /* @__PURE__ */ requireLib();
   const windowsExecutableCodeSignatureVerifier_1 = requireWindowsExecutableCodeSignatureVerifier();
-  const url_1 = require$$2$1;
+  const url_1 = require$$2;
   let NsisUpdater$1 = class NsisUpdater extends BaseUpdater_1.BaseUpdater {
     constructor(options, app) {
       super(options, app);
@@ -15931,7 +15931,7 @@ function requireAutoUpdater() {
   const { ipcMain, app, BrowserWindow } = require$$1;
   const { autoUpdater } = requireMain$1();
   const path = require$$1$2;
-  const fs2 = require$$2;
+  const fs2 = require$$0;
   const CHECK_INTERVAL = 4 * 60 * 60 * 1e3;
   let _mainWindow = null;
   let _setIsUpdating = null;
@@ -16288,6 +16288,102 @@ function requireAutoUpdater() {
   autoUpdater_1 = { initAutoUpdater, checkForUpdatesAuto, setMainWindow, setUpdateChannel, getState, installDownloadedUpdate };
   return autoUpdater_1;
 }
+var diagnosticsExport;
+var hasRequiredDiagnosticsExport;
+function requireDiagnosticsExport() {
+  if (hasRequiredDiagnosticsExport) return diagnosticsExport;
+  hasRequiredDiagnosticsExport = 1;
+  const fs2 = require$$0;
+  const path = require$$1$2;
+  const os = require$$3;
+  const MAX_FILE_BYTES = 1 * 1024 * 1024;
+  function collectEntries(home) {
+    const entries = [];
+    const pushFile = (rel) => {
+      const abs = path.join(home, rel);
+      try {
+        if (fs2.existsSync(abs) && fs2.statSync(abs).isFile()) {
+          entries.push({ rel, abs });
+        }
+      } catch {
+      }
+    };
+    pushFile("server-info.json");
+    pushFile("launch.log");
+    pushFile(path.join("user", "preferences.json"));
+    pushFile(path.join("user", "gpu-startup.json"));
+    const logsDir = path.join(home, "logs");
+    try {
+      if (fs2.existsSync(logsDir) && fs2.statSync(logsDir).isDirectory()) {
+        for (const name of fs2.readdirSync(logsDir)) {
+          const abs = path.join(logsDir, name);
+          try {
+            if (fs2.statSync(abs).isFile()) entries.push({ rel: path.join("logs", name), abs });
+          } catch {
+          }
+        }
+      }
+    } catch {
+    }
+    return entries;
+  }
+  function readEntry(abs) {
+    try {
+      let content = fs2.readFileSync(abs, "utf-8");
+      if (content.length > MAX_FILE_BYTES) {
+        content = content.slice(0, MAX_FILE_BYTES) + `
+... [truncated: file > ${MAX_FILE_BYTES} bytes] ...`;
+      }
+      return content;
+    } catch (err) {
+      return `<failed to read: ${err && err.message ? err.message : String(err)}>`;
+    }
+  }
+  function buildBundle(home, version) {
+    const header = [
+      "OpenShadow Diagnostics",
+      `Generated: ${(/* @__PURE__ */ new Date()).toISOString()}`,
+      `App Version: ${version}`,
+      `Platform: ${process.platform} ${process.arch}`,
+      `Node: ${process.versions.node}`,
+      `User Data Dir: ${home}`,
+      ""
+    ];
+    const sections = [...header];
+    const entries = collectEntries(home);
+    if (entries.length === 0) {
+      sections.push("(no diagnostic files found)");
+    } else {
+      for (const e of entries) {
+        sections.push(`===== ${e.rel} =====`);
+        sections.push(readEntry(e.abs));
+        sections.push("");
+      }
+    }
+    return sections.join("\n");
+  }
+  async function exportDiagnostics({ openShadowHome } = {}) {
+    const { dialog, BrowserWindow, app } = require$$1;
+    const home = openShadowHome || process.env.OPENSHADOW_HOME || path.join(os.homedir(), ".openshadow");
+    const version = app.getVersion();
+    const text = buildBundle(home, version);
+    const stamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
+    const baseName = `openshadow-diagnostics-${stamp}.txt`;
+    const parent = BrowserWindow.getFocusedWindow() || void 0;
+    const { canceled, filePath } = await dialog.showSaveDialog(parent, {
+      title: "导出诊断信息",
+      defaultPath: path.join(app.getPath("downloads") || os.homedir(), baseName),
+      filters: [{ name: "Text", extensions: ["txt"] }]
+    });
+    if (canceled || !filePath) {
+      return { ok: false, canceled: true };
+    }
+    fs2.writeFileSync(filePath, text, "utf-8");
+    return { ok: true, path: filePath };
+  }
+  diagnosticsExport = { exportDiagnostics };
+  return diagnosticsExport;
+}
 var fileWatchPath;
 var hasRequiredFileWatchPath;
 function requireFileWatchPath() {
@@ -16603,7 +16699,7 @@ var hasRequiredGpuStartupPolicy;
 function requireGpuStartupPolicy() {
   if (hasRequiredGpuStartupPolicy) return gpuStartupPolicy;
   hasRequiredGpuStartupPolicy = 1;
-  const fs2 = require$$2;
+  const fs2 = require$$0;
   const path = require$$1$2;
   const STATE_VERSION = 2;
   const STATE_FILE = path.join("user", "gpu-startup.json");
@@ -17536,7 +17632,7 @@ function requireDesktopAccessPolicy() {
   if (hasRequiredDesktopAccessPolicy) return desktopAccessPolicy;
   hasRequiredDesktopAccessPolicy = 1;
   const path = require$$1$2;
-  const fs2 = require$$2;
+  const fs2 = require$$0;
   const CONFIG_PATH = process.env.OPENSHADOW_HOME ? path.join(process.env.OPENSHADOW_HOME, "config.json") : path.join(process.env.APPDATA || process.env.HOME || "", ".openshadow", "config.json");
   function resolveCanonicalPath(rawPath) {
     if (typeof rawPath !== "string" || !rawPath.trim()) return null;
@@ -18271,7 +18367,7 @@ const providerPresets = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.def
   API_PROVIDER_PRESETS,
   getProviderPresetLabel
 }, Symbol.toStringTag, { value: "Module" }));
-const require$$17 = /* @__PURE__ */ getAugmentedNamespace(providerPresets);
+const require$$18 = /* @__PURE__ */ getAugmentedNamespace(providerPresets);
 const EntryTypes = {
   FILE_TYPE: "files",
   DIR_TYPE: "directories",
@@ -19991,13 +20087,13 @@ const chokidar = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProp
   default: index,
   watch
 }, Symbol.toStringTag, { value: "Module" }));
-const require$$19 = /* @__PURE__ */ getAugmentedNamespace(chokidar);
+const require$$20 = /* @__PURE__ */ getAugmentedNamespace(chokidar);
 var mainI18n;
 var hasRequiredMainI18n;
 function requireMainI18n() {
   if (hasRequiredMainI18n) return mainI18n;
   hasRequiredMainI18n = 1;
-  const fs2 = require$$2;
+  const fs2 = require$$0;
   const path = require$$1$2;
   function createMainI18n({ openShadowHome, localesDir }) {
     let locale = "zh-CN";
@@ -20168,7 +20264,7 @@ function requireMain() {
   hasRequiredMain = 1;
   const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeTheme, Tray, Menu: TrayMenu, globalShortcut, powerSaveBlocker, shell } = require$$1;
   const { join, dirname, resolve } = require$$1$2;
-  const { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } = require$$2;
+  const { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } = require$$0;
   const os = require$$3;
   if (!process.env.OPENSHADOW_HOME) {
     process.env.OPENSHADOW_HOME = join(os.homedir(), ".openshadow");
@@ -20182,6 +20278,7 @@ function requireMain() {
   const { createServerManager } = requireServerManager();
   const { createSettingsWindow, getSettingsWindow } = requireSettingsWindowController();
   const { initAutoUpdater, checkForUpdatesAuto } = requireAutoUpdater();
+  const { exportDiagnostics } = requireDiagnosticsExport();
   const { createFileWatchRegistry } = requireFileWatchRegistry();
   const { createWorkspaceWatchRegistry } = requireWorkspaceWatchRegistry();
   const { resolveGpuStartupPolicy, applyGpuStartupPolicy, markGpuStartupPending, markGpuStartupPhase, markGpuStartupReady } = requireGpuStartupPolicy();
@@ -20277,7 +20374,7 @@ function requireMain() {
   function isWizardCompleted() {
     return readConfig().wizard && readConfig().wizard.completed === true;
   }
-  const { API_PROVIDER_PRESETS: API_PROVIDER_PRESETS2 } = require$$17;
+  const { API_PROVIDER_PRESETS: API_PROVIDER_PRESETS2 } = require$$18;
   const PROVIDER_MODELS = {
     openai: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1-mini", "o3-mini"],
     anthropic: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-sonnet-4-20250514"],
@@ -20455,6 +20552,13 @@ function requireMain() {
     });
     wrapIpcHandler("app:get-version", () => {
       return app.getVersion();
+    });
+    wrapIpcHandler("diagnostics:export", async () => {
+      try {
+        return await exportDiagnostics({ openShadowHome: _openShadowHome });
+      } catch (err) {
+        return { ok: false, error: err?.message || String(err) };
+      }
     });
     wrapIpcHandler("server:restart", async () => {
       await serverManager2.restart("ipc");
@@ -21124,7 +21228,7 @@ function requireMain() {
   });
   const fileWatchRegistry2 = createFileWatchRegistry({
     watch: (filePath, callback) => {
-      const watcher = require$$19.watch(filePath, {
+      const watcher = require$$20.watch(filePath, {
         ignoreInitial: true,
         atomic: true,
         awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 }
@@ -21163,7 +21267,7 @@ function requireMain() {
   }
   const workspaceWatchRegistry2 = createWorkspaceWatchRegistry({
     watch: (rootPath, callback) => {
-      const watcher = require$$19.watch(rootPath, {
+      const watcher = require$$20.watch(rootPath, {
         ignoreInitial: true,
         atomic: true,
         awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
