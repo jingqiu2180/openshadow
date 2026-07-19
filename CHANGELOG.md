@@ -5,6 +5,17 @@
 
 ---
 
+## [0.6.4] - 2026-07-19
+
+### 产品化（打磨）
+- **一键诊断信息导出**：设置 → 关于 新增「导出诊断信息」按钮，将 `~/.openshadow` 下日志（`server-info.json`、`launch.log`、`logs/*`、`preferences.json`、`gpu-startup.json`）打包为单个可发送 `.txt`，经原生保存对话框落盘。刻意排除含 API Key 的 `agents/config.yaml`、`auth.json`。零新增依赖。
+- **英文报错文案与中文对齐**：`status.serverNotReady`、`settings.bridge.localConnectionUnavailable`、`dialog.serverExitedWithCode` 改为通俗英文（与中文人话版一致），保留 `{code}` 占位符。
+
+### 说明（已存在、本轮核实可用，无需改动）
+- 应用内自动更新（`auto-updater.cjs`：启动 + 每 4 小时比对 GitHub Release，新版本在设置页横幅提示）与此向导填 API Key + 选供应商（`ProviderStep`）此前已实现，0.6.4 起自动更新将首次有比其新的版本可比而实际弹窗。
+
+---
+
 ## [0.6.3] - 2026-07-19
 
 ### 修复（稳定性 / 重装可复现）
