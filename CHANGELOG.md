@@ -5,6 +5,13 @@
 
 ---
 
+## [0.6.6] - 2026-07-19
+
+### 修复 / 改进（更新体验）
+- **启用 blockmap 增量更新（治标）**：`desktop/auto-updater.cjs` 的 `disableDifferentialDownload` 由 `true` 改为 `false`，打开 electron-updater 差分下载；`.github/workflows/release.yml` 的 upload-artifact 与 action-gh-release 已补 `*.blockmap`，CI 开始上传 blockmap 资产。此后「自带 blockmap 的这代」装上后，下一次更新只需下载差量块（通常几十 MB）而非全量 ~400MB。
+- 已知局限：下载源仍是 GitHub CDN（国内常几十 KB/s）；要治本需接入国内对象存储（腾讯云 COS / 阿里云 OSS）源，待用户提供 bucket+密钥。
+- 注意：本次为累积改进，provider 覆盖与 i18n 修复已在 v0.6.5 落地。
+
 ## [0.6.5] - 2026-07-19
 
 ### 新增（Provider 覆盖）
