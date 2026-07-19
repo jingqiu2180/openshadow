@@ -1,0 +1,24 @@
+# GitHub Release 自动说明分类配置
+# 推 v* tag 发布时，按 commit message 前缀把变更归类到 Release Notes。
+# 需配合 release.yml 工作流里的 generate_release_notes: true 生效。
+# 文档：https://docs.github.com/actions/sharing-automations/automating-your-release-process/automatically-generated-release-notes
+changelog:
+  categories:
+    - title: 🚀 新功能 (Features)
+      commits:
+        message: '^feat(\(.+\))?:'
+    - title: 🐛 修复 (Fixes)
+      commits:
+        message: '^fix(\(.+\))?:'
+    - title: 📝 文档 (Docs)
+      commits:
+        message: '^docs(\(.+\))?:'
+    - title: 🔧 构建与基础设施 (Build / CI)
+      commits:
+        message: '^(build|ci)(\(.+\))?:'
+    - title: ♻️ 重构与其他 (Chores / Refactor)
+      commits:
+        message: '^(refactor|chore|perf|style|test)(\(.+\))?:'
+    - title: 🔀 其他改动 (Other)
+      commits:
+        message: '.*'

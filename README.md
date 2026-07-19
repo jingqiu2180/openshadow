@@ -56,7 +56,7 @@ OpenShadow fork 自 [openhanako](https://github.com/liliMozi/openhanako)，从 c
 
 从 [Releases](https://github.com/jingqiu2180/openshadow/releases) 下载最新安装包：
 
-- **Windows** — `OpenShadow-x.x.x-Windows-x64.exe`（当前约 366 MB）
+- **Windows** — `OpenShadow-x.x.x-Windows-x64.exe`（当前约 400 MB，含独立 Node 运行时）
 - **macOS** — `.dmg`（Apple Silicon / Intel）
 - **Linux** — `.AppImage` 或 `.deb`
 
@@ -93,6 +93,25 @@ npm run dev
 npm run server
 ```
 
+## 常见问题与故障排查
+
+### 安装 / 启动后一直「连接中」或显示「Server 未就绪」
+后端 Server 没能正常起来。按顺序排查：
+1. **确认版本 ≥ 0.6.3**：0.6.2 及更早版本在重装后可能因子进程 ABI 不匹配而崩溃，表现为「未就绪」。请到 [Releases](https://github.com/jingqiu2180/openshadow/releases) 下载最新的 0.6.3+ 安装包重装。
+2. **彻底退出重开**：托盘右键 → 退出，再启动。Electron 单实例锁会复用旧进程，没退干净时配置不刷新。
+3. **杀软 / Windows Defender 拦截**：首次运行可能拦截后台 Server 进程，加入排除项或允许即可。
+4. **看日志**：用户数据目录为 `~/.openshadow`（Windows：`C:\Users\<你的用户名>\.openshadow`），里面有 Server 日志可进一步定位。
+
+### 发消息没反应，或提示 `Cannot read properties of undefined`
+这是旧版 `web_fetch` 工具 schema 错误的表现，每次发首条消息必现。已在 **0.6.3** 修复，升级到 0.6.3+ 即可。
+
+### Windows SmartScreen / 杀软拦截安装包
+安装包暂未代码签名，首次运行 Defender SmartScreen 可能拦截。点击 **更多信息** → **仍要运行** 即可（未签名版本的正常现象）。
+
+### 安装包很大 / 安装慢
+安装包约 400 MB，其中包含了一个与后端原生模块同 ABI 的独立 Node 运行时，以保证重装后服务器可稳定启动（不再依赖 Electron 内置 Node）。
+安装慢主要是 Windows Defender 对 `server-bundle` 的大量小文件逐文件扫描，可在「病毒和威胁防护 → 排除项」临时添加 `%LOCALAPPDATA%\Temp`，装完移除。
+
 ## 架构
 
 ```
@@ -111,7 +130,7 @@ tests/            Vitest 单元测试 + Playwright E2E 测试
 **桌面端** 主进程是 CJS（Vite 编译为 `main.bundle.cjs`），渲染端是 React 19 SPA。Server 启动顺序：先 `await serverManager.start()` 拿到真实 port + token，才 `createMainWindow()` —— 保证首次打开就能连上后端、加载 i18n 资源。
 
 **构建产物**（v0.4.4 实测，Windows）：
-- 安装包 366 MB（v0.4.0 时代 474 MB，瘦 23%）
+- 安装包约 400 MB（v0.6.x 起含独立 Node 运行时）；v0.4.0 时代 474 MB
 - server-bundle `node_modules` 256 MB（v0.4.0 时代 378 MB，瘦 32%）
 - 457 包闭包，零外部拉取（afterPack 严格禁止 `npm install`）
 

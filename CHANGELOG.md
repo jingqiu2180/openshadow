@@ -5,6 +5,20 @@
 
 ---
 
+## [0.6.3] - 2026-07-19
+
+### 修复（稳定性 / 重装可复现）
+- **后端 Server 独立 Node 运行时固化**：安装包内含一个与后端原生模块同 ABI（Node 22.22.2 / ABI 127）的独立 Node（`resources/server/openshadow-server.exe`），不再回退到 Electron 内置 Node（ABI 146），彻底消除重装后因原生模块 ABI 不匹配导致的「未就绪 / Server 崩溃」。
+- **修复发消息报 `Cannot read properties of undefined (reading 'properties')`**：`web_fetch` 工具 schema 字段误用 `inputSchema`，改为 `parameters`。该错误每次发首条消息必现，现已修复。
+- **修复前端端口竞态导致的「未就绪」**：preload 的 `getServerPort` 在 server 未就绪时不再兜底成死端口 `3000`，而是返回 `null` 触发既有轮询，待 server 起来后自动恢复真实端口。
+- 用户数据目录统一为 `os.homedir()/.openshadow`。
+
+### 构建
+- 新增 `scripts/build-standalone-node.cjs`（可复现、自清洁）并接入 `dist:win`；`extraResources` 将独立 Node 打进安装包。
+- GitHub Release 说明现由 `.github/release.yml` 按提交前缀自动分类生成。
+
+---
+
 ## [0.5.6] - 2026-07-16
 
 ### 改进（CI 门禁稳定性）
