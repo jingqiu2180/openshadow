@@ -18,9 +18,13 @@ const platformApi = {
   getServerPort: async () => {
     try {
       const info = await ipcRenderer.invoke('server:get-info')
-      return info?.port ?? 3000
+      // 关键：server-info.json 尚未就绪时必须返回 null 而非兜底端口。
+      // 若返回 3000，主流程 `if (!serverPort)` 判定为假值会跳过 30s 轮询，
+      // 导致渲染进程永久连向死端口 3000 → 所有 fetch Failed to fetch → "未就绪"。
+      // 返回 null 可让既有轮询在 server 起来后自动恢复真实端口(14500)。
+      return info?.port ?? null
     } catch {
-      return 3000
+      return null
     }
   },
   getServerToken: async () => {

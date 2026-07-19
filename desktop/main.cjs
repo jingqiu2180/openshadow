@@ -134,7 +134,7 @@ function writeConfig(cfg) {
 // 如果文件不存在，返回默认值 { port: 3000, token: null }
 function readServerInfo() {
   try {
-    const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+    const openShadowHome = process.env.OPENSHADOW_HOME || join(os.homedir(), '.openshadow')
     const p = join(openShadowHome, 'server-info.json')
     if (!existsSync(p)) {
       // 文件不存在 = server 还没就绪。返回 null 端口，让渲染进程进入等待/轮询逻辑，
@@ -1104,7 +1104,7 @@ function saveWindowStateSoon(win) {
 // 管理 server 进程：启动、监控心跳、崩溃重启、优雅关闭
 const serverManager = createServerManager({
   app,
-  lynnHome: process.env.OPENSHADOW_HOME || join((process.env.APPDATA || os.homedir()), '.openshadow'),
+  lynnHome: process.env.OPENSHADOW_HOME || join(os.homedir(), '.openshadow'),
   dirname: __dirname,
   execPath: process.execPath,
   platform: process.platform,
@@ -1329,11 +1329,11 @@ app.whenReady().then(async () => {
     createMainWindow()
     // 标记 GPU 启动完成
     try {
-      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(os.homedir(), '.openshadow')
       markGpuStartupReady({ openShadowHome, phase: 'main-window-created' })
     } catch {}
     // 初始化 Auto Updater（需要在 mainWindow 创建后）
-    const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+    const openShadowHome = process.env.OPENSHADOW_HOME || join(os.homedir(), '.openshadow')
     initAutoUpdater(mainWindow, { openShadowHome })
     checkForUpdatesAuto()
     // 初始化 Quick Chat 全局快捷键
@@ -1385,11 +1385,11 @@ app.whenReady().then(async () => {
       }
       // 标记 GPU 启动完成
       try {
-        const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+        const openShadowHome = process.env.OPENSHADOW_HOME || join(os.homedir(), '.openshadow')
         markGpuStartupReady({ openShadowHome, phase: 'main-window-created' })
       } catch {}
       // 初始化 Auto Updater
-      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), '.openshadow')
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(os.homedir(), '.openshadow')
       initAutoUpdater(mainWindow, { openShadowHome })
       checkForUpdatesAuto()
       // 初始化 Quick Chat 全局快捷键

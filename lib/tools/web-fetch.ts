@@ -8,7 +8,7 @@ export function createWebFetchTool() {
   return {
     name: 'web_fetch',
     description: 'Fetch the content of a URL and extract text.',
-    inputSchema: {
+    parameters: {
       type: 'object',
       properties: {
         url: {

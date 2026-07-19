@@ -17,9 +17,9 @@ function requirePreload() {
     getServerPort: async () => {
       try {
         const info = await ipcRenderer.invoke("server:get-info");
-        return info?.port ?? 3e3;
+        return info?.port ?? null;
       } catch {
-        return 3e3;
+        return null;
       }
     },
     getServerToken: async () => {

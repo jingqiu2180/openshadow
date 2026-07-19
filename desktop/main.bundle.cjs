@@ -20260,7 +20260,7 @@ function requireMain() {
   }
   function readServerInfo() {
     try {
-      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(os.homedir(), ".openshadow");
       const p = join(openShadowHome, "server-info.json");
       if (!existsSync(p)) {
         return { port: null, token: null };
@@ -21091,7 +21091,7 @@ function requireMain() {
   }
   const serverManager2 = createServerManager({
     app,
-    lynnHome: process.env.OPENSHADOW_HOME || join(process.env.APPDATA || os.homedir(), ".openshadow"),
+    lynnHome: process.env.OPENSHADOW_HOME || join(os.homedir(), ".openshadow"),
     dirname: __dirname,
     execPath: process.execPath,
     platform: process.platform,
@@ -21295,11 +21295,11 @@ function requireMain() {
     if (isWizardCompleted()) {
       createMainWindow();
       try {
-        const openShadowHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+        const openShadowHome2 = process.env.OPENSHADOW_HOME || join(os.homedir(), ".openshadow");
         markGpuStartupReady({ openShadowHome: openShadowHome2, phase: "main-window-created" });
       } catch {
       }
-      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(os.homedir(), ".openshadow");
       initAutoUpdater(mainWindow, { openShadowHome });
       checkForUpdatesAuto();
       initQuickChat();
@@ -21341,11 +21341,11 @@ function requireMain() {
         suppressWindowAllClosed = false;
       }
       try {
-        const openShadowHome2 = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+        const openShadowHome2 = process.env.OPENSHADOW_HOME || join(os.homedir(), ".openshadow");
         markGpuStartupReady({ openShadowHome: openShadowHome2, phase: "main-window-created" });
       } catch {
       }
-      const openShadowHome = process.env.OPENSHADOW_HOME || join(process.cwd(), ".openshadow");
+      const openShadowHome = process.env.OPENSHADOW_HOME || join(os.homedir(), ".openshadow");
       initAutoUpdater(mainWindow, { openShadowHome });
       checkForUpdatesAuto();
       initQuickChat();

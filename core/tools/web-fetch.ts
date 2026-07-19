@@ -11,7 +11,7 @@ export function registerWebFetchTool(registry: ToolRegistry): void {
   registry.register({
     name: 'web_fetch',
     description: 'Fetch the content of a URL and extract text. Supports HTML pages, JSON APIs, and plain text.',
-    inputSchema: {
+    parameters: {
       type: 'object',
       properties: {
         url: {
