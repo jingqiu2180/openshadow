@@ -264,7 +264,10 @@ function setupAutoUpdater() {
   autoUpdater.autoDownload = false;          // 由我们控制（磁盘空间检查后手动触发）
   autoUpdater.autoInstallOnAppQuit = false;  // 只在用户明确点击"重启更新"时安装
   autoUpdater.allowPrerelease = false;       // 由频道控制
-  autoUpdater.disableDifferentialDownload = true;
+  // 启用 blockmap 增量更新：CI 需上传 *.blockmap（release.yml 已补）。
+  // 注意：已发布的旧安装包本身不含 blockmap，差分要等"自带 blockmap 的那一代"装上后
+  // 的下一次更新才生效（例如 v0.6.5 包起，v0.6.5→v0.6.6 走差分）。
+  autoUpdater.disableDifferentialDownload = false;
   if (process.platform === "win32") {
     autoUpdater.installDirectory = path.dirname(app.getPath("exe"));
   }

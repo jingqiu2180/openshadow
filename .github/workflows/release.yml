@@ -59,6 +59,7 @@ jobs:
             release/*.AppImage
             release/*.deb
             release/latest-linux.yml
+            release/*.blockmap
 
   # ───────────────────────── Windows ─────────────────────────
   windows:
@@ -107,6 +108,7 @@ jobs:
           path: |
             release/*.exe
             release/latest.yml
+            release/*.blockmap
 
   # ───────────────────────── macOS (skip notarize) ─────────────────────────
   # 暂时跳过 notarize（没有 Apple Developer 账号）。
@@ -156,6 +158,7 @@ jobs:
             release/*.dmg
             release/*.zip
             release/latest-mac.yml
+            release/*.blockmap
 
   # ───────────────────────── Smoke (real Electron launch) ─────────────────────────
   smoke:
@@ -231,5 +234,6 @@ jobs:
             artifacts/**/*.dmg
             artifacts/**/*.zip
             artifacts/**/latest*.yml
+            artifacts/**/*.blockmap
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
