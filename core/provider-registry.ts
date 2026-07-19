@@ -328,6 +328,7 @@ import { ollamaPlugin } from '../lib/providers/ollama.js';
 import { minimaxPlugin } from '../lib/providers/minimax.js';
 import { minimaxTokenPlanPlugin } from '../lib/providers/minimax-token-plan.js';
 import { openaiCodexOAuthPlugin } from '../lib/providers/openai-codex-oauth.js';
+import { opencodeGoPlugin } from '../lib/providers/opencode-go.js';
 // 中国
 import { siliconflowPlugin } from '../lib/providers/siliconflow.js';
 import { zhipuPlugin } from '../lib/providers/zhipu.js';
@@ -368,6 +369,7 @@ const BUILTIN_PLUGINS = [
   minimaxPlugin,
   minimaxTokenPlanPlugin,
   openaiCodexOAuthPlugin,
+  opencodeGoPlugin,
   // 中国
   siliconflowPlugin,
   zhipuPlugin,

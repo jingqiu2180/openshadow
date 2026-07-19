@@ -5,6 +5,17 @@
 
 ---
 
+## [0.6.5] - 2026-07-19
+
+### 新增（Provider 覆盖）
+- **补齐 `opencode-go` provider 插件**：纯 API-key 数据插件（`base_url: https://opencode.ai/zen/go/v1`，`api: openai-completions`），已在 `core/provider-registry.ts` 的 `BUILTIN_PLUGINS` 注册，设置页可选配。注册后 `/api/providers/summary` 可见 `OpenCode Go`（`config_status: needs_setup`）。
+- 说明：此前对比 openhanako 得出的「openshadow 仅 3 个 provider」是 v0.5.6 时代的过时误判；实测当前 `lib/providers/` 已有 36 个注册插件（openhanako 为 37），中国主流全覆盖。详见 `openshadow-vs-openhanako-CHECKLIST.md` 的更正记录。
+
+### 修复（i18n）
+- **简中（zh）缺失 3 个更新提示 key**：`updateAvailable`、`updateDownloading`、`updateProgress` 在 en/ko/ja/zh-TW 均有、唯独简中缺失，导致「检查更新」时显示原始 key 而非中文。已补齐（`发现新版本：v{version}` / `{agentName}正在准备新版本 {percent}%` / `{percent}%`）。
+
+---
+
 ## [0.6.4] - 2026-07-19
 
 ### 产品化（打磨）
