@@ -482,6 +482,10 @@
       "kong": {
         "label": "模型原本的样子",
         "avatar": "Kong.png"
+      },
+      "bmc-adapter": {
+        "label": "BMC 机型适配",
+        "avatar": ""
       }
     },
     "title": "元",

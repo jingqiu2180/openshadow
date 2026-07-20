@@ -492,6 +492,10 @@
       "kong": {
         "label": "Vanilla",
         "avatar": "Kong.png"
+      },
+      "bmc-adapter": {
+        "label": "BMC adapter",
+        "avatar": ""
       }
     },
     "title": "Yuan",

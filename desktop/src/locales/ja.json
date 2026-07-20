@@ -456,6 +456,10 @@
       "kong": {
         "label": "素のまま",
         "avatar": "Kong.png"
+      },
+      "bmc-adapter": {
+        "label": "BMC アダプター",
+        "avatar": ""
       }
     },
     "title": "元",

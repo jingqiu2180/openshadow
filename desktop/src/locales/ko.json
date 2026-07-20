@@ -456,6 +456,10 @@
       "kong": {
         "label": "기본형",
         "avatar": "Kong.png"
+      },
+      "bmc-adapter": {
+        "label": "BMC 어댑터",
+        "avatar": ""
       }
     },
     "title": "元",
