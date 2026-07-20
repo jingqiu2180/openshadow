@@ -3,108 +3,52 @@ name: bmc-adapter
 default-enabled: false
 ---
 
-# BMC 机型适配实战手册（adapter2 系）
+# BMC 机型适配助手（adapter2 工程）
 
-本手册是「机型适配专家」助手的深度知识模块，覆盖「新增一个机型适配」时的可复用代码模式与检查清单。启用后，助手在 BMC / Redfish 适配任务中会主动套用这些模式。
+本 skill 让 openshadow 成为 **adapter2（浪潮 / 多厂商 BMC 适配工程）的交互式助手**。它只负责补 openshadow 在 adapter2 上干活时需要的「工程结构认知 + 人机协同用法」，**所有硬性规则与流程以 adapter2 仓库自身的资料为准**——那些资料会被 openshadow 自动加载，优先级高于本 skill。
 
-## 何时使用
-- 新增一个服务器机型的 BMC 适配（新 vendor / 新 platform）
-- 给现有适配层补一个 BMC 能力（电源、温度、风扇、固件、事件订阅…）
-- 排查机型兼容问题（字段缺失、类型漂移、会话过期、HTTPS 证书、分页）
+## 0. 权威资料（openshadow 自动加载，必须遵守）
+把 openshadow 的 workspace 指向 adapter2 根目录、并打开 `inject_claude_md` 后，以下内容会自动注入，优先级高于本 skill：
+- `CLAUDE.md` —— 红线（禁改测试 / 基类、`@Disabled`、吞异常、最小修改、修后写 `pattern-usage-log.md`）、双模式（fix / Test-Fix）、项目结构速查、QR9296 笔记。
+- `.claude/skills/server-creator` —— 新机型适配完整 SOP（继承链决策表、四层诊断法、BMC 限制关键词、bug pattern、diff 自查、推理报告、经验回流）。openshadow 会自动识别 `.claude/skills` 目录并加载。
+- `.claude/skills/adapter2-test-assertions` —— 测试断言规范。
 
-## 标准 SOP（顺序不可跳）
-1. 根探测：`GET /redfish/v1/` → 记录 `ProtocolFeatures` / 资源拓扑
-2. 枚举 `Chassis` / `Systems` / `Managers` 及其 `Thermal` / `Power` / `Sensors`
-3. 把厂商字段映射到适配层统一抽象接口
-4. **读仓库里同类机型 adapter 作模板**（先 grep，再照写）
-5. 实现可重试、会话自恢复的 HTTP 调用
-6. 向后兼容：老机型不回归，新字段 null 容错
-7. 验证：核心路径跑通（上电/下电、读温度、读固件版本、事件订阅）
-8. 埋点：耗时 / 成功率 / 错误分类
+> 本 skill **不重复**上述内容。干活前先读 `CLAUDE.md` 与 `server-creator`；有冲突以它们为准。
 
-## 可复用代码骨架（Java / Spring Boot 3）
+## 1. 真实代码架构（认知地图，决定「改哪里、别碰哪」）
+- **总体**：Maven 多模块 + **pf4j 插件架构**（由 `com.anarchy.adapter2.boot` 框架驱动，标注 `@AdapterClass` / `@Support`；叶子类用 `org.pf4j.Extension`）。**不是 Spring Boot 直接驱动**。技术栈 JDK 17 / Maven 3+ / JUnit 5 / 4 空格缩进。
+- **按厂商分模块**：`adapter2-plugins/adapter2-plugin-server-<vendor>`（现已有 `inspur`，以及 `generic` 内含 dell / hpe / greatwall / nettrix / sugon / suma / sun）。新厂商照此加模块。
+- **主包**：`com.anarchy.adapter2`。
+- **适配类分层**（以 inspur 为例）：
+  - 基类 `CommonM7OpenBmcServer`（package `...inspur.m7.openbmc`）extends `InspurAbstractServer` —— **🔴 禁止修改**（它是共性实现，改了影响所有机型）。
+  - 中间 `Common*Server` 层（`CommonM7Server` / `InspurCommonM8Server` / 各代际 `Common*Server`）按机型代际 / 协议栈（OpenBMC vs AMI）切分，逐层累积共性。
+  - **叶子机型类**：如 `AivresNE3260M7AmiServer extends NE3260M7AmiServer`，用 `@org.pf4j.Extension` + `@AdapterClass` 标注，**只 `@Override` 该机型特有的方法**（`getEquipmentDescriptors()`、`getBiosPn()` 等），其余继承链复用。
+- **转换层**：`...inspur.utils.Response2AdapterConvert`（约 1.1 万行，全静态 `convert2Xxx(DTO)` 方法）——把协议 DTO 映射成统一业务模型。**加字段映射用 `ObjectUtil.defaultIfNull(...)` 做 null 兜底**（修复 NPE / 空字段的常规手法）；🔴 禁止整行删除已有字段映射（功能退化）。
+- **协议 / 客户端层**：`com.anarchy.adapter2.protocol.redfish.Redfish`、各代际 `restful.mN.M*Client`（`M7RedfishClient` / `M7BiosService` / `M7PSUClient` / `M7PowerServiceClient`），DTO 在 `restful.mN.dto.*` 与 `protocol.redfish.dto.*`。
+- **真实继承链示例**（取自 `server-creator`）：
+  - M7 OpenBMC：`CommonM7OpenBmcServer` → `InspurAbstractServer`
+  - M8 AMI：`InspurCommonM8Server` → `CommonM7OpenBmcServer`
+  - A8 NF3290A8 OpenBMC：`NF3290A8OpenBmcServer` → `InspurAmiOpenBmcA8Server` → `InspurCommonM8Server` → `CommonM7OpenBmcServer`
+  - A8 NF5280A8 AMI：`InspurA8Server` → `InspurA7Server` → `CommonM7Server`
 
-### Redfish 客户端（会话自恢复 + 重试）
-```java
-@Component
-public class RedfishClient {
-    private final WebClient webClient;
-    private final RedfishProps props; // 机型 -> baseUrl / user / password（来自配置/密钥，不硬编码）
-    private String authToken;
-    private Instant tokenExpireAt;
+## 2. openshadow 在 adapter2 上的正确用法（人机协同）
+openshadow 在此工程的定位是 **run-agent.py 的交互式补充**：脚本掌握循环、人在环。适合做的事：
+- **读码 / 讲解**：「`CommonM7OpenBmcServer` 里 `getPowerState` 怎么实现的？」「解释 M8 相对 M7 改了哪些方法」。
+- **探索性改动**：小步 `@Override` 一个机型特有方法、补一个 Converter null 兜底、对照真机 Redfish 响应修正 `@JsonProperty`。
+- **提问 / 诊断**：把 `server-creator` 的四层诊断法用到单个失败上，给出可读的修复建议（不直接批量改）。
+- **新厂商脚手架**：照 `adapter2-plugin-server-<vendor>` 结构起模块骨架（`server-creator` 的 SOP 同样适用）。
+🔴 不该做的：替 run-agent 跑批量测试闭环；绕过 `CLAUDE.md` 红线（如 `@Disabled`、改基类、吞异常）。
 
-    public <T> T get(String path, Class<T> type) {
-        return withRetry(() -> doGet(path, type));
-    }
+## 3. 跨厂商 Redfish 方法论（openshadow 独有增量）
+adapter2 的 `server-creator` 聚焦「inspur 内单机型」，以下是通用跨厂商规律（适配 **新 vendor** 时参考）：
+- **先探测后写**：`curl -k -s -u user:pass https://<IP>/redfish/v1/...` 拿真机 JSON，再决定字段映射；绝不凭字段名猜。
+- **Oem 是厂商私有区的常态**：温度 / 阈值常被塞进 `Oem`，标准 `Thermal` / `Thresholds` 可能缺失或字段名不同。
+- **类型漂移**：真机常把数字写成字符串、`Members` 缺 `@odata.nextLink` 分页；Converter 里统一做 `ObjectUtil.defaultIfNull` / 类型归一。
+- **会话自恢复**：`POST /redfish/v1/SessionService/Sessions` 取 `X-Auth-Token`；401 自动重登；调用可重试幂等。🔴 凭证走配置 / 密钥，不落代码日志。
+- **向后兼容**：新厂商 / 新机型不得破坏既有机型；新增字段 null 容错。
 
-    private <T> T doGet(String path, Class<T> type) {
-        if (needLogin()) login();
-        try {
-            return webClient.get().uri(props.baseUrl() + path)
-                .header("X-Auth-Token", authToken)
-                .header("OData-Version", "4.0")
-                .retrieve().bodyToMono(type).block();
-        } catch (WebClientResponseException.Unauthorized ex) {
-            login(); // 会话过期，重登录后由外层 retry 重试
-            throw ex;
-        }
-    }
-
-    private void login() {
-        // POST /redfish/v1/SessionService/Sessions，取 X-Auth-Token
-        // 凭证来自配置/密钥管理，禁止明文写死
-    }
-
-    private boolean needLogin() {
-        return authToken == null || Instant.now().isAfter(tokenExpireAt.minusSeconds(30));
-    }
-
-    private <T> T withRetry(Supplier<T> action) {
-        // 指数退避重试：网络/401 重试并触发重登录；协议/业务错误不重试
-    }
-}
-```
-
-### 适配层接口（统一抽象 + 厂商实现）
-```java
-public interface BMCAdapter {
-    PowerState getPowerState(String chassisId);
-    List<TemperatureReading> getTemperatures(String chassisId);
-    FirmwareInfo getFirmware(String managerId);
-    void subscribeEvents(String destination); // EventService
-}
-
-// 每机型一个实现，命名与目录沿用既有约定（如 InspurBmcAdapter）
-@Component
-public class InspurBmcAdapter implements BMCAdapter { /* 照已有 adapter 写 */ }
-```
-
-### 配置驱动（机型 → endpoint 映射）
-```yaml
-bmc:
-  adapters:
-    inspur-nf5280m7:
-      base-url: https://10.x.x.x/redfish/v1
-      username: ${BMC_USER}      # 来自环境变量/密钥管理
-      password: ${BMC_PASS}
-    inspur-nf5280m6:
-      base-url: https://10.y.y.y/redfish/v1
-      username: ${BMC_USER}
-      password: ${BMC_PASS}
-```
-
-## 陷阱检查清单（PR 前逐项确认）
-- [ ] 真机/规范已探测，字段非凭记忆捏造
-- [ ] 认证走配置/密钥，代码中无明文凭证
-- [ ] 会话过期有自动重登录 + 重试
-- [ ] 分页 `Members@odata.nextLink` 已处理
-- [ ] HTTPS 自签证书已处理（关校验或预置信任）
-- [ ] 新增字段对缺失/null 有容错
-- [ ] 老机型 adapter 无回归
-- [ ] 关键调用有埋点（耗时/成功率/错误分类）
-- [ ] 核心路径有测试（真机或厂商 Redfish mock）
-
-## 红线
-- 不编造 Redfish 字段；不确定的先探测真机或查规范
-- 不把凭证写进代码或日志
-- 不破坏向后兼容
+## 4. 红线（与 CLAUDE.md 一致，重申）
+- 不修改 `Common*Server` 基类与既有测试类（`GetMethodsTest` 等）。
+- 不 `@Disabled`、不删测试、不吞异常、不做超出当前任务的修改。
+- 不整行删 Converter 字段映射；不编造 Redfish 字段；不落明文凭证。
+- 改完按 `server-creator` 的 diff 自查 + 最小回归（`mvn -Dtest=<TestClass>#<method> test`），不默认全仓 build。
