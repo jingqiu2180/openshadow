@@ -12,7 +12,7 @@
 | `lib/yuan/bmc-adapter.md` + `yuan/bmc-adapter.md` | 领域 yuan 类型：人设 + Redfish/BMC 知识 + 真实架构认知 + 行为准则（注入 system prompt） |
 | `lib/identity-templates/bmc-adapter.md` | 该类型的身份定义 |
 | `lib/ishiki-templates/bmc-adapter.md` | 该类型的行为/人格定义 |
-| `skills/bmc-adapter/SKILL.md` | 互补型实战手册：adapter2 **真实**代码架构地图 + 人机协同用法 + 跨厂商 Redfish 方法论（**不重复** adapter2 自身规则） |
+| `skills2set/bmc-adapter/SKILL.md` | 互补型实战手册：adapter2 **真实**代码架构地图 + 人机协同用法 + 跨厂商 Redfish 方法论（**不重复** adapter2 自身规则） |
 
 > 注：`yuan/` 与 `lib/yuan/` 是构建同步的镜像副本，两处均已建。
 
@@ -41,7 +41,8 @@
 - **方式 B（向导）**：若 yuan 下拉由 `listYuanKeys()` 填充，则 `bmc-adapter` 会自动出现可选。
 
 ## 第四步（推荐）：启用 bmc-adapter 深度 skill
-- 把 `skills/bmc-adapter/` 复制到用户技能目录（如 `~/.openshadow/skills/bmc-adapter/`），或在应用内安装；
+- 已随仓库放到 `skills2set/bmc-adapter/`：构建时会自动复制进安装包的 `resources/skills2set/`，首次启动由 `core/first-run.ts` 播种到用户目录 `~/.hanako/skills/bmc-adapter/`（无需手动复制）。
+- 仅本地免构建调试时，可手动把该目录复制到 `~/.hanako/skills/bmc-adapter/`（运行时 watcher 会热加载）。
 - 也可放到 adapter2 仓库的 `.agents/skills/bmc-adapter/`（OpenShadow 按 workspace 技能路径自动识别）。
 - 启用后助手会补上「真实架构认知地图 + 人机协同用法 + 跨厂商 Redfish 方法论」这三层 openshadow 独有增量。`server-creator` 已覆盖的 inspur 内 SOP 它**不重复**。
 
